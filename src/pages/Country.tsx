@@ -220,84 +220,83 @@ const Country = () => {
                       const visited = isPlaceVisited(place.id);
                       const inTrip = isInTrip(place.id);
                       return (
-                        <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
-                          {place.imageUrl ? (
-                            <div 
-                              className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
-                              onClick={() => setSelectedPlace(place)}
-                            >
-                              <img 
-                                src={resolveImageUrl(place.imageUrl) || place.imageUrl}
-                                alt={place.name}
-                                loading="lazy"
-                                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-                                className="w-full h-full object-cover"
-                              />
-                              <div className="absolute top-2 right-2">
-                                <Button
-                                  size="sm"
-                                  variant={inTrip ? "default" : "secondary"}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    if (inTrip) {
-                                      removeFromTrip(place.id);
-                                      toast.success('Retiré du voyage');
-                                    } else {
-                                      addToTrip(place.id);
-                                      toast.success('Ajouté au voyage');
-                                    }
-                                  }}
-                                  className="opacity-90 group-hover:opacity-100 transition-opacity"
-                                >
-                                  {inTrip ? (
-                                    <CheckCircle2 className="w-4 h-4" />
-                                  ) : (
-                                    <Plus className="w-4 h-4" />
-                                  )}
-                                </Button>
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                              <MapPin className="w-16 h-16 text-primary" />
-                            </div>
-                          )}
-                          <CardHeader>
-                            <div className="flex items-start justify-between gap-2 mb-2">
-                              <CardTitle className="flex-1">{place.name}</CardTitle>
-                              <div className="flex items-center gap-2">
-                                <AudioImmersiveIcon 
-                                  isPremium={false}
-                                  onClick={() => toast.info('Abonnez-vous au mode Premium pour débloquer l\'audio immersif ! 👑')}
+                          <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
+                            {place.imageUrl ? (
+                              <div 
+                                className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
+                                onClick={() => navigate(`/place/${place.id}`)}
+                              >
+                                <img 
+                                  src={resolveImageUrl(place.imageUrl) || place.imageUrl}
+                                  alt={place.name}
+                                  loading="lazy"
+                                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                                  className="w-full h-full object-cover"
                                 />
-                                {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
+                                <div className="absolute top-2 right-2">
+                                  <Button
+                                    size="sm"
+                                    variant={inTrip ? "default" : "secondary"}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (inTrip) {
+                                        removeFromTrip(place.id);
+                                        toast.success('Retiré du voyage');
+                                      } else {
+                                        addToTrip(place.id);
+                                        toast.success('Ajouté au voyage');
+                                      }
+                                    }}
+                                    className="opacity-90 group-hover:opacity-100 transition-opacity"
+                                  >
+                                    {inTrip ? (
+                                      <CheckCircle2 className="w-4 h-4" />
+                                    ) : (
+                                      <Plus className="w-4 h-4" />
+                                    )}
+                                  </Button>
+                                </div>
                               </div>
-                            </div>
-                            <CardDescription className="flex items-center gap-1">
-                              <Book className="w-3 h-3" />
-                              {place.type}
-                            </CardDescription>
-                          </CardHeader>
-                          <CardContent>
-                            <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
-                          </CardContent>
-                          <CardFooter>
-                            <Button
-                              onClick={() => handleCheckIn(place.id, place.name, place.points)}
-                              disabled={visited}
-                              className="w-full"
-                              variant={visited ? 'secondary' : 'default'}
-                            >
-                              {visited ? (
-                                <>
-                                  <CheckCircle2 className="w-4 h-4 mr-2" />
-                                  {t('country.visited')}
-                                </>
-                              ) : (
-                                `Check-in (+${place.points} pts)`
-                              )}
-                            </Button>
-                          </CardFooter>
+                            ) : (
+                              <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center cursor-pointer" onClick={() => navigate(`/place/${place.id}`)}>
+                                <MapPin className="w-16 h-16 text-primary" />
+                              </div>
+                            )}
+                            <CardHeader className="cursor-pointer" onClick={() => navigate(`/place/${place.id}`)}>
+                              <div className="flex items-start justify-between gap-2 mb-2">
+                                <CardTitle className="flex-1">{place.name}</CardTitle>
+                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                                  <AudioImmersiveIcon 
+                                    isPremium={false}
+                                    onClick={() => toast.info('Abonnez-vous au mode Premium pour débloquer l\'audio immersif ! 👑')}
+                                  />
+                                  {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
+                                </div>
+                              </div>
+                              <CardDescription className="flex items-center gap-1">
+                                <Book className="w-3 h-3" />
+                                {place.type}
+                              </CardDescription>
+                            </CardHeader>
+                            <CardContent className="cursor-pointer" onClick={() => navigate(`/place/${place.id}`)}>
+                              <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
+                            </CardContent>
+                            <CardFooter>
+                              <Button
+                                onClick={() => navigate(`/place/${place.id}`)}
+                                className="w-full"
+                                variant={visited ? 'secondary' : 'default'}
+                              >
+                                {visited ? (
+                                  <>
+                                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                                    {t('country.visited')}
+                                  </>
+                                ) : (
+                                  'Voir les détails'
+                                )}
+                              </Button>
+                            </CardFooter>
                         </Card>
                       );
                     })}
