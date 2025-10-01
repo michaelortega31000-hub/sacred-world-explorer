@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp, Religion } from '@/contexts/AppContext';
+// Icons for religious symbols
 import { Church, Moon, Star as StarIcon, Flower2, Sun, Telescope, Flame, AtSign } from 'lucide-react';
 import Header from '@/components/Header';
 
