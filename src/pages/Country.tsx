@@ -19,13 +19,41 @@ const Country = () => {
   
   const places = country ? getPlacesByCountry(country) : [];
 
-  const handleVisit = (placeId: string, placeName: string, points: number) => {
-    if (!isPlaceVisited(placeId)) {
-      visitPlace(placeId, points);
-      toast.success(`${placeName} visité ! +${points} points`, {
-        description: `Total: ${userProgress.totalPoints + points} points`
-      });
+  const handleCheckIn = async (placeId: string, placeName: string, points: number) => {
+    if (isPlaceVisited(placeId)) {
+      toast.info('Vous avez déjà visité ce lieu');
+      return;
     }
+
+    // Request geolocation
+    if (!navigator.geolocation) {
+      toast.error('La géolocalisation n\'est pas supportée par votre navigateur');
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        // Geolocation successful
+        toast.info('Position validée ! Prenez une photo du lieu...');
+        
+        // Request camera access
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+          stream.getTracks().forEach(track => track.stop()); // Stop immediately, we just need permission
+          
+          // If we get here, permissions are granted
+          visitPlace(placeId, points);
+          toast.success(`${placeName} visité ! +${points} points`, {
+            description: `Total: ${userProgress.totalPoints + points} points`
+          });
+        } catch (error) {
+          toast.error('Accès à la caméra requis pour valider la visite');
+        }
+      },
+      (error) => {
+        toast.error('Géolocalisation requise pour valider la visite');
+      }
+    );
   };
 
   return (
@@ -102,7 +130,7 @@ const Country = () => {
                     </CardContent>
                     <CardFooter>
                       <Button
-                        onClick={() => handleVisit(place.id, place.name, place.points)}
+                        onClick={() => handleCheckIn(place.id, place.name, place.points)}
                         disabled={visited}
                         className="w-full"
                         variant={visited ? 'secondary' : 'default'}
@@ -113,7 +141,7 @@ const Country = () => {
                             {t('country.visited')}
                           </>
                         ) : (
-                          `${t('country.visitPlace')} (+${place.points} pts)`
+                          `Check-in (+${place.points} pts)`
                         )}
                       </Button>
                     </CardFooter>

@@ -68,7 +68,7 @@ const WorldMap = () => {
 
         <TabsContent value="map" className="flex-1 m-0 relative">
           {/* Map container */}
-          <div className="absolute inset-0">
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(36 85% 55%) 100%)' }}>
             <ComposableMap style={{ width: '100%', height: '100%' }} projectionConfig={{ scale: 160 }}>
               <ZoomableGroup>
                 <Geographies geography={geoUrl}>
@@ -79,9 +79,9 @@ const WorldMap = () => {
                         geography={geo}
                         onClick={() => navigate(`/country/${geo.properties.name}`)}
                         style={{
-                          default: { fill: 'hsl(var(--muted))', stroke: 'hsl(var(--border))', outline: 'none' },
-                          hover: { fill: 'hsl(var(--accent))', stroke: 'hsl(var(--border))', outline: 'none', cursor: 'pointer' },
-                          pressed: { fill: 'hsl(var(--primary))', stroke: 'hsl(var(--border))', outline: 'none' },
+                          default: { fill: 'hsl(155 100% 11%)', stroke: 'hsl(39 36% 93%)', strokeWidth: 0.5, outline: 'none' },
+                          hover: { fill: 'hsl(0 63% 23%)', stroke: 'hsl(39 36% 93%)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
+                          pressed: { fill: 'hsl(210 100% 20%)', stroke: 'hsl(39 36% 93%)', strokeWidth: 0.5, outline: 'none' },
                         }}
                       />
                     ))
@@ -91,15 +91,35 @@ const WorldMap = () => {
             </ComposableMap>
           </div>
 
-          {/* Countries list overlay */}
+          {/* Search bar overlay */}
           <div className="absolute top-4 left-4 right-4 md:left-auto md:w-96 bg-card/95 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-border">
-            <h2 className="text-xl font-bold text-card-foreground mb-2">
+            <h2 className="text-xl font-bold text-card-foreground mb-4">
               {t('worldMap.subtitle')}
             </h2>
-            <p className="text-sm text-muted-foreground mb-4">
-              Cliquez sur un pays dans la liste ci-dessous
-            </p>
-            <div className="max-h-64 overflow-y-auto space-y-2">
+            <input
+              type="text"
+              placeholder="Rechercher un pays..."
+              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
+              onChange={(e) => {
+                const value = e.target.value.toLowerCase();
+                const filtered = countries.filter(c => c.toLowerCase().includes(value));
+                const list = document.getElementById('countries-list');
+                if (list) {
+                  list.innerHTML = filtered.map(c => 
+                    `<button class="w-full text-left px-4 py-3 bg-background hover:bg-accent rounded-lg transition-colors country-btn" data-country="${c}">
+                      <span class="font-medium text-foreground">${c}</span>
+                    </button>`
+                  ).join('');
+                  // Re-attach event listeners
+                  list.querySelectorAll('.country-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                      navigate(`/country/${btn.getAttribute('data-country')}`);
+                    });
+                  });
+                }
+              }}
+            />
+            <div id="countries-list" className="max-h-64 overflow-y-auto space-y-2 mt-4">
               {countries.map((country) => (
                 <button
                   key={country}

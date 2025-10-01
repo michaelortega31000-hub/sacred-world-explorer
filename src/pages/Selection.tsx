@@ -57,20 +57,20 @@ const Selection = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6 flex flex-col">
+    <div className="min-h-screen p-6 flex flex-col" style={{ background: 'linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(36 85% 55%) 100%)' }}>
       <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-3">
+          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">
             {t('selection.title')}
           </h1>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-lg text-white/90 drop-shadow">
             {t('selection.subtitle')}
           </p>
         </div>
 
         <div className="mb-8 flex justify-center animate-fade-in">
           <div className="w-full max-w-xs">
-            <label className="block text-sm font-medium text-foreground mb-2">
+            <label className="block text-sm font-medium text-white mb-2 drop-shadow">
               {t('selection.language')}
             </label>
             <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
