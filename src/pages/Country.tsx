@@ -48,6 +48,15 @@ const Country = () => {
     return cityA.localeCompare(cityB);
   });
 
+  // Resolve local asset URLs via Vite to avoid broken /src paths
+  const placeImages = import.meta.glob('../assets/places/*', { eager: true, as: 'url' }) as Record<string, string>;
+  const resolveImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    const filename = url.split('/').pop() as string;
+    const match = Object.entries(placeImages).find(([path]) => path.endsWith(filename));
+    return (match?.[1] as string) || url;
+  };
+
   // Get available letters
   const availableLetters = Array.from(
     new Set(
@@ -218,8 +227,10 @@ const Country = () => {
                               onClick={() => setSelectedPlace(place)}
                             >
                               <img 
-                                src={place.imageUrl} 
+                                src={resolveImageUrl(place.imageUrl) || place.imageUrl}
                                 alt={place.name}
+                                loading="lazy"
+                                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                                 className="w-full h-full object-cover"
                               />
                               <div className="absolute top-2 right-2">
@@ -350,8 +361,10 @@ const Country = () => {
           {selectedPlace?.imageUrl && (
             <div className="w-full h-64 overflow-hidden rounded-lg">
               <img 
-                src={selectedPlace.imageUrl} 
+                src={resolveImageUrl(selectedPlace.imageUrl) || selectedPlace.imageUrl}
                 alt={selectedPlace.name}
+                loading="lazy"
+                onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                 className="w-full h-full object-cover"
               />
             </div>
