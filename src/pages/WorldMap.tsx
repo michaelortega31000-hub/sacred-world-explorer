@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Trophy, Users, Target } from 'lucide-react';
+import { ArrowLeft, Trophy, Users, Target, Maximize2, Minimize2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
@@ -17,6 +17,7 @@ const WorldMap = () => {
   const { userProgress } = useApp();
   const countries = getAllCountries();
   const [searchTerm, setSearchTerm] = useState('');
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   const handleBack = () => {
     navigate('/selection');
@@ -80,30 +81,42 @@ const WorldMap = () => {
           <Globe3D />
 
           {/* Barre de recherche overlay */}
-          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-black/80 backdrop-blur-sm p-4 rounded-xl shadow-2xl border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
-            <h2 className="text-lg font-bold mb-3 text-white flex items-center gap-2">
-              <span style={{ color: 'hsl(45 100% 51%)' }}>🌍</span>
-              {t('worldMap.subtitle')}
-            </h2>
-            <input
-              type="text"
-              placeholder="Rechercher un pays..."
-              value={searchTerm}
-              onChange={(e) => handleSearch(e.target.value)}
-              onKeyPress={(e) => {
-                if (e.key === 'Enter' && searchTerm.trim()) {
-                  const filtered = countries.filter(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
-                  if (filtered.length > 0) {
-                    navigate(`/country/${filtered[0]}`);
+          <div 
+            className={`absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm rounded-xl shadow-2xl border-2 transition-all duration-300 z-50 ${
+              isSearchExpanded ? 'w-[90%] max-w-2xl p-4' : 'w-auto px-4 py-2'
+            }`} 
+            style={{ borderColor: 'hsl(45 100% 51%)' }}
+          >
+            <div className="flex items-center gap-2">
+              {isSearchExpanded && (
+                <span style={{ color: 'hsl(45 100% 51%)' }} className="text-lg">🌍</span>
+              )}
+              <input
+                type="text"
+                placeholder={isSearchExpanded ? "Rechercher un pays..." : "🔍"}
+                value={searchTerm}
+                onChange={(e) => handleSearch(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' && searchTerm.trim()) {
+                    const filtered = countries.filter(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
+                    if (filtered.length > 0) {
+                      navigate(`/country/${filtered[0]}`);
+                    }
                   }
-                }
-              }}
-              className="w-full px-4 py-2 rounded-lg border-2 bg-black/50 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all"
-              style={{ 
-                borderColor: 'hsl(220 70% 45%)',
-                boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)'
-              }}
-            />
+                }}
+                className={`bg-transparent text-white placeholder:text-gray-400 focus:outline-none transition-all ${
+                  isSearchExpanded ? 'w-full px-2 py-1' : 'w-24 text-center'
+                }`}
+              />
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsSearchExpanded(!isSearchExpanded)}
+                className="text-white hover:bg-white/10 p-1 h-auto"
+              >
+                {isSearchExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
+              </Button>
+            </div>
           </div>
         </TabsContent>
 
