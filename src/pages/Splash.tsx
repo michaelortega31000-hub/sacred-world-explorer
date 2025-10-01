@@ -30,7 +30,7 @@ const Splash = () => {
     // Timer principal: 1.4s avant de passer à la suite
     const mainTimer = setTimeout(() => {
       setIsLoading(false);
-      navigate('/auth');
+      navigate('/traditions');
     }, 1400);
 
     // Timer skeleton: si ça charge plus de 1.6s, afficher le skeleton

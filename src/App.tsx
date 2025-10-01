@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import { AppProvider } from "./contexts/AppContext";
 import "./i18n/config";
 import Splash from "./pages/Splash";
+import Traditions from "./pages/Traditions";
 import Selection from "./pages/Selection";
 import WorldMap from "./pages/WorldMap";
 import Country from "./pages/Country";
@@ -23,6 +24,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/traditions" element={<Traditions />} />
           <Route path="/selection" element={<Selection />} />
           <Route path="/world" element={<WorldMap />} />
           <Route path="/country/:country" element={<Country />} />
