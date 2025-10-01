@@ -11,7 +11,7 @@ const TripPlannerTab = () => {
   const { userProgress, removeFromTrip, clearTrip } = useApp();
   
   const allPlaces = getAllPlaces();
-  const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces.includes(place.id));
+  const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
   
   // Group by country
   const placesByCountry = tripPlaces.reduce((acc, place) => {

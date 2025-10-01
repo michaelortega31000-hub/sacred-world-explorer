@@ -99,10 +99,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const addToTrip = (placeId: string) => {
-    if (!userProgress.tripPlaces.includes(placeId)) {
+    const currentTrip = userProgress.tripPlaces || [];
+    if (!currentTrip.includes(placeId)) {
       const newProgress = {
         ...userProgress,
-        tripPlaces: [...userProgress.tripPlaces, placeId]
+        tripPlaces: [...currentTrip, placeId]
       };
       setUserProgress(newProgress);
       localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
@@ -110,16 +111,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeFromTrip = (placeId: string) => {
+    const currentTrip = userProgress.tripPlaces || [];
     const newProgress = {
       ...userProgress,
-      tripPlaces: userProgress.tripPlaces.filter(id => id !== placeId)
+      tripPlaces: currentTrip.filter(id => id !== placeId)
     };
     setUserProgress(newProgress);
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
   };
 
   const isInTrip = (placeId: string) => {
-    return userProgress.tripPlaces.includes(placeId);
+    return userProgress.tripPlaces?.includes(placeId) ?? false;
   };
 
   const clearTrip = () => {
