@@ -3,12 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Flag, Users, Target, Maximize2, Minimize2, Calendar } from 'lucide-react';
+import { Trophy, Target, Maximize2, Minimize2, Calendar } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries } from '@/data/placesData';
-import RankingTab from '@/components/RankingTab';
-import CountryRankingTab from '@/components/CountryRankingTab';
-import ReligionRankingTab from '@/components/ReligionRankingTab';
+import RankingsTab from '@/components/RankingsTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
 import Globe3D from '@/components/Globe3D';
@@ -55,25 +53,17 @@ const WorldMap = () => {
               <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 {t('worldMap.title')}
               </TabsTrigger>
-              <TabsTrigger value="ranking" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Trophy className="w-4 h-4" />
-                {t('tabs.myRanking')}
-              </TabsTrigger>
-              <TabsTrigger value="country" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Flag className="w-4 h-4" />
-                {t('tabs.countryRanking')}
-              </TabsTrigger>
-              <TabsTrigger value="religion" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Users className="w-4 h-4" />
-                {t('tabs.religionRanking')}
+              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Calendar className="w-4 h-4" />
+                {t('tabs.tripPlanner')}
               </TabsTrigger>
               <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
               </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Calendar className="w-4 h-4" />
-                {t('tabs.tripPlanner')}
+              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Trophy className="w-4 h-4" />
+                {t('tabs.rankings')}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -120,24 +110,16 @@ const WorldMap = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="ranking" className="flex-1 m-0">
-          <RankingTab />
-        </TabsContent>
-
-        <TabsContent value="country" className="flex-1 m-0">
-          <CountryRankingTab />
-        </TabsContent>
-
-        <TabsContent value="religion" className="flex-1 m-0">
-          <ReligionRankingTab />
+        <TabsContent value="trip" className="flex-1 m-0">
+          <TripPlannerTab />
         </TabsContent>
 
         <TabsContent value="quest" className="flex-1 m-0">
           <WeeklyQuestTab />
         </TabsContent>
 
-        <TabsContent value="trip" className="flex-1 m-0">
-          <TripPlannerTab />
+        <TabsContent value="rankings" className="flex-1 m-0">
+          <RankingsTab />
         </TabsContent>
       </Tabs>
     </div>
