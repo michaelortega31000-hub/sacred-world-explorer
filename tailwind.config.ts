@@ -92,6 +92,10 @@ export default {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-10px)" }
         },
+        "twinkle": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.5" }
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -101,6 +105,7 @@ export default {
         "scale-in": "scale-in 0.3s ease-out",
         "pulse-glow": "pulse-glow 2s ease-in-out infinite",
         "float": "float 3s ease-in-out infinite",
+        "twinkle": "twinkle 200s linear infinite",
       },
     },
   },

@@ -9,9 +9,7 @@ import { getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
-import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
-
-const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
+import Globe3D from '@/components/Globe3D';
 
 const WorldMap = () => {
   const navigate = useNavigate();
@@ -78,61 +76,13 @@ const WorldMap = () => {
         </div>
 
         <TabsContent value="map" className="flex-1 m-0 relative">
-          {/* Map container - Mer bleue réaliste */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, hsl(207 74% 70%) 0%, hsl(207 84% 50%) 100%)' }}>
-            <ComposableMap 
-              style={{ width: '100%', height: '100%' }} 
-              projection="geoMercator"
-              projectionConfig={{ 
-                scale: 140,
-                center: [10, 20]
-              }}
-            >
-              <ZoomableGroup 
-                zoom={1}
-                minZoom={0.8}
-                maxZoom={8}
-                center={[10, 20]}
-              >
-                <Geographies geography={geoUrl}>
-                  {({ geographies }) =>
-                    geographies.map((geo: any) => (
-                      <Geography
-                        key={geo.rsmKey}
-                        geography={geo}
-                        onClick={() => navigate(`/country/${geo.properties.name}`)}
-                        style={{
-                          default: { 
-                            fill: '#8B7355', // Marron terre réaliste
-                            stroke: '#5D4E37', // Bordure marron foncé
-                            strokeWidth: 0.5, 
-                            outline: 'none' 
-                          },
-                          hover: { 
-                            fill: '#D4A574', // Beige doré au survol
-                            stroke: '#5D4E37', 
-                            strokeWidth: 0.8, 
-                            outline: 'none', 
-                            cursor: 'pointer' 
-                          },
-                          pressed: { 
-                            fill: 'hsl(45 100% 51%)', // OR au clic
-                            stroke: '#5D4E37', 
-                            strokeWidth: 0.8, 
-                            outline: 'none' 
-                          },
-                        }}
-                      />
-                    ))
-                  }
-                </Geographies>
-              </ZoomableGroup>
-            </ComposableMap>
-          </div>
+          {/* Globe 3D avec fond étoilé */}
+          <Globe3D />
 
-          {/* Search bar overlay - Simplifié */}
-          <div className="absolute top-4 left-4 right-4 md:left-auto md:w-96 bg-card/95 backdrop-blur-sm p-6 rounded-xl shadow-lg border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
-            <h2 className="text-xl font-bold mb-4" style={{ color: 'hsl(45 100% 51%)' }}>
+          {/* Barre de recherche overlay */}
+          <div className="absolute top-4 left-4 right-4 md:left-auto md:w-96 bg-black/80 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
+            <h2 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
+              <span style={{ color: 'hsl(45 100% 51%)' }}>🌍</span>
               {t('worldMap.subtitle')}
             </h2>
             <input
@@ -148,14 +98,12 @@ const WorldMap = () => {
                   }
                 }
               }}
-              className="w-full px-4 py-3 rounded-lg border-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+              className="w-full px-4 py-3 rounded-lg border-2 bg-black/50 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all"
               style={{ 
-                borderColor: 'hsl(220 70% 45%)'
+                borderColor: 'hsl(220 70% 45%)',
+                boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)'
               }}
             />
-            <p className="text-sm text-muted-foreground mt-3">
-              💡 Utilisez la molette pour zoomer • Cliquez pour sélectionner
-            </p>
           </div>
         </TabsContent>
 
