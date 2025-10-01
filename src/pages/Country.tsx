@@ -154,10 +154,6 @@ const Country = () => {
                 <MapPin className="w-4 h-4" />
                 {t('country.title')}
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Trophy className="w-4 h-4" />
-                Classements
-              </TabsTrigger>
               <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
@@ -165,6 +161,10 @@ const Country = () => {
               <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Calendar className="w-4 h-4" />
                 {t('tabs.tripPlanner')}
+              </TabsTrigger>
+              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Trophy className="w-4 h-4" />
+                Classements
               </TabsTrigger>
             </TabsList>
           </div>
