@@ -1,14 +1,18 @@
 import { useTranslation } from 'react-i18next';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { getAllPlaces } from '@/data/placesData';
-import { MapPin, Trash2, Calendar, Navigation } from 'lucide-react';
+import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const TripPlannerTab = () => {
   const { t } = useTranslation();
   const { userProgress, removeFromTrip, clearTrip } = useApp();
+  const [startingCity, setStartingCity] = useState<string>('');
+  const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
   
   const allPlaces = getAllPlaces();
   const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
@@ -19,6 +23,46 @@ const TripPlannerTab = () => {
     acc[place.country].push(place);
     return acc;
   }, {} as Record<string, typeof tripPlaces>);
+
+  // Get all unique cities from selected places
+  const availableCities = useMemo(() => {
+    const cities = new Set<string>();
+    tripPlaces.forEach(place => {
+      if (place.city) cities.add(`${place.city}, ${place.country}`);
+    });
+    return Array.from(cities).sort();
+  }, [tripPlaces]);
+
+  // Optimize route based on starting city
+  const optimizedRoute = useMemo(() => {
+    if (!startingCity || tripPlaces.length === 0) return [];
+    
+    const [city, country] = startingCity.split(', ');
+    const remaining = [...tripPlaces];
+    const route: typeof tripPlaces = [];
+    
+    // Start with places in the starting city
+    const startingPlaces = remaining.filter(p => p.city === city && p.country === country);
+    route.push(...startingPlaces);
+    remaining.splice(0, remaining.length, ...remaining.filter(p => !(p.city === city && p.country === country)));
+    
+    // Group remaining by city
+    while (remaining.length > 0) {
+      const placesByCity = remaining.reduce((acc, place) => {
+        const key = `${place.city}, ${place.country}`;
+        if (!acc[key]) acc[key] = [];
+        acc[key].push(place);
+        return acc;
+      }, {} as Record<string, typeof tripPlaces>);
+      
+      // Add next city's places
+      const nextCity = Object.keys(placesByCity)[0];
+      route.push(...placesByCity[nextCity]);
+      remaining.splice(0, remaining.length, ...remaining.filter(p => `${p.city}, ${p.country}` !== nextCity));
+    }
+    
+    return route;
+  }, [startingCity, tripPlaces]);
 
   const totalPoints = tripPlaces.reduce((sum, place) => sum + place.points, 0);
 
@@ -55,6 +99,109 @@ const TripPlannerTab = () => {
             </div>
           ) : (
             <div className="space-y-8">
+              {/* Route Planner Section */}
+              <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Route className="w-5 h-5 text-primary" />
+                    Planifier le parcours optimisé
+                  </CardTitle>
+                  <CardDescription>
+                    Sélectionnez votre ville de départ pour générer un itinéraire optimisé
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="flex flex-col sm:flex-row gap-4">
+                    <div className="flex-1">
+                      <label className="text-sm font-medium mb-2 block">Ville de départ</label>
+                      <Select value={startingCity} onValueChange={setStartingCity}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Choisir une ville..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {availableCities.map(city => (
+                            <SelectItem key={city} value={city}>
+                              {city}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    {startingCity && (
+                      <div className="flex items-end">
+                        <Button 
+                          onClick={() => setShowOptimizedRoute(!showOptimizedRoute)}
+                          className="gap-2"
+                        >
+                          <Navigation className="w-4 h-4" />
+                          {showOptimizedRoute ? 'Masquer' : 'Afficher'} l'itinéraire
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Optimized Route Display */}
+              {showOptimizedRoute && startingCity && optimizedRoute.length > 0 && (
+                <Card className="border-primary/30">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-primary">
+                      <Route className="w-5 h-5" />
+                      Itinéraire optimisé ({optimizedRoute.length} étapes)
+                    </CardTitle>
+                    <CardDescription>
+                      Parcours recommandé depuis {startingCity}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {optimizedRoute.map((place, index) => {
+                        const isNewCity = index === 0 || 
+                          `${place.city}, ${place.country}` !== `${optimizedRoute[index-1]?.city}, ${optimizedRoute[index-1]?.country}`;
+                        
+                        return (
+                          <div key={place.id}>
+                            {isNewCity && (
+                              <div className="flex items-center gap-2 mb-3 mt-2">
+                                <Navigation className="w-4 h-4 text-secondary" />
+                                <span className="font-bold text-secondary">
+                                  {place.city}, {place.country}
+                                </span>
+                              </div>
+                            )}
+                            <div className="flex items-start gap-4 ml-6">
+                              <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                                {index + 1}
+                              </div>
+                              <div className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                                {place.imageUrl && (
+                                  <img 
+                                    src={place.imageUrl} 
+                                    alt={place.name}
+                                    className="w-16 h-16 object-cover rounded"
+                                  />
+                                )}
+                                <div className="flex-1">
+                                  <h4 className="font-semibold">{place.name}</h4>
+                                  <p className="text-sm text-muted-foreground line-clamp-1">
+                                    {place.description}
+                                  </p>
+                                  <Badge variant="outline" className="mt-1">{place.points} pts</Badge>
+                                </div>
+                                {index < optimizedRoute.length - 1 && (
+                                  <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Card>
