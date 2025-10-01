@@ -65,6 +65,26 @@ export const mockPlaces: Place[] = [
     coordinates: [4.0342, 49.2539],
     imageUrl: '/src/assets/places/reims-cathedral.jpg'
   },
+  {
+    id: 'fra-7',
+    name: 'Cathédrale Saint-Étienne de Toulouse',
+    country: 'France',
+    type: 'Cathédrale',
+    description: 'Cathédrale unique par son architecture composite mêlant roman méridional (XIe) et gothique rayonnant (XIIIe-XVIIe). Édifice inachevé à l\'histoire mouvementée, elle présente une nef romane en brique toulousaine et un chœur gothique monumental dévié de 11°. Siège épiscopal de Toulouse depuis le Ve siècle, elle témoigne de l\'évolution architecturale sur 900 ans. Ses dimensions impressionnantes (90m de long, voûtes à 28m) et sa rose du transept nord font d\'elle un chef-d\'œuvre méconnu du Midi. Lieu spirituel majeur de l\'Occitanie.',
+    points: 55,
+    coordinates: [1.4492, 43.6005],
+    imageUrl: '/src/assets/places/toulouse-st-etienne.jpg'
+  },
+  {
+    id: 'fra-8',
+    name: 'Basilique Saint-Sernin de Toulouse',
+    country: 'France',
+    type: 'Basilique',
+    description: 'Plus grande église romane conservée d\'Europe (1080-1120), Saint-Sernin est joyau de l\'art roman méridional sur le chemin de Saint-Jacques-de-Compostelle. Son clocher octogonal en brique (64m, 5 étages) domine Toulouse. Construite pour accueillir pèlerins, elle abrite reliques de 128 saints dont Saint Sernin, premier évêque de Toulouse martyrisé vers 250. Architecture en croix latine avec 260 chapiteaux sculptés, crypte unique en France. Patrimoine UNESCO, elle symbolise architecture romane languedocienne, pèlerinage médiéval et rayonnement spirituel toulousain.',
+    points: 60,
+    coordinates: [1.4418, 43.6084],
+    imageUrl: '/src/assets/places/toulouse-st-sernin.jpg'
+  },
   
   // Italy
   {
