@@ -1,10 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { ArrowLeft, MapPin, Trophy, Users, Target, CheckCircle2, Book } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, Place } from '@/contexts/AppContext';
 import { getPlacesByCountry } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
@@ -17,6 +19,7 @@ const Country = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { visitPlace, isPlaceVisited, userProgress } = useApp();
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   
   const places = country ? getPlacesByCountry(country) : [];
 
@@ -117,7 +120,10 @@ const Country = () => {
                 return (
                   <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
                     {place.imageUrl ? (
-                      <div className="h-48 overflow-hidden">
+                      <div 
+                        className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                        onClick={() => setSelectedPlace(place)}
+                      >
                         <img 
                           src={place.imageUrl} 
                           alt={place.name}
@@ -184,6 +190,36 @@ const Country = () => {
           <WeeklyQuestTab />
         </TabsContent>
       </Tabs>
+
+      {/* Dialog pour afficher la description complète */}
+      <Dialog open={!!selectedPlace} onOpenChange={() => setSelectedPlace(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl">{selectedPlace?.name}</DialogTitle>
+            <DialogDescription className="text-base">
+              {selectedPlace?.type} • {selectedPlace?.country}
+            </DialogDescription>
+          </DialogHeader>
+          {selectedPlace?.imageUrl && (
+            <div className="w-full h-64 overflow-hidden rounded-lg">
+              <img 
+                src={selectedPlace.imageUrl} 
+                alt={selectedPlace.name}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
+          <div className="space-y-4">
+            <p className="text-base leading-relaxed">{selectedPlace?.description}</p>
+            <div className="flex items-center justify-between pt-4 border-t">
+              <span className="text-lg font-semibold" style={{ color: 'hsl(45 100% 51%)' }}>
+                🏆 {selectedPlace?.points} points
+              </span>
+              <Button onClick={() => setSelectedPlace(null)}>Fermer</Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

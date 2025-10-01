@@ -40,18 +40,20 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Chartres',
     country: 'France',
     type: 'Cathédrale',
-    description: 'Chef-d\'œuvre de l\'architecture gothique',
+    description: 'Chef-d\'œuvre absolu du gothique français (1194-1250), Chartres possède les plus beaux vitraux médiévaux au monde : 176 verrières couvrant 2600m² illuminent la nef de couleurs divines. Son labyrinthe au sol (13m) symbolise le chemin spirituel vers Jérusalem. Architecture gothique primitive parfaitement conservée, elle influença toute l\'Europe. Patrimoine UNESCO, lieu de pèlerinage marial depuis 876, elle incarne la foi médiévale, l\'art des bâtisseurs de cathédrales et la quête de lumière divine.',
     points: 60,
-    coordinates: [1.4879, 48.4472]
+    coordinates: [1.4879, 48.4472],
+    imageUrl: '/src/assets/places/chartres-cathedral.jpg'
   },
   {
     id: 'fra-5',
     name: 'Basilique du Sacré-Cœur',
     country: 'France',
     type: 'Basilique',
-    description: 'Basilique romano-byzantine dominant Paris',
+    description: 'Perchée au sommet de Montmartre à 130m, la basilique romano-byzantine (1875-1914) domine tout Paris. Construite après la défaite de 1870 comme symbole d\'espoir national, son dôme blanc en pierre de Château-Landon reste immaculé. Vue panoramique exceptionnelle sur Paris. Sa mosaïque du Christ en gloire de 480m² est l\'une des plus grandes au monde. Adoration perpétuelle depuis 1885, elle accueille 11 millions de visiteurs par an. Symbole spirituel et touristique parisien incontournable.',
     points: 55,
-    coordinates: [2.3431, 48.8867]
+    coordinates: [2.3431, 48.8867],
+    imageUrl: '/src/assets/places/sacre-coeur.jpg'
   },
   {
     id: 'fra-6',
@@ -79,9 +81,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Milan',
     country: 'Italy',
     type: 'Cathédrale',
-    description: 'Chef-d\'œuvre gothique italien',
+    description: 'Le Duomo de Milan, débuté en 1386, prit 6 siècles à compléter. Troisième plus grande église du monde, joyau gothique italien unique avec ses 3400 statues, 135 flèches et sa façade en marbre rose de Candoglia. Son toit accessible offre vue spectaculaire et proximité avec les sculptures. La statue dorée de la Madonnina (4m, 1774) culmine à 108m. Cœur spirituel et culturel milanais, elle fusionne gothique flamboyant et Renaissance italienne. 40 000 personnes peuvent s\'y rassembler.',
     points: 60,
-    coordinates: [9.1917, 45.4642]
+    coordinates: [9.1917, 45.4642],
+    imageUrl: '/src/assets/places/milan-cathedral.jpg'
   },
   {
     id: 'ita-3',
@@ -97,9 +100,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Florence',
     country: 'Italy',
     type: 'Cathédrale',
-    description: 'Le Duomo avec son dôme de Brunelleschi',
+    description: 'Santa Maria del Fiore (1296-1436) est couronnée du dôme révolutionnaire de Brunelleschi (1420-1436), chef-d\'œuvre de l\'ingénierie Renaissance : 45m de diamètre, 116m de haut, 37 000 tonnes sans échafaudage central. Sa coupole à double coque préfigure l\'architecture moderne. Façade polychrome en marbres blanc, vert et rose. Le campanile de Giotto (82m) et le Baptistère aux portes du Paradis complètent l\'ensemble. Symbole de Florence, elle incarne le génie de la Renaissance italienne.',
     points: 75,
-    coordinates: [11.2558, 43.7731]
+    coordinates: [11.2558, 43.7731],
+    imageUrl: '/src/assets/places/florence-duomo.jpg'
   },
   {
     id: 'ita-5',
@@ -136,18 +140,20 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Saint-Jacques-de-Compostelle',
     country: 'Spain',
     type: 'Cathédrale',
-    description: 'Destination finale du Chemin de Saint-Jacques',
+    description: 'Destination finale du Chemin de Saint-Jacques, l\'un des 3 plus grands pèlerinages chrétiens avec Rome et Jérusalem. Construite au XIe siècle sur le tombeau présumé de l\'apôtre Jacques, elle accueille 300 000 pèlerins par an venus de toute l\'Europe. Architecture romane et baroque spectaculaire avec sa façade de l\'Obradoiro. Le botafumeiro, encensoir géant de 80kg, se balance lors des cérémonies. Patrimoine UNESCO, cœur spirituel de la Galice et d\'une tradition millénaire de foi et de marche.',
     points: 85,
-    coordinates: [-8.5448, 42.8805]
+    coordinates: [-8.5448, 42.8805],
+    imageUrl: '/src/assets/places/santiago-compostela.jpg'
   },
   {
     id: 'esp-3',
     name: 'Mosquée-Cathédrale de Cordoue',
     country: 'Spain',
     type: 'Monument',
-    description: 'Exemple unique d\'architecture mauresque et chrétienne',
+    description: 'La Mezquita de Cordoue (785-987) est un joyau unique fusionnant architecture islamique et chrétienne. 856 colonnes créent une forêt d\'arcs bicolores rouges et blancs hypnotiques, chef-d\'œuvre omeyyade. En 1236, après la Reconquista, une cathédrale Renaissance fut insérée au centre sans détruire la mosquée. Ce palimpseste architectural raconte 1200 ans d\'histoire andalouse, de coexistence et tensions entre Islam et Christianisme. Patrimoine UNESCO, elle symbolise Al-Andalus, âge d\'or culturel et scientifique de l\'Espagne médiévale.',
     points: 95,
-    coordinates: [-4.7794, 37.8789]
+    coordinates: [-4.7794, 37.8789],
+    imageUrl: '/src/assets/places/cordoba-mosque.jpg'
   },
   {
     id: 'esp-4',
@@ -212,9 +218,10 @@ export const mockPlaces: Place[] = [
     name: 'Stonehenge',
     country: 'United Kingdom',
     type: 'Site mégalithique',
-    description: 'Monument préhistorique mystérieux',
+    description: 'Monument préhistorique énigmatique érigé entre 3000 et 2000 avant J.-C., Stonehenge est un cercle de pierres massives (jusqu\'à 25 tonnes) dont le but exact reste mystérieux : observatoire astronomique, temple solaire, site funéraire, lieu de guérison ? Aligné sur les solstices, il témoigne de connaissances astronomiques avancées néolithiques. Les pierres bleues furent transportées sur 250km depuis le Pays de Galles. Site du patrimoine UNESCO, il fascine archéologues et visiteurs par son mystère millénaire.',
     points: 80,
-    coordinates: [-1.8262, 51.1789]
+    coordinates: [-1.8262, 51.1789],
+    imageUrl: '/src/assets/places/stonehenge.jpg'
   },
   
   // Germany
@@ -355,9 +362,10 @@ export const mockPlaces: Place[] = [
     name: 'Basilique du Saint-Sépulcre',
     country: 'Israel',
     type: 'Basilique',
-    description: 'Lieu traditionnel de la crucifixion et résurrection du Christ',
+    description: 'Lieu le plus sacré du christianisme, la basilique du Saint-Sépulcre (335 après J.-C.) fut construite par l\'empereur Constantin sur le site présumé de la crucifixion, sépulture et résurrection du Christ. Détruite et reconstruite à travers les siècles, elle est partagée entre 6 confessions chrétiennes (catholiques, orthodoxes grecs, arméniens, coptes, syriaques, éthiopiens). Le calvaire, la pierre de l\'onction et l\'édicule du tombeau attirent des millions de pèlerins. Cœur spirituel de la Chrétienté.',
     points: 100,
-    coordinates: [35.2294, 31.7784]
+    coordinates: [35.2294, 31.7784],
+    imageUrl: '/src/assets/places/holy-sepulchre.jpg'
   },
   {
     id: 'isr-3',
