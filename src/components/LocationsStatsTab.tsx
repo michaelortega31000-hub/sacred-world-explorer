@@ -1,11 +1,13 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getAllPlaces } from '@/data/placesData';
-import { MapPin, Globe2, Building2, Trophy, Flag, Users } from 'lucide-react';
+import { MapPin, Globe2, Building2, Trophy, Flag, Users, ChevronRight, ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 import RankingTab from './RankingTab';
 import CountryRankingTab from './CountryRankingTab';
 import ReligionRankingTab from './ReligionRankingTab';
@@ -14,18 +16,9 @@ const LocationsStatsTab = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const allPlaces = getAllPlaces();
-
-  const handleCountryClick = (country: string) => {
-    navigate(`/country/${encodeURIComponent(country)}`);
-  };
-
-  const handleCityClick = (cityKey: string) => {
-    // Extract country from cityKey format "City, Country"
-    const country = cityKey.split(', ')[1];
-    if (country) {
-      navigate(`/country/${encodeURIComponent(country)}`);
-    }
-  };
+  
+  const [selectedContinent, setSelectedContinent] = useState<string | null>(null);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
   // Mapping des pays aux continents
   const countryToContinentMap: Record<string, string> = {
@@ -108,35 +101,63 @@ const LocationsStatsTab = () => {
   const continentStats = allPlaces.reduce((acc, place) => {
     const continent = countryToContinentMap[place.country] || 'Autre';
     if (!acc[continent]) {
-      acc[continent] = 0;
+      acc[continent] = { count: 0, countries: new Set<string>() };
     }
-    acc[continent]++;
+    acc[continent].count++;
+    acc[continent].countries.add(place.country);
     return acc;
-  }, {} as Record<string, number>);
+  }, {} as Record<string, { count: number; countries: Set<string> }>);
 
-  // Statistiques par pays
-  const countryStats = allPlaces.reduce((acc, place) => {
-    if (!acc[place.country]) {
-      acc[place.country] = 0;
+  // Statistiques par pays (filtrées par continent si sélectionné)
+  const countryStats = allPlaces
+    .filter(place => !selectedContinent || countryToContinentMap[place.country] === selectedContinent)
+    .reduce((acc, place) => {
+      if (!acc[place.country]) {
+        acc[place.country] = { count: 0, cities: new Set<string>() };
+      }
+      acc[place.country].count++;
+      acc[place.country].cities.add(place.city);
+      return acc;
+    }, {} as Record<string, { count: number; cities: Set<string> }>);
+
+  // Statistiques par ville (filtrées par pays si sélectionné)
+  const cityStats = allPlaces
+    .filter(place => !selectedCountry || place.country === selectedCountry)
+    .reduce((acc, place) => {
+      if (!acc[place.city]) {
+        acc[place.city] = 0;
+      }
+      acc[place.city]++;
+      return acc;
+    }, {} as Record<string, number>);
+
+  // Trier par ordre alphabétique
+  const sortedContinents = Object.entries(continentStats).sort((a, b) => a[0].localeCompare(b[0]));
+  const sortedCountries = Object.entries(countryStats).sort((a, b) => a[0].localeCompare(b[0]));
+  const sortedCities = Object.entries(cityStats).sort((a, b) => a[0].localeCompare(b[0]));
+
+  const handleContinentClick = (continent: string) => {
+    setSelectedContinent(continent);
+    setSelectedCountry(null);
+  };
+
+  const handleCountryClick = (country: string) => {
+    setSelectedCountry(country);
+  };
+
+  const handleCityClick = (city: string) => {
+    if (selectedCountry) {
+      navigate(`/country/${encodeURIComponent(selectedCountry)}`);
     }
-    acc[place.country]++;
-    return acc;
-  }, {} as Record<string, number>);
+  };
 
-  // Statistiques par ville
-  const cityStats = allPlaces.reduce((acc, place) => {
-    const cityKey = `${place.city}, ${place.country}`;
-    if (!acc[cityKey]) {
-      acc[cityKey] = 0;
+  const handleBack = () => {
+    if (selectedCountry) {
+      setSelectedCountry(null);
+    } else if (selectedContinent) {
+      setSelectedContinent(null);
     }
-    acc[cityKey]++;
-    return acc;
-  }, {} as Record<string, number>);
-
-  // Trier par ordre décroissant
-  const sortedContinents = Object.entries(continentStats).sort((a, b) => b[1] - a[1]);
-  const sortedCountries = Object.entries(countryStats).sort((a, b) => b[1] - a[1]);
-  const sortedCities = Object.entries(cityStats).sort((a, b) => b[1] - a[1]);
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6">
@@ -190,99 +211,111 @@ const LocationsStatsTab = () => {
             </CardContent>
           </Card>
 
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Par Continent */}
-            <Card>
-              <CardHeader>
+          {/* Navigation hiérarchique */}
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
                 <CardTitle className="flex items-center gap-2">
-                  <Globe2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
-                  Par Continent
+                  {!selectedContinent && (
+                    <>
+                      <Globe2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
+                      Continents
+                    </>
+                  )}
+                  {selectedContinent && !selectedCountry && (
+                    <>
+                      <MapPin className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
+                      Pays - {selectedContinent}
+                    </>
+                  )}
+                  {selectedCountry && (
+                    <>
+                      <Building2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
+                      Villes - {selectedCountry}
+                    </>
+                  )}
                 </CardTitle>
-                <CardDescription>
-                  {sortedContinents.length} continents
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-3">
-                    {sortedContinents.map(([continent, count]) => (
-                      <div
-                        key={continent}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                      >
-                        <span className="font-medium">{continent}</span>
-                        <Badge variant="secondary" className="text-base">
-                          {count}
-                        </Badge>
+                {(selectedContinent || selectedCountry) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleBack}
+                    className="gap-2"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Retour
+                  </Button>
+                )}
+              </div>
+              <CardDescription>
+                {!selectedContinent && `${sortedContinents.length} continents • Ordre alphabétique`}
+                {selectedContinent && !selectedCountry && `${sortedCountries.length} pays • Ordre alphabétique`}
+                {selectedCountry && `${sortedCities.length} villes • Ordre alphabétique`}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-[500px] pr-4">
+                <div className="space-y-2">
+                  {/* Liste des continents */}
+                  {!selectedContinent && sortedContinents.map(([continent, data]) => (
+                    <div
+                      key={continent}
+                      onClick={() => handleContinentClick(continent)}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Globe2 className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        <div>
+                          <p className="font-semibold">{continent}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {data.countries.size} pays • {data.count} lieux
+                          </p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    </div>
+                  ))}
 
-            {/* Par Pays */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <MapPin className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
-                  Par Pays
-                </CardTitle>
-                <CardDescription>
-                  {sortedCountries.length} pays
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-2">
-                    {sortedCountries.map(([country, count]) => (
-                      <div
-                        key={country}
-                        onClick={() => handleCountryClick(country)}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
-                      >
-                        <span className="text-sm hover:underline">{country}</span>
-                        <Badge variant="outline">
-                          {count}
-                        </Badge>
+                  {/* Liste des pays */}
+                  {selectedContinent && !selectedCountry && sortedCountries.map(([country, data]) => (
+                    <div
+                      key={country}
+                      onClick={() => handleCountryClick(country)}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <MapPin className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        <div>
+                          <p className="font-semibold">{country}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {data.cities.size} villes • {data.count} lieux
+                          </p>
+                        </div>
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
+                      <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                    </div>
+                  ))}
 
-            {/* Par Ville */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
-                  Par Ville
-                </CardTitle>
-                <CardDescription>
-                  {sortedCities.length} villes
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ScrollArea className="h-[400px] pr-4">
-                  <div className="space-y-2">
-                    {sortedCities.map(([city, count]) => (
-                      <div
-                        key={city}
-                        onClick={() => handleCityClick(city)}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
-                      >
-                        <span className="text-sm hover:underline">{city}</span>
-                        <Badge variant="outline">
-                          {count}
-                        </Badge>
+                  {/* Liste des villes */}
+                  {selectedCountry && sortedCities.map(([city, count]) => (
+                    <div
+                      key={city}
+                      onClick={() => handleCityClick(city)}
+                      className="flex items-center justify-between p-4 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer group"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Building2 className="w-5 h-5 text-muted-foreground group-hover:text-foreground transition-colors" />
+                        <p className="font-medium">{city}</p>
                       </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              </CardContent>
-            </Card>
-          </div>
+                      <Badge variant="secondary" className="text-base">
+                        {count} {count > 1 ? 'lieux' : 'lieu'}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="personal">
