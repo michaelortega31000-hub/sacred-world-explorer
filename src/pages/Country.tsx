@@ -5,10 +5,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MapPin, Trophy, Users, Target, CheckCircle2, Book } from 'lucide-react';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { getPlacesByCountry } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
+import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
@@ -84,6 +85,10 @@ const Country = () => {
               <TabsTrigger value="ranking" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Trophy className="w-4 h-4" />
                 {t('tabs.myRanking')}
+              </TabsTrigger>
+              <TabsTrigger value="country" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Flag className="w-4 h-4" />
+                {t('tabs.countryRanking')}
               </TabsTrigger>
               <TabsTrigger value="religion" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Users className="w-4 h-4" />
@@ -172,6 +177,10 @@ const Country = () => {
 
         <TabsContent value="ranking" className="flex-1 m-0">
           <RankingTab />
+        </TabsContent>
+
+        <TabsContent value="country" className="flex-1 m-0">
+          <CountryRankingTab />
         </TabsContent>
 
         <TabsContent value="religion" className="flex-1 m-0">

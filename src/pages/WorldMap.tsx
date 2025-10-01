@@ -3,10 +3,11 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Users, Target, Maximize2, Minimize2 } from 'lucide-react';
+import { Trophy, Flag, Users, Target, Maximize2, Minimize2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
+import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import Globe3D from '@/components/Globe3D';
@@ -56,6 +57,10 @@ const WorldMap = () => {
               <TabsTrigger value="ranking" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Trophy className="w-4 h-4" />
                 {t('tabs.myRanking')}
+              </TabsTrigger>
+              <TabsTrigger value="country" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Flag className="w-4 h-4" />
+                {t('tabs.countryRanking')}
               </TabsTrigger>
               <TabsTrigger value="religion" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Users className="w-4 h-4" />
@@ -112,6 +117,10 @@ const WorldMap = () => {
 
         <TabsContent value="ranking" className="flex-1 m-0">
           <RankingTab />
+        </TabsContent>
+
+        <TabsContent value="country" className="flex-1 m-0">
+          <CountryRankingTab />
         </TabsContent>
 
         <TabsContent value="religion" className="flex-1 m-0">

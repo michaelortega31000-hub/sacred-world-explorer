@@ -36,6 +36,7 @@ const resources = {
       },
       tabs: {
         myRanking: 'Mon classement',
+        countryRanking: 'Classement par pays',
         religionRanking: 'Classement par religion',
         weeklyQuest: 'Quête de la semaine'
       },
@@ -80,6 +81,7 @@ const resources = {
       },
       tabs: {
         myRanking: 'My Ranking',
+        countryRanking: 'Country Rankings',
         religionRanking: 'Religion Rankings',
         weeklyQuest: 'Weekly Quest'
       },
@@ -124,6 +126,7 @@ const resources = {
       },
       tabs: {
         myRanking: 'Mi Clasificación',
+        countryRanking: 'Clasificación por País',
         religionRanking: 'Clasificación por Religión',
         weeklyQuest: 'Misión Semanal'
       },
@@ -168,6 +171,7 @@ const resources = {
       },
       tabs: {
         myRanking: 'La Mia Classifica',
+        countryRanking: 'Classifica per Paese',
         religionRanking: 'Classifica per Religione',
         weeklyQuest: 'Missione Settimanale'
       },
@@ -212,6 +216,7 @@ const resources = {
       },
       tabs: {
         myRanking: 'Meine Rangliste',
+        countryRanking: 'Rangliste nach Land',
         religionRanking: 'Rangliste nach Religion',
         weeklyQuest: 'Wöchentliche Quest'
       },
@@ -256,6 +261,7 @@ const resources = {
       },
       tabs: {
         myRanking: 'Minha Classificação',
+        countryRanking: 'Classificação por País',
         religionRanking: 'Classificação por Religião',
         weeklyQuest: 'Missão Semanal'
       },
@@ -300,6 +306,7 @@ const resources = {
       },
       tabs: {
         myRanking: 'ترتيبي',
+        countryRanking: 'الترتيب حسب البلد',
         religionRanking: 'الترتيب حسب الديانة',
         weeklyQuest: 'المهمة الأسبوعية'
       },
