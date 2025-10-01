@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp, Religion } from '@/contexts/AppContext';
 // Icons for religious symbols
-import { Church, Moon, Star as StarIcon, Flower2, Sun, Telescope, Flame, AtSign } from 'lucide-react';
-import Header from '@/components/Header';
+import { Church, Moon, Star as StarIcon, Sparkles, Flame as FlameIcon, Telescope, Flame, AtSign } from 'lucide-react';
 
 interface ReligionBubble {
   id: Religion;
@@ -16,10 +15,10 @@ interface ReligionBubble {
 
 const religions: ReligionBubble[] = [
   { id: 'christianity', icon: <Church className="w-8 h-8" />, color: 'bg-secondary hover:bg-secondary/90' },
-  { id: 'islam', icon: <Moon className="w-8 h-8" />, color: 'bg-[hsl(var(--sacred-blue))] hover:bg-[hsl(var(--sacred-blue-dark))]' },
+  { id: 'islam', icon: <Moon className="w-8 h-8" />, color: 'bg-[hsl(142_76%_36%)] hover:bg-[hsl(142_76%_26%)]' },
   { id: 'judaism', icon: <StarIcon className="w-8 h-8" />, color: 'bg-primary hover:bg-[hsl(var(--sacred-gold-dark))]' },
-  { id: 'buddhism', icon: <Flower2 className="w-8 h-8" />, color: 'bg-[hsl(48_100%_65%)] hover:bg-[hsl(48_95%_55%)]' },
-  { id: 'hinduism', icon: <Sun className="w-8 h-8" />, color: 'bg-accent hover:bg-accent/90' },
+  { id: 'buddhism', icon: <Sparkles className="w-8 h-8" />, color: 'bg-[hsl(25_95%_53%)] hover:bg-[hsl(25_95%_43%)]' },
+  { id: 'hinduism', icon: <FlameIcon className="w-8 h-8" />, color: 'bg-accent hover:bg-accent/90' },
   { id: 'astronomy', icon: <Telescope className="w-8 h-8" />, color: 'bg-[hsl(250_70%_50%)] hover:bg-[hsl(250_70%_40%)]' },
   { id: 'traditional', icon: <Flame className="w-8 h-8" />, color: 'bg-[hsl(30_85%_50%)] hover:bg-[hsl(30_85%_40%)]' },
   { id: 'atheism', icon: <AtSign className="w-8 h-8" />, color: 'bg-muted-foreground hover:bg-muted-foreground/80' }
@@ -61,8 +60,7 @@ const Selection = () => {
 
   return (
     <div className="min-h-screen p-6 flex flex-col bg-gradient-to-br from-background via-[hsl(var(--sacred-blue-light))] to-[hsl(var(--sacred-red-light))]">
-      <Header showBack backTo="/" backLabel="Retour" transparent />
-      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
+      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center">
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-foreground mb-3 drop-shadow-lg">
             {t('selection.title')}
