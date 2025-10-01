@@ -6,6 +6,7 @@ export interface Place {
   id: string;
   name: string;
   country: string;
+  city?: string;
   type: string;
   description: string;
   points: number;

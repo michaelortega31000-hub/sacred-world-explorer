@@ -111,67 +111,93 @@ const Country = () => {
               {places.length} {places.length === 1 ? 'lieu sacré' : 'lieux sacrés'}
             </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {places.map((place) => {
-                const visited = isPlaceVisited(place.id);
-                return (
-                  <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
-                    {place.imageUrl ? (
-                      <div 
-                        className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                        onClick={() => setSelectedPlace(place)}
-                      >
-                        <img 
-                          src={place.imageUrl} 
-                          alt={place.name}
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ) : (
-                      <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                        <MapPin className="w-16 h-16 text-primary" />
-                      </div>
-                    )}
-                    <CardHeader>
-                      <div className="flex items-start justify-between gap-2 mb-2">
-                        <CardTitle className="flex-1">{place.name}</CardTitle>
-                        <div className="flex items-center gap-2">
-                          <AudioImmersiveIcon 
-                            isPremium={false}
-                            onClick={() => toast.info('Abonnez-vous au mode Premium pour débloquer l\'audio immersif ! 👑')}
-                          />
-                          {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
-                        </div>
-                      </div>
-                      <CardDescription className="flex items-center gap-1">
-                        <Book className="w-3 h-3" />
-                        {place.type}
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
-                    </CardContent>
-                    <CardFooter>
-                      <Button
-                        onClick={() => handleCheckIn(place.id, place.name, place.points)}
-                        disabled={visited}
-                        className="w-full"
-                        variant={visited ? 'secondary' : 'default'}
-                      >
-                        {visited ? (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 mr-2" />
-                            {t('country.visited')}
-                          </>
-                        ) : (
-                          `Check-in (+${place.points} pts)`
-                        )}
-                      </Button>
-                    </CardFooter>
-                  </Card>
-                );
-              })}
-            </div>
+            {/* Group places by city */}
+            {Object.entries(
+              places.reduce((acc, place) => {
+                const city = place.city || 'Autres';
+                if (!acc[city]) acc[city] = [];
+                acc[city].push(place);
+                return acc;
+              }, {} as Record<string, Place[]>)
+            )
+              .sort(([cityA], [cityB]) => {
+                if (cityA === 'Autres') return 1;
+                if (cityB === 'Autres') return -1;
+                return cityA.localeCompare(cityB);
+              })
+              .map(([city, cityPlaces]) => (
+                <div key={city} className="mb-12">
+                  <div className="flex items-center gap-2 mb-6">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    <h2 className="text-2xl font-bold text-foreground">{city}</h2>
+                    <span className="text-sm text-muted-foreground">
+                      ({cityPlaces.length} {cityPlaces.length === 1 ? 'lieu' : 'lieux'})
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {cityPlaces.map((place) => {
+                      const visited = isPlaceVisited(place.id);
+                      return (
+                        <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
+                          {place.imageUrl ? (
+                            <div 
+                              className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                              onClick={() => setSelectedPlace(place)}
+                            >
+                              <img 
+                                src={place.imageUrl} 
+                                alt={place.name}
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
+                          ) : (
+                            <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                              <MapPin className="w-16 h-16 text-primary" />
+                            </div>
+                          )}
+                          <CardHeader>
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <CardTitle className="flex-1">{place.name}</CardTitle>
+                              <div className="flex items-center gap-2">
+                                <AudioImmersiveIcon 
+                                  isPremium={false}
+                                  onClick={() => toast.info('Abonnez-vous au mode Premium pour débloquer l\'audio immersif ! 👑')}
+                                />
+                                {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
+                              </div>
+                            </div>
+                            <CardDescription className="flex items-center gap-1">
+                              <Book className="w-3 h-3" />
+                              {place.type}
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
+                          </CardContent>
+                          <CardFooter>
+                            <Button
+                              onClick={() => handleCheckIn(place.id, place.name, place.points)}
+                              disabled={visited}
+                              className="w-full"
+                              variant={visited ? 'secondary' : 'default'}
+                            >
+                              {visited ? (
+                                <>
+                                  <CheckCircle2 className="w-4 h-4 mr-2" />
+                                  {t('country.visited')}
+                                </>
+                              ) : (
+                                `Check-in (+${place.points} pts)`
+                              )}
+                            </Button>
+                          </CardFooter>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
           </div>
         </TabsContent>
 
