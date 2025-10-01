@@ -21,8 +21,7 @@ const WorldMap = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   const handleBack = () => {
-    if (window.history.length > 1) navigate(-1);
-    else navigate('/selection');
+    navigate('/selection');
   };
 
   const handleSearch = (value: string) => {
