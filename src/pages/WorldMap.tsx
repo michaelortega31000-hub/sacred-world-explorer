@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Trophy, Users, Target } from 'lucide-react';
@@ -17,10 +18,21 @@ const WorldMap = () => {
   const { t } = useTranslation();
   const { userProgress } = useApp();
   const countries = getAllCountries();
+  const [searchTerm, setSearchTerm] = useState('');
 
   const handleBack = () => {
     if (window.history.length > 1) navigate(-1);
     else navigate('/selection');
+  };
+
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    if (value.trim()) {
+      const filtered = countries.filter(c => c.toLowerCase().includes(value.toLowerCase()));
+      if (filtered.length === 1) {
+        navigate(`/country/${filtered[0]}`);
+      }
+    }
   };
 
   return (
@@ -67,10 +79,22 @@ const WorldMap = () => {
         </div>
 
         <TabsContent value="map" className="flex-1 m-0 relative">
-          {/* Map container */}
-          <div className="absolute inset-0" style={{ background: 'linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(36 85% 55%) 100%)' }}>
-            <ComposableMap style={{ width: '100%', height: '100%' }} projectionConfig={{ scale: 160 }}>
-              <ZoomableGroup>
+          {/* Map container - Mer bleue réaliste */}
+          <div className="absolute inset-0" style={{ background: 'linear-gradient(180deg, hsl(207 74% 70%) 0%, hsl(207 84% 50%) 100%)' }}>
+            <ComposableMap 
+              style={{ width: '100%', height: '100%' }} 
+              projection="geoMercator"
+              projectionConfig={{ 
+                scale: 140,
+                center: [10, 20]
+              }}
+            >
+              <ZoomableGroup 
+                zoom={1}
+                minZoom={0.8}
+                maxZoom={8}
+                center={[10, 20]}
+              >
                 <Geographies geography={geoUrl}>
                   {({ geographies }) =>
                     geographies.map((geo: any) => (
@@ -79,9 +103,25 @@ const WorldMap = () => {
                         geography={geo}
                         onClick={() => navigate(`/country/${geo.properties.name}`)}
                         style={{
-                          default: { fill: 'hsl(155 100% 11%)', stroke: 'hsl(39 36% 93%)', strokeWidth: 0.5, outline: 'none' },
-                          hover: { fill: 'hsl(0 63% 23%)', stroke: 'hsl(39 36% 93%)', strokeWidth: 0.5, outline: 'none', cursor: 'pointer' },
-                          pressed: { fill: 'hsl(210 100% 20%)', stroke: 'hsl(39 36% 93%)', strokeWidth: 0.5, outline: 'none' },
+                          default: { 
+                            fill: '#8B7355', // Marron terre réaliste
+                            stroke: '#5D4E37', // Bordure marron foncé
+                            strokeWidth: 0.5, 
+                            outline: 'none' 
+                          },
+                          hover: { 
+                            fill: '#D4A574', // Beige doré au survol
+                            stroke: '#5D4E37', 
+                            strokeWidth: 0.8, 
+                            outline: 'none', 
+                            cursor: 'pointer' 
+                          },
+                          pressed: { 
+                            fill: 'hsl(45 100% 51%)', // OR au clic
+                            stroke: '#5D4E37', 
+                            strokeWidth: 0.8, 
+                            outline: 'none' 
+                          },
                         }}
                       />
                     ))
@@ -91,45 +131,32 @@ const WorldMap = () => {
             </ComposableMap>
           </div>
 
-          {/* Search bar overlay */}
-          <div className="absolute top-4 left-4 right-4 md:left-auto md:w-96 bg-card/95 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-border">
-            <h2 className="text-xl font-bold text-card-foreground mb-4">
+          {/* Search bar overlay - Simplifié */}
+          <div className="absolute top-4 left-4 right-4 md:left-auto md:w-96 bg-card/95 backdrop-blur-sm p-6 rounded-xl shadow-lg border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
+            <h2 className="text-xl font-bold mb-4" style={{ color: 'hsl(45 100% 51%)' }}>
               {t('worldMap.subtitle')}
             </h2>
             <input
               type="text"
               placeholder="Rechercher un pays..."
-              className="w-full px-4 py-3 rounded-lg border border-border bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary"
-              onChange={(e) => {
-                const value = e.target.value.toLowerCase();
-                const filtered = countries.filter(c => c.toLowerCase().includes(value));
-                const list = document.getElementById('countries-list');
-                if (list) {
-                  list.innerHTML = filtered.map(c => 
-                    `<button class="w-full text-left px-4 py-3 bg-background hover:bg-accent rounded-lg transition-colors country-btn" data-country="${c}">
-                      <span class="font-medium text-foreground">${c}</span>
-                    </button>`
-                  ).join('');
-                  // Re-attach event listeners
-                  list.querySelectorAll('.country-btn').forEach(btn => {
-                    btn.addEventListener('click', () => {
-                      navigate(`/country/${btn.getAttribute('data-country')}`);
-                    });
-                  });
+              value={searchTerm}
+              onChange={(e) => handleSearch(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && searchTerm.trim()) {
+                  const filtered = countries.filter(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
+                  if (filtered.length > 0) {
+                    navigate(`/country/${filtered[0]}`);
+                  }
                 }
               }}
+              className="w-full px-4 py-3 rounded-lg border-2 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary transition-all"
+              style={{ 
+                borderColor: 'hsl(220 70% 45%)'
+              }}
             />
-            <div id="countries-list" className="max-h-64 overflow-y-auto space-y-2 mt-4">
-              {countries.map((country) => (
-                <button
-                  key={country}
-                  onClick={() => navigate(`/country/${country}`)}
-                  className="w-full text-left px-4 py-3 bg-background hover:bg-accent rounded-lg transition-colors"
-                >
-                  <span className="font-medium text-foreground">{country}</span>
-                </button>
-              ))}
-            </div>
+            <p className="text-sm text-muted-foreground mt-3">
+              💡 Utilisez la molette pour zoomer • Cliquez pour sélectionner
+            </p>
           </div>
         </TabsContent>
 
