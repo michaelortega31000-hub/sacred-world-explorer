@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
-export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'traditional' | 'atheism';
+export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
 export interface Place {
   id: string;

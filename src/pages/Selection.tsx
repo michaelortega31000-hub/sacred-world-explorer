@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp, Religion } from '@/contexts/AppContext';
-import { Cross, Moon, Star, Flower2, AtSign, Sun, Users } from 'lucide-react';
+import { Cross, Moon, Star, Flower2, AtSign, Sun, Users, Telescope, ArrowLeft } from 'lucide-react';
 
 interface ReligionBubble {
   id: Religion;
@@ -13,13 +13,14 @@ interface ReligionBubble {
 }
 
 const religions: ReligionBubble[] = [
-  { id: 'christianity', icon: <Cross className="w-8 h-8" />, color: 'bg-primary hover:bg-primary/90' },
-  { id: 'islam', icon: <Moon className="w-8 h-8" />, color: 'bg-accent hover:bg-accent/90' },
-  { id: 'judaism', icon: <Star className="w-8 h-8" />, color: 'bg-secondary hover:bg-secondary/90' },
-  { id: 'buddhism', icon: <Flower2 className="w-8 h-8" />, color: 'bg-primary hover:bg-primary/80' },
-  { id: 'hinduism', icon: <Sun className="w-8 h-8" />, color: 'bg-accent hover:bg-accent/80' },
-  { id: 'traditional', icon: <Users className="w-8 h-8" />, color: 'bg-secondary hover:bg-secondary/80' },
-  { id: 'atheism', icon: <AtSign className="w-8 h-8" />, color: 'bg-muted hover:bg-muted/90' }
+  { id: 'christianity', icon: <Cross className="w-8 h-8" />, color: 'bg-blue-500 hover:bg-blue-600' },
+  { id: 'islam', icon: <Moon className="w-8 h-8" />, color: 'bg-green-500 hover:bg-green-600' },
+  { id: 'judaism', icon: <Star className="w-8 h-8" />, color: 'bg-yellow-500 hover:bg-yellow-600' },
+  { id: 'buddhism', icon: <Flower2 className="w-8 h-8" />, color: 'bg-orange-500 hover:bg-orange-600' },
+  { id: 'hinduism', icon: <Sun className="w-8 h-8" />, color: 'bg-red-500 hover:bg-red-600' },
+  { id: 'astronomy', icon: <Telescope className="w-8 h-8" />, color: 'bg-purple-500 hover:bg-purple-600' },
+  { id: 'traditional', icon: <Users className="w-8 h-8" />, color: 'bg-amber-600 hover:bg-amber-700' },
+  { id: 'atheism', icon: <AtSign className="w-8 h-8" />, color: 'bg-gray-500 hover:bg-gray-600' }
 ];
 
 const languages = [
@@ -59,6 +60,16 @@ const Selection = () => {
   return (
     <div className="min-h-screen p-6 flex flex-col" style={{ background: 'linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(36 85% 55%) 100%)' }}>
       <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
+        <div className="mb-8 animate-fade-in">
+          <Button
+            variant="ghost"
+            onClick={() => navigate('/')}
+            className="gap-2 text-white hover:bg-white/10 mb-4"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Retour
+          </Button>
+        </div>
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">
             {t('selection.title')}

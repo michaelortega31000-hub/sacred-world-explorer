@@ -183,18 +183,20 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Canterbury',
     country: 'United Kingdom',
     type: 'Cathédrale',
-    description: 'Siège de l\'Église anglicane',
+    description: 'Fondée en 597, Canterbury est le siège de l\'Église anglicane et primat de toute l\'Angleterre. Le meurtre de Thomas Becket en 1170 en fit un lieu de pèlerinage majeur médiéval. Architecture gothique perpendiculaire spectaculaire, vitraux remarquables et crypte romane. Couronnement spirituel de la monarchie britannique. Site du patrimoine mondial UNESCO, elle incarne 1400 ans d\'histoire chrétienne anglaise et demeure centre spirituel de 85 millions d\'anglicans worldwide.',
     points: 70,
-    coordinates: [1.0831, 51.2799]
+    coordinates: [1.0831, 51.2799],
+    imageUrl: '/src/assets/places/canterbury-cathedral.jpg'
   },
   {
     id: 'uk-2',
     name: 'Abbaye de Westminster',
     country: 'United Kingdom',
     type: 'Abbaye',
-    description: 'Lieu de couronnement des monarques britanniques',
+    description: 'Édifiée en 1065 par Édouard le Confesseur, Westminster est le théâtre des couronnements royaux britanniques depuis 1066. 39 monarques y furent couronnés. Gothique anglais exceptionnel avec ses voûtes culminant à 31m. Sépultures de 17 rois, reines, et illustres personnages (Darwin, Newton, Dickens). Le mariage du Prince William en 2011 y fut célébré. Monument national britannique par excellence, elle symbolise 1000 ans de monarchie et de pouvoir.',
     points: 75,
-    coordinates: [-0.1275, 51.4995]
+    coordinates: [-0.1275, 51.4995],
+    imageUrl: '/src/assets/places/westminster-abbey.jpg'
   },
   {
     id: 'uk-3',
@@ -391,18 +393,20 @@ export const mockPlaces: Place[] = [
     name: 'La Mecque - Masjid al-Haram',
     country: 'Saudi Arabia',
     type: 'Mosquée',
-    description: 'Lieu le plus sacré de l\'Islam',
+    description: 'Lieu le plus sacré de l\'Islam, La Mecque abrite la Kaaba, cube noir vers lequel 1,8 milliard de musulmans prient 5 fois par jour. Construite selon la tradition par Abraham et Ismaël, elle fut purifiée par Mohammed en 630. Le Hajj (pèlerinage) est le 5ème pilier de l\'Islam, obligatoire une fois dans sa vie. 2-3 millions de fidèles s\'y rassemblent annuellement. Interdite aux non-musulmans, elle est le cœur spirituel absolu de l\'Oumma islamique mondiale.',
     points: 150,
-    coordinates: [39.8262, 21.4225]
+    coordinates: [39.8262, 21.4225],
+    imageUrl: '/src/assets/places/mecca-kaaba.jpg'
   },
   {
     id: 'sau-2',
     name: 'Médine - Mosquée du Prophète',
     country: 'Saudi Arabia',
     type: 'Mosquée',
-    description: 'Deuxième lieu saint de l\'Islam',
+    description: 'Deuxième lieu saint de l\'Islam après La Mecque, Médine accueille la Mosquée du Prophète construite en 622. Mohammed y vécut, y pria et y fut enterré sous le dôme vert emblématique. Lieu d\'exil (Hégire) marquant le début du calendrier islamique. La mosquée peut accueillir 1 million de fidèles. Ville interdite aux non-musulmans, lieu de paix et de méditation. Visiter Médine après La Mecque est un honneur pour tout musulman pieux.',
     points: 120,
-    coordinates: [39.6111, 24.4672]
+    coordinates: [39.6111, 24.4672],
+    imageUrl: '/src/assets/places/medina-mosque.jpg'
   },
   
   // Egypt
@@ -450,9 +454,10 @@ export const mockPlaces: Place[] = [
     name: 'Sainte-Sophie',
     country: 'Turkey',
     type: 'Mosquée',
-    description: 'Ancienne basilique byzantine devenue mosquée',
+    description: 'Chef-d\'œuvre absolu érigé en 537 sous Justinien, Sainte-Sophie fut la plus grande cathédrale chrétienne durant 900 ans. Son dôme de 56m révolutionna l\'architecture byzantine. Transformée en mosquée en 1453 après la conquête ottomane, elle fusionne traditions chrétienne et islamique. Ses mosaïques dorées byzantines et calligraphies islamiques coexistent. De 1935 à 2020 musée, redevenue mosquée, elle symbolise 1500 ans d\'histoire, de foi et de pouvoir à Istanbul.',
     points: 95,
-    coordinates: [28.9802, 41.0086]
+    coordinates: [28.9802, 41.0086],
+    imageUrl: '/src/assets/places/hagia-sophia.jpg'
   },
   {
     id: 'tur-2',
@@ -521,9 +526,10 @@ export const mockPlaces: Place[] = [
     name: 'Varanasi - Ghats du Gange',
     country: 'India',
     type: 'Site sacré',
-    description: 'Ville sainte de l\'hindouisme',
+    description: 'Ville la plus sainte de l\'hindouisme, Varanasi (Bénarès) a 3000 ans d\'histoire spirituelle continue. Ses 88 ghats (escaliers) mènent au Gange sacré où hindous se baignent pour purifier leur âme et karma. Mourir à Varanasi libère du cycle des réincarnations (moksha). Chaque jour, des milliers de pèlerins prient, se baignent et accomplissent des rituels. Les crémations publiques au Manikarnika Ghat incarnent le cycle vie-mort-renaissance central à l\'hindouisme. Cœur spirituel éternel de l\'Inde.',
     points: 110,
-    coordinates: [83.0047, 25.3176]
+    coordinates: [83.0047, 25.3176],
+    imageUrl: '/src/assets/places/varanasi-ghats.jpg'
   },
   {
     id: 'ind-4',
@@ -716,9 +722,10 @@ export const mockPlaces: Place[] = [
     name: 'Mont Fuji',
     country: 'Japan',
     type: 'Montagne sacrée',
-    description: 'Montagne sacrée du shintoïsme',
+    description: 'Volcan culminant à 3776m, le Fuji-san est la montagne la plus sacrée du Japon, vénérée depuis des millénaires par le shintoïsme et le bouddhisme. Symbole national absolu, source d\'inspiration artistique infinie (Hokusai). Des centaines de milliers de pèlerins gravissent ses pentes chaque été pour admirer le lever du soleil sacré. Patrimoine mondial UNESCO, il incarne la beauté, la spiritualité et l\'identité japonaises. Divinité féminine dans le shintoïsme, il est le pont entre terre et ciel.',
     points: 100,
-    coordinates: [138.7274, 35.3606]
+    coordinates: [138.7274, 35.3606],
+    imageUrl: '/src/assets/places/mount-fuji.jpg'
   },
   {
     id: 'jpn-2',
@@ -841,9 +848,10 @@ export const mockPlaces: Place[] = [
     name: 'Chichén Itzá',
     country: 'Mexico',
     type: 'Site maya',
-    description: 'Ancienne cité maya avec pyramide de Kukulcán',
+    description: 'Cité maya majeure florissante de 600 à 1200 après J.-C., Chichén Itzá fut centre politique, économique et religieux du Yucatán. La pyramide El Castillo (Temple de Kukulcán) de 24m est un calendrier maya : 365 marches, jeux d\'ombre créant un serpent lors des équinoxes. Site astronomique avancé, terrain de jeu de balle rituel, cenote sacré pour sacrifices. Nouvelle Merveille du monde moderne, patrimoine UNESCO, elle témoigne du génie mathématique, astronomique et architectural maya.',
     points: 110,
-    coordinates: [-88.5678, 20.6843]
+    coordinates: [-88.5678, 20.6843],
+    imageUrl: '/src/assets/places/chichen-itza.jpg'
   },
   {
     id: 'mex-3',
