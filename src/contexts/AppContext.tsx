@@ -20,6 +20,7 @@ export interface UserProgress {
   totalPoints: number;
   visitedPlaces: string[];
   badges: string[];
+  tripPlaces: string[];
 }
 
 interface AppContextType {
@@ -28,6 +29,10 @@ interface AppContextType {
   updateLanguage: (language: string) => void;
   visitPlace: (placeId: string, points: number) => void;
   isPlaceVisited: (placeId: string) => boolean;
+  addToTrip: (placeId: string) => void;
+  removeFromTrip: (placeId: string) => void;
+  isInTrip: (placeId: string) => boolean;
+  clearTrip: () => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -45,7 +50,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       language: 'fr',
       totalPoints: 0,
       visitedPlaces: [],
-      badges: []
+      badges: [],
+      tripPlaces: []
     };
   });
 
@@ -92,8 +98,51 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return userProgress.visitedPlaces.includes(placeId);
   };
 
+  const addToTrip = (placeId: string) => {
+    if (!userProgress.tripPlaces.includes(placeId)) {
+      const newProgress = {
+        ...userProgress,
+        tripPlaces: [...userProgress.tripPlaces, placeId]
+      };
+      setUserProgress(newProgress);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+    }
+  };
+
+  const removeFromTrip = (placeId: string) => {
+    const newProgress = {
+      ...userProgress,
+      tripPlaces: userProgress.tripPlaces.filter(id => id !== placeId)
+    };
+    setUserProgress(newProgress);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+  };
+
+  const isInTrip = (placeId: string) => {
+    return userProgress.tripPlaces.includes(placeId);
+  };
+
+  const clearTrip = () => {
+    const newProgress = {
+      ...userProgress,
+      tripPlaces: []
+    };
+    setUserProgress(newProgress);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+  };
+
   return (
-    <AppContext.Provider value={{ userProgress, updateReligion, updateLanguage, visitPlace, isPlaceVisited }}>
+    <AppContext.Provider value={{ 
+      userProgress, 
+      updateReligion, 
+      updateLanguage, 
+      visitPlace, 
+      isPlaceVisited,
+      addToTrip,
+      removeFromTrip,
+      isInTrip,
+      clearTrip
+    }}>
       {children}
     </AppContext.Provider>
   );

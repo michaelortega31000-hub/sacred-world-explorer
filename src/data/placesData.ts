@@ -1177,6 +1177,10 @@ export const getPlacesByCountry = (country: string): Place[] => {
   return mockPlaces.filter(place => place.country === country);
 };
 
+export const getAllPlaces = (): Place[] => {
+  return mockPlaces;
+};
+
 export const getPlaceById = (id: string): Place | undefined => {
   return mockPlaces.find(place => place.id === id);
 };

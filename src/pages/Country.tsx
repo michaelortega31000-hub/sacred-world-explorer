@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book } from 'lucide-react';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { getPlacesByCountry } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
+import TripPlannerTab from '@/components/TripPlannerTab';
 import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
@@ -20,7 +21,7 @@ const Country = () => {
   const { country } = useParams<{ country: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
-  const { visitPlace, isPlaceVisited, userProgress } = useApp();
+  const { visitPlace, isPlaceVisited, userProgress, addToTrip, removeFromTrip, isInTrip } = useApp();
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   
   const places = country ? getPlacesByCountry(country) : [];
@@ -98,6 +99,10 @@ const Country = () => {
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
               </TabsTrigger>
+              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Calendar className="w-4 h-4" />
+                {t('tabs.tripPlanner')}
+              </TabsTrigger>
             </TabsList>
           </div>
         </div>
@@ -138,11 +143,12 @@ const Country = () => {
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     {cityPlaces.map((place) => {
                       const visited = isPlaceVisited(place.id);
+                      const inTrip = isInTrip(place.id);
                       return (
                         <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
                           {place.imageUrl ? (
                             <div 
-                              className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
+                              className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
                               onClick={() => setSelectedPlace(place)}
                             >
                               <img 
@@ -150,6 +156,29 @@ const Country = () => {
                                 alt={place.name}
                                 className="w-full h-full object-cover"
                               />
+                              <div className="absolute top-2 right-2">
+                                <Button
+                                  size="sm"
+                                  variant={inTrip ? "default" : "secondary"}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    if (inTrip) {
+                                      removeFromTrip(place.id);
+                                      toast.success('Retiré du voyage');
+                                    } else {
+                                      addToTrip(place.id);
+                                      toast.success('Ajouté au voyage');
+                                    }
+                                  }}
+                                  className="opacity-90 group-hover:opacity-100 transition-opacity"
+                                >
+                                  {inTrip ? (
+                                    <CheckCircle2 className="w-4 h-4" />
+                                  ) : (
+                                    <Plus className="w-4 h-4" />
+                                  )}
+                                </Button>
+                              </div>
                             </div>
                           ) : (
                             <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
@@ -215,6 +244,10 @@ const Country = () => {
 
         <TabsContent value="quest" className="flex-1 m-0">
           <WeeklyQuestTab />
+        </TabsContent>
+
+        <TabsContent value="trip" className="flex-1 m-0">
+          <TripPlannerTab />
         </TabsContent>
       </Tabs>
 

@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Flag, Users, Target, Maximize2, Minimize2 } from 'lucide-react';
+import { Trophy, Flag, Users, Target, Maximize2, Minimize2, Calendar } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
+import TripPlannerTab from '@/components/TripPlannerTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 
@@ -70,6 +71,10 @@ const WorldMap = () => {
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
               </TabsTrigger>
+              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Calendar className="w-4 h-4" />
+                {t('tabs.tripPlanner')}
+              </TabsTrigger>
             </TabsList>
           </div>
         </div>
@@ -129,6 +134,10 @@ const WorldMap = () => {
 
         <TabsContent value="quest" className="flex-1 m-0">
           <WeeklyQuestTab />
+        </TabsContent>
+
+        <TabsContent value="trip" className="flex-1 m-0">
+          <TripPlannerTab />
         </TabsContent>
       </Tabs>
     </div>

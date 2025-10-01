@@ -38,7 +38,8 @@ const resources = {
         myRanking: 'Mon classement',
         countryRanking: 'Classement par pays',
         religionRanking: 'Classement par religion',
-        weeklyQuest: 'Quête de la semaine'
+        weeklyQuest: 'Quête de la semaine',
+        tripPlanner: 'Préparer son voyage'
       },
       ranking: {
         yourPoints: 'Vos points',
@@ -83,7 +84,8 @@ const resources = {
         myRanking: 'My Ranking',
         countryRanking: 'Country Rankings',
         religionRanking: 'Religion Rankings',
-        weeklyQuest: 'Weekly Quest'
+        weeklyQuest: 'Weekly Quest',
+        tripPlanner: 'Plan Your Trip'
       },
       ranking: {
         yourPoints: 'Your Points',
@@ -128,7 +130,8 @@ const resources = {
         myRanking: 'Mi Clasificación',
         countryRanking: 'Clasificación por País',
         religionRanking: 'Clasificación por Religión',
-        weeklyQuest: 'Misión Semanal'
+        weeklyQuest: 'Misión Semanal',
+        tripPlanner: 'Planificar Viaje'
       },
       ranking: {
         yourPoints: 'Tus Puntos',
@@ -173,7 +176,8 @@ const resources = {
         myRanking: 'La Mia Classifica',
         countryRanking: 'Classifica per Paese',
         religionRanking: 'Classifica per Religione',
-        weeklyQuest: 'Missione Settimanale'
+        weeklyQuest: 'Missione Settimanale',
+        tripPlanner: 'Pianifica Viaggio'
       },
       ranking: {
         yourPoints: 'I Tuoi Punti',
@@ -218,7 +222,8 @@ const resources = {
         myRanking: 'Meine Rangliste',
         countryRanking: 'Rangliste nach Land',
         religionRanking: 'Rangliste nach Religion',
-        weeklyQuest: 'Wöchentliche Quest'
+        weeklyQuest: 'Wöchentliche Quest',
+        tripPlanner: 'Reise Planen'
       },
       ranking: {
         yourPoints: 'Deine Punkte',
@@ -263,7 +268,8 @@ const resources = {
         myRanking: 'Minha Classificação',
         countryRanking: 'Classificação por País',
         religionRanking: 'Classificação por Religião',
-        weeklyQuest: 'Missão Semanal'
+        weeklyQuest: 'Missão Semanal',
+        tripPlanner: 'Planejar Viagem'
       },
       ranking: {
         yourPoints: 'Seus Pontos',
@@ -308,7 +314,8 @@ const resources = {
         myRanking: 'ترتيبي',
         countryRanking: 'الترتيب حسب البلد',
         religionRanking: 'الترتيب حسب الديانة',
-        weeklyQuest: 'المهمة الأسبوعية'
+        weeklyQuest: 'المهمة الأسبوعية',
+        tripPlanner: 'خطط رحلتك'
       },
       ranking: {
         yourPoints: 'نقاطك',
