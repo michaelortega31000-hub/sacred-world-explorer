@@ -1,6 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +17,7 @@ import TripPlannerTab from '@/components/TripPlannerTab';
 import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
+import { cn } from '@/lib/utils';
 
 const Country = () => {
   const { country } = useParams<{ country: string }>();
@@ -24,6 +25,7 @@ const Country = () => {
   const { t } = useTranslation();
   const { visitPlace, isPlaceVisited, userProgress, addToTrip, removeFromTrip, isInTrip } = useApp();
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const cityRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   const places = country ? getPlacesByCountry(country) : [];
   const allCountries = getAllCountries().sort((a, b) => {
@@ -32,8 +34,43 @@ const Country = () => {
     return nameA.localeCompare(nameB);
   });
 
+  // Group places by city
+  const citiesByLetter = Object.entries(
+    places.reduce((acc, place) => {
+      const city = place.city || 'Autres';
+      if (!acc[city]) acc[city] = [];
+      acc[city].push(place);
+      return acc;
+    }, {} as Record<string, Place[]>)
+  ).sort(([cityA], [cityB]) => {
+    if (cityA === 'Autres') return 1;
+    if (cityB === 'Autres') return -1;
+    return cityA.localeCompare(cityB);
+  });
+
+  // Get available letters
+  const availableLetters = Array.from(
+    new Set(
+      citiesByLetter
+        .map(([city]) => city[0].toUpperCase())
+        .filter(letter => letter !== 'A' || citiesByLetter.some(([city]) => city !== 'Autres'))
+    )
+  ).sort();
+
   const handleCountryChange = (newCountry: string) => {
     navigate(`/country/${newCountry}`);
+  };
+
+  const scrollToLetter = (letter: string) => {
+    const cityEntry = citiesByLetter.find(([city]) => 
+      city[0].toUpperCase() === letter && city !== 'Autres'
+    );
+    if (cityEntry && cityRefs.current[cityEntry[0]]) {
+      cityRefs.current[cityEntry[0]]?.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start' 
+      });
+    }
   };
 
   const handleCheckIn = async (placeId: string, placeName: string, points: number) => {
@@ -132,7 +169,28 @@ const Country = () => {
           </div>
         </div>
 
-        <TabsContent value="places" className="flex-1 m-0 p-6">
+        <TabsContent value="places" className="flex-1 m-0 p-6 relative">
+          {/* Alphabet Navigator */}
+          {availableLetters.length > 0 && (
+            <div className="fixed right-4 top-1/2 -translate-y-1/2 z-40 bg-card border-2 border-primary/20 rounded-full shadow-lg p-2">
+              <div className="flex flex-col gap-1">
+                {availableLetters.map((letter) => (
+                  <button
+                    key={letter}
+                    onClick={() => scrollToLetter(letter)}
+                    className={cn(
+                      "w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold transition-all",
+                      "hover:bg-primary hover:text-primary-foreground hover:scale-110",
+                      "text-foreground/70"
+                    )}
+                  >
+                    {letter}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
               {country}
@@ -142,21 +200,12 @@ const Country = () => {
             </p>
 
             {/* Group places by city */}
-            {Object.entries(
-              places.reduce((acc, place) => {
-                const city = place.city || 'Autres';
-                if (!acc[city]) acc[city] = [];
-                acc[city].push(place);
-                return acc;
-              }, {} as Record<string, Place[]>)
-            )
-              .sort(([cityA], [cityB]) => {
-                if (cityA === 'Autres') return 1;
-                if (cityB === 'Autres') return -1;
-                return cityA.localeCompare(cityB);
-              })
-              .map(([city, cityPlaces]) => (
-                <div key={city} className="mb-12">
+            {citiesByLetter.map(([city, cityPlaces]) => (
+                <div 
+                  key={city} 
+                  className="mb-12 scroll-mt-24"
+                  ref={(el) => { cityRefs.current[city] = el; }}
+                >
                   <div className="flex items-center gap-2 mb-6">
                     <MapPin className="w-5 h-5 text-primary" />
                     <h2 className="text-2xl font-bold text-foreground">{city}</h2>
