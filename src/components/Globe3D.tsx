@@ -27,7 +27,10 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       if (savedToken) {
         setMapboxToken(savedToken);
       } else {
-        setShowTokenInput(true);
+        // Token par défaut
+        const defaultToken = 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
+        setMapboxToken(defaultToken);
+        localStorage.setItem('mapbox_token', defaultToken);
       }
     }
   }, []);
