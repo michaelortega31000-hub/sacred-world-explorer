@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Check, Crown, Sparkles } from 'lucide-react';
-import logo from '@/assets/logo.png';
+import { Check, Crown, Sparkles, LogIn, UserPlus } from 'lucide-react';
+import logo from '@/assets/sacredworld-logo.jpg';
+import { supabase } from '@/integrations/supabase/client';
 
 const Splash = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -12,12 +13,20 @@ const Splash = () => {
   const { t } = useTranslation();
 
   useEffect(() => {
+    // Vérifier si l'utilisateur est déjà connecté
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/selection');
+        return;
+      }
+    });
+
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [navigate]);
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-6" style={{ background: 'linear-gradient(135deg, hsl(220 70% 45%) 0%, hsl(0 84% 48%) 100%)' }}>
@@ -39,7 +48,33 @@ const Splash = () => {
         </p>
 
         {!isLoading && (
-          <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
+          <>
+            {/* Boutons de connexion/inscription */}
+            <div className="flex flex-wrap gap-4 justify-center mb-12">
+              <Button
+                onClick={() => navigate('/auth')}
+                size="lg"
+                className="gap-2"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                  color: 'black'
+                }}
+              >
+                <LogIn className="w-5 h-5" />
+                Se connecter
+              </Button>
+              <Button
+                onClick={() => navigate('/auth')}
+                size="lg"
+                variant="outline"
+                className="gap-2 bg-white/10 border-white text-white hover:bg-white/20"
+              >
+                <UserPlus className="w-5 h-5" />
+                Créer un compte
+              </Button>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto mb-8">
             {/* Plan Basic */}
             <Card className="relative overflow-hidden border-2 border-white/20 bg-white/10 backdrop-blur-sm">
               <CardHeader>
@@ -62,7 +97,7 @@ const Splash = () => {
               </CardContent>
               <CardFooter>
                 <Button 
-                  onClick={() => navigate('/selection')}
+                  onClick={() => navigate('/auth')}
                   className="w-full bg-white text-blue-600 hover:bg-white/90"
                   size="lg"
                 >
@@ -106,7 +141,7 @@ const Splash = () => {
               </CardContent>
               <CardFooter>
                 <Button 
-                  onClick={() => navigate('/selection')}
+                  onClick={() => navigate('/auth')}
                   className="w-full bg-yellow-900 text-yellow-50 hover:bg-yellow-800"
                   size="lg"
                 >
@@ -115,6 +150,7 @@ const Splash = () => {
               </CardFooter>
             </Card>
           </div>
+          </>
         )}
 
         {isLoading && (

@@ -5,13 +5,14 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ArrowLeft, MapPin, Trophy, Users, Target, CheckCircle2, Book } from 'lucide-react';
+import { MapPin, Trophy, Users, Target, CheckCircle2, Book } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { getPlacesByCountry } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
+import Header from '@/components/Header';
 import { toast } from 'sonner';
 
 const Country = () => {
@@ -62,24 +63,15 @@ const Country = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="p-4 bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/world')}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t('worldMap.back')}
-          </Button>
-          
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
-            </div>
-          </div>
+      <Header 
+        showBack 
+        backTo="/world" 
+        backLabel={t('worldMap.back')}
+      >
+        <div className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
         </div>
-      </div>
+      </Header>
 
       <Tabs defaultValue="places" className="flex-1 flex flex-col">
         <div className="border-b border-border bg-card">

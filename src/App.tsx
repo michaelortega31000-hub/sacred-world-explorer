@@ -9,6 +9,7 @@ import Splash from "./pages/Splash";
 import Selection from "./pages/Selection";
 import WorldMap from "./pages/WorldMap";
 import Country from "./pages/Country";
+import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -21,6 +22,7 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/" element={<Splash />} />
+          <Route path="/auth" element={<Auth />} />
           <Route path="/selection" element={<Selection />} />
           <Route path="/world" element={<WorldMap />} />
           <Route path="/country/:country" element={<Country />} />

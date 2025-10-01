@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, Trophy, Users, Target, Maximize2, Minimize2 } from 'lucide-react';
+import { Trophy, Users, Target, Maximize2, Minimize2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import Globe3D from '@/components/Globe3D';
+import Header from '@/components/Header';
 
 const WorldMap = () => {
   const navigate = useNavigate();
@@ -18,10 +19,6 @@ const WorldMap = () => {
   const countries = getAllCountries();
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-
-  const handleBack = () => {
-    navigate('/selection');
-  };
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -39,23 +36,15 @@ const WorldMap = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <div className="p-4 bg-card border-b border-border">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <Button
-            variant="ghost"
-            onClick={handleBack}
-            className="gap-2"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            {t('worldMap.back')}
-          </Button>
-          <div className="flex items-center gap-4">
-            <div className="text-sm text-muted-foreground">
-              <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
-            </div>
-          </div>
+      <Header 
+        showBack 
+        backTo="/selection" 
+        backLabel={t('worldMap.back')}
+      >
+        <div className="text-sm text-muted-foreground">
+          <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
         </div>
-      </div>
+      </Header>
 
       <Tabs defaultValue="map" className="flex-1 flex flex-col">
         <div className="border-b border-border bg-card">

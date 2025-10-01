@@ -4,6 +4,7 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useNavigate } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { MapPin } from 'lucide-react';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -12,9 +13,11 @@ interface Globe3DProps {
 const Globe3D = ({ onCountryClick }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
+  const markers = useRef<mapboxgl.Marker[]>([]);
   const navigate = useNavigate();
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
+  const [showMonuments, setShowMonuments] = useState(false);
 
   useEffect(() => {
     // Essayer de récupérer depuis l'env
@@ -78,7 +81,51 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
         'space-color': '#000000',
         'star-intensity': 0.8
       });
+
+      // Charger les monuments
+      loadMonuments();
     });
+
+    // Fonction pour charger les monuments
+    const loadMonuments = () => {
+      if (!map.current) return;
+
+      // Supprimer les anciens marqueurs
+      markers.current.forEach(marker => marker.remove());
+      markers.current = [];
+
+      if (showMonuments) {
+        // Charger les données des lieux
+        import('@/data/placesData').then(({ mockPlaces }) => {
+          if (!map.current) return;
+
+          mockPlaces.forEach(place => {
+            const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
+              .setHTML(`
+                <div style="padding: 12px;">
+                  ${place.imageUrl ? `<img src="${place.imageUrl}" alt="${place.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" />` : ''}
+                  <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #1a1a1a;">${place.name}</h3>
+                  <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${place.type} • ${place.country}</p>
+                  <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #333; max-height: 150px; overflow-y: auto;">${place.description}</p>
+                  <p style="margin: 12px 0 0 0; font-size: 14px; font-weight: bold; color: hsl(45 100% 51%);">🏆 ${place.points} points</p>
+                </div>
+              `);
+
+            const marker = new mapboxgl.Marker({ color: '#FFD700' })
+              .setLngLat([place.coordinates[0], place.coordinates[1]])
+              .setPopup(popup)
+              .addTo(map.current!);
+            
+            markers.current.push(marker);
+          });
+        });
+      }
+    };
+
+    // Recharger les monuments quand le toggle change
+    if (map.current.loaded()) {
+      loadMonuments();
+    }
 
     // Ne pas afficher les marqueurs par défaut - les monuments seront visibles sur la page du pays
 
@@ -111,9 +158,10 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
 
     // Nettoyage
     return () => {
+      markers.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [navigate, mapboxToken, showTokenInput]);
+  }, [navigate, mapboxToken, showTokenInput, showMonuments]);
 
   if (showTokenInput) {
     return (
@@ -199,6 +247,21 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-full text-sm backdrop-blur-sm border border-white/20">
         🌍 Faites glisser pour tourner • Molette pour zoomer • Cliquez sur un pays
       </div>
+
+      {/* Toggle monuments button */}
+      <Button
+        onClick={() => setShowMonuments(!showMonuments)}
+        className="absolute top-4 right-4 gap-2"
+        style={{
+          background: showMonuments ? 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)' : 'rgba(0, 0, 0, 0.8)',
+          color: showMonuments ? 'black' : 'white',
+          border: '2px solid',
+          borderColor: 'hsl(45 100% 51%)'
+        }}
+      >
+        <MapPin className="w-4 h-4" />
+        {showMonuments ? 'Masquer les monuments' : 'Afficher les monuments'}
+      </Button>
     </div>
   );
 };

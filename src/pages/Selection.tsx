@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp, Religion } from '@/contexts/AppContext';
-import { Cross, Moon, Star, Flower2, AtSign, Sun, Users, Telescope, ArrowLeft } from 'lucide-react';
+import { Cross, Moon, Star, Flower2, AtSign, Sun, Users, Telescope } from 'lucide-react';
+import Header from '@/components/Header';
 
 interface ReligionBubble {
   id: Religion;
@@ -59,17 +60,8 @@ const Selection = () => {
 
   return (
     <div className="min-h-screen p-6 flex flex-col" style={{ background: 'linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(36 85% 55%) 100%)' }}>
+      <Header showBack backTo="/" backLabel="Retour" transparent />
       <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
-        <div className="mb-8 animate-fade-in">
-          <Button
-            variant="ghost"
-            onClick={() => navigate('/')}
-            className="gap-2 text-white hover:bg-white/10 mb-4"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            Retour
-          </Button>
-        </div>
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">
             {t('selection.title')}
