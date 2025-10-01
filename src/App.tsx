@@ -6,6 +6,7 @@ import { Routes, Route } from "react-router-dom";
 import { AppProvider } from "./contexts/AppContext";
 import "./i18n/config";
 import Splash from "./pages/Splash";
+import Welcome from "./pages/Welcome";
 import Traditions from "./pages/Traditions";
 import Selection from "./pages/Selection";
 import WorldMap from "./pages/WorldMap";
@@ -23,6 +24,7 @@ const App = () => (
         <Sonner />
         <Routes>
           <Route path="/" element={<Splash />} />
+          <Route path="/welcome" element={<Welcome />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/traditions" element={<Traditions />} />
           <Route path="/selection" element={<Selection />} />

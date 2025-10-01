@@ -8,6 +8,33 @@ const resources = {
         loading: 'Chargement...',
         start: 'Commencer l\'aventure'
       },
+      welcome: {
+        title: 'SacredWorld',
+        promise1: 'Des lieux sacrés du monde entier, dans ta poche.',
+        promise2: 'Explore, découvre et collectionne des badges en visitant les monuments les plus emblématiques.',
+        cta: {
+          start: 'Commencer',
+          tutorial: 'Voir comment ça marche'
+        },
+        accessibility: 'Accessible à tous • Contenu culturel neutre',
+        tutorial: {
+          step1: {
+            title: 'Explore le monde',
+            desc: 'Découvre des milliers de lieux sacrés et monuments culturels à travers le monde.'
+          },
+          step2: {
+            title: 'Collectionne des badges',
+            desc: 'Gagne des points et des badges rares en visitant des lieux et en accomplissant des quêtes.'
+          },
+          step3: {
+            title: 'Apprends et partage',
+            desc: 'Écoute des histoires fascinantes et partage tes découvertes avec la communauté.'
+          },
+          prev: 'Précédent',
+          next: 'Suivant',
+          finish: 'Commencer'
+        }
+      },
       selection: {
         title: 'Choisissez votre parcours',
         subtitle: 'Sélectionnez une religion ou une philosophie',
@@ -90,6 +117,33 @@ const resources = {
       splash: {
         loading: 'Loading...',
         start: 'Start Adventure'
+      },
+      welcome: {
+        title: 'SacredWorld',
+        promise1: 'Sacred places from around the world, in your pocket.',
+        promise2: 'Explore, discover and collect badges by visiting the most iconic monuments.',
+        cta: {
+          start: 'Get Started',
+          tutorial: 'See how it works'
+        },
+        accessibility: 'Accessible to all • Neutral cultural content',
+        tutorial: {
+          step1: {
+            title: 'Explore the world',
+            desc: 'Discover thousands of sacred places and cultural monuments around the world.'
+          },
+          step2: {
+            title: 'Collect badges',
+            desc: 'Earn points and rare badges by visiting places and completing quests.'
+          },
+          step3: {
+            title: 'Learn and share',
+            desc: 'Listen to fascinating stories and share your discoveries with the community.'
+          },
+          prev: 'Previous',
+          next: 'Next',
+          finish: 'Get Started'
+        }
       },
       selection: {
         title: 'Choose Your Path',
@@ -174,6 +228,33 @@ const resources = {
         loading: 'Cargando...',
         start: 'Comenzar Aventura'
       },
+      welcome: {
+        title: 'SacredWorld',
+        promise1: 'Lugares sagrados de todo el mundo, en tu bolsillo.',
+        promise2: 'Explora, descubre y colecciona insignias visitando los monumentos más emblemáticos.',
+        cta: {
+          start: 'Comenzar',
+          tutorial: 'Ver cómo funciona'
+        },
+        accessibility: 'Accesible para todos • Contenido cultural neutral',
+        tutorial: {
+          step1: {
+            title: 'Explora el mundo',
+            desc: 'Descubre miles de lugares sagrados y monumentos culturales de todo el mundo.'
+          },
+          step2: {
+            title: 'Colecciona insignias',
+            desc: 'Gana puntos e insignias raras visitando lugares y completando misiones.'
+          },
+          step3: {
+            title: 'Aprende y comparte',
+            desc: 'Escucha historias fascinantes y comparte tus descubrimientos con la comunidad.'
+          },
+          prev: 'Anterior',
+          next: 'Siguiente',
+          finish: 'Comenzar'
+        }
+      },
       selection: {
         title: 'Elige tu Camino',
         subtitle: 'Selecciona una religión o filosofía',
@@ -256,6 +337,33 @@ const resources = {
       splash: {
         loading: 'Caricamento...',
         start: 'Inizia Avventura'
+      },
+      welcome: {
+        title: 'SacredWorld',
+        promise1: 'Luoghi sacri da tutto il mondo, nella tua tasca.',
+        promise2: 'Esplora, scopri e colleziona distintivi visitando i monumenti più iconici.',
+        cta: {
+          start: 'Inizia',
+          tutorial: 'Scopri come funziona'
+        },
+        accessibility: 'Accessibile a tutti • Contenuto culturale neutrale',
+        tutorial: {
+          step1: {
+            title: 'Esplora il mondo',
+            desc: 'Scopri migliaia di luoghi sacri e monumenti culturali in tutto il mondo.'
+          },
+          step2: {
+            title: 'Colleziona distintivi',
+            desc: 'Guadagna punti e distintivi rari visitando luoghi e completando missioni.'
+          },
+          step3: {
+            title: 'Impara e condividi',
+            desc: 'Ascolta storie affascinanti e condividi le tue scoperte con la comunità.'
+          },
+          prev: 'Precedente',
+          next: 'Avanti',
+          finish: 'Inizia'
+        }
       },
       selection: {
         title: 'Scegli il tuo Percorso',
@@ -340,6 +448,33 @@ const resources = {
         loading: 'Laden...',
         start: 'Abenteuer Starten'
       },
+      welcome: {
+        title: 'SacredWorld',
+        promise1: 'Heilige Stätten aus der ganzen Welt, in deiner Tasche.',
+        promise2: 'Erkunde, entdecke und sammle Abzeichen, indem du die ikonischsten Denkmäler besuchst.',
+        cta: {
+          start: 'Loslegen',
+          tutorial: 'So funktioniert es'
+        },
+        accessibility: 'Für alle zugänglich • Neutraler kultureller Inhalt',
+        tutorial: {
+          step1: {
+            title: 'Entdecke die Welt',
+            desc: 'Entdecke Tausende von heiligen Stätten und kulturellen Denkmälern auf der ganzen Welt.'
+          },
+          step2: {
+            title: 'Sammle Abzeichen',
+            desc: 'Verdiene Punkte und seltene Abzeichen, indem du Orte besuchst und Quests abschließt.'
+          },
+          step3: {
+            title: 'Lerne und teile',
+            desc: 'Höre faszinierende Geschichten und teile deine Entdeckungen mit der Community.'
+          },
+          prev: 'Zurück',
+          next: 'Weiter',
+          finish: 'Loslegen'
+        }
+      },
       selection: {
         title: 'Wähle deinen Weg',
         subtitle: 'Wähle eine Religion oder Philosophie',
@@ -423,6 +558,33 @@ const resources = {
         loading: 'Carregando...',
         start: 'Iniciar Aventura'
       },
+      welcome: {
+        title: 'SacredWorld',
+        promise1: 'Lugares sagrados de todo o mundo, no seu bolso.',
+        promise2: 'Explore, descubra e colecione distintivos visitando os monumentos mais icônicos.',
+        cta: {
+          start: 'Começar',
+          tutorial: 'Ver como funciona'
+        },
+        accessibility: 'Acessível a todos • Conteúdo cultural neutro',
+        tutorial: {
+          step1: {
+            title: 'Explore o mundo',
+            desc: 'Descubra milhares de lugares sagrados e monumentos culturais ao redor do mundo.'
+          },
+          step2: {
+            title: 'Colecione distintivos',
+            desc: 'Ganhe pontos e distintivos raros visitando lugares e completando missões.'
+          },
+          step3: {
+            title: 'Aprenda e compartilhe',
+            desc: 'Ouça histórias fascinantes e compartilhe suas descobertas com a comunidade.'
+          },
+          prev: 'Anterior',
+          next: 'Próximo',
+          finish: 'Começar'
+        }
+      },
       selection: {
         title: 'Escolha seu Caminho',
         subtitle: 'Selecione uma religião ou filosofia',
@@ -505,6 +667,33 @@ const resources = {
       splash: {
         loading: 'جار التحميل...',
         start: 'بدء المغامرة'
+      },
+      welcome: {
+        title: 'SacredWorld',
+        promise1: 'أماكن مقدسة من جميع أنحاء العالم، في جيبك.',
+        promise2: 'استكشف واكتشف واجمع الشارات من خلال زيارة المعالم الأكثر شهرة.',
+        cta: {
+          start: 'ابدأ',
+          tutorial: 'شاهد كيف يعمل'
+        },
+        accessibility: 'متاح للجميع • محتوى ثقافي محايد',
+        tutorial: {
+          step1: {
+            title: 'استكشف العالم',
+            desc: 'اكتشف آلاف الأماكن المقدسة والمعالم الثقافية حول العالم.'
+          },
+          step2: {
+            title: 'اجمع الشارات',
+            desc: 'اكسب النقاط والشارات النادرة من خلال زيارة الأماكن وإكمال المهام.'
+          },
+          step3: {
+            title: 'تعلم وشارك',
+            desc: 'استمع إلى قصص رائعة وشارك اكتشافاتك مع المجتمع.'
+          },
+          prev: 'السابق',
+          next: 'التالي',
+          finish: 'ابدأ'
+        }
       },
       selection: {
         title: 'اختر طريقك',
