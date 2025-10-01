@@ -27,7 +27,13 @@ const WorldMap = () => {
 
   const handleSearchSubmit = () => {
     if (searchTerm.trim()) {
-      const filtered = countries.filter(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
+      // Chercher dans les noms de pays traduits
+      const searchLower = searchTerm.toLowerCase();
+      const filtered = countries.filter(country => {
+        const translatedName = t(`countries.${country}`, country);
+        return translatedName.toLowerCase().includes(searchLower) || 
+               country.toLowerCase().includes(searchLower);
+      });
       if (filtered.length > 0) {
         navigate(`/country/${filtered[0]}`);
       }
@@ -86,7 +92,7 @@ const WorldMap = () => {
               )}
               <input
                 type="text"
-                placeholder={isSearchExpanded ? "Rechercher un pays..." : "🔍"}
+                placeholder={isSearchExpanded ? t('worldMap.searchPlaceholder', "Rechercher un pays...") : "🔍"}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 onKeyPress={(e) => {

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
@@ -15,6 +16,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const navigate = useNavigate();
+  const { i18n } = useTranslation();
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [showMonuments, setShowMonuments] = useState(false);
@@ -82,6 +84,24 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
         'star-intensity': 0.8
       });
 
+      // Configurer la langue des labels selon la langue sélectionnée
+      const langCode = i18n.language || 'fr';
+      const mapboxLangMap: { [key: string]: string } = {
+        'fr': 'fr',
+        'en': 'en',
+        'es': 'es',
+        'it': 'it',
+        'de': 'de',
+        'pt': 'pt',
+        'ar': 'ar'
+      };
+      const mapboxLang = mapboxLangMap[langCode] || 'en';
+
+      // Modifier les labels pour afficher dans la langue sélectionnée
+      if (map.current.getLayer('country-label')) {
+        map.current.setLayoutProperty('country-label', 'text-field', ['get', `name_${mapboxLang}`]);
+      }
+
       // Charger les monuments
       loadMonuments();
     });
@@ -138,7 +158,8 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       });
       
       if (features && features.length > 0) {
-        const countryName = features[0].properties?.name;
+        // Récupérer le nom en anglais qui est la clé standard
+        const countryName = features[0].properties?.name_en || features[0].properties?.name;
         if (countryName) {
           navigate(`/country/${countryName}`);
         }
