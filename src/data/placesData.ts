@@ -20,7 +20,7 @@ export const mockPlaces: Place[] = [
     name: 'Lourdes',
     country: 'France',
     type: 'Sanctuaire',
-    description: 'Lieu de pèlerinage marial célèbre',
+    description: 'Haut lieu du pèlerinage catholique mondial depuis 1858, Lourdes vit 18 apparitions de la Vierge Marie à Bernadette Soubirous. La Grotte de Massabielle et sa source miraculeuse attirent 6 millions de pèlerins annuels. Basilique du Rosaire, Basilique supérieure et Basilique souterraine accueillent processions et messes. Des milliers de guérisons rapportées, 70 reconnues officiellement comme miracles par l\'Église. Lourdes symbolise foi, espoir et guérison spirituelle, 2ème lieu de pèlerinage chrétien mondial après le Vatican.',
     points: 75,
     coordinates: [-0.0458, 43.0951],
     imageUrl: '/src/assets/places/lourdes.jpg'
@@ -30,7 +30,7 @@ export const mockPlaces: Place[] = [
     name: 'Mont Saint-Michel',
     country: 'France',
     type: 'Abbaye',
-    description: 'Abbaye médiévale spectaculaire sur un îlot rocheux',
+    description: 'Merveille de l\'Occident érigée dès 708 après l\'apparition de l\'archange Saint-Michel à l\'évêque Aubert. Abbaye bénédictine fortifiée couronnant un îlot rocheux de 92m entouré de marées spectaculaires (14m d\'amplitude). Architecture mêlant roman, gothique et flamboyant sur 13 siècles. Lieu de pèlerinage médiéval majeur sur le chemin vers Saint-Jacques. Prison politique de 1793 à 1863. Patrimoine UNESCO, symbole de la France, elle accueille 3 millions de visiteurs annuels. Chef-d\'œuvre absolu alliant spiritualité, architecture et nature.',
     points: 80,
     coordinates: [-1.5114, 48.6361],
     imageUrl: '/src/assets/places/mont-saint-michel.jpg'
@@ -237,7 +237,7 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Cologne',
     country: 'Germany',
     type: 'Cathédrale',
-    description: 'Chef-d\'œuvre gothique allemand',
+    description: 'Chef-d\'œuvre gothique germanique (1248-1880), la cathédrale de Cologne avec ses flèches jumelles culminant à 157m fut le plus haut édifice du monde de 1880 à 1884. Elle abrite les reliques des Rois Mages dans un reliquaire d\'or. Miraculeusement épargnée malgré 14 bombes en 1944, elle symbolise la résilience allemande. Patrimoine UNESCO, 6 millions de visiteurs annuels. Ses vitraux modernes de Gerhard Richter (2007) fusionnent art médiéval et contemporain. Monument national allemand par excellence.',
     points: 75,
     coordinates: [6.9581, 50.9413],
     imageUrl: '/src/assets/places/cologne-cathedral.jpg'
@@ -267,7 +267,7 @@ export const mockPlaces: Place[] = [
     name: 'Parthénon',
     country: 'Greece',
     type: 'Temple',
-    description: 'Temple dédié à Athéna',
+    description: 'Temple emblématique de la démocratie athénienne (447-432 av. J.-C.), le Parthénon couronne l\'Acropole d\'Athènes. Dédié à Athéna Parthénos, chef-d\'œuvre de l\'architecture dorique avec 46 colonnes de marbre pentélique. Sculpture de Phidias : la statue chryséléphantine d\'Athéna (12m) disparue. Trésor de la cité, il symbolise l\'apogée de la Grèce classique, la beauté, la démocratie et la civilisation occidentale. Patrimoine UNESCO, icône mondiale de la culture antique et de l\'hellénisme.',
     points: 100,
     coordinates: [23.7275, 37.9715],
     imageUrl: '/src/assets/places/parthenon.jpg'
@@ -277,18 +277,20 @@ export const mockPlaces: Place[] = [
     name: 'Mont Athos',
     country: 'Greece',
     type: 'Monastères',
-    description: 'Centre monastique orthodoxe',
+    description: 'République monastique autonome orthodoxe depuis 1054, l\'Athos héberge 20 monastères et 2000 moines sur péninsule de 336km². Accès interdit aux femmes depuis 1045. Centre spirituel majeur de l\'orthodoxie avec manuscrits précieux, icônes et fresques byzantines. Patrimoine UNESCO, sanctuaire intemporel où le temps s\'est arrêté au Moyen Âge. Visa spécial requis, 120 visiteurs/jour maximum. Montagne sacrée culminant à 2033m, jardin de la Vierge Marie.',
     points: 90,
-    coordinates: [24.3265, 40.1572]
+    coordinates: [24.3265, 40.1572],
+    imageUrl: '/src/assets/places/mount-athos.jpg'
   },
   {
     id: 'gre-3',
     name: 'Delphes',
     country: 'Greece',
     type: 'Site sacré',
-    description: 'Sanctuaire de l\'Oracle de Delphes',
+    description: 'Centre du monde grec antique (VIIIe siècle av. J.-C.), Delphes abritait l\'Oracle d\'Apollon, la Pythie, prophétesse consultée par rois et citoyens. Temple d\'Apollon, Trésor des Athéniens, théâtre de 5000 places sur les pentes du Mont Parnasse. Jeux Pythiques rivalisaient avec Olympie. "Connais-toi toi-même" gravé au temple. Patrimoine UNESCO, site archéologique spectaculaire incarnant la spiritualité, sagesse et mystère de la Grèce antique.',
     points: 85,
-    coordinates: [22.5011, 38.4824]
+    coordinates: [22.5011, 38.4824],
+    imageUrl: '/src/assets/places/delphi.jpg'
   },
   
   // Russia
@@ -318,9 +320,10 @@ export const mockPlaces: Place[] = [
     name: 'Sanctuaire de Jasna Góra',
     country: 'Poland',
     type: 'Sanctuaire',
-    description: 'Lieu de pèlerinage marial polonais',
+    description: 'Forteresse spirituelle de la Pologne à Częstochowa, ce monastère paulinien abrite l\'icône miraculeuse de la Vierge Noire depuis 1382. Pèlerinage national majeur avec 4-5 millions de visiteurs annuels. L\'icône attribuée à saint Luc fut couronnée Reine de Pologne en 1656. Le sanctuaire résista au siège suédois de 1655, événement fondateur de l\'identité polonaise. Patrimoine spirituel et patriotique, symbole de résistance face aux invasions et au communisme.',
     points: 70,
-    coordinates: [19.0929, 50.8071]
+    coordinates: [19.0929, 50.8071],
+    imageUrl: '/src/assets/places/jasna-gora.jpg'
   },
   {
     id: 'pol-2',
@@ -338,9 +341,10 @@ export const mockPlaces: Place[] = [
     name: 'Sanctuaire de Fátima',
     country: 'Portugal',
     type: 'Sanctuaire',
-    description: 'Lieu d\'apparitions mariales',
+    description: 'Lieu d\'apparitions mariales majeures en 1917 à trois jeunes bergers. La Vierge de Fátima délivra trois secrets prophétiques et appela à la prière du Rosaire. Le miracle du soleil du 13 octobre 1917 devant 70 000 témoins marqua l\'histoire. Aujourd\'hui 6 millions de pèlerins annuels visitent la basilique, la Capelinha des Apparitions et prient sur l\'esplanade. Troisième sanctuaire marial catholique mondial après Lourdes et Guadalupe. Symbole d\'espoir, paix et conversion.',
     points: 80,
-    coordinates: [-8.6723, 39.6295]
+    coordinates: [-8.6723, 39.6295],
+    imageUrl: '/src/assets/places/fatima.jpg'
   },
   {
     id: 'por-2',
@@ -390,9 +394,10 @@ export const mockPlaces: Place[] = [
     name: 'Église de la Nativité',
     country: 'Israel',
     type: 'Église',
-    description: 'Lieu de naissance de Jésus à Bethléem',
+    description: 'Une des plus anciennes églises chrétiennes (339), construite par Constantin sur le lieu de naissance de Jésus à Bethléem. Partagée entre catholiques, grecs-orthodoxes et arméniens. Étoile d\'argent marque l\'emplacement exact de la crèche. Porte d\'Humilité (1,2m) oblige à se pencher. Mosaïques byzantines, colonnes de Justinien. Patrimoine UNESCO en péril. Lieu saint de la Chrétienté attirant 2 millions de pèlerins. Symbole de foi, paix et espoir au cœur du conflit israélo-palestinien.',
     points: 95,
-    coordinates: [35.2078, 31.7044]
+    coordinates: [35.2078, 31.7044],
+    imageUrl: '/src/assets/places/nativity-church.jpg'
   },
   {
     id: 'isr-5',
@@ -493,9 +498,10 @@ export const mockPlaces: Place[] = [
     name: 'Éphèse - Temple d\'Artémis',
     country: 'Turkey',
     type: 'Ruines',
-    description: 'Une des Sept Merveilles du monde antique',
+    description: 'Une des Sept Merveilles du monde antique, le temple d\'Artémis (550 av. J.-C.) fut le plus grand temple grec avec 127 colonnes de 18m. Incendié par Érostrate en 356 av. J.-C. la nuit de naissance d\'Alexandre, reconstruit, puis détruit définitivement au Ve siècle. Ne subsiste qu\'une colonne reconstituée. Site archéologique d\'Éphèse révèle bibliothèque de Celsus, Grand Théâtre (25 000 places). Patrimoine UNESCO, il témoigne de la grandeur de l\'Ionie grecque et de l\'éphémère de la gloire humaine.',
     points: 90,
-    coordinates: [27.3637, 37.9495]
+    coordinates: [27.3637, 37.9495],
+    imageUrl: '/src/assets/places/ephesus-artemis.jpg'
   },
   
   // Morocco
@@ -504,9 +510,10 @@ export const mockPlaces: Place[] = [
     name: 'Mosquée Hassan II',
     country: 'Morocco',
     type: 'Mosquée',
-    description: 'Une des plus grandes mosquées du monde',
+    description: 'Une des plus grandes mosquées du monde, la Hassan II de Casablanca (1993) possède le minaret le plus haut du monde (210m) avec laser pointant vers La Mecque. Partiellement construite sur l\'océan Atlantique, elle peut accueillir 105 000 fidèles. Toit ouvrant laisse entrer lumière divine. Architecture marocaine traditionnelle avec mosaïques, marbre, cèdre sculpté. Chef-d\'œuvre moderne fusionnant tradition et technologie, elle symbolise l\'Islam marocain et l\'ouverture du royaume (rare mosquée accessible aux non-musulmans).',
     points: 80,
-    coordinates: [-7.6323, 33.6084]
+    coordinates: [-7.6323, 33.6084],
+    imageUrl: '/src/assets/places/hassan-ii-mosque.jpg'
   },
   {
     id: 'mor-2',
@@ -536,7 +543,7 @@ export const mockPlaces: Place[] = [
     name: 'Temple d\'Or d\'Amritsar',
     country: 'India',
     type: 'Temple',
-    description: 'Lieu le plus sacré du sikhisme',
+    description: 'Harmandir Sahib, le lieu le plus sacré du sikhisme, fut fondé en 1604 par le 5e Guru Arjan Dev. Temple recouvert de 750kg de feuilles d\'or au centre du bassin sacré Amrit Sarovar (Bassin de Nectar). Architecture fusionnant styles hindou et islamique symbolisant l\'ouverture sikhe. Ses 4 portes accueillent toutes les religions. Langar (cuisine communautaire) gratuit sert 100 000 repas/jour à tous sans distinction. Attaque de 1984 et massacre marquèrent l\'histoire. Symbole de paix, égalité et service désintéressé sikh.',
     points: 90,
     coordinates: [74.8765, 31.6200],
     imageUrl: '/src/assets/places/golden-temple.jpg'
@@ -566,18 +573,20 @@ export const mockPlaces: Place[] = [
     name: 'Grottes d\'Ajanta',
     country: 'India',
     type: 'Site bouddhiste',
-    description: 'Grottes ornées de peintures bouddhistes',
+    description: 'Ensemble de 29 grottes bouddhistes creusées dans falaise basaltique entre IIe siècle av. J.-C. et Ve siècle ap. J.-C. Monastères et temples rupestres ornés de fresques et sculptures parmi les plus belles de l\'art bouddhiste ancien. Redécouvertes en 1819 après 1000 ans d\'oubli. Les peintures murales racontent vies antérieures de Bouddha (Jataka). Patrimoine UNESCO, elles témoignent de l\'apogée artistique de l\'Inde bouddhiste et influencèrent l\'art asiatique pendant des siècles.',
     points: 80,
-    coordinates: [75.7033, 20.5519]
+    coordinates: [75.7033, 20.5519],
+    imageUrl: '/src/assets/places/ajanta.jpg'
   },
   {
     id: 'ind-6',
     name: 'Temple d\'Akshardham',
     country: 'India',
     type: 'Temple',
-    description: 'Complexe de temple hindou moderne',
+    description: 'Plus grand temple hindou moderne au monde, Akshardham Delhi (2005) fut construit en 5 ans par 7000 artisans selon techniques védiques traditionnelles. Aucun acier : 20 000 tonnes de grès rose et marbre blanc sculpté. Architecture stupéfiante avec 234 piliers ciselés, 9 dômes, 20 000 statues. Jardins, fontaines musicales, expositions sur spiritualité hindoue. Record Guinness du plus grand complexe hindou complet. Il célèbre 10 000 ans de culture indienne et incarne la renaissance spirituelle hindoue moderne.',
     points: 75,
-    coordinates: [77.2773, 28.6127]
+    coordinates: [77.2773, 28.6127],
+    imageUrl: '/src/assets/places/akshardham.jpg'
   },
   
   // Nepal
@@ -606,9 +615,10 @@ export const mockPlaces: Place[] = [
     name: 'Temple de Pashupatinath',
     country: 'Nepal',
     type: 'Temple',
-    description: 'Temple hindou sacré dédié à Shiva',
+    description: 'Temple hindou le plus sacré du Népal (VIe siècle), Pashupatinath est dédié à Shiva sous sa forme de Pashupati, "Seigneur des animaux". Situé sur les rives sacrées de la rivière Bagmati, il accueille pèlerins et sadhus. Architecture pagode népalaise avec toit doré. Ghats de crémation où hindous sont incinérés selon rituels ancestraux. Interdit aux non-hindous à l\'intérieur du temple principal. Patrimoine UNESCO, il incarne la foi shivaïte vivante et les traditions funéraires hindoues millénaires.',
     points: 85,
-    coordinates: [85.3486, 27.7106]
+    coordinates: [85.3486, 27.7106],
+    imageUrl: '/src/assets/places/pashupatinath.jpg'
   },
   
   // China
@@ -617,36 +627,40 @@ export const mockPlaces: Place[] = [
     name: 'Temple du Ciel',
     country: 'China',
     type: 'Temple',
-    description: 'Complexe de temples taoïstes à Pékin',
+    description: 'Complexe taoïste (1420) où les empereurs Ming et Qing effectuaient sacrifices annuels au Ciel pour bonnes récoltes. La Salle des Prières pour la Moisson, triple-toit circulaire bleu de 38m, est chef-d\'œuvre d\'architecture chinoise sans clous. Géométrie sacrée : cercle (Ciel) et carré (Terre). Acoustique exceptionnelle de l\'Écho Wall. Patrimoine UNESCO, parc de 273ha où Pékinois pratiquent tai-chi. Symbole de l\'harmonie entre Ciel et Terre, de la piété impériale et de la cosmologie chinoise.',
     points: 90,
-    coordinates: [116.4075, 39.8821]
+    coordinates: [116.4075, 39.8821],
+    imageUrl: '/src/assets/places/temple-of-heaven.jpg'
   },
   {
     id: 'chi-2',
     name: 'Monastère de Shaolin',
     country: 'China',
     type: 'Monastère',
-    description: 'Berceau du kung-fu Shaolin',
+    description: 'Berceau du kung-fu Shaolin et du bouddhisme Chan (Zen), ce monastère du Mont Song (495) vit naître les arts martiaux bouddhistes. Légende raconte que Bodhidharma y médita 9 ans face au mur. Forêt de 228 pagodes-tombes de moines. École de kung-fu forme disciples dans discipline, méditation et combat. Patrimoine UNESCO, icône de la culture martiale chinoise mondialement reconnue par le cinéma. Il incarne fusion unique de spiritualité bouddhiste et maîtrise corporelle.',
     points: 95,
-    coordinates: [113.0356, 34.5086]
+    coordinates: [113.0356, 34.5086],
+    imageUrl: '/src/assets/places/shaolin.jpg'
   },
   {
     id: 'chi-3',
     name: 'Grottes de Longmen',
     country: 'China',
     type: 'Grottes bouddhistes',
-    description: 'Milliers de statues de Bouddha sculptées',
+    description: 'Trésor d\'art bouddhiste chinois (493-1127), les grottes de Longmen comptent 110 000 statues bouddhistes, 2800 inscriptions, 43 pagodes sculptées dans falaises calcaires. Le Bouddha Vairocana (17m) commandé par l\'Impératrice Wu Zetian est chef-d\'œuvre de la dynastie Tang. Site de 1km le long de la rivière Yi. Patrimoine UNESCO, elles témoignent de l\'apogée du bouddhisme en Chine et de l\'excellence artistique impériale sur 400 ans.',
     points: 85,
-    coordinates: [112.4747, 34.5552]
+    coordinates: [112.4747, 34.5552],
+    imageUrl: '/src/assets/places/longmen.jpg'
   },
   {
     id: 'chi-4',
     name: 'Grand Bouddha de Leshan',
     country: 'China',
     type: 'Statue',
-    description: 'Plus grande statue de Bouddha en pierre',
+    description: 'Plus grande statue de Bouddha en pierre au monde (71m), sculptée dans falaise entre 713 et 803. Bouddha Maitreya assis domine confluence de trois rivières. Construit pour apaiser eaux tumultueuses dangereuses. Ses oreilles de 7m, nez de 5,6m. Système de drainage ingénieux préserve statue depuis 1200 ans. Patrimoine UNESCO, il incarne la foi bouddhiste Tang, le génie ingénierie chinoise et la protection divine. Pèlerinage et site touristique majeur du Sichuan.',
     points: 90,
-    coordinates: [103.7677, 29.5454]
+    coordinates: [103.7677, 29.5454],
+    imageUrl: '/src/assets/places/leshan-buddha.jpg'
   },
   
   // Tibet
@@ -665,9 +679,10 @@ export const mockPlaces: Place[] = [
     name: 'Monastère de Jokhang',
     country: 'Tibet',
     type: 'Monastère',
-    description: 'Temple le plus sacré du bouddhisme tibétain',
+    description: 'Temple le plus sacré du bouddhisme tibétain (647), Jokhang à Lhassa abrite la statue de Jowo Shakyamuni (Bouddha à 12 ans) apportée de Chine par la Princesse Wencheng. Centre spirituel absolu du Tibet, but ultime de tout pèlerin tibétain. Kora (circumambulation) rituelle effectuée par milliers quotidiennement. Architecture tibétaine traditionnelle avec toit doré. Patrimoine UNESCO. Malgré destructions durant Révolution culturelle, il demeure cœur vivant de la foi tibétaine et symbole d\'identité culturelle menacée.',
     points: 105,
-    coordinates: [91.1315, 29.6525]
+    coordinates: [91.1315, 29.6525],
+    imageUrl: '/src/assets/places/jokhang.jpg'
   },
   
   // Thailand
@@ -676,27 +691,30 @@ export const mockPlaces: Place[] = [
     name: 'Wat Phra Kaew',
     country: 'Thailand',
     type: 'Temple',
-    description: 'Temple du Bouddha d\'Émeraude à Bangkok',
+    description: 'Temple du Bouddha d\'Émeraude (Palais Royal, 1782), sanctuaire le plus sacré de Thaïlande. La statue de jade du Bouddha d\'Émeraude (66cm) change de costumes 3 fois par an selon saisons. Architecture thaïe éblouissante : toits dorés, mosaïques colorées, fresques du Ramakien. Interdit aux moines, réservé à la famille royale et cérémonies d\'État. Aucun culte public. Patrimoine national symbolisant monarchie, bouddhisme theravada et âme thaïlandaise.',
     points: 80,
-    coordinates: [100.4927, 13.7508]
+    coordinates: [100.4927, 13.7508],
+    imageUrl: '/src/assets/places/wat-phra-kaew.jpg'
   },
   {
     id: 'tha-2',
     name: 'Wat Arun',
     country: 'Thailand',
     type: 'Temple',
-    description: 'Temple de l\'Aube à Bangkok',
+    description: 'Temple de l\'Aube dominant la Chao Phraya, Wat Arun possède un prang khmer de 82m incrusté de millions de porcelaines chinoises. Nommé d\'après Aruna, dieu hindou de l\'aube. Construit sous Ayutthaya, agrandi sous Rama II-III. Escaliers raides symbolisent difficulté d\'atteindre l\'illumination. Vue spectaculaire au coucher du soleil. Icône de Bangkok, symbole du renouveau après la chute d\'Ayutthaya.',
     points: 70,
-    coordinates: [100.4887, 13.7437]
+    coordinates: [100.4887, 13.7437],
+    imageUrl: '/src/assets/places/wat-arun.jpg'
   },
   {
     id: 'tha-3',
     name: 'Wat Pho',
     country: 'Thailand',
     type: 'Temple',
-    description: 'Temple du Bouddha couché',
+    description: 'Plus ancien et plus grand temple de Bangkok (1688), Wat Pho abrite le Bouddha couché géant de 46m recouvert de feuilles d\'or. Berceau du massage thaï traditionnel depuis Rama III. Université ouverte avec inscriptions médicales gravées. 1000 images de Bouddha, 91 stupas. Patrimoine UNESCO du massage. Symbole du savoir traditionnel thaïlandais, médecine et spiritualité bouddhiste theravada.',
     points: 75,
-    coordinates: [100.4931, 13.7465]
+    coordinates: [100.4931, 13.7465],
+    imageUrl: '/src/assets/places/wat-pho.jpg'
   },
   
   // Cambodia
@@ -705,7 +723,7 @@ export const mockPlaces: Place[] = [
     name: 'Angkor Wat',
     country: 'Cambodia',
     type: 'Temple',
-    description: 'Plus grand monument religieux au monde',
+    description: 'Plus grand monument religieux au monde (162ha), Angkor Wat fut construit par Suryavarman II (1113-1150) dédié à Vishnu puis converti au bouddhisme. Cinq tours lotus représentent le mont Meru. Bas-reliefs de 800m narrant épopées hindoues. Orientation ouest (inhabituelle) suggère temple funéraire. Redécouvert en 1860, restauré. Patrimoine UNESCO, symbole du Cambodge sur drapeau national. Chef-d\'œuvre absolu de l\'architecture khmère et de la civilisation d\'Angkor.',
     points: 120,
     coordinates: [103.8670, 13.4125],
     imageUrl: '/src/assets/places/angkor-wat.jpg'
@@ -715,9 +733,10 @@ export const mockPlaces: Place[] = [
     name: 'Angkor Thom',
     country: 'Cambodia',
     type: 'Cité-temple',
-    description: 'Dernière capitale de l\'Empire khmer',
+    description: 'Dernière capitale khmère (fin XIIe), Angkor Thom de Jayavarman VII couvre 9km². Le Bayon avec ses 216 visages de Bouddha/Avalokiteshvara souriants est son joyau. Terrasse des Éléphants, Terrasse du Roi Lépreux. Portes monumentales gardées par statues. Fusion bouddhisme mahayana et culte royal khmer. Patrimoine UNESCO témoignant de l\'apogée et déclin de l\'empire d\'Angkor.',
     points: 100,
-    coordinates: [103.8586, 13.4412]
+    coordinates: [103.8586, 13.4412],
+    imageUrl: '/src/assets/places/angkor-thom.jpg'
   },
   
   // Myanmar
@@ -736,9 +755,10 @@ export const mockPlaces: Place[] = [
     name: 'Temples de Bagan',
     country: 'Myanmar',
     type: 'Site archéologique',
-    description: 'Milliers de temples bouddhistes',
+    description: 'Plaine miraculeuse de 2000+ temples et pagodes bouddhistes (IXe-XIIIe), capitale du Royaume de Pagan. À son apogée, 10 000 structures couvraient 104km². Temples majeurs : Ananda, Shwezigon, Dhammayangyi. Lever du soleil en montgolfière offre vue spectaculaire. Séismes réguliers endommagent monuments. Patrimoine UNESCO (2019), Bagan rivalise avec Angkor comme plus grand site archéologique bouddhiste mondial.',
     points: 110,
-    coordinates: [94.8582, 21.1717]
+    coordinates: [94.8582, 21.1717],
+    imageUrl: '/src/assets/places/bagan-temples.jpg'
   },
   
   // Japan
@@ -767,9 +787,10 @@ export const mockPlaces: Place[] = [
     name: 'Todai-ji',
     country: 'Japan',
     type: 'Temple',
-    description: 'Temple avec le Grand Bouddha de Nara',
+    description: 'Temple bouddhiste de Nara (752) abritant le Daibutsu, Grand Bouddha en bronze de 15m et 500 tonnes. Plus grande structure en bois au monde (57m). Fondé par l\'empereur Shōmu pour protéger le Japon. Siège de l\'école Kegon. Daims sacrés errent librement. Patrimoine UNESCO, il incarne la puissance du bouddhisme Nara et l\'unification spirituelle du Japon ancien.',
     points: 90,
-    coordinates: [135.8397, 34.6890]
+    coordinates: [135.8397, 34.6890],
+    imageUrl: '/src/assets/places/todaiji.jpg'
   },
   {
     id: 'jpn-4',
@@ -786,9 +807,10 @@ export const mockPlaces: Place[] = [
     name: 'Itsukushima',
     country: 'Japan',
     type: 'Sanctuaire',
-    description: 'Sanctuaire shinto sur l\'île de Miyajima',
+    description: 'Sanctuaire shinto (593) sur l\'île sacrée de Miyajima. Son torii flottant vermillon de 16m semble planer sur mer à marée haute. Classé Trésor National et patrimoine UNESCO. L\'île entière est sacrée, naissances et morts y sont interdites. Architecture harmonieuse avec nature. Icône du Japon, symbole de beauté éphémère et spiritualité shinto.',
     points: 90,
-    coordinates: [132.3197, 34.2958]
+    coordinates: [132.3197, 34.2958],
+    imageUrl: '/src/assets/places/itsukushima.jpg'
   },
   
   // Indonesia
@@ -807,9 +829,10 @@ export const mockPlaces: Place[] = [
     name: 'Prambanan',
     country: 'Indonesia',
     type: 'Temple',
-    description: 'Complexe de temples hindous',
+    description: 'Plus grand complexe de temples hindous d\'Indonésie (IXe), Prambanan compte 240 temples dont les 3 tours principales de 47m dédiées à Trimurti (Brahma, Vishnu, Shiva). Bas-reliefs du Ramayana. Construit par dynastie Sanjaya. Séismes réguliers endommagent structures. Patrimoine UNESCO proche de Borobudur, témoignant coexistence hindouisme-bouddhisme à Java.',
     points: 95,
-    coordinates: [110.4915, -7.7520]
+    coordinates: [110.4915, -7.7520],
+    imageUrl: '/src/assets/places/prambanan.jpg'
   },
   
   // ========== NORTH AMERICA ==========
@@ -820,9 +843,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale Saint-Patrick',
     country: 'United States',
     type: 'Cathédrale',
-    description: 'Cathédrale néo-gothique de New York',
+    description: 'Cathédrale néo-gothique (1878) de Manhattan, St. Patrick\'s est la plus grande cathédrale catholique des États-Unis avec flèches de 100m. Refuge spirituel au cœur de la 5e Avenue. 3 millions de visiteurs annuels. Messes pour immigrés irlandais puis communauté diverse. Elle symbolise la foi catholique américaine et l\'intégration immigrant.',
     points: 70,
-    coordinates: [-73.9761, 40.7585]
+    coordinates: [-73.9761, 40.7585],
+    imageUrl: '/src/assets/places/st-patricks-nyc.jpg'
   },
   {
     id: 'usa-2',
@@ -917,9 +941,10 @@ export const mockPlaces: Place[] = [
     name: 'Basilique Notre-Dame de Montréal',
     country: 'Canada',
     type: 'Basilique',
-    description: 'Basilique néo-gothique spectaculaire',
+    description: 'Chef-d\'œuvre néo-gothique (1829) au Vieux-Montréal, célèbre pour son intérieur bleu et or spectaculaire avec voûte étoilée. Orgue Casavant de 7000 tuyaux. Tours jumelles de 69m. Funérailles de Céline Dion\'s husband. Symbole de l\'héritage catholique français au Canada.',
     points: 70,
-    coordinates: [-73.5565, 45.5045]
+    coordinates: [-73.5565, 45.5045],
+    imageUrl: '/src/assets/places/notre-dame-montreal.jpg'
   },
   
   // ========== SOUTH AMERICA ==========
@@ -940,18 +965,20 @@ export const mockPlaces: Place[] = [
     name: 'Basilique Notre-Dame d\'Aparecida',
     country: 'Brazil',
     type: 'Basilique',
-    description: 'Plus grande basilique du Brésil',
+    description: 'Deuxième plus grande basilique catholique au monde (1980), Aparecida accueille 12 millions de pèlerins annuels. Statue miraculeuse de Notre-Dame (1717) trouvée par pêcheurs. Patronne du Brésil. Architecture moderne massive pouvant contenir 45 000 personnes. Cœur spirituel catholique brésilien.',
     points: 85,
-    coordinates: [-45.2310, -22.8495]
+    coordinates: [-45.2310, -22.8495],
+    imageUrl: '/src/assets/places/aparecida.jpg'
   },
   {
     id: 'bra-3',
     name: 'Cathédrale de Brasília',
     country: 'Brazil',
     type: 'Cathédrale',
-    description: 'Cathédrale moderniste de Niemeyer',
+    description: 'Chef-d\'œuvre moderniste d\'Oscar Niemeyer (1970), structure hyperboloïde de 16 colonnes blanches de 40m représentant mains vers le ciel. Vitraux de Marianne Peretti inondent intérieur de lumière colorée. Patrimoine UNESCO, icône de l\'architecture moderne brésilienne fusionnant foi et avant-garde.',
     points: 75,
-    coordinates: [-47.8758, -15.7989]
+    coordinates: [-47.8758, -15.7989],
+    imageUrl: '/src/assets/places/brasilia-cathedral.jpg'
   },
   
   // Peru
@@ -991,18 +1018,20 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Sel de Zipaquirá',
     country: 'Colombia',
     type: 'Église',
-    description: 'Église souterraine creusée dans une mine de sel',
+    description: 'Cathédrale souterraine unique creusée à 180m dans mine de sel (1995). Trois nefs représentent naissance, vie et mort du Christ. Croix monumentale de 16m illuminée. Capacité 8400 personnes. Architecture minérale spectaculaire avec jeux de lumière. Merveille architecturale colombienne fusionnant foi et géologie.',
     points: 90,
-    coordinates: [-74.0047, 5.0266]
+    coordinates: [-74.0047, 5.0266],
+    imageUrl: '/src/assets/places/zipaquira-salt.jpg'
   },
   {
     id: 'col-2',
     name: 'Sanctuaire de Las Lajas',
     country: 'Colombia',
     type: 'Sanctuaire',
-    description: 'Église spectaculaire dans un canyon',
+    description: 'Basilique néo-gothique miraculeuse (1916-1949) construite sur pont enjambant gorge de 100m. Image de la Vierge apparut sur roche en 1754. Architecture vertigineuse défiant gravité. Pèlerinage marial majeur d\'Amérique du Sud. Chef-d\'œuvre architectural et site spectaculaire incarnant foi et audace.',
     points: 85,
-    coordinates: [-77.5914, 0.8139]
+    coordinates: [-77.5914, 0.8139],
+    imageUrl: '/src/assets/places/las-lajas.jpg'
   },
   
   // Argentina
@@ -1076,9 +1105,10 @@ export const mockPlaces: Place[] = [
     name: 'Uluru',
     country: 'Australia',
     type: 'Site sacré aborigène',
-    description: 'Monolithe sacré des Aborigènes',
+    description: 'Monolithe sacré rouge (348m) au cœur du désert australien, Uluru est le site spirituel le plus important des Aborigènes Anangu depuis 60 000 ans. Ses grottes abritent peintures rupestres ancestrales. Changement de couleurs spectaculaire au lever/coucher du soleil. Escalade interdite depuis 2019 (respect tradition). Patrimoine UNESCO double (naturel et culturel), il incarne la plus ancienne culture vivante au monde.',
     points: 100,
-    coordinates: [131.0369, -25.3444]
+    coordinates: [131.0369, -25.3444],
+    imageUrl: '/src/assets/places/uluru.jpg'
   },
   
   // New Zealand
