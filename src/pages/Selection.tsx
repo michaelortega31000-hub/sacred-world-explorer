@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp, Religion } from '@/contexts/AppContext';
 // Icons for religious symbols
-import { Church, Moon, Star as StarIcon, Sparkles, Flame as FlameIcon, Telescope, Flame, AtSign } from 'lucide-react';
+import { Church, Moon, Star as StarIcon, Sparkles, Flame as FlameIcon, Telescope, Users, AtSign } from 'lucide-react';
 
 interface ReligionBubble {
   id: Religion;
@@ -20,7 +20,7 @@ const religions: ReligionBubble[] = [
   { id: 'buddhism', icon: <Sparkles className="w-8 h-8" />, color: 'bg-[hsl(25_95%_53%)] hover:bg-[hsl(25_95%_43%)]' },
   { id: 'hinduism', icon: <FlameIcon className="w-8 h-8" />, color: 'bg-accent hover:bg-accent/90' },
   { id: 'astronomy', icon: <Telescope className="w-8 h-8" />, color: 'bg-[hsl(250_70%_50%)] hover:bg-[hsl(250_70%_40%)]' },
-  { id: 'traditional', icon: <Flame className="w-8 h-8" />, color: 'bg-[hsl(30_85%_50%)] hover:bg-[hsl(30_85%_40%)]' },
+  { id: 'traditional', icon: <Users className="w-8 h-8" />, color: 'bg-[hsl(30_85%_50%)] hover:bg-[hsl(30_85%_40%)]' },
   { id: 'atheism', icon: <AtSign className="w-8 h-8" />, color: 'bg-muted-foreground hover:bg-muted-foreground/80' }
 ];
 
