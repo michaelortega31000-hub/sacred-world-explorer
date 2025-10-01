@@ -6,7 +6,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries } from '@/data/placesData';
-import RankingsTab from '@/components/RankingsTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
 import LocationsStatsTab from '@/components/LocationsStatsTab';
@@ -58,7 +57,7 @@ const WorldMap = () => {
               </TabsTrigger>
               <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <MapPin className="w-4 h-4" />
-                Lieux recensés
+                Lieux & Classements
               </TabsTrigger>
               <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Calendar className="w-4 h-4" />
@@ -67,10 +66,6 @@ const WorldMap = () => {
               <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
-              </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Trophy className="w-4 h-4" />
-                {t('tabs.rankings')}
               </TabsTrigger>
             </TabsList>
           </div>
@@ -127,10 +122,6 @@ const WorldMap = () => {
 
         <TabsContent value="quest" className="flex-1 m-0">
           <WeeklyQuestTab />
-        </TabsContent>
-
-        <TabsContent value="rankings" className="flex-1 m-0">
-          <RankingsTab />
         </TabsContent>
       </Tabs>
     </div>

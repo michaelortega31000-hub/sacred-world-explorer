@@ -1,10 +1,16 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getAllPlaces } from '@/data/placesData';
-import { MapPin, Globe2, Building2 } from 'lucide-react';
+import { MapPin, Globe2, Building2, Trophy, Flag, Users } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useTranslation } from 'react-i18next';
+import RankingTab from './RankingTab';
+import CountryRankingTab from './CountryRankingTab';
+import ReligionRankingTab from './ReligionRankingTab';
 
 const LocationsStatsTab = () => {
+  const { t } = useTranslation();
   const allPlaces = getAllPlaces();
 
   // Mapping des pays aux continents
@@ -122,124 +128,159 @@ const LocationsStatsTab = () => {
     <div className="container mx-auto p-6 space-y-6">
       <div className="text-center mb-8">
         <h1 className="text-4xl font-bold mb-2" style={{ color: 'hsl(45 100% 51%)' }}>
-          Lieux Recensés
+          Lieux Recensés & Classements
         </h1>
         <p className="text-muted-foreground text-lg">
-          Base de données mondiale des monuments et édifices sacrés
+          Base de données mondiale et statistiques
         </p>
       </div>
 
-      {/* Total général */}
-      <Card className="border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Globe2 className="w-6 h-6" style={{ color: 'hsl(45 100% 51%)' }} />
-            Total Mondial
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center">
-            <p className="text-6xl font-bold mb-2" style={{ color: 'hsl(45 100% 51%)' }}>
-              {allPlaces.length}
-            </p>
-            <p className="text-muted-foreground text-lg">
-              Monuments et édifices recensés dans le monde
-            </p>
+      <Tabs defaultValue="stats" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsTrigger value="stats" className="gap-2">
+            <Globe2 className="w-4 h-4" />
+            Statistiques
+          </TabsTrigger>
+          <TabsTrigger value="personal" className="gap-2">
+            <Trophy className="w-4 h-4" />
+            {t('tabs.myRanking')}
+          </TabsTrigger>
+          <TabsTrigger value="country" className="gap-2">
+            <Flag className="w-4 h-4" />
+            {t('tabs.countryRanking')}
+          </TabsTrigger>
+          <TabsTrigger value="religion" className="gap-2">
+            <Users className="w-4 h-4" />
+            {t('tabs.religionRanking')}
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="stats" className="space-y-6">
+          {/* Total général */}
+          <Card className="border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Globe2 className="w-6 h-6" style={{ color: 'hsl(45 100% 51%)' }} />
+                Total Mondial
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <p className="text-6xl font-bold mb-2" style={{ color: 'hsl(45 100% 51%)' }}>
+                  {allPlaces.length}
+                </p>
+                <p className="text-muted-foreground text-lg">
+                  Monuments et édifices recensés dans le monde
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Par Continent */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Globe2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
+                  Par Continent
+                </CardTitle>
+                <CardDescription>
+                  {sortedContinents.length} continents
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-3">
+                    {sortedContinents.map(([continent, count]) => (
+                      <div
+                        key={continent}
+                        className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
+                      >
+                        <span className="font-medium">{continent}</span>
+                        <Badge variant="secondary" className="text-base">
+                          {count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Par Pays */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
+                  Par Pays
+                </CardTitle>
+                <CardDescription>
+                  {sortedCountries.length} pays
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-2">
+                    {sortedCountries.map(([country, count]) => (
+                      <div
+                        key={country}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <span className="text-sm">{country}</span>
+                        <Badge variant="outline">
+                          {count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
+
+            {/* Par Ville */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
+                  Par Ville
+                </CardTitle>
+                <CardDescription>
+                  {sortedCities.length} villes
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ScrollArea className="h-[400px] pr-4">
+                  <div className="space-y-2">
+                    {sortedCities.map(([city, count]) => (
+                      <div
+                        key={city}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                      >
+                        <span className="text-sm">{city}</span>
+                        <Badge variant="outline">
+                          {count}
+                        </Badge>
+                      </div>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
 
-      <div className="grid md:grid-cols-3 gap-6">
-        {/* Par Continent */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
-              Par Continent
-            </CardTitle>
-            <CardDescription>
-              {sortedContinents.length} continents
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-3">
-                {sortedContinents.map(([continent, count]) => (
-                  <div
-                    key={continent}
-                    className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                  >
-                    <span className="font-medium">{continent}</span>
-                    <Badge variant="secondary" className="text-base">
-                      {count}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+        <TabsContent value="personal">
+          <RankingTab />
+        </TabsContent>
 
-        {/* Par Pays */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
-              Par Pays
-            </CardTitle>
-            <CardDescription>
-              {sortedCountries.length} pays
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-2">
-                {sortedCountries.map(([country, count]) => (
-                  <div
-                    key={country}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <span className="text-sm">{country}</span>
-                    <Badge variant="outline">
-                      {count}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
+        <TabsContent value="country">
+          <CountryRankingTab />
+        </TabsContent>
 
-        {/* Par Ville */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="w-5 h-5" style={{ color: 'hsl(45 100% 51%)' }} />
-              Par Ville
-            </CardTitle>
-            <CardDescription>
-              {sortedCities.length} villes
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ScrollArea className="h-[400px] pr-4">
-              <div className="space-y-2">
-                {sortedCities.map(([city, count]) => (
-                  <div
-                    key={city}
-                    className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
-                  >
-                    <span className="text-sm">{city}</span>
-                    <Badge variant="outline">
-                      {count}
-                    </Badge>
-                  </div>
-                ))}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+        <TabsContent value="religion">
+          <ReligionRankingTab />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
