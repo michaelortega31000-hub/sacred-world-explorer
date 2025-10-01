@@ -51,7 +51,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
     // Initialiser la carte en mode globe
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      style: 'mapbox://styles/mapbox/streets-v12',
       projection: { name: 'globe' },
       zoom: 1.2,
       center: [10, 20],

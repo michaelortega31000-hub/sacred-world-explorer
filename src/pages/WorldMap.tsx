@@ -80,8 +80,8 @@ const WorldMap = () => {
           <Globe3D />
 
           {/* Barre de recherche overlay */}
-          <div className="absolute top-4 left-4 right-4 md:left-auto md:w-96 bg-black/80 backdrop-blur-sm p-6 rounded-xl shadow-2xl border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
-            <h2 className="text-xl font-bold mb-4 text-white flex items-center gap-2">
+          <div className="absolute top-4 left-1/2 -translate-x-1/2 w-[90%] max-w-2xl bg-black/80 backdrop-blur-sm p-4 rounded-xl shadow-2xl border-2" style={{ borderColor: 'hsl(45 100% 51%)' }}>
+            <h2 className="text-lg font-bold mb-3 text-white flex items-center gap-2">
               <span style={{ color: 'hsl(45 100% 51%)' }}>🌍</span>
               {t('worldMap.subtitle')}
             </h2>
@@ -98,7 +98,7 @@ const WorldMap = () => {
                   }
                 }
               }}
-              className="w-full px-4 py-3 rounded-lg border-2 bg-black/50 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all"
+              className="w-full px-4 py-2 rounded-lg border-2 bg-black/50 text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 transition-all"
               style={{ 
                 borderColor: 'hsl(220 70% 45%)',
                 boxShadow: '0 0 20px rgba(255, 215, 0, 0.1)'
