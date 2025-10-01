@@ -1435,6 +1435,138 @@ export const mockPlaces: Place[] = [
     points: 65,
     coordinates: [172.6366, -43.5321],
     imageUrl: '/src/assets/places/christchurch-cathedral.jpg'
+  },
+  
+  // ========== ADDITIONAL SACRED SITES ==========
+  
+  // Hungary
+  {
+    id: 'hun-3',
+    name: 'Grande Synagogue de Budapest',
+    country: 'Hungary',
+    city: 'Budapest',
+    type: 'Synagogue',
+    description: 'Plus grande synagogue d\'Europe et 2ème au monde (1854-1859), la Grande Synagogue Dohány peut accueillir 3000 fidèles. Architecture mauresque-byzantine avec 2 tours de 43m. Orgue monumental joué par Franz Liszt et Camille Saint-Saëns. Durant la Shoah, le ghetto de Budapest entoura la synagogue (70 000 personnes). Mémorial de l\'Arbre de Vie honore 400 000 victimes hongroises. Elle symbolise judaïsme hongrois, mémoire de la Shoah et renaissance communautaire.',
+    points: 70,
+    coordinates: [19.0603, 47.4957],
+    imageUrl: '/src/assets/places/budapest-synagogue.jpg'
+  },
+  
+  // Tunisia
+  {
+    id: 'tun-1',
+    name: 'Grande Mosquée de Kairouan',
+    country: 'Tunisia',
+    city: 'Kairouan',
+    type: 'Mosquée',
+    description: 'Fondée en 670 par Oqba Ibn Nafi, la Grande Mosquée de Kairouan est l\'une des plus anciennes et importantes du monde musulman. 4ème ville sainte de l\'Islam après La Mecque, Médine et Jérusalem. Architecture omeyyade avec minaret de 31m (modèle maghrébin). Son mihrab en faïence est chef-d\'œuvre d\'art islamique. Salle de prière à 17 nefs, 414 colonnes antiques recyclées. Patrimoine UNESCO, elle incarne expansion islamique en Afrique du Nord et architecture sacrée du Maghreb.',
+    points: 85,
+    coordinates: [10.1029, 35.6781],
+    imageUrl: '/src/assets/places/kairouan-mosque.jpg'
+  },
+  
+  // Austria
+  {
+    id: 'aut-2',
+    name: 'Abbaye de Melk',
+    country: 'Austria',
+    city: 'Melk',
+    type: 'Abbaye',
+    description: 'Abbaye bénédictine baroque (1702-1736) dominant le Danube du haut de son rocher. Chef-d\'œuvre de l\'architecte Jakob Prandtauer, elle incarne l\'apogée du baroque autrichien. Bibliothèque somptueuse avec 100 000 volumes dont manuscrits médiévaux précieux. Église abbatiale ornée de fresques monumentales de Paul Troger. Patrimoine UNESCO, elle inspira Umberto Eco pour "Le Nom de la Rose". Toujours habitée par moines bénédictins depuis 1089, symbole vivant de foi, culture et beauté baroque.',
+    points: 75,
+    coordinates: [15.3358, 48.2272],
+    imageUrl: '/src/assets/places/melk-abbey.jpg'
+  },
+  
+  // Netherlands
+  {
+    id: 'nld-2',
+    name: 'Synagogue portugaise d\'Amsterdam',
+    country: 'Netherlands',
+    city: 'Amsterdam',
+    type: 'Synagogue',
+    description: 'Synagogue séfarade (1675) construite par juifs portugais fuyant l\'Inquisition. Architecture sobre protestante hollandaise adaptée au culte juif. Éclairée par 1000 bougies comme au XVIIe siècle. Miraculeusement préservée durant occupation nazie. Bibliothèque Ets Haim-Livraria Montezinos (1616) : plus ancienne bibliothèque juive au monde encore fonctionnelle. Patrimoine UNESCO, elle symbolise tolérance hollandaise, diaspora séfarade et résilience juive face à persécutions.',
+    points: 70,
+    coordinates: [4.9049, 52.3676],
+    imageUrl: '/src/assets/places/amsterdam-synagogue.jpg'
+  },
+  
+  // Iran
+  {
+    id: 'irn-2',
+    name: 'Mosquée Bleue de Tabriz',
+    country: 'Iran',
+    city: 'Tabriz',
+    type: 'Mosquée',
+    description: 'Mosquée Kaboud (1465), joyau du style timuride, célèbre pour ses céramiques bleues extraordinaires recouvrant murs et voûtes. Surnommée "turquoise de l\'Islam". Séisme de 1779 détruisit grande partie, mais mosaïques survivantes témoignent génie artistique persan. Restauration progressive révèle splendeur originelle. Calligraphies coufiques et florales en lapis-lazuli. Patrimoine UNESCO, elle symbolise âge d\'or de Tabriz, capitale culturelle, et art céramique islamique à son apogée.',
+    points: 75,
+    coordinates: [46.2919, 38.0800],
+    imageUrl: '/src/assets/places/tabriz-blue-mosque.jpg'
+  },
+  
+  // Sweden
+  {
+    id: 'swe-1',
+    name: 'Cathédrale d\'Uppsala',
+    country: 'Sweden',
+    city: 'Uppsala',
+    type: 'Cathédrale',
+    description: 'Plus grande cathédrale de Scandinavie (1287-1435), Uppsala culmine à 118m de hauteur. Architecture gothique française importée en Suède. Couronnement des rois suédois et lieu de sépulture : roi Gustav Vasa, botaniste Carl von Linné, théologien Nathan Söderblom. Conversion forcée vikings au christianisme au XIe siècle débuta ici. Elle remplaça temple païen d\'Uppsala où sacrifices humains étaient pratiqués. Symbole christianisation nordique, pouvoir royal suédois et patrimoine luthérien.',
+    points: 70,
+    coordinates: [17.6324, 59.8586],
+    imageUrl: '/src/assets/places/uppsala-cathedral.jpg'
+  },
+  
+  // Italy
+  {
+    id: 'ita-14',
+    name: 'Grande Synagogue de Rome',
+    country: 'Italy',
+    city: 'Rome',
+    type: 'Synagogue',
+    description: 'Tempio Maggiore (1904), monumentale synagogue Art Nouveau avec dôme carré aluminium de 35m dominant le Tibre. Architecture éclectique italo-babylonienne. Communauté juive romaine existe depuis 2000 ans, plus ancienne diaspora d\'Europe. Ghetto de Rome (1555-1870) fut l\'un des plus restrictifs. Rafle du 16 octobre 1943 : 1023 juifs déportés à Auschwitz. Musée juif attenant témoigne Histoire millénaire. Elle incarne résilience du judaïsme romain, émancipation post-unification italienne et mémoire de la Shoah.',
+    points: 70,
+    coordinates: [12.4771, 41.8905],
+    imageUrl: '/src/assets/places/rome-synagogue.jpg'
+  },
+  
+  // Philippines
+  {
+    id: 'phl-1',
+    name: 'Cathédrale de Manille',
+    country: 'Philippines',
+    city: 'Manila',
+    type: 'Cathédrale',
+    description: 'Cathédrale-basilique Immaculée-Conception (1958), siège de l\'archidiocèse de Manille depuis 1581. Détruite 6 fois (séismes, typhons, incendies, guerre), reconstruite symbolisant foi philippine inébranlable. Architecture néo-romane actuelle par Fernando Ocampo. Visite du Pape Jean-Paul II en 1981 et 1995. Orgue Klais allemand de 4500 tuyaux. Plus grand pays catholique d\'Asie (86 millions fidèles). Elle incarne 450 ans catholicisme philippin, colonisation espagnole et dévotion nationale.',
+    points: 65,
+    coordinates: [120.9750, 14.5921],
+    imageUrl: '/src/assets/places/manila-cathedral.jpg'
+  },
+  
+  // Morocco
+  {
+    id: 'mar-3',
+    name: 'Mosquée de la Koutoubia',
+    country: 'Morocco',
+    city: 'Marrakech',
+    type: 'Mosquée',
+    description: 'Mosquée almohade (1147-1158), symbole de Marrakech avec minaret de 77m inspirant Giralda de Séville et Tour Hassan de Rabat. Architecture sacrée marocaine parfaite. Nom "Koutoubia" vient du souk des libraires voisin. Interdite aux non-musulmans mais visible de toute la ville. Illuminée la nuit, elle domine place Jemaa el-Fna. Proportions divines (1:5). Patrimoine UNESCO candidat, elle incarne grandeur almohade, beauté architecturale islamique et âme spirituelle de Marrakech.',
+    points: 70,
+    coordinates: [-7.9930, 31.6237],
+    imageUrl: '/src/assets/places/koutoubia-mosque.jpg'
+  },
+  
+  // Poland
+  {
+    id: 'pol-3',
+    name: 'Synagogue Remuh de Cracovie',
+    country: 'Poland',
+    city: 'Krakow',
+    type: 'Synagogue',
+    description: 'Petite synagogue (1557) du quartier juif Kazimierz, une des 2 synagogues actives de Cracovie. Construite par banquier Israel Isserles pour son fils Rabbi Moses Isserles (Remu), célèbre commentateur Talmud. Cimetière attenant (1551) : pierres tombales Renaissance uniques, miraculeusement préservées. Kazimierz fut centre judaïsme polonais avant Shoah (65 000 juifs cracoviens exterminés). Lieu de tournage "La Liste de Schindler". Elle symbolise judaïsme ashkénaze polonais, renaissance post-communiste et mémoire de la Shoah.',
+    points: 65,
+    coordinates: [19.9471, 50.0524],
+    imageUrl: '/src/assets/places/remuh-synagogue.jpg'
   }
 ];
 
