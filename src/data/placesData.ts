@@ -174,9 +174,10 @@ export const mockPlaces: Place[] = [
     name: 'Monastère de l\'Escorial',
     country: 'Spain',
     type: 'Monastère',
-    description: 'Résidence royale et monastère monumental',
+    description: 'Palais-monastère-panthéon royal (1563-1584) construit par Philippe II, l\'Escorial près de Madrid est complexe Renaissance austère abritant monastère hiéronymite, bibliothèque de 40 000 livres, basilique et crypte des rois d\'Espagne. Architecture sobre de Juan de Herrera influença le style "herreriano". Patrimoine UNESCO, il symbolise contre-réforme catholique, puissance de l\'Empire espagnol sous les Habsbourg et centralisme monarchique. Musée abritant œuvres du Greco, Vélasquez, Titien.',
     points: 70,
-    coordinates: [-4.1474, 40.5897]
+    coordinates: [-4.1474, 40.5897],
+    imageUrl: '/src/assets/places/escorial.jpg'
   },
   {
     id: 'esp-6',
@@ -247,18 +248,20 @@ export const mockPlaces: Place[] = [
     name: 'Église de la Frauenkirche de Dresde',
     country: 'Germany',
     type: 'Église',
-    description: 'Église baroque reconstruite',
+    description: 'Chef-d\'œuvre baroque luthérien (1743), la Frauenkirche de Dresde avec son dôme "cloche de pierre" fut détruite lors du bombardement de 1945. Ses ruines restèrent 50 ans comme mémorial. Reconstruite pierre par pierre (1994-2005) grâce à une mobilisation mondiale, utilisant pierres originales noircies. Symbole puissant de réconciliation, paix et renaissance après guerre. Elle incarne la mémoire, pardon et résilience allemande post-WWII.',
     points: 60,
-    coordinates: [13.7417, 51.0519]
+    coordinates: [13.7417, 51.0519],
+    imageUrl: '/src/assets/places/frauenkirche-dresden.jpg'
   },
   {
     id: 'ger-3',
     name: 'Cathédrale d\'Aix-la-Chapelle',
     country: 'Germany',
     type: 'Cathédrale',
-    description: 'Première cathédrale d\'Allemagne du Nord',
+    description: 'Plus ancienne cathédrale d\'Europe du Nord (796), la Chapelle Palatine de Charlemagne à Aix-la-Chapelle vit couronnement de 30 rois germaniques. Architecture carolingienne octogonale inspirée de Byzance. Trône de Charlemagne, reliquaire contenant reliques de Charlemagne canonisé. Patrimoine UNESCO, première inscrite en Allemagne (1978). Elle symbolise l\'empire carolingien, naissance du Saint-Empire et unité européenne médiévale.',
     points: 70,
-    coordinates: [6.0838, 50.7753]
+    coordinates: [6.0838, 50.7753],
+    imageUrl: '/src/assets/places/aachen-cathedral.jpg'
   },
   
   // Greece
@@ -309,9 +312,10 @@ export const mockPlaces: Place[] = [
     name: 'Monastère de la Trinité-Saint-Serge',
     country: 'Russia',
     type: 'Monastère',
-    description: 'Plus important monastère orthodoxe russe',
+    description: 'Plus important monastère orthodoxe russe fondé en 1345 par Saint Serge de Radonège. Forteresse spirituelle avec cathédrales aux bulbes colorés, beffroi de 88m, trésor d\'icônes et manuscrits. Résista au siège polonais de 1608-1610. Lieu de couronnement et pèlerinage des tsars. Patrimoine UNESCO, académie théologique orthodoxe. Il incarne la spiritualité russe, tradition monastique et identité nationale à travers 7 siècles.',
     points: 75,
-    coordinates: [38.1318, 56.3119]
+    coordinates: [38.1318, 56.3119],
+    imageUrl: '/src/assets/places/trinity-sergius.jpg'
   },
   
   // Poland
@@ -330,9 +334,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale du Wawel',
     country: 'Poland',
     type: 'Cathédrale',
-    description: 'Cathédrale de couronnement des rois',
+    description: 'Cathédrale royale de Cracovie (1364) où furent couronnés rois et reines de Pologne pendant 5 siècles. Nécropole nationale : tombeaux de monarques, héros nationaux et Pape Jean-Paul II. Chapelle Sigismond Renaissance avec dôme doré. Cloche Sigismond de 11 tonnes. Patrimoine UNESCO sur colline du Wawel. Sanctuaire national incarnant 1000 ans d\'histoire, monarchie et catholicisme polonais.',
     points: 65,
-    coordinates: [19.9352, 50.0544]
+    coordinates: [19.9352, 50.0544],
+    imageUrl: '/src/assets/places/wawel-cathedral.jpg'
   },
   
   // Portugal
@@ -351,9 +356,10 @@ export const mockPlaces: Place[] = [
     name: 'Monastère des Hiéronymites',
     country: 'Portugal',
     type: 'Monastère',
-    description: 'Chef-d\'œuvre manuélin à Lisbonne',
+    description: 'Chef-d\'œuvre manuélin à Lisbonne (1501-1601), le Mosteiro dos Jerónimos célèbre les découvertes portugaises. Architecture flamboyante mêlant gothique tardif et motifs maritimes. Commandé par Manuel Ier, financé par l\'or des épices. Tombeaux de Vasco de Gama et poète Camões. Cloître magnifique avec voûtes ciselées. Patrimoine UNESCO, il symbolise l\'Âge d\'Or portugais, les grandes découvertes et l\'expansion maritime lusitanienne.',
     points: 70,
-    coordinates: [-9.2061, 38.6979]
+    coordinates: [-9.2061, 38.6979],
+    imageUrl: '/src/assets/places/jeronimos.jpg'
   },
   
   // ========== MIDDLE EAST & NORTH AFRICA ==========
@@ -404,9 +410,10 @@ export const mockPlaces: Place[] = [
     name: 'Basilique de l\'Annonciation',
     country: 'Israel',
     type: 'Basilique',
-    description: 'Lieu de l\'Annonciation à Nazareth',
+    description: 'Plus grande église du Moyen-Orient (1969) construite sur le site où l\'ange Gabriel annonça à Marie sa maternité divine. Deux niveaux : grotte de l\'Annonciation en bas, basilique moderne en haut avec dôme inversé. Mosaïques de 50 pays représentant la Vierge. Architecture audacieuse fusionnant tradition et modernité. Pèlerinage marial majeur à Nazareth, ville de l\'enfance de Jésus.',
     points: 85,
-    coordinates: [35.2983, 32.7018]
+    coordinates: [35.2983, 32.7018],
+    imageUrl: '/src/assets/places/annunciation-nazareth.jpg'
   },
   
   // Saudi Arabia
@@ -467,9 +474,10 @@ export const mockPlaces: Place[] = [
     name: 'Monastère Sainte-Catherine',
     country: 'Egypt',
     type: 'Monastère',
-    description: 'Ancien monastère au pied du Mont Sinaï',
+    description: 'Plus ancien monastère chrétien en activité continue (527), Sainte-Catherine au pied du Mont Sinaï (Horeb) abrite le Buisson Ardent de Moïse. Fortifié par Justinien, il préserve manuscrits anciens, icônes byzantines, bibliothèque de 3000 codex. Mosquée dans l\'enceinte témoigne de coexistence. Patrimoine UNESCO. Lieu saint pour judaïsme, christianisme et islam. Pèlerinage vers sommet du Sinaï (2285m) où Moïse reçut les Tables de la Loi.',
     points: 100,
-    coordinates: [33.9756, 28.5569]
+    coordinates: [33.9756, 28.5569],
+    imageUrl: '/src/assets/places/st-catherine-sinai.jpg'
   },
   
   // Turkey
@@ -520,9 +528,10 @@ export const mockPlaces: Place[] = [
     name: 'Médersa Ben Youssef',
     country: 'Morocco',
     type: 'École coranique',
-    description: 'Plus grande médersa du Maroc',
+    description: 'Plus grande médersa (école coranique) du Maghreb (1564-1565), Ben Youssef à Marrakech pouvait accueillir 900 étudiants. Architecture hispano-mauresque sublime : zellige polychrome, bois de cèdre sculpté, stuc ciselé, calligraphies coraniques. Cour centrale avec bassin de marbre. 130 cellules d\'étudiants. Fermée 1960, restaurée, ouverte au public 1982-2020. Chef-d\'œuvre de l\'art saadien incarnant l\'éducation islamique traditionnelle et beauté architecturale marocaine.',
     points: 65,
-    coordinates: [-7.9847, 31.6315]
+    coordinates: [-7.9847, 31.6315],
+    imageUrl: '/src/assets/places/ben-youssef.jpg'
   },
   
   // ========== ASIA ==========
@@ -853,36 +862,40 @@ export const mockPlaces: Place[] = [
     name: 'Basilique du Sanctuaire National',
     country: 'United States',
     type: 'Basilique',
-    description: 'Plus grande église catholique des États-Unis à Washington',
+    description: 'Plus grande église catholique d\'Amérique du Nord (1920-1961) à Washington DC, le Sanctuaire National de l\'Immaculée Conception combine styles néo-byzantin et néo-roman. 70 chapelles représentant héritages catholiques mondiaux. Mosaïques couvrant 7400m². Elle accueille 1 million visiteurs annuels. Basilique mineure depuis 1990, elle symbolise diversité catholique américaine et dévotion mariale.',
     points: 75,
-    coordinates: [-77.0011, 38.9340]
+    coordinates: [-77.0011, 38.9340],
+    imageUrl: '/src/assets/places/national-shrine-dc.jpg'
   },
   {
     id: 'usa-3',
     name: 'Mission San Xavier del Bac',
     country: 'United States',
     type: 'Mission',
-    description: 'Mission espagnole historique en Arizona',
+    description: 'Mission espagnole (1797) en Arizona surnommée "Colombe Blanche du Désert". Architecture baroque coloniale avec façade blanche ornée. Fondée par missionnaire jésuite Eusebio Kino en 1692 pour évangéliser Tohono O\'odham. Toujours active, elle incarne l\'héritage catholique hispanique du Sud-Ouest américain et dialogue culturel hispano-amérindien.',
     points: 60,
-    coordinates: [-111.0072, 32.1062]
+    coordinates: [-111.0072, 32.1062],
+    imageUrl: '/src/assets/places/san-xavier-mission.jpg'
   },
   {
     id: 'usa-4',
     name: 'Salt Lake Temple',
     country: 'United States',
     type: 'Temple',
-    description: 'Temple mormon emblématique',
+    description: 'Temple emblématique mormon à Salt Lake City (1893), construit en 40 ans en granit. Six flèches dont centrale avec statue dorée de l\'ange Moroni. Réservé aux membres pratiquants de l\'Église de Jésus-Christ des Saints des Derniers Jours pour rites sacrés (baptêmes, mariages éternels). Symbole mondial du mormonisme, de l\'Utah et de la foi des pionniers mormons.',
     points: 65,
-    coordinates: [-111.8922, 40.7704]
+    coordinates: [-111.8922, 40.7704],
+    imageUrl: '/src/assets/places/salt-lake-temple.jpg'
   },
   {
     id: 'usa-5',
     name: 'Grace Cathedral',
     country: 'United States',
     type: 'Cathédrale',
-    description: 'Cathédrale épiscopale de San Francisco',
+    description: 'Cathédrale épiscopale néo-gothique (1964) sur Nob Hill à San Francisco. Deux labyrinthes (extérieur et intérieur) inspirés de Chartres pour méditation. Vitraux dont "Human Endeavor" représentant Einstein. Portes du Paradis, réplique de celles du Baptistère de Florence. Cathédrale progressiste ouverte à toutes spiritualités. Elle incarne l\'ouverture religieuse californienne et dialogue interreligieux.',
     points: 60,
-    coordinates: [-122.4125, 37.7919]
+    coordinates: [-122.4125, 37.7919],
+    imageUrl: '/src/assets/places/grace-cathedral-sf.jpg'
   },
   
   // Mexico
@@ -921,9 +934,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale métropolitaine de Mexico',
     country: 'Mexico',
     type: 'Cathédrale',
-    description: 'Plus grande cathédrale des Amériques',
+    description: 'Plus grande cathédrale des Amériques (1573-1813), bâtie sur ruines du temple aztèque Teocalli. Fusion d\'architectures baroque, néo-classique, churrigueresque sur 250 ans de construction. Clochers de 67m, 16 chapelles, retables dorés, crypte des archevêques. Elle repose sur sol instable du lac Texcoco asséché, inclinée et renforcée. Patrimoine UNESCO, cœur spirituel et historique de Mexico, elle symbolise conquête espagnole et syncrétisme hispano-aztèque.',
     points: 80,
-    coordinates: [-99.1332, 19.4342]
+    coordinates: [-99.1332, 19.4342],
+    imageUrl: '/src/assets/places/mexico-city-cathedral.jpg'
   },
   
   // Canada
@@ -932,9 +946,10 @@ export const mockPlaces: Place[] = [
     name: 'Oratoire Saint-Joseph',
     country: 'Canada',
     type: 'Basilique',
-    description: 'Plus grande église du Canada à Montréal',
+    description: 'Plus grande église du Canada (1924-1967) sur le Mont-Royal à Montréal, l\'Oratoire Saint-Joseph possède un dôme de 97m, troisième plus grand au monde. Fondé par Frère André (canonisé 2010), thaumaturge réputé pour guérisons miraculeuses. Escalier de 283 marches que pèlerins gravissent à genoux. 2 millions visiteurs annuels. Il incarne la foi catholique québécoise, les miracles et la piété populaire canadienne-française.',
     points: 75,
-    coordinates: [-73.6169, 45.4920]
+    coordinates: [-73.6169, 45.4920],
+    imageUrl: '/src/assets/places/st-joseph-oratory.jpg'
   },
   {
     id: 'can-2',
@@ -1007,9 +1022,10 @@ export const mockPlaces: Place[] = [
     name: 'Monastère de Santa Catalina',
     country: 'Peru',
     type: 'Monastère',
-    description: 'Cité monastique à Arequipa',
+    description: 'Cité monastique (1579-1580) à Arequipa, Santa Catalina est un monastère dominicain occupant 20 000m² avec rues colorées orange et bleues, places, chapelles. Fermé au monde 400 ans, ouvert au public 1970. 20 religieuses y vivent toujours en clôture. Architecture coloniale espagnole-andalouse préservée. Musée vivant colonial du Pérou vice-royal. Il incarne vie religieuse coloniale, isolement mystique et richesse artistique baroque andin.',
     points: 65,
-    coordinates: [-71.5370, -16.3948]
+    coordinates: [-71.5370, -16.3948],
+    imageUrl: '/src/assets/places/santa-catalina.jpg'
   },
   
   // Colombia
@@ -1040,18 +1056,20 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale métropolitaine de Buenos Aires',
     country: 'Argentina',
     type: 'Cathédrale',
-    description: 'Cathédrale néo-classique principale',
+    description: 'Cathédrale néo-classique (1752-1852) de Buenos Aires avec façade grecque à 12 colonnes représentant 12 apôtres. Tombeau du héros national José de San Martín dans mausolée gardé. Architecture sobre contrastant avec églises baroques latino-américaines. Siège de l\'archidiocèse où officia le Cardinal Bergoglio (Pape François). Elle symbolise indépendance argentine, identité nationale et leadership catholique latino-américain.',
     points: 65,
-    coordinates: [-58.3730, -34.6076]
+    coordinates: [-58.3730, -34.6076],
+    imageUrl: '/src/assets/places/buenos-aires-cathedral.jpg'
   },
   {
     id: 'arg-2',
     name: 'Basilique Notre-Dame de Luján',
     country: 'Argentina',
     type: 'Basilique',
-    description: 'Centre de pèlerinage marial argentin',
+    description: 'Centre de pèlerinage marial argentin (1887-1935), Luján accueille 6 millions fidèles annuels. Statue miraculeuse de Notre-Dame (40cm) datant de 1630 s\'arrêta mystérieusement ici. Architecture néo-gothique avec tours jumelles de 106m. Patronne de l\'Argentine, Uruguay et Paraguay. Pèlerinage à pied de 68km depuis Buenos Aires (Peregrinación Juvenil). Symbole de la foi populaire argentine et unité nationale.',
     points: 70,
-    coordinates: [-59.1167, -34.5667]
+    coordinates: [-59.1167, -34.5667],
+    imageUrl: '/src/assets/places/lujan-basilica.jpg'
   },
   
   // ========== AFRICA ==========
@@ -1072,9 +1090,10 @@ export const mockPlaces: Place[] = [
     name: 'Axoum',
     country: 'Ethiopia',
     type: 'Site religieux',
-    description: 'Ancienne capitale avec obélisques et églises',
+    description: 'Ancienne capitale du Royaume d\'Aksum (100-940), Axoum possède obélisques monumentaux (stèles) de 33m et 500 tonnes, merveilles d\'ingénierie antique. Église Sainte-Marie-de-Sion abriterait l\'Arche d\'Alliance selon tradition éthiopienne. Premier royaume chrétien d\'Afrique (330). Patrimoine UNESCO. Axoum incarne christianisme éthiopien millénaire, héritage juif (Reine de Saba) et grandeur de l\'Éthiopie antique.',
     points: 95,
-    coordinates: [38.7203, 14.1219]
+    coordinates: [38.7203, 14.1219],
+    imageUrl: '/src/assets/places/aksum.jpg'
   },
   
   // South Africa
@@ -1083,9 +1102,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale Saint-Georges',
     country: 'South Africa',
     type: 'Cathédrale',
-    description: 'Cathédrale anglicane au Cap',
+    description: 'Cathédrale anglicane (1834) du Cap, St. George\'s fut chaire de l\'archevêque Desmond Tutu, prix Nobel de la Paix 1984. Surnommée "Cathédrale du Peuple", elle fut centre de résistance anti-apartheid. Lieu de réconciliation nationale post-1994. Architecture néo-gothique victorienne. Elle symbolise lutte pour justice, égalité raciale et transition démocratique sud-africaine.',
     points: 60,
-    coordinates: [18.4193, -33.9286]
+    coordinates: [18.4193, -33.9286],
+    imageUrl: '/src/assets/places/st-georges-capetown.jpg'
   },
   
   // ========== OCEANIA ==========
@@ -1096,9 +1116,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale Sainte-Marie',
     country: 'Australia',
     type: 'Cathédrale',
-    description: 'Cathédrale néo-gothique de Sydney',
+    description: 'Cathédrale néo-gothique (1928) de Sydney, St. Mary\'s avec flèches de 74m domine Hyde Park. Plus grande église catholique d\'Australie. Architecture style gothique anglais. Elle symbolise immigration catholique irlandaise et croissance du catholicisme australien. Lieu de cérémonies nationales et messes télévisées.',
     points: 70,
-    coordinates: [151.2131, -33.8712]
+    coordinates: [151.2131, -33.8712],
+    imageUrl: '/src/assets/places/st-marys-sydney.jpg'
   },
   {
     id: 'aus-2',
@@ -1117,9 +1138,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Christchurch',
     country: 'New Zealand',
     type: 'Cathédrale',
-    description: 'Cathédrale anglicane emblématique',
+    description: 'Cathédrale anglicane emblématique (1864-1904) de Christchurch, gravement endommagée par séismes de 2011. Sa flèche s\'effondra, symbole de la tragédie néo-zélandaise (185 morts). Débats sur reconstruction ou démolition divisèrent la communauté. Cathédrale transitoire en carton (Shigeru Ban) créée en attendant. Elle incarne résilience, patrimoine britannique néo-zélandais et questionnements post-catastrophe.',
     points: 65,
-    coordinates: [172.6366, -43.5321]
+    coordinates: [172.6366, -43.5321],
+    imageUrl: '/src/assets/places/christchurch-cathedral.jpg'
   }
 ];
 
