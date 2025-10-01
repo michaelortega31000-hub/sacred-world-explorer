@@ -42,11 +42,7 @@ const WorldMap = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header 
-        showBack 
-        backTo="/selection" 
-        backLabel={t('worldMap.back')}
-      >
+      <Header>
         <div className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
         </div>
