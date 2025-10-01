@@ -1,8 +1,5 @@
-import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ArrowLeft, Trophy, Users, Target } from 'lucide-react';
@@ -11,73 +8,20 @@ import { getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
+import { ComposableMap, Geographies, Geography, ZoomableGroup } from 'react-simple-maps';
+
+const geoUrl = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
 
 const WorldMap = () => {
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { userProgress } = useApp();
-  const [mapboxToken, setMapboxToken] = useState('');
   const countries = getAllCountries();
 
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    mapboxgl.accessToken = mapboxToken;
-
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/light-v11',
-      projection: 'globe' as any,
-      zoom: 1.5,
-      center: [30, 15],
-      pitch: 0,
-    });
-
-    map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
-    map.current.scrollZoom.disable();
-
-    map.current.on('style.load', () => {
-      map.current?.setFog({
-        color: 'rgb(242, 236, 226)',
-        'high-color': 'rgb(0, 55, 32)',
-        'horizon-blend': 0.1,
-      });
-    });
-
-    map.current.on('click', (e) => {
-      console.log('Map clicked at:', e.lngLat);
-    });
-
-    return () => {
-      map.current?.remove();
-    };
-  }, [mapboxToken]);
-
-  if (!mapboxToken) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center p-6">
-        <div className="max-w-md w-full bg-card p-8 rounded-xl shadow-lg">
-          <h2 className="text-2xl font-bold text-card-foreground mb-4">Configuration Mapbox</h2>
-          <p className="text-muted-foreground mb-6">
-            Pour afficher la carte interactive, veuillez entrer votre token Mapbox.
-            Obtenez-le sur <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-primary underline">mapbox.com</a>
-          </p>
-          <input
-            type="text"
-            placeholder="pk.eyJ1Ijoi..."
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-            className="w-full px-4 py-3 border border-input rounded-lg mb-4 focus:ring-2 focus:ring-ring"
-          />
-          <Button onClick={() => {}} className="w-full" disabled={!mapboxToken}>
-            Charger la carte
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  const handleBack = () => {
+    if (window.history.length > 1) navigate(-1);
+    else navigate('/selection');
+  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -85,13 +29,12 @@ const WorldMap = () => {
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <Button
             variant="ghost"
-            onClick={() => navigate('/selection')}
+            onClick={handleBack}
             className="gap-2"
           >
             <ArrowLeft className="w-4 h-4" />
             {t('worldMap.back')}
           </Button>
-          
           <div className="flex items-center gap-4">
             <div className="text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
@@ -124,8 +67,31 @@ const WorldMap = () => {
         </div>
 
         <TabsContent value="map" className="flex-1 m-0 relative">
-          <div ref={mapContainer} className="absolute inset-0" />
-          
+          {/* Map container */}
+          <div className="absolute inset-0">
+            <ComposableMap style={{ width: '100%', height: '100%' }} projectionConfig={{ scale: 160 }}>
+              <ZoomableGroup>
+                <Geographies geography={geoUrl}>
+                  {({ geographies }) =>
+                    geographies.map((geo: any) => (
+                      <Geography
+                        key={geo.rsmKey}
+                        geography={geo}
+                        onClick={() => navigate(`/country/${geo.properties.name}`)}
+                        style={{
+                          default: { fill: 'hsl(var(--muted))', stroke: 'hsl(var(--border))', outline: 'none' },
+                          hover: { fill: 'hsl(var(--accent))', stroke: 'hsl(var(--border))', outline: 'none', cursor: 'pointer' },
+                          pressed: { fill: 'hsl(var(--primary))', stroke: 'hsl(var(--border))', outline: 'none' },
+                        }}
+                      />
+                    ))
+                  }
+                </Geographies>
+              </ZoomableGroup>
+            </ComposableMap>
+          </div>
+
+          {/* Countries list overlay */}
           <div className="absolute top-4 left-4 right-4 md:left-auto md:w-96 bg-card/95 backdrop-blur-sm p-6 rounded-xl shadow-lg border border-border">
             <h2 className="text-xl font-bold text-card-foreground mb-2">
               {t('worldMap.subtitle')}
