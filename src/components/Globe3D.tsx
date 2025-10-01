@@ -349,7 +349,10 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       />
       
       {/* Instructions */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/80 text-white px-6 py-3 rounded-full text-sm backdrop-blur-sm border border-white/20">
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 px-6 py-3 rounded-full text-sm backdrop-blur-sm border-2 text-black font-medium" style={{
+        background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+        borderColor: 'hsl(45 100% 51%)'
+      }}>
         🌍 Faites glisser pour tourner • Molette pour zoomer • Cliquez sur un pays
       </div>
 
