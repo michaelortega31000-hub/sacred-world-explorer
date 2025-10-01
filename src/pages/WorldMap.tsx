@@ -75,7 +75,7 @@ const WorldMap = () => {
           </div>
         </div>
 
-        <TabsContent value="map" className="flex-1 m-0 relative">
+        <TabsContent value="map" className="flex-1 m-0 relative min-h-[70vh]">
           {/* Globe 3D avec fond étoilé */}
           <Globe3D />
 

@@ -46,6 +46,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
     if (!mapContainer.current || !mapboxToken || showTokenInput) return;
 
     mapboxgl.accessToken = mapboxToken;
+    console.log('Globe3D init with token', !!mapboxToken, 'container size', mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
     
     // Initialiser la carte en mode globe
     map.current = new mapboxgl.Map({
@@ -198,7 +199,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
   }
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full h-[calc(100vh-160px)] min-h-[520px]">
       <div 
         ref={mapContainer} 
         className="absolute inset-0"
