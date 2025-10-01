@@ -93,6 +93,50 @@ export const mockPlaces: Place[] = [
     coordinates: [1.4418, 43.6084],
     imageUrl: '/src/assets/places/toulouse-st-sernin.jpg'
   },
+  {
+    id: 'fra-9',
+    name: 'Cathédrale de Strasbourg',
+    country: 'France',
+    city: 'Strasbourg',
+    type: 'Cathédrale',
+    description: 'Chef-d\'œuvre gothique en grès rose des Vosges (1015-1439), la cathédrale de Strasbourg fut le plus haut édifice du monde de 1647 à 1874 avec sa flèche unique culminant à 142m. Façade occidentale d\'une finesse extraordinaire avec des centaines de sculptures. Horloge astronomique Renaissance (1574) chef-d\'œuvre de mécanique et d\'art. Vitraux médiévaux exceptionnels du XIIe au XIVe siècle. Vue panoramique unique depuis la plateforme à 66m. Symbole de Strasbourg et de l\'Alsace, patrimoine UNESCO, elle témoigne du génie gothique rhénan et de l\'histoire franco-allemande.',
+    points: 70,
+    coordinates: [7.7507, 48.5816],
+    imageUrl: '/src/assets/places/strasbourg-cathedral.jpg'
+  },
+  {
+    id: 'fra-10',
+    name: 'Basilique Sainte-Marie-Madeleine de Vézelay',
+    country: 'France',
+    city: 'Vézelay',
+    type: 'Basilique',
+    description: 'Joyau de l\'art roman bourguignon (XIIe siècle) perché sur la colline éternelle de Vézelay. Point de départ majeur du pèlerinage vers Saint-Jacques-de-Compostelle depuis le Moyen Âge. Son tympan du Jugement dernier et sa nef aux pierres claires et sombres alternées sont des chefs-d\'œuvre absolus. Abritait les reliques de Marie-Madeleine, attirant rois et pèlerins. Saint Bernard y prêcha la deuxième croisade en 1146. Restaurée par Viollet-le-Duc au XIXe siècle. Patrimoine UNESCO, lieu spirituel exceptionnel symbole du renouveau roman et de la foi médiévale.',
+    points: 65,
+    coordinates: [3.7469, 47.4659],
+    imageUrl: '/src/assets/places/vezelay-basilica.jpg'
+  },
+  {
+    id: 'fra-11',
+    name: 'Cathédrale Notre-Dame d\'Amiens',
+    country: 'France',
+    city: 'Amiens',
+    type: 'Cathédrale',
+    description: 'Plus vaste cathédrale de France par ses volumes intérieurs (200 000m³), chef-d\'œuvre du gothique classique (1220-1288). Nef culminant à 42,30m sous voûte, longueur de 145m. Façade occidentale harmonieuse avec trois portails sculptés présentant 750 figures. Labyrinthe au sol reconstituant le chemin spirituel. "Bible d\'Amiens" pour Ruskin qui la considérait comme la perfection gothique. Patrimoine UNESCO. Spectacle "Amiens en couleurs" illumine chaque été la façade, révélant les couleurs médiévales d\'origine. Symbole du génie picard et de l\'apogée de l\'art gothique français.',
+    points: 65,
+    coordinates: [2.3019, 49.8947],
+    imageUrl: '/src/assets/places/amiens-cathedral.jpg'
+  },
+  {
+    id: 'fra-12',
+    name: 'Sainte-Chapelle de Paris',
+    country: 'France',
+    city: 'Paris',
+    type: 'Chapelle',
+    description: 'Joyau absolu du gothique rayonnant (1242-1248) commandé par Saint Louis pour abriter les reliques de la Passion du Christ, dont la Couronne d\'épines. Chapelle palatine du palais royal, elle éblouit par ses 15 verrières de 15m de haut couvrant 600m² et narrant l\'histoire biblique de la Genèse à la Résurrection. 1113 scènes en vitraux du XIIIe siècle, 2/3 d\'origine. Architecture audacieuse supprimant les murs au profit du verre et de la lumière divine. Reliquaire monumental, elle incarnait la Jérusalem céleste sur terre. Chef-d\'œuvre absolu de l\'art gothique et de la spiritualité médiévale.',
+    points: 75,
+    coordinates: [2.3451, 48.8556],
+    imageUrl: '/src/assets/places/sainte-chapelle.jpg'
+  },
   
   // Italy
   {
@@ -161,6 +205,72 @@ export const mockPlaces: Place[] = [
     coordinates: [12.4768, 41.8986],
     imageUrl: '/src/assets/places/pantheon-rome.jpg'
   },
+  {
+    id: 'ita-7',
+    name: 'Cathédrale de Sienne',
+    country: 'Italy',
+    city: 'Sienne',
+    type: 'Cathédrale',
+    description: 'Chef-d\'œuvre gothique toscan (1215-1263) au revêtement unique de marbre blanc et noir en bandes horizontales, symboles de Sienne. Façade Giovanni Pisano (1284-1299) richement sculptée. Sol en mosaïque de marbre (1369-1547) racontant histoires bibliques sur 3000m². Bibliothèque Piccolomini aux fresques éclatantes du Pinturicchio. Chaire octogonale de Nicola Pisano (1265-1268) chef-d\'œuvre de sculpture gothique. Patrimoine UNESCO. Projet grandiose d\'agrandissement abandonné après la Peste Noire de 1348. Symbole de la République de Sienne, rival de Florence, et summum de l\'art gothique italien.',
+    points: 70,
+    coordinates: [11.3287, 43.3178],
+    imageUrl: '/src/assets/places/siena-cathedral.jpg'
+  },
+  {
+    id: 'ita-8',
+    name: 'Basilique Saint-Antoine de Padoue',
+    country: 'Italy',
+    city: 'Padoue',
+    type: 'Basilique',
+    description: 'Basilique pontificale (1232-1310) érigée sur le tombeau de Saint Antoine de Padoue (1195-1231), franciscain docteur de l\'Église vénéré pour ses miracles. Architecture fusionnant roman, gothique, byzantin avec ses 8 dômes inspirés de Saint-Marc de Venise. Chapelle des Reliques abritant la langue miraculeusement préservée du saint. Œuvres de Donatello dont le maître-autel en bronze. 6,5 millions de pèlerins annuels. Lieu de dévotion mondiale pour retrouver objets perdus et miracles. Patrimoine artistique et spirituel exceptionnel du catholicisme italien.',
+    points: 65,
+    coordinates: [11.8812, 45.4015],
+    imageUrl: '/src/assets/places/padua-basilica.jpg'
+  },
+  {
+    id: 'ita-9',
+    name: 'Ensemble Cathédral de Pise',
+    country: 'Italy',
+    city: 'Pise',
+    type: 'Cathédrale',
+    description: 'Piazza dei Miracoli (Place des Miracles) patrimoine UNESCO réunissant quatre chefs-d\'œuvre du roman pisan en marbre blanc (XIe-XIVe) : la Cathédrale (1063), le Baptistère (1152), le Campanile (Tour penchée, 1173) et le Camposanto (1278). Tour inclinée de 56m célèbre mondialement pour sa déviation de 3,97° due au sol argileux, stabilisée après travaux (1990-2001). Galilée y étudia les lois du pendule. Baptistère à l\'acoustique parfaite. Fresques du Camposanto. Ensemble unique célébrant la puissance maritime de Pise médiévale et le génie architectural italien.',
+    points: 80,
+    coordinates: [10.3966, 43.7230],
+    imageUrl: '/src/assets/places/pisa-complex.jpg'
+  },
+  {
+    id: 'ita-10',
+    name: 'Basilique Saint-Paul-hors-les-Murs',
+    country: 'Italy',
+    city: 'Rome',
+    type: 'Basilique',
+    description: 'Basilique papale majeure érigée au IVe siècle sur le tombeau de Saint Paul, apôtre martyrisé en 67. Reconstruite après l\'incendie de 1823 en conservant le plan paléochrétien d\'origine. Deuxième plus grande église de Rome après Saint-Pierre. Nef de 131m avec 80 colonnes de granit. Mosaïques byzantines du XIIIe siècle dans l\'abside. Portraits en médaillons des 266 papes depuis Saint Pierre. Cloître bénédictin du XIIIe aux colonnes incrustées de mosaïques cosmatesques. Patrimoine UNESCO, lieu de pèlerinage paulinien majeur, extraterritorialité du Vatican.',
+    points: 70,
+    coordinates: [12.4765, 41.8588],
+    imageUrl: '/src/assets/places/san-paolo-rome.jpg'
+  },
+  {
+    id: 'ita-11',
+    name: 'Cathédrale de Naples',
+    country: 'Italy',
+    city: 'Naples',
+    type: 'Cathédrale',
+    description: 'Duomo di San Gennaro, cathédrale (1272-1323) dédiée à Saint Janvier, patron et protecteur de Naples. Chapelle du Trésor baroque (1608-1637) abritant les reliques et le sang miraculeusement liquéfié du saint trois fois par an devant des milliers de fidèles. Miracle observé depuis 1389, symbole napolitain de protection divine. Architecture mêlant gothique, baroque et néoclassique après reconstructions. Baptistère paléochrétien du IVe siècle, plus ancien d\'Occident, avec mosaïques. Cœur spirituel de Naples et de la ferveur catholique napolitaine passionnée.',
+    points: 65,
+    coordinates: [14.2569, 40.8529],
+    imageUrl: '/src/assets/places/naples-cathedral.jpg'
+  },
+  {
+    id: 'ita-12',
+    name: 'Basilique Sainte-Marie-Majeure',
+    country: 'Italy',
+    city: 'Rome',
+    type: 'Basilique',
+    description: 'Basilique papale majeure fondée en 432-440, plus ancien sanctuaire marial d\'Occident. Légende de la Vierge apparue au Pape Libère en 358 demandant une église "où tombera la neige en août". Mosaïques paléochrétiennes du Ve siècle parmi les plus belles au monde narrant l\'Ancien Testament. Plafond à caissons doré à l\'or rapporté des Amériques (1498). Reliques de la crèche du Christ. Chapelles Sixtine et Pauline baroques. Façade et campanile roman (75m, plus haut de Rome). Patrimoine UNESCO, extraterritorialité vaticane, cœur de la dévotion mariale romaine depuis 1600 ans.',
+    points: 75,
+    coordinates: [12.4990, 41.8976],
+    imageUrl: '/src/assets/places/santa-maria-maggiore.jpg'
+  },
   
   // Spain
   {
@@ -228,6 +338,61 @@ export const mockPlaces: Place[] = [
     points: 85,
     coordinates: [-3.5881, 37.1761],
     imageUrl: '/src/assets/places/alhambra.jpg'
+  },
+  {
+    id: 'esp-7',
+    name: 'Cathédrale de Burgos',
+    country: 'Spain',
+    city: 'Burgos',
+    type: 'Cathédrale',
+    description: 'Chef-d\'œuvre gothique espagnol (1221-1567) de style français influencé par Reims et Bourges. Première cathédrale gothique de Castille. Flèches ajourées du XVe siècle influencées par l\'art germanique. Chapelle des Connétables au plafond étoilé spectaculaire. Tombeau du Cid Campeador, héros reconquérant légendaire. Escalera Dorada (Escalier Doré) Renaissance de Diego de Siloé. Patrimoine UNESCO. Cimborrio (lanterne) octogonal gothique flamboyant. Symbole de Burgos et de la Castille, elle représente 3 siècles d\'évolution gothique espagnole, fusion d\'influences européennes et génie ibérique.',
+    points: 70,
+    coordinates: [-3.7044, 42.3405],
+    imageUrl: '/src/assets/places/burgos-cathedral.jpg'
+  },
+  {
+    id: 'esp-8',
+    name: 'Monastère de Montserrat',
+    country: 'Spain',
+    city: 'Montserrat',
+    type: 'Monastère',
+    description: 'Monastère bénédictin (XIe siècle) perché à 1236m sur les montagnes spectaculaires de Montserrat aux formations rocheuses uniques en dents de scie. Sanctuaire de la Moreneta (Vierge Noire du XIIe siècle), patronne de la Catalogne, vénérée depuis 880. Escolania, l\'un des plus anciens chœurs de garçons d\'Europe (XIVe siècle). Lieu de pèlerinage majeur catalan accueillant 2,5 millions de visiteurs annuels. Vue panoramique exceptionnelle. Symbole de l\'identité catalane, de la résistance culturelle sous Franco. Centre spirituel, culturel et national de la Catalogne millénaire.',
+    points: 75,
+    coordinates: [1.8376, 41.5933],
+    imageUrl: '/src/assets/places/montserrat-monastery.jpg'
+  },
+  {
+    id: 'esp-9',
+    name: 'Cathédrale de Tolède',
+    country: 'Spain',
+    city: 'Tolède',
+    type: 'Cathédrale',
+    description: 'Catedral Primada (Cathédrale Primatiale), siège archiépiscopal d\'Espagne depuis le VIe siècle. Chef-d\'œuvre gothique hispano-flamand (1226-1493) sur l\'ancienne mosquée. Transparente baroque spectaculaire (1732) illuminant le chœur. Trésor abritant custode de 3m pesant 183kg en argent doré. Sacristie musée avec tableaux du Greco, Goya, Titien, Van Dyck. Clocher de 92m. Architecture fusionnant gothique, mudéjar, Renaissance, baroque. Symbole de Tolède, ville des trois cultures (chrétienne, musulmane, juive) et ancien cœur spirituel et politique de l\'Espagne wisigothique et médiévale.',
+    points: 80,
+    coordinates: [-4.0244, 39.8578],
+    imageUrl: '/src/assets/places/toledo-cathedral.jpg'
+  },
+  {
+    id: 'esp-10',
+    name: 'Cathédrale de León',
+    country: 'Spain',
+    city: 'León',
+    type: 'Cathédrale',
+    description: 'Pulchra Leonina (Belle Léonaise), summum du gothique espagnol (1205-1301) influencé par Chartres et Reims. Surnommée "Maison de la Lumière" pour ses 1800m² de vitraux médiévaux exceptionnels (125 verrières, XIIIe-XVIe siècles) parmi les plus beaux d\'Europe. Architecture gothique française pure rare en Espagne. Façade occidentale aux trois portails sculptés. Cloître Renaissance (1534). Tombeau de Saint Froilan, patron de León. Patrimoine UNESCO en cours. Symbole du royaume médiéval de León, étape majeure du Chemin de Saint-Jacques, elle illustre l\'apogée de l\'art vitrail gothique hispanique.',
+    points: 70,
+    coordinates: [-5.5670, 42.5987],
+    imageUrl: '/src/assets/places/leon-cathedral.jpg'
+  },
+  {
+    id: 'esp-11',
+    name: 'Monastère Royal de Guadalupe',
+    country: 'Spain',
+    city: 'Guadalupe',
+    type: 'Monastère',
+    description: 'Monastère-forteresse (XIVe-XVIIIe) en Estrémadure, centre spirituel majeur d\'Espagne et d\'Amérique latine. Sanctuaire de la Vierge de Guadalupe, patronne de l\'hispanité. Christophe Colomb y pria avant et après son voyage en Amérique (1492-1493). Architecture mêlant gothique, mudéjar, Renaissance et baroque. Huit cloîtres. Bibliothèque de manuscrits enluminés. Peintures de Zurbarán dans la sacristie. Lieu de baptême des premiers Amérindiens convertis. Patrimoine UNESCO. Symbole de la Reconquista, de la découverte des Amériques et du catholicisme hispano-américain sur cinq siècles.',
+    points: 75,
+    coordinates: [-5.3279, 39.4537],
+    imageUrl: '/src/assets/places/guadalupe-monastery.jpg'
   },
   
   // United Kingdom
