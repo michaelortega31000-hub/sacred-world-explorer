@@ -33,32 +33,85 @@ const TripPlannerTab = () => {
     return Array.from(cities).sort();
   }, [tripPlaces]);
 
-  // Optimize route based on starting city
+  // Optimize route based on starting city with geographic proximity
   const optimizedRoute = useMemo(() => {
     if (!startingCity || tripPlaces.length === 0) return [];
     
     const [city, country] = startingCity.split(', ');
-    const remaining = [...tripPlaces];
+    
+    // Group all places by city
+    const placesByCity = tripPlaces.reduce((acc, place) => {
+      const key = `${place.city}, ${place.country}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(place);
+      return acc;
+    }, {} as Record<string, typeof tripPlaces>);
+    
+    // Simple geographic proximity map (European cities)
+    const cityProximity: Record<string, string[]> = {
+      'Barcelona, Spain': ['Madrid, Spain', 'Montserrat, Spain', 'Valencia, Spain', 'Marseille, France', 'Lyon, France'],
+      'Madrid, Spain': ['Barcelona, Spain', 'Toledo, Spain', 'Lisbon, Portugal', 'Seville, Spain'],
+      'Paris, France': ['Reims, France', 'Chartres, France', 'Strasbourg, France', 'Lyon, France', 'Brussels, Belgium'],
+      'Rome, Italy': ['Naples, Italy', 'Florence, Italy', 'Siena, Italy', 'Pisa, Italy', 'Vatican City, Vatican'],
+      'London, United Kingdom': ['Canterbury, United Kingdom', 'York, United Kingdom', 'Westminster, United Kingdom', 'Paris, France'],
+      'Berlin, Germany': ['Dresden, Germany', 'Cologne, Germany', 'Munich, Germany', 'Prague, Czech Republic'],
+      'Istanbul, Turkey': ['Ankara, Turkey', 'Athens, Greece', 'Sofia, Bulgaria'],
+      'Athens, Greece': ['Delphi, Greece', 'Thessaloniki, Greece', 'Istanbul, Turkey'],
+      'Moscow, Russia': ['St. Petersburg, Russia', 'Sergiyev Posad, Russia', 'Kiev, Ukraine'],
+      'Cairo, Egypt': ['Alexandria, Egypt', 'Giza, Egypt', 'Luxor, Egypt'],
+      'Bangkok, Thailand': ['Ayutthaya, Thailand', 'Chiang Mai, Thailand', 'Phuket, Thailand'],
+      'Tokyo, Japan': ['Kyoto, Japan', 'Osaka, Japan', 'Nara, Japan', 'Nikko, Japan'],
+      'Beijing, China': ['Xi\'an, China', 'Shanghai, China', 'Luoyang, China'],
+      'Delhi, India': ['Agra, India', 'Jaipur, India', 'Varanasi, India'],
+      'Mexico City, Mexico': ['Teotihuacan, Mexico', 'Puebla, Mexico', 'Guadalajara, Mexico'],
+      'Lima, Peru': ['Cusco, Peru', 'Arequipa, Peru', 'Machu Picchu, Peru'],
+      'Rio de Janeiro, Brazil': ['São Paulo, Brazil', 'Brasília, Brazil', 'Salvador, Brazil'],
+      'Buenos Aires, Argentina': ['Córdoba, Argentina', 'Mendoza, Argentina', 'Luján, Argentina'],
+    };
+    
     const route: typeof tripPlaces = [];
+    const visitedCities = new Set<string>();
+    let currentCity = startingCity;
     
     // Start with places in the starting city
-    const startingPlaces = remaining.filter(p => p.city === city && p.country === country);
-    route.push(...startingPlaces);
-    remaining.splice(0, remaining.length, ...remaining.filter(p => !(p.city === city && p.country === country)));
+    if (placesByCity[currentCity]) {
+      route.push(...placesByCity[currentCity]);
+      visitedCities.add(currentCity);
+    }
     
-    // Group remaining by city
-    while (remaining.length > 0) {
-      const placesByCity = remaining.reduce((acc, place) => {
-        const key = `${place.city}, ${place.country}`;
-        if (!acc[key]) acc[key] = [];
-        acc[key].push(place);
-        return acc;
-      }, {} as Record<string, typeof tripPlaces>);
+    // Visit nearest cities
+    while (visitedCities.size < Object.keys(placesByCity).length) {
+      let nearestCity: string | null = null;
+      let foundInProximity = false;
       
-      // Add next city's places
-      const nextCity = Object.keys(placesByCity)[0];
-      route.push(...placesByCity[nextCity]);
-      remaining.splice(0, remaining.length, ...remaining.filter(p => `${p.city}, ${p.country}` !== nextCity));
+      // First, try to find a nearby city from proximity map
+      if (cityProximity[currentCity]) {
+        for (const nearCity of cityProximity[currentCity]) {
+          if (placesByCity[nearCity] && !visitedCities.has(nearCity)) {
+            nearestCity = nearCity;
+            foundInProximity = true;
+            break;
+          }
+        }
+      }
+      
+      // If no nearby city found in proximity map, pick next unvisited city
+      if (!foundInProximity) {
+        for (const city of Object.keys(placesByCity)) {
+          if (!visitedCities.has(city)) {
+            nearestCity = city;
+            break;
+          }
+        }
+      }
+      
+      if (nearestCity) {
+        route.push(...placesByCity[nearestCity]);
+        visitedCities.add(nearestCity);
+        currentCity = nearestCity;
+      } else {
+        break;
+      }
     }
     
     return route;
