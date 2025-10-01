@@ -62,28 +62,25 @@ const WorldMap = () => {
       </Header>
 
       <Tabs defaultValue="map" className="flex-1 flex flex-col">
-        <div className="border-b-2" style={{ 
-          background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
-          borderColor: 'hsl(45 100% 51%)'
-        }}>
+        <div className="border-b border-border bg-card">
           <div className="max-w-7xl mx-auto">
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
-              <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
+              <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" strokeWidth="2" />
                   <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeWidth="2" />
                 </svg>
                 {t('worldMap.title')}
               </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
+              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Calendar className="w-4 h-4" />
                 {t('tabs.tripPlanner')}
               </TabsTrigger>
-              <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
+              <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
+              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <MapPin className="w-4 h-4" />
                 Lieux & Classements
               </TabsTrigger>
