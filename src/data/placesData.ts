@@ -2220,6 +2220,149 @@ export const mockPlaces: Place[] = [
     coordinates: [4.8227, 45.7622],
     imageUrl: '/src/assets/places/fourviere-lyon.jpg'
   },
+  {
+    id: 'fra-18',
+    name: 'Cathédrale Saint-Jean de Lyon',
+    country: 'France',
+    city: 'Lyon',
+    type: 'Cathédrale',
+    description: 'Cathédrale primatiale romano-gothique (1180-1480), siège de l\'archevêque primant des Gaules. Horloge astronomique du XIVe siècle, automate sonnant à midi. Vitraux médiévaux remarquables, rosace du transept. Lieu du Concile de Lyon 1245 et 1274. Elle incarne pouvoir religieux lyonnais et patrimoine architectural vieux Lyon.',
+    points: 60,
+    coordinates: [4.8269, 45.7608],
+    imageUrl: '/src/assets/places/lyon-cathedral.jpg'
+  },
+  {
+    id: 'fra-19',
+    name: 'Abbaye Saint-Martin d\'Ainay',
+    country: 'France',
+    city: 'Lyon',
+    type: 'Abbaye',
+    description: 'Basilique romane du XIIe siècle, plus ancien édifice religieux de Lyon encore debout. Architecture romane auvergnate exceptionnelle, colonnes antiques romaines réutilisées. Mosaïque choeur Byzantine. Patrimoine UNESCO. Elle témoigne continuité spirituelle Lyon depuis époque romaine et art roman lyonnais.',
+    points: 55,
+    coordinates: [4.8275, 45.7504],
+    imageUrl: '/src/assets/places/ainay-lyon.jpg'
+  },
+  {
+    id: 'fra-20',
+    name: 'Église Saint-Paul de Lyon',
+    country: 'France',
+    city: 'Lyon',
+    type: 'Église',
+    description: 'Église néo-gothique (1872) quartier Vaise, flèche élancée 70m. Architecture néo-gothique remarquable, vitraux colorés, orgue Cavaillé-Coll. Elle incarne renouveau architectural religieux XIXe siècle Lyon et expansion urbaine quartiers nord.',
+    points: 50,
+    coordinates: [4.8040, 45.7705],
+    imageUrl: '/src/assets/places/st-paul-lyon.jpg'
+  },
+  {
+    id: 'fra-21',
+    name: 'Cathédrale Saint-André de Bordeaux',
+    country: 'France',
+    city: 'Bordeaux',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique (XIIe-XVIe siècles), lieu du mariage d\'Aliénor d\'Aquitaine avec Louis VII en 1137. Tours jumelles 81m, portail royal sculpté XIIIe. Patrimoine UNESCO. Orgue monumental. Elle symbolise pouvoir royal, spiritualité aquitaine et mariage unissant France et Aquitaine.',
+    points: 65,
+    coordinates: [-0.5765, 44.8378],
+    imageUrl: '/src/assets/places/bordeaux-cathedral.jpg'
+  },
+  {
+    id: 'fra-22',
+    name: 'Basilique Saint-Michel de Bordeaux',
+    country: 'France',
+    city: 'Bordeaux',
+    type: 'Basilique',
+    description: 'Chef-d\'œuvre gothique flamboyant (XIVe-XVIe siècles), flèche séparée 114m plus haute tour-clocher France. Architecture gothique méridional, portail nord sculpté. Momies découvertes crypte XIXe siècle. Patrimoine UNESCO. Elle incarne art gothique aquitain et dévotion populaire bordelaise.',
+    points: 60,
+    coordinates: [-0.5639, 44.8321],
+    imageUrl: '/src/assets/places/st-michel-bordeaux.jpg'
+  },
+  {
+    id: 'fra-23',
+    name: 'Basilique Saint-Seurin de Bordeaux',
+    country: 'France',
+    city: 'Bordeaux',
+    type: 'Basilique',
+    description: 'Basilique romane (XIe siècle) sur nécropole paléochrétienne IVe siècle. Crypte archéologique exceptionnelle, sarcophages mérovingiens, chapiteaux romans. Étape chemin Saint-Jacques. Patrimoine UNESCO. Elle témoigne christianisation précoce Aquitaine et continuité cultuelle 1600 ans.',
+    points: 55,
+    coordinates: [-0.5889, 44.8485],
+    imageUrl: '/src/assets/places/st-seurin-bordeaux.jpg'
+  },
+  {
+    id: 'fra-24',
+    name: 'Église Sainte-Croix de Bordeaux',
+    country: 'France',
+    city: 'Bordeaux',
+    type: 'Église',
+    description: 'Abbaye bénédictine romane (VIIe siècle), reconstruite style roman-byzantin XIXe. Façade sculptée remarquable, orgue Cavaillé-Coll 1865. Architecture éclectique unique Bordeaux. Elle illustre renouveau architectural religieux XIXe et patrimoine monastique bordelais.',
+    points: 50,
+    coordinates: [-0.5603, 44.8327],
+    imageUrl: '/src/assets/places/ste-croix-bordeaux.jpg'
+  },
+  {
+    id: 'fra-25',
+    name: 'Cathédrale de la Major de Marseille',
+    country: 'France',
+    city: 'Marseille',
+    type: 'Cathédrale',
+    description: 'Cathédrale romano-byzantine monumentale (1852-1893), 141m long, dômes 70m. Architecture éclectique marbre vert Florence et Carrare. Une des plus grandes cathédrales France. Orgue Grand-Orgue monumental. Elle symbolise ambition Marseille Second Empire, port méditerranéen et diversité culturelle.',
+    points: 65,
+    coordinates: [5.3657, 43.2995],
+    imageUrl: '/src/assets/places/major-marseille.jpg'
+  },
+  {
+    id: 'fra-26',
+    name: 'Abbaye Saint-Victor de Marseille',
+    country: 'France',
+    city: 'Marseille',
+    type: 'Abbaye',
+    description: 'Abbaye fortifiée (Ve siècle) fondée Jean Cassien sur tombeaux martyrs chrétiens dont Saint Victor. Crypte paléochrétienne exceptionnelle, sarcophages IIIe-Ve siècles. Architecture romane provençale, allure forteresse. Pèlerinage Chandeleur. Elle témoigne christianisation précoce Marseille et continuité monastique 1600 ans.',
+    points: 70,
+    coordinates: [5.3646, 43.2904],
+    imageUrl: '/src/assets/places/st-victor-marseille.jpg'
+  },
+  {
+    id: 'fra-27',
+    name: 'Basilique du Sacré-Cœur de Marseille',
+    country: 'France',
+    city: 'Marseille',
+    type: 'Basilique',
+    description: 'Basilique néo-byzantine (1920) sommet colline Périer dominant Marseille. Architecture inspirée Sacré-Cœur Paris, mosaïques, vitraux Art Déco. Construite vœu Grande Guerre. Vue panoramique ville et mer. Elle incarne mémoire combattants marseillais et dévotion populaire provençale.',
+    points: 55,
+    coordinates: [5.3956, 43.2831],
+    imageUrl: '/src/assets/places/sacre-coeur-marseille.jpg'
+  },
+  {
+    id: 'fra-28',
+    name: 'Panthéon de Paris',
+    country: 'France',
+    city: 'Paris',
+    type: 'Monument',
+    description: 'Monument néo-classique (1758-1790) conçu Soufflot comme église Sainte-Geneviève, transformé nécropole laïque 1791. Architecture inspirée Panthéon Rome, dôme 83m, crypte abritant tombeaux Voltaire, Rousseau, Hugo, Zola, Curie, Malraux, Veil... 80 grands personnages France. Pendule Foucault 1851. Il incarne nation française, mémoire collective, valeurs républicaines et génie national.',
+    points: 70,
+    coordinates: [2.3462, 48.8462],
+    imageUrl: '/src/assets/places/pantheon-paris.jpg'
+  },
+  {
+    id: 'fra-29',
+    name: 'Couvent des Jacobins de Toulouse',
+    country: 'France',
+    city: 'Toulouse',
+    type: 'Couvent',
+    description: 'Chef-d\'œuvre gothique méridional (1230-1385) en brique toulousaine. Église à deux nefs, voûte palmier 28m colonnes centrales. Architecture gothique languedocien unique. Reliques Saint Thomas d\'Aquin. Centre intellectuel dominicain médiéval. Elle incarne ordres mendiants, architecture brique Midi et rayonnement intellectuel Toulouse.',
+    points: 60,
+    coordinates: [1.4419, 43.6062],
+    imageUrl: '/src/assets/places/jacobins-toulouse.jpg'
+  },
+  {
+    id: 'fra-30',
+    name: 'Chapelle des Carmélites de Toulouse',
+    country: 'France',
+    city: 'Toulouse',
+    type: 'Chapelle',
+    description: 'Chapelle baroque (1643-1652) décors peints plafond trompe-l\'œil exceptionnel Jean-Pierre Rivalz et Jean-Baptiste Despax. Unique ensemble baroque conservé Toulouse. Architecture classique, décors illusionnistes. Elle témoigne Contre-Réforme catholique et baroque toulousain XVIIe siècle.',
+    points: 55,
+    coordinates: [1.4387, 43.6002],
+    imageUrl: '/src/assets/places/carmelites-toulouse.jpg'
+  },
   
   // Additional Italian monuments
   {
