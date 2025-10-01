@@ -10,7 +10,7 @@ export const mockPlaces: Place[] = [
     name: 'Notre-Dame de Paris',
     country: 'France',
     type: 'Cathédrale',
-    description: 'Cathédrale gothique emblématique au cœur de Paris',
+    description: 'Chef-d\'œuvre de l\'architecture gothique française, Notre-Dame fut construite entre 1163 et 1345. Théâtre du couronnement de Napoléon en 1804, elle a survécu aux guerres et révolutions. L\'incendie de 2019 a marqué son histoire, mais la reconstruction préserve ce joyau de 850 ans, symbole de la foi et de la résilience parisienne. Ses gargouilles, rosaces et architecture sublime continuent d\'inspirer le monde entier.',
     points: 50,
     coordinates: [2.3499, 48.8530],
     imageUrl: '/src/assets/places/notre-dame.jpg'
@@ -67,7 +67,7 @@ export const mockPlaces: Place[] = [
     name: 'Vatican - Basilique Saint-Pierre',
     country: 'Italy',
     type: 'Basilique',
-    description: 'Centre du catholicisme mondial',
+    description: 'Édifiée sur le tombeau présumé de Saint Pierre, la basilique actuelle fut construite de 1506 à 1626, mobilisant les plus grands artistes : Bramante, Michel-Ange, Bernini. Son dôme culmine à 136m et domine Rome. Centre spirituel du catholicisme, elle accueille les grandes cérémonies papales. Chef-d\'œuvre de la Renaissance, elle symbolise la puissance et la foi de l\'Église catholique à travers les siècles.',
     points: 100,
     coordinates: [12.4534, 41.9022],
     imageUrl: '/src/assets/places/vatican.jpg'
@@ -124,7 +124,7 @@ export const mockPlaces: Place[] = [
     name: 'Sagrada Família',
     country: 'Spain',
     type: 'Basilique',
-    description: 'Basilique moderniste de Gaudí à Barcelone',
+    description: 'Vision extraordinaire d\'Antoni Gaudí débutée en 1882, cette basilique moderniste unique reste en construction depuis 140 ans. Ses façades racontent la Naissance, la Passion et la Gloire du Christ. Ses 18 tours symbolisent les apôtres, la Vierge et Jésus. Consacrée par le Pape en 2010, son achèvement est prévu vers 2026. Monument le plus visité d\'Espagne, elle fusionne foi chrétienne et génie architectural catalan.',
     points: 90,
     coordinates: [2.1744, 41.4036],
     imageUrl: '/src/assets/places/sagrada-familia.jpg'
@@ -406,7 +406,7 @@ export const mockPlaces: Place[] = [
     name: 'Pyramides de Gizeh',
     country: 'Egypt',
     type: 'Monument',
-    description: 'Tombeaux des pharaons, merveille antique',
+    description: 'Érigées il y a 4500 ans sous l\'Ancien Empire égyptien, ces tombeaux monumentaux de Khéops, Khéphren et Mykérinos défient le temps. La Grande Pyramide de Khéops, haute de 146m avec 2,3 millions de blocs, fut la plus haute structure humaine pendant 3800 ans. Gardée par le Sphinx, seule Merveille du monde antique encore debout, elles incarnent la puissance des pharaons et leurs croyances en l\'éternité.',
     points: 120,
     coordinates: [31.1342, 29.9792],
     imageUrl: '/src/assets/places/pyramids-giza.jpg'
@@ -496,7 +496,7 @@ export const mockPlaces: Place[] = [
     name: 'Taj Mahal',
     country: 'India',
     type: 'Mausolée',
-    description: 'Monument funéraire emblématique',
+    description: 'Poème d\'amour en marbre blanc édifié de 1631 à 1653 par l\'empereur moghol Shah Jahan pour son épouse Mumtaz Mahal. 20 000 artisans créèrent ce chef-d\'œuvre incrusté de pierres précieuses. Symbole de l\'amour éternel et de l\'architecture moghole, inscrit au patrimoine mondial UNESCO, il attire 8 millions de visiteurs par an. Ses jardins persans et sa symétrie parfaite reflètent la vision du paradis selon l\'Islam.',
     points: 100,
     coordinates: [78.0421, 27.1751],
     imageUrl: '/src/assets/places/taj-mahal.jpg'
@@ -914,7 +914,7 @@ export const mockPlaces: Place[] = [
     name: 'Machu Picchu',
     country: 'Peru',
     type: 'Site inca',
-    description: 'Cité inca emblématique dans les Andes',
+    description: 'Cité sacrée inca construite vers 1450 sous Pachacutec, perchée à 2430m d\'altitude dans les Andes péruviennes. Redécouverte en 1911 par Hiram Bingham, elle demeura cachée aux conquistadors espagnols. Ses temples du Soleil et des Trois Fenêtres, ses terrasses agricoles et son architecture astronomique témoignent du génie inca. Merveille du monde moderne et joyau du patrimoine mondial, elle attire 1,5 million de visiteurs annuels.',
     points: 120,
     coordinates: [-72.5450, -13.1631],
     imageUrl: '/src/assets/places/machu-picchu.jpg'

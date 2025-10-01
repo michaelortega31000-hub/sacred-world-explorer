@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { ArrowLeft, MapPin, Trophy, Users, Target, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Trophy, Users, Target, CheckCircle2, Book } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getPlacesByCountry } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
+import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
 import { toast } from 'sonner';
 
 const Country = () => {
@@ -129,14 +130,23 @@ const Country = () => {
                       </div>
                     )}
                     <CardHeader>
-                      <CardTitle className="flex items-start justify-between gap-2">
-                        <span>{place.name}</span>
-                        {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
-                      </CardTitle>
-                      <CardDescription>{place.type}</CardDescription>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <CardTitle className="flex-1">{place.name}</CardTitle>
+                        <div className="flex items-center gap-2">
+                          <AudioImmersiveIcon 
+                            isPremium={false}
+                            onClick={() => toast.info('Abonnez-vous au mode Premium pour débloquer l\'audio immersif ! 👑')}
+                          />
+                          {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
+                        </div>
+                      </div>
+                      <CardDescription className="flex items-center gap-1">
+                        <Book className="w-3 h-3" />
+                        {place.type}
+                      </CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <p className="text-sm text-muted-foreground">{place.description}</p>
+                      <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
                     </CardContent>
                     <CardFooter>
                       <Button
