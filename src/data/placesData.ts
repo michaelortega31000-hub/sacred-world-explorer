@@ -1567,6 +1567,138 @@ export const mockPlaces: Place[] = [
     points: 65,
     coordinates: [19.9471, 50.0524],
     imageUrl: '/src/assets/places/remuh-synagogue.jpg'
+  },
+  
+  // ========== ORTHODOX & PROTESTANT CHURCHES ==========
+  
+  // Russia
+  {
+    id: 'rus-4',
+    name: 'Cathédrale Saint-Sauveur-sur-le-Sang-Versé',
+    country: 'Russia',
+    city: 'Saint Petersburg',
+    type: 'Église orthodoxe',
+    description: 'Cathédrale orthodoxe (1883-1907) construite sur lieu d\'assassinat du Tsar Alexandre II en 1881. Architecture russo-byzantine avec 9 bulbes multicolores dorés, mosaïques extérieures et intérieures couvrant 7000m² (plus grand ensemble mosaïques Russie). Fermée par Soviets en 1930, utilisée comme entrepôt. Restauration 1997 après chute URSS. Elle incarne art orthodoxe russe, martyre tsariste et renaissance religieuse post-soviétique. Joyau architectural de Saint-Pétersbourg avec ses couleurs éclatantes.',
+    points: 80,
+    coordinates: [30.3289, 59.9402],
+    imageUrl: '/src/assets/places/savior-blood-spb.jpg'
+  },
+  
+  // Germany
+  {
+    id: 'deu-3',
+    name: 'Cathédrale de Berlin',
+    country: 'Germany',
+    city: 'Berlin',
+    type: 'Église protestante',
+    description: 'Berliner Dom (1905), plus grande église protestante luthérienne d\'Allemagne. Architecture baroque wilhelminienne avec dôme vert de 98m. Lieu sépulture dynastie Hohenzollern (94 sarcophages royaux). Endommagée 1944, restaurée après réunification allemande. Orgue Sauer de 7000 tuyaux. Elle incarne protestantisme prussien, pouvoir impérial Hohenzollern et réunification allemande. Vue panoramique exceptionnelle depuis dôme sur Berlin.',
+    points: 70,
+    coordinates: [13.4013, 52.5191],
+    imageUrl: '/src/assets/places/berlin-cathedral.jpg'
+  },
+  
+  // Greece
+  {
+    id: 'grc-3',
+    name: 'Monastère de Meteora',
+    country: 'Greece',
+    city: 'Meteora',
+    type: 'Monastères orthodoxes',
+    description: 'Ensemble unique de 6 monastères orthodoxes (sur 24 originels) perchés sur pitons rocheux vertigineux de 400m. Fondés XIVe siècle par moines ermites fuyant invasions turques. Accès initial par échelles et paniers hissés. Architecture byzantine intégrée à falaises naturelles. Fresques post-byzantines XVIe siècle. Patrimoine UNESCO double (culturel et naturel). Ils incarnent ascétisme orthodoxe, prouesse architecturale défiant gravité et harmonie homme-nature. Site spirituel et touristique majeur de Grèce.',
+    points: 90,
+    coordinates: [21.6309, 39.7217],
+    imageUrl: '/src/assets/places/meteora-monasteries.jpg'
+  },
+  
+  // Finland
+  {
+    id: 'fin-1',
+    name: 'Cathédrale d\'Helsinki',
+    country: 'Finland',
+    city: 'Helsinki',
+    type: 'Église luthérienne',
+    description: 'Tuomiokirkko (1852), cathédrale luthérienne néoclassique blanche dominant place du Sénat. Architecture inspirée Saint-Isaac de Saint-Pétersbourg. Dôme vert et 4 coupoles, 12 statues apôtres sur toit. Conçue par Carl Ludvig Engel sous domination russe. Symbole national finlandais, lieu cérémonies d\'État. Elle incarne luthéranisme nordique, période Grand-Duché russe et identité architecturale Helsinki. Icône photographique Finlande avec ses escaliers monumentaux.',
+    points: 65,
+    coordinates: [24.9524, 60.1699],
+    imageUrl: '/src/assets/places/helsinki-cathedral.jpg'
+  },
+  
+  // Ethiopia
+  {
+    id: 'eth-2',
+    name: 'Monastère de Debre Damo',
+    country: 'Ethiopia',
+    city: 'Debre Damo',
+    type: 'Monastère orthodoxe',
+    description: 'Monastère orthodoxe éthiopien (VIe siècle) perché sur plateau montagneux isolé accessible uniquement par corde de 15m (femmes interdites). Fondé par Saint Abuna Aregawi. Plus ancien monastère éthiopien intact. Architecture aksumite unique : bois et pierre, plafond sculpté style yéménite. Manuscrits enluminés précieux. Communauté monastique vivante depuis 1500 ans. Il incarne orthodoxie éthiopienne Tewahedo, isolement ascétique extrême et préservation traditions chrétiennes africaines ancestrales.',
+    points: 85,
+    coordinates: [39.2833, 14.3833],
+    imageUrl: '/src/assets/places/debre-damo.jpg'
+  },
+  
+  // United States
+  {
+    id: 'usa-5',
+    name: 'Cathédrale Riverside Church',
+    country: 'United States',
+    city: 'New York',
+    type: 'Église protestante',
+    description: 'Église interconfessionnelle protestante (1930) néo-gothique à Harlem, Manhattan. Tour de 120m, 74 cloches carillon (plus grand monde). Architecture inspirée Cathédrale Chartres. Financement John D. Rockefeller Jr. Lieu prédications Martin Luther King Jr., Nelson Mandela, Fidel Castro. Engagement social, justice raciale et paix. Elle incarne protestantisme libéral américain, activisme social chrétien et dialogue interreligieux. Vue panoramique sur Manhattan depuis tour.',
+    points: 70,
+    coordinates: [-73.9632, 40.8112],
+    imageUrl: '/src/assets/places/riverside-church.jpg'
+  },
+  
+  // Romania
+  {
+    id: 'rou-1',
+    name: 'Cathédrale du Salut du Peuple',
+    country: 'Romania',
+    city: 'Bucharest',
+    type: 'Cathédrale orthodoxe',
+    description: 'Plus grande cathédrale orthodoxe au monde (2018), Catedrala Mântuirii Neamului culmine à 120m avec dôme de 25m. Architecture néo-byzantine roumaine monumentale. Construction controversée (500 millions €) sous pression Église orthodoxe roumaine. Capacité 5000 fidèles. Fresques byzantines modernes couvrant 25 000m². Elle symbolise renouveau orthodoxe post-communiste, nationalisme religieux roumain et puissance Église orthodoxe. Débats sur coût durant austérité économique.',
+    points: 75,
+    coordinates: [26.0952, 44.4283],
+    imageUrl: '/src/assets/places/bucharest-cathedral.jpg'
+  },
+  
+  // Iceland
+  {
+    id: 'isl-1',
+    name: 'Église Hallgrímskirkja',
+    country: 'Iceland',
+    city: 'Reykjavik',
+    type: 'Église luthérienne',
+    description: 'Église luthérienne (1945-1986) au design expressionniste unique inspiré des orgues basaltiques islandais. Tour de 74m dominant Reykjavik. Architecture moderne brutaliste de Guðjón Samúelsson. Orgue Klais de 5275 tuyaux, 25 tonnes. Elle honore poète Hallgrímur Pétursson (XVIIe). Symbole national Islande, visible de toute la capitale. Elle incarne luthéranisme islandais, architecture nordique moderne et identité nationale. Point de vue panoramique sur Reykjavik et océan.',
+    points: 70,
+    coordinates: [-21.9266, 64.1420],
+    imageUrl: '/src/assets/places/hallgrimskirkja.jpg'
+  },
+  
+  // Bulgaria
+  {
+    id: 'bgr-1',
+    name: 'Cathédrale Alexandre-Nevski',
+    country: 'Bulgaria',
+    city: 'Sofia',
+    type: 'Cathédrale orthodoxe',
+    description: 'Cathédrale orthodoxe (1882-1912), symbole de Sofia et Bulgarie. Architecture néo-byzantine avec 12 dômes dorés, le principal culminant à 45m. Capacité 5000 fidèles. Construite en mémoire 200 000 soldats russes morts libération Bulgarie du joug ottoman (1877-78). Icônes, fresques et marbres précieux. Plus grande cathédrale péninsule balkanique. Elle incarne orthodoxie bulgare, gratitude envers Russie libératrice et renaissance nationale bulgare post-ottomane.',
+    points: 75,
+    coordinates: [23.3331, 42.6966],
+    imageUrl: '/src/assets/places/sofia-cathedral.jpg'
+  },
+  
+  // Norway
+  {
+    id: 'nor-2',
+    name: 'Stavkirke de Borgund',
+    country: 'Norway',
+    city: 'Borgund',
+    type: 'Église médiévale en bois',
+    description: 'Stavkirke (église en bois debout) la mieux préservée de Norvège (1180-1250). Architecture viking christianisé unique : bois de pin, toits superposés, sculptures dragons nordiques. 28 stavkirker survivent sur 1000-2000 originelles. Technique construction poteaux ancrés sur pierres (anti-pourriture). Conversion Vikings christianisme Xe-XIIe siècles. Patrimoine UNESCO. Elle incarne transition paganisme-christianisme nordique, génie artisanal viking et architecture bois médiévale unique au monde.',
+    points: 80,
+    coordinates: [7.5467, 61.0403],
+    imageUrl: '/src/assets/places/borgund-stave.jpg'
   }
 ];
 
