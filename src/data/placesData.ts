@@ -22,7 +22,8 @@ export const mockPlaces: Place[] = [
     type: 'Sanctuaire',
     description: 'Lieu de pèlerinage marial célèbre',
     points: 75,
-    coordinates: [-0.0458, 43.0951]
+    coordinates: [-0.0458, 43.0951],
+    imageUrl: '/src/assets/places/lourdes.jpg'
   },
   {
     id: 'fra-3',
@@ -31,7 +32,8 @@ export const mockPlaces: Place[] = [
     type: 'Abbaye',
     description: 'Abbaye médiévale spectaculaire sur un îlot rocheux',
     points: 80,
-    coordinates: [-1.5114, 48.6361]
+    coordinates: [-1.5114, 48.6361],
+    imageUrl: '/src/assets/places/mont-saint-michel.jpg'
   },
   {
     id: 'fra-4',
@@ -221,7 +223,8 @@ export const mockPlaces: Place[] = [
     type: 'Cathédrale',
     description: 'Chef-d\'œuvre gothique allemand',
     points: 75,
-    coordinates: [6.9581, 50.9413]
+    coordinates: [6.9581, 50.9413],
+    imageUrl: '/src/assets/places/cologne-cathedral.jpg'
   },
   {
     id: 'ger-2',
@@ -250,7 +253,8 @@ export const mockPlaces: Place[] = [
     type: 'Temple',
     description: 'Temple dédié à Athéna',
     points: 100,
-    coordinates: [23.7275, 37.9715]
+    coordinates: [23.7275, 37.9715],
+    imageUrl: '/src/assets/places/parthenon.jpg'
   },
   {
     id: 'gre-2',
@@ -341,7 +345,8 @@ export const mockPlaces: Place[] = [
     type: 'Site sacré',
     description: 'Lieu de prière le plus sacré du judaïsme',
     points: 100,
-    coordinates: [35.2345, 31.7767]
+    coordinates: [35.2345, 31.7767],
+    imageUrl: '/src/assets/places/western-wall.jpg'
   },
   {
     id: 'isr-2',
@@ -508,7 +513,8 @@ export const mockPlaces: Place[] = [
     type: 'Temple',
     description: 'Lieu le plus sacré du sikhisme',
     points: 90,
-    coordinates: [74.8765, 31.6200]
+    coordinates: [74.8765, 31.6200],
+    imageUrl: '/src/assets/places/golden-temple.jpg'
   },
   {
     id: 'ind-3',
@@ -671,7 +677,8 @@ export const mockPlaces: Place[] = [
     type: 'Temple',
     description: 'Plus grand monument religieux au monde',
     points: 120,
-    coordinates: [103.8670, 13.4125]
+    coordinates: [103.8670, 13.4125],
+    imageUrl: '/src/assets/places/angkor-wat.jpg'
   },
   {
     id: 'cam-2',
@@ -887,7 +894,8 @@ export const mockPlaces: Place[] = [
     type: 'Statue',
     description: 'Statue iconique dominant Rio de Janeiro',
     points: 100,
-    coordinates: [-43.2105, -22.9519]
+    coordinates: [-43.2105, -22.9519],
+    imageUrl: '/src/assets/places/christ-redeemer.jpg'
   },
   {
     id: 'bra-2',

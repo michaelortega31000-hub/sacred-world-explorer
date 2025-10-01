@@ -76,54 +76,34 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       });
     });
 
-    // Configuration de la rotation automatique
-    const secondsPerRevolution = 240;
-    const maxSpinZoom = 5;
-    const slowSpinZoom = 3;
-    let userInteracting = false;
-    let spinEnabled = true;
-
-    function spinGlobe() {
+    // Ajouter des marqueurs pour les lieux
+    map.current.on('load', () => {
       if (!map.current) return;
-      
-      const zoom = map.current.getZoom();
-      if (spinEnabled && !userInteracting && zoom < maxSpinZoom) {
-        let distancePerSecond = 360 / secondsPerRevolution;
-        if (zoom > slowSpinZoom) {
-          const zoomDif = (maxSpinZoom - zoom) / (maxSpinZoom - slowSpinZoom);
-          distancePerSecond *= zoomDif;
-        }
-        const center = map.current.getCenter();
-        center.lng -= distancePerSecond;
-        map.current.easeTo({ center, duration: 1000, easing: (n) => n });
-      }
-    }
 
-    // Gestion des interactions utilisateur
-    map.current.on('mousedown', () => {
-      userInteracting = true;
-    });
-    
-    map.current.on('dragstart', () => {
-      userInteracting = true;
-    });
-    
-    map.current.on('mouseup', () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-    
-    map.current.on('touchend', () => {
-      userInteracting = false;
-      spinGlobe();
-    });
+      // Charger les données des lieux
+      import('@/data/placesData').then(({ mockPlaces }) => {
+        if (!map.current) return;
 
-    map.current.on('moveend', () => {
-      spinGlobe();
-    });
+        // Ajouter les marqueurs
+        mockPlaces.forEach(place => {
+          const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
+            .setHTML(`
+              <div style="padding: 12px;">
+                ${place.imageUrl ? `<img src="${place.imageUrl}" alt="${place.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" />` : ''}
+                <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #1a1a1a;">${place.name}</h3>
+                <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${place.type} • ${place.country}</p>
+                <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #333;">${place.description}</p>
+                <p style="margin: 12px 0 0 0; font-size: 14px; font-weight: bold; color: hsl(45 100% 51%);">🏆 ${place.points} points</p>
+              </div>
+            `);
 
-    // Démarrer la rotation
-    spinGlobe();
+          new mapboxgl.Marker({ color: '#FFD700' })
+            .setLngLat([place.coordinates[0], place.coordinates[1]])
+            .setPopup(popup)
+            .addTo(map.current!);
+        });
+      });
+    });
 
     // Click sur un pays
     map.current.on('click', (e) => {
