@@ -5,13 +5,27 @@ import { MapPin, Globe2, Building2, Trophy, Flag, Users } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import RankingTab from './RankingTab';
 import CountryRankingTab from './CountryRankingTab';
 import ReligionRankingTab from './ReligionRankingTab';
 
 const LocationsStatsTab = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const allPlaces = getAllPlaces();
+
+  const handleCountryClick = (country: string) => {
+    navigate(`/country/${encodeURIComponent(country)}`);
+  };
+
+  const handleCityClick = (cityKey: string) => {
+    // Extract country from cityKey format "City, Country"
+    const country = cityKey.split(', ')[1];
+    if (country) {
+      navigate(`/country/${encodeURIComponent(country)}`);
+    }
+  };
 
   // Mapping des pays aux continents
   const countryToContinentMap: Record<string, string> = {
@@ -224,9 +238,10 @@ const LocationsStatsTab = () => {
                     {sortedCountries.map(([country, count]) => (
                       <div
                         key={country}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                        onClick={() => handleCountryClick(country)}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
                       >
-                        <span className="text-sm">{country}</span>
+                        <span className="text-sm hover:underline">{country}</span>
                         <Badge variant="outline">
                           {count}
                         </Badge>
@@ -254,9 +269,10 @@ const LocationsStatsTab = () => {
                     {sortedCities.map(([city, count]) => (
                       <div
                         key={city}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 transition-colors"
+                        onClick={() => handleCityClick(city)}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-muted transition-colors cursor-pointer"
                       >
-                        <span className="text-sm">{city}</span>
+                        <span className="text-sm hover:underline">{city}</span>
                         <Badge variant="outline">
                           {count}
                         </Badge>
