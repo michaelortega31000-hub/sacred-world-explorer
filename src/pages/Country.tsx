@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
-import { getPlacesByCountry } from '@/data/placesData';
+import { getPlacesByCountry, getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
 import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
@@ -25,6 +26,15 @@ const Country = () => {
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   
   const places = country ? getPlacesByCountry(country) : [];
+  const allCountries = getAllCountries().sort((a, b) => {
+    const nameA = t(`countries.${a}`, a);
+    const nameB = t(`countries.${b}`, b);
+    return nameA.localeCompare(nameB);
+  });
+
+  const handleCountryChange = (newCountry: string) => {
+    navigate(`/country/${newCountry}`);
+  };
 
   const handleCheckIn = async (placeId: string, placeName: string, points: number) => {
     if (isPlaceVisited(placeId)) {
@@ -70,8 +80,23 @@ const Country = () => {
         backTo="/world" 
         backLabel={t('worldMap.back')}
       >
-        <div className="text-sm text-muted-foreground">
-          <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
+        <div className="flex items-center gap-4">
+          <Select value={country} onValueChange={handleCountryChange}>
+            <SelectTrigger className="w-[200px] bg-card border-border">
+              <Globe className="w-4 h-4 mr-2" />
+              <SelectValue placeholder="Choisir un pays" />
+            </SelectTrigger>
+            <SelectContent className="max-h-[400px] bg-card border-border z-50">
+              {allCountries.map((countryName) => (
+                <SelectItem key={countryName} value={countryName}>
+                  {t(`countries.${countryName}`, countryName)}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <div className="text-sm text-muted-foreground">
+            <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
+          </div>
         </div>
       </Header>
 
