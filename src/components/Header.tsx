@@ -31,7 +31,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
   };
 
   return (
-    <div className={`p-4 ${transparent ? 'bg-transparent' : 'bg-card border-b border-border'}`}>
+    <div className={`p-4 ${transparent ? 'bg-transparent' : 'border-b border-border'}`} style={!transparent ? { background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(42 95% 38%) 100%)' } : {}}>
       <div className="max-w-7xl mx-auto flex items-center justify-between">
         <div className="flex items-center gap-4">
           {showBack && (

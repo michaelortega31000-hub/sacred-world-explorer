@@ -49,7 +49,7 @@ const WorldMap = () => {
       </Header>
 
       <Tabs defaultValue="map" className="flex-1 flex flex-col">
-        <div className="border-b border-border" style={{ background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(42 95% 38%) 100%)' }}>
+        <div className="border-b border-border bg-card">
           <div className="max-w-7xl mx-auto">
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
               <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
