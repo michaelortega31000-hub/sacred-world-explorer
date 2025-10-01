@@ -60,9 +60,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Reims',
     country: 'France',
     type: 'Cathédrale',
-    description: 'Lieu de couronnement des rois de France',
+    description: 'Cathédrale royale où 33 rois de France furent sacrés de 1027 à 1825, dont Clovis en 498. Chef-d\'œuvre gothique (1211-1275) avec 2303 statues dont le célèbre Ange au Sourire. Bombardée en 1914, restaurée grâce à la Fondation Rockefeller. Vitraux de Chagall (1974) fusionnent art médiéval et moderne. Patrimoine UNESCO, elle symbolise la monarchie sacrée française, l\'art gothique champenois et la réconciliation franco-allemande. Lieu historique et spirituel majeur de la nation.',
     points: 65,
-    coordinates: [4.0342, 49.2539]
+    coordinates: [4.0342, 49.2539],
+    imageUrl: '/src/assets/places/reims-cathedral.jpg'
   },
   
   // Italy
@@ -91,9 +92,10 @@ export const mockPlaces: Place[] = [
     name: 'Basilique Saint-François d\'Assise',
     country: 'Italy',
     type: 'Basilique',
-    description: 'Lieu de pèlerinage franciscain',
+    description: 'Érigée dès 1228, deux ans après la mort de Saint François (1182-1226), fondateur de l\'ordre franciscain et saint patron de l\'Italie. Basilique supérieure et inférieure ornées des fresques révolutionnaires de Giotto (1290s) narrant la vie de François. Architecture gothique italienne sobre reflétant l\'idéal de pauvreté franciscaine. Tombeau de Saint François dans la crypte. Patrimoine UNESCO, centre spirituel franciscain mondial attirant 5 millions de pèlerins annuels. Symbole de paix, humilité et amour de la nature.',
     points: 70,
-    coordinates: [12.6056, 43.0753]
+    coordinates: [12.6056, 43.0753],
+    imageUrl: '/src/assets/places/assisi-basilica.jpg'
   },
   {
     id: 'ita-4',
@@ -110,18 +112,20 @@ export const mockPlaces: Place[] = [
     name: 'Basilique Saint-Marc',
     country: 'Italy',
     type: 'Basilique',
-    description: 'Joyau byzantin de Venise',
+    description: 'Chef-d\'œuvre byzantin vénitien (828-1094) abritant les reliques de Saint Marc l\'Évangéliste, patron de Venise. Façade ornée de 500 colonnes de marbre et mosaïques dorées couvrant 8000m². Architecture fusion d\'influences byzantines, islamiques et gothiques reflétant l\'empire commercial vénitien. Quatre chevaux de bronze pillés de Constantinople en 1204. Symbole de la puissance et richesse de la Sérénissime République. Cathédrale du Patriarcat de Venise depuis 1807.',
     points: 70,
-    coordinates: [12.3388, 45.4343]
+    coordinates: [12.3388, 45.4343],
+    imageUrl: '/src/assets/places/st-marks-venice.jpg'
   },
   {
     id: 'ita-6',
     name: 'Panthéon de Rome',
     country: 'Italy',
     type: 'Temple',
-    description: 'Temple romain devenu église',
+    description: 'Temple romain (126 après J.-C.) dédié à tous les dieux, construit sous l\'empereur Hadrien. Son dôme de 43m fut la plus grande coupole non armée du monde pendant 1300 ans. L\'oculus de 9m au sommet illumine l\'intérieur et crée effets atmosphériques spectaculaires. Converti en église chrétienne Santa Maria ad Martyres en 609, sauvant ainsi le monument. Tombeaux de Raphaël et rois d\'Italie. Chef-d\'œuvre d\'ingénierie romaine inspirant architectes depuis 2000 ans, dont Michel-Ange et Brunelleschi.',
     points: 65,
-    coordinates: [12.4768, 41.8986]
+    coordinates: [12.4768, 41.8986],
+    imageUrl: '/src/assets/places/pantheon-rome.jpg'
   },
   
   // Spain
@@ -160,9 +164,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Séville',
     country: 'Spain',
     type: 'Cathédrale',
-    description: 'Plus grande cathédrale gothique du monde',
+    description: 'Plus grande cathédrale gothique du monde (1402-1506) construite sur l\'ancienne mosquée almohade. 126m de long, 5 nefs, 80 chapelles. La Giralda, ancien minaret (97m) devenu clocher, est symbole de Séville. Tombeaux de Christophe Colomb et Ferdinand III. Son retable baroque (20m) est le plus grand au monde. Patrimoine UNESCO, elle témoigne de la Reconquista, la richesse coloniale espagnole et la fusion architecturale chrétienne-mauresque. "Construisons une église si grande que l\'on nous croira fous".',
     points: 80,
-    coordinates: [-5.9928, 37.3861]
+    coordinates: [-5.9928, 37.3861],
+    imageUrl: '/src/assets/places/seville-cathedral.jpg'
   },
   {
     id: 'esp-5',
@@ -178,9 +183,10 @@ export const mockPlaces: Place[] = [
     name: 'Alhambra de Grenade',
     country: 'Spain',
     type: 'Palais',
-    description: 'Palais et forteresse mauresque',
+    description: 'Palais-forteresse mauresque (XIIIe-XIVe) couronnant Grenade, chef-d\'œuvre absolu de l\'architecture islamique andalouse. Palais Nasrides aux stucs ciselés, calligraphies coraniques, jardins du Généralife, Cour des Lions avec ses 124 colonnes. Eau omniprésente symbole du paradis. Dernier bastion musulman d\'Espagne jusqu\'en 1492. Patrimoine UNESCO, elle incarne l\'âge d\'or d\'Al-Andalus : science, art, tolérance. 3 millions de visiteurs annuels. "Dale limosna mujer, que no hay en la vida nada, como la pena de ser ciego en Granada".',
     points: 85,
-    coordinates: [-3.5881, 37.1761]
+    coordinates: [-3.5881, 37.1761],
+    imageUrl: '/src/assets/places/alhambra.jpg'
   },
   
   // United Kingdom
@@ -209,9 +215,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de York',
     country: 'United Kingdom',
     type: 'Cathédrale',
-    description: 'Une des plus grandes cathédrales gothiques d\'Europe',
+    description: 'Plus grande cathédrale médiévale gothique d\'Europe du Nord (1220-1472), York Minster abrite 128 vitraux médiévaux dont la fameuse Rose Window (1420, 11m de diamètre). Ses fondations romaines, saxonnes et normandes racontent 2000 ans d\'histoire. Crypte romane du XIe siècle. Les Two Towers (60m) dominent la ville fortifiée. Siège de l\'Archevêque d\'York depuis 314. Incendiée en 1984 (foudre), restaurée miraculeusement. Elle symbolise la chrétienté anglaise médiévale et la puissance de York.',
     points: 65,
-    coordinates: [-1.0819, 53.9620]
+    coordinates: [-1.0819, 53.9620],
+    imageUrl: '/src/assets/places/york-minster.jpg'
   },
   {
     id: 'uk-4',
@@ -290,9 +297,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale Saint-Basile',
     country: 'Russia',
     type: 'Cathédrale',
-    description: 'Cathédrale emblématique de Moscou',
+    description: 'Icône de Moscou et de la Russie, Saint-Basile (1555-1561) fut commandée par Ivan le Terrible pour célébrer la conquête de Kazan. Ses 9 coupoles bulbeuses colorées uniques créent silhouette féerique sur la Place Rouge. Architecture traditionnelle russe fusionnée d\'influences byzantines et tatares. Légende veut qu\'Ivan ait aveuglé les architectes pour qu\'ils ne reproduisent jamais pareil chef-d\'œuvre. Musée depuis 1928, patrimoine UNESCO, symbole absolu de la Russie reconnaissable instantanément dans le monde entier.',
     points: 80,
-    coordinates: [37.6231, 55.7525]
+    coordinates: [37.6231, 55.7525],
+    imageUrl: '/src/assets/places/st-basils-moscow.jpg'
   },
   {
     id: 'rus-2',
@@ -372,9 +380,10 @@ export const mockPlaces: Place[] = [
     name: 'Dôme du Rocher',
     country: 'Israel',
     type: 'Mosquée',
-    description: 'Monument emblématique de Jérusalem',
+    description: 'Chef-d\'œuvre de l\'architecture islamique primitive (691), le Dôme du Rocher est le 3e lieu saint de l\'Islam. Son dôme doré (20m) domine l\'Esplanade des Mosquées/Mont du Temple. Il abrite le Rocher sacré d\'où Mohammed serait monté au ciel lors du voyage nocturne (Isra et Miraj). Lieu saint aussi pour juifs (mont Moriah, sacrifice d\'Isaac) et chrétiens. Mosaïques byzantines, calligraphies coraniques. Symbole de Jérusalem, il cristallise tensions et espoirs de paix israélo-palestiniens depuis 1300 ans.',
     points: 100,
-    coordinates: [35.2352, 31.7780]
+    coordinates: [35.2352, 31.7780],
+    imageUrl: '/src/assets/places/dome-of-rock.jpg'
   },
   {
     id: 'isr-4',
@@ -433,18 +442,20 @@ export const mockPlaces: Place[] = [
     name: 'Mosquée Al-Azhar',
     country: 'Egypt',
     type: 'Mosquée',
-    description: 'Centre historique de l\'enseignement islamique',
+    description: 'Fondée en 970 par la dynastie fatimide, Al-Azhar est la plus ancienne université du monde encore en activité et le centre intellectuel de l\'Islam sunnite. Son nom signifie "la Resplendissante" en référence à Fatima, fille de Mohammed. Elle forme imams, juristes et théologiens depuis 1050 ans. Architecture islamique mélangeant styles fatimide, mamelouk et ottoman. Bibliothèque de 100 000 manuscrits. Autorité théologique mondiale influençant 1,8 milliard de musulmans. Patrimoine spirituel, intellectuel et culturel islamique inestimable.',
     points: 90,
-    coordinates: [31.2629, 30.0456]
+    coordinates: [31.2629, 30.0456],
+    imageUrl: '/src/assets/places/al-azhar-cairo.jpg'
   },
   {
     id: 'egy-3',
     name: 'Temple de Karnak',
     country: 'Egypt',
     type: 'Temple',
-    description: 'Vaste complexe de temples antiques',
+    description: 'Plus vaste complexe religieux de l\'Antiquité (2000 ans de construction), Karnak fut le principal temple du dieu Amon-Rê. La Grande Salle Hypostyle compte 134 colonnes géantes de 23m dont les chapiteaux pourraient contenir 100 personnes. Avenue des Sphinx (2,7km) menant à Louxor. Obélisques, statues colossales, reliefs narratifs. Chaque pharaon y ajoutait sa contribution. Patrimoine UNESCO, il témoigne de 2000 ans de religion égyptienne, du pouvoir des pharaons et du génie architectural de l\'Égypte ancienne.',
     points: 95,
-    coordinates: [32.6573, 25.7188]
+    coordinates: [32.6573, 25.7188],
+    imageUrl: '/src/assets/places/karnak-temple.jpg'
   },
   {
     id: 'egy-4',
@@ -472,9 +483,10 @@ export const mockPlaces: Place[] = [
     name: 'Mosquée Bleue',
     country: 'Turkey',
     type: 'Mosquée',
-    description: 'Chef-d\'œuvre de l\'architecture ottomane',
+    description: 'La Mosquée Sultan Ahmed (1609-1616), dite Mosquée Bleue pour ses 20 000 carreaux d\'Iznik bleus ornant l\'intérieur, est le joyau de l\'architecture ottomane classique. Seule mosquée au monde avec 6 minarets (controverse avec La Mecque). Ses 260 fenêtres inondent l\'intérieur de lumière. Cascade de dômes et semi-dômes. Face à Sainte-Sophie, elles symbolisent dialogue et rivalité Islam-Christianisme. Active pour la prière, elle accueille 3,5 millions de visiteurs annuels. Icône d\'Istanbul et de la Turquie.',
     points: 85,
-    coordinates: [28.9769, 41.0054]
+    coordinates: [28.9769, 41.0054],
+    imageUrl: '/src/assets/places/blue-mosque.jpg'
   },
   {
     id: 'tur-3',
@@ -544,9 +556,10 @@ export const mockPlaces: Place[] = [
     name: 'Temple de Meenakshi',
     country: 'India',
     type: 'Temple',
-    description: 'Temple hindou spectaculaire à Madurai',
+    description: 'Chef-d\'œuvre de l\'architecture dravidienne à Madurai (Tamil Nadu), le temple Meenakshi (XIVe-XVIIe) est dédié à la déesse Parvati (Meenakshi "aux yeux de poisson") et Shiva. Ses 14 gopurams (tours-portes) culminent à 50m, couverts de milliers de sculptures polychromes de dieux, déesses et animaux mythiques. Complexe de 6ha avec bassin sacré. 15 000 visiteurs quotidiens, 25 millions annuels. Vivant temple hindou où rituels millénaires perdurent. Il incarne l\'exubérance spirituelle et artistique de l\'hindouisme tamoul.',
     points: 85,
-    coordinates: [78.1194, 9.9195]
+    coordinates: [78.1194, 9.9195],
+    imageUrl: '/src/assets/places/meenakshi-temple.jpg'
   },
   {
     id: 'ind-5',
@@ -573,18 +586,20 @@ export const mockPlaces: Place[] = [
     name: 'Lumbini',
     country: 'Nepal',
     type: 'Site sacré',
-    description: 'Lieu de naissance du Bouddha',
+    description: 'Lieu de naissance de Siddhartha Gautama (Bouddha) en 563 avant J.-C., Lumbini est le site le plus sacré du bouddhisme. Le pilier d\'Ashoka (249 av. J.-C.) marque l\'emplacement exact. Temple Maya Devi sur les ruines du lieu de naissance. Jardin paisible avec monastères de toutes traditions bouddhistes. Patrimoine UNESCO, 1 million de pèlerins annuels. Il symbolise les origines du bouddhisme et son message universel de paix, compassion et éveil. Destination spirituelle primordiale pour 500 millions de bouddhistes mondiaux.',
     points: 120,
-    coordinates: [83.2760, 27.4833]
+    coordinates: [83.2760, 27.4833],
+    imageUrl: '/src/assets/places/lumbini-buddha.jpg'
   },
   {
     id: 'nep-2',
     name: 'Stupa de Bodnath',
     country: 'Nepal',
     type: 'Stupa',
-    description: 'Un des plus grands stupas bouddhistes',
+    description: 'Plus grand stupa d\'Asie (36m de haut), Bodnath est le cœur spirituel de la communauté tibétaine en exil depuis 1959. Construit au Ve siècle, ses yeux de Bouddha peints surveillent les quatre directions. Drapeaux de prières transmettent mantras au vent. Kora (circumambulation) rituelle effectuée par milliers de pèlerins quotidiennement. Monastères tibétains environnants. Patrimoine UNESCO endommagé en 2015 (séisme), parfaitement restauré. Il symbolise le bouddhisme tibétain, la diaspora, et la préservation d\'une culture menacée.',
     points: 80,
-    coordinates: [85.3619, 27.7215]
+    coordinates: [85.3619, 27.7215],
+    imageUrl: '/src/assets/places/boudhanath-stupa.jpg'
   },
   {
     id: 'nep-3',
@@ -640,9 +655,10 @@ export const mockPlaces: Place[] = [
     name: 'Palais du Potala',
     country: 'Tibet',
     type: 'Palais',
-    description: 'Ancien palais du Dalaï Lama à Lhassa',
+    description: 'Palais-forteresse (1645-1694) perché à 3700m d\'altitude à Lhassa, le Potala fut résidence des Dalaï-Lamas et siège du gouvernement tibétain. 13 étages, 1000 pièces, chapelles ornées d\'or et de turquoises. Architecture tibétaine unique adaptée altitude et climat extrêmes. Trésor d\'art bouddhiste : thangkas, statues, manuscrits sacrés. Abandonné en 1959 lors de l\'exil du 14e Dalaï-Lama. Patrimoine UNESCO, symbole du bouddhisme tibétain, de l\'identité tibétaine et de la quête de liberté d\'un peuple.',
     points: 110,
-    coordinates: [91.1170, 29.6558]
+    coordinates: [91.1170, 29.6558],
+    imageUrl: '/src/assets/places/potala-palace.jpg'
   },
   {
     id: 'tib-2',
@@ -710,9 +726,10 @@ export const mockPlaces: Place[] = [
     name: 'Pagode Shwedagon',
     country: 'Myanmar',
     type: 'Pagode',
-    description: 'Pagode dorée sacrée à Yangon',
+    description: 'Pagode dorée la plus sacrée de Birmanie (Ve siècle av. J.-C. selon la légende), Shwedagon culmine à 99m et est recouverte de 60 tonnes de feuilles d\'or, 5000 diamants et 2000 rubis. Son sommet porte un diamant de 76 carats. Elle abriterait 8 cheveux de Bouddha. Centre spirituel birman où générations se sont rassemblées pour prière, méditation et révoltes (Révolution Safran 2007). Patrimoine spirituel national, elle domine Yangon de son éclat doré, symbolisant foi bouddhiste et identité birmane.',
     points: 95,
-    coordinates: [96.1478, 16.7982]
+    coordinates: [96.1478, 16.7982],
+    imageUrl: '/src/assets/places/shwedagon-pagoda.jpg'
   },
   {
     id: 'mya-2',
@@ -740,9 +757,10 @@ export const mockPlaces: Place[] = [
     name: 'Fushimi Inari-taisha',
     country: 'Japan',
     type: 'Sanctuaire',
-    description: 'Célèbre sanctuaire shinto aux milliers de torii',
+    description: 'Sanctuaire shinto emblématique dédié à Inari, déesse du riz, prospérité et renards. Ses 10 000 torii vermillon offerts par donateurs créent tunnels mystiques serpentant 4km jusqu\'au sommet du mont Inari (233m). Fondé en 711, agrandi par Toyotomi Hideyoshi. Statues de renards kitsune, messagers d\'Inari. Site le plus photographié du Japon, il attire 3 millions visiteurs annuels. Il incarne la spiritualité shinto, harmonie nature-divinité, et beauté esthétique japonaise. Scènes de Mémoires d\'une Geisha.',
     points: 85,
-    coordinates: [135.7726, 34.9671]
+    coordinates: [135.7726, 34.9671],
+    imageUrl: '/src/assets/places/fushimi-inari.jpg'
   },
   {
     id: 'jpn-3',
@@ -758,9 +776,10 @@ export const mockPlaces: Place[] = [
     name: 'Kinkaku-ji',
     country: 'Japan',
     type: 'Temple',
-    description: 'Pavillon d\'Or à Kyoto',
+    description: 'Le Pavillon d\'Or (1397) est temple zen recouvert de feuilles d\'or pur se reflétant dans le miroir d\'eau du lac Kyōko-chi. Construit par le shogun Ashikaga Yoshimitsu comme villa de retraite, converti en temple à sa mort. Incendié en 1950 par un moine obsédé (roman de Mishima), reconstruit à l\'identique en 1955. Architecture harmonieuse fusionnant styles aristocratique, samouraï et zen. Jardin paysager parfait. Patrimoine UNESCO, icône de Kyoto et du Japon, il symbolise beauté éphémère, paix zen et esthétique wabi-sabi.',
     points: 85,
-    coordinates: [135.7292, 35.0394]
+    coordinates: [135.7292, 35.0394],
+    imageUrl: '/src/assets/places/kinkakuji.jpg'
   },
   {
     id: 'jpn-5',
@@ -778,9 +797,10 @@ export const mockPlaces: Place[] = [
     name: 'Borobudur',
     country: 'Indonesia',
     type: 'Temple',
-    description: 'Plus grand temple bouddhiste du monde',
+    description: 'Plus grand monument bouddhiste au monde (IXe siècle), Borobudur est mandala architectural en trois dimensions représentant le cosmos bouddhiste. Pyramide de 9 plateformes, 504 statues de Bouddha, 2672 panneaux narratifs sculptés, 72 stupas ajourés. Pèlerinage spirituel ascendant du monde des désirs vers l\'illumination. Oublié 1000 ans sous cendres volcaniques, redécouvert en 1814. Patrimoine UNESCO, restauré par l\'UNESCO. Symbole de Java, du bouddhisme mahayana et chef-d\'œuvre architectural mondial comparable à Angkor.',
     points: 110,
-    coordinates: [110.2038, -7.6079]
+    coordinates: [110.2038, -7.6079],
+    imageUrl: '/src/assets/places/borobudur.jpg'
   },
   {
     id: 'ind-8',
@@ -847,9 +867,10 @@ export const mockPlaces: Place[] = [
     name: 'Basilique Notre-Dame de Guadalupe',
     country: 'Mexico',
     type: 'Basilique',
-    description: 'Plus important sanctuaire marial des Amériques',
+    description: 'Sanctuaire marial le plus visité au monde (20 millions/an), la basilique abrite la tilma miraculeuse de Juan Diego portant l\'image de la Vierge de Guadalupe apparue en 1531. Patronne des Amériques et du Mexique, elle symbolise le métissage culturel post-conquête espagnole. Basilique moderne (1976) et ancienne basilique coloniale coexistent. Pèlerinages massifs le 12 décembre. Elle incarne la foi catholique latino-américaine, l\'identité mexicaine et le syncrétisme religieux.',
     points: 100,
-    coordinates: [-99.1177, 19.4847]
+    coordinates: [-99.1177, 19.4847],
+    imageUrl: '/src/assets/places/guadalupe-basilica.jpg'
   },
   {
     id: 'mex-2',
@@ -866,9 +887,10 @@ export const mockPlaces: Place[] = [
     name: 'Teotihuacán',
     country: 'Mexico',
     type: 'Site précolombien',
-    description: 'Cité antique avec pyramides du Soleil et de la Lune',
+    description: 'Cité sacrée précolombienne (100-650 après J.-C.), Teotihuacán fut la plus grande ville des Amériques avec 125 000 habitants. La Pyramide du Soleil (65m) et la Pyramide de la Lune dominent l\'Avenue des Morts (4km). Civilisation mystérieuse disparue avant les Aztèques qui la nommèrent "lieu où naissent les dieux". Patrimoine UNESCO.',
     points: 105,
-    coordinates: [-98.8438, 19.6925]
+    coordinates: [-98.8438, 19.6925],
+    imageUrl: '/src/assets/places/teotihuacan.jpg'
   },
   {
     id: 'mex-4',
@@ -948,9 +970,10 @@ export const mockPlaces: Place[] = [
     name: 'Cathédrale de Cusco',
     country: 'Peru',
     type: 'Cathédrale',
-    description: 'Cathédrale coloniale sur la place principale',
+    description: 'Cathédrale baroque (1559-1654) construite sur les fondations du palais inca Viracocha. Fusionnant styles européen et andin, elle symbolise la conquête espagnole. Toiles de l\'École de Cusco mêlant iconographie catholique et symboles incas. Elle témoigne du syncrétisme culturel andin-catholique.',
     points: 70,
-    coordinates: [-71.9675, -13.5165]
+    coordinates: [-71.9675, -13.5165],
+    imageUrl: '/src/assets/places/cusco-cathedral.jpg'
   },
   {
     id: 'per-3',
@@ -1010,9 +1033,10 @@ export const mockPlaces: Place[] = [
     name: 'Églises rupestres de Lalibela',
     country: 'Ethiopia',
     type: 'Églises',
-    description: 'Églises monolithiques creusées dans la roche',
+    description: 'Nouvelle Jérusalem d\'Afrique, Lalibela abrite 11 églises monolithiques taillées dans le roc au XIIe siècle. Bete Giyorgis en forme de croix est la plus spectaculaire. Architecture excavée unique au monde. Centre spirituel de l\'Église orthodoxe éthiopienne. Patrimoine UNESCO.',
     points: 110,
-    coordinates: [39.0417, 12.0321]
+    coordinates: [39.0417, 12.0321],
+    imageUrl: '/src/assets/places/lalibela-churches.jpg'
   },
   {
     id: 'eth-2',
