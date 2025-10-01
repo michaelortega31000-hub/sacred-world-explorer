@@ -145,17 +145,9 @@ const Country = () => {
                 <MapPin className="w-4 h-4" />
                 {t('country.title')}
               </TabsTrigger>
-              <TabsTrigger value="ranking" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Trophy className="w-4 h-4" />
-                {t('tabs.myRanking')}
-              </TabsTrigger>
-              <TabsTrigger value="country" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Flag className="w-4 h-4" />
-                {t('tabs.countryRanking')}
-              </TabsTrigger>
-              <TabsTrigger value="religion" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Users className="w-4 h-4" />
-                {t('tabs.religionRanking')}
+                Classements
               </TabsTrigger>
               <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Target className="w-4 h-4" />
@@ -304,16 +296,37 @@ const Country = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="ranking" className="flex-1 m-0">
-          <RankingTab />
-        </TabsContent>
+        <TabsContent value="rankings" className="flex-1 m-0">
+          <div className="container mx-auto p-6">
+            <Tabs defaultValue="personal" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 mb-6">
+                <TabsTrigger value="personal" className="gap-2">
+                  <Trophy className="w-4 h-4" />
+                  {t('tabs.myRanking')}
+                </TabsTrigger>
+                <TabsTrigger value="country" className="gap-2">
+                  <Flag className="w-4 h-4" />
+                  {t('tabs.countryRanking')}
+                </TabsTrigger>
+                <TabsTrigger value="religion" className="gap-2">
+                  <Users className="w-4 h-4" />
+                  {t('tabs.religionRanking')}
+                </TabsTrigger>
+              </TabsList>
 
-        <TabsContent value="country" className="flex-1 m-0">
-          <CountryRankingTab />
-        </TabsContent>
+              <TabsContent value="personal">
+                <RankingTab />
+              </TabsContent>
 
-        <TabsContent value="religion" className="flex-1 m-0">
-          <ReligionRankingTab />
+              <TabsContent value="country">
+                <CountryRankingTab />
+              </TabsContent>
+
+              <TabsContent value="religion">
+                <ReligionRankingTab />
+              </TabsContent>
+            </Tabs>
+          </div>
         </TabsContent>
 
         <TabsContent value="quest" className="flex-1 m-0">
