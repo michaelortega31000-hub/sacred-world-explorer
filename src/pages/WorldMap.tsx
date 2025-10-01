@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { getAllCountries } from '@/data/placesData';
+import { getAllCountries, mockPlaces } from '@/data/placesData';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
 import LocationsStatsTab from '@/components/LocationsStatsTab';
@@ -27,13 +27,26 @@ const WorldMap = () => {
 
   const handleSearchSubmit = () => {
     if (searchTerm.trim()) {
-      // Chercher dans les noms de pays traduits
       const searchLower = searchTerm.toLowerCase();
+      
+      // D'abord, chercher dans les villes
+      const placeByCity = mockPlaces.find(place => 
+        place.city.toLowerCase().includes(searchLower)
+      );
+      
+      if (placeByCity) {
+        // Si une ville est trouvée, aller vers le pays
+        navigate(`/country/${placeByCity.country}`);
+        return;
+      }
+      
+      // Sinon, chercher dans les noms de pays
       const filtered = countries.filter(country => {
         const translatedName = t(`countries.${country}`, country);
         return translatedName.toLowerCase().includes(searchLower) || 
                country.toLowerCase().includes(searchLower);
       });
+      
       if (filtered.length > 0) {
         navigate(`/country/${filtered[0]}`);
       }
@@ -98,7 +111,7 @@ const WorldMap = () => {
               )}
               <input
                 type="text"
-                placeholder={isSearchExpanded ? t('worldMap.searchPlaceholder', "Rechercher un pays...") : "🔍"}
+                placeholder={isSearchExpanded ? "Rechercher un pays ou une ville..." : "🔍"}
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 onKeyPress={(e) => {
