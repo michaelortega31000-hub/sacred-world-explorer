@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp, Religion } from '@/contexts/AppContext';
-import { Cross, Moon, Star, Flower2, AtSign, Sun, Users, Telescope } from 'lucide-react';
+import { Church, Moon, Star as StarIcon, Flower2, Sun, Telescope, Flame, AtSign } from 'lucide-react';
 import Header from '@/components/Header';
 
 interface ReligionBubble {
@@ -14,14 +14,14 @@ interface ReligionBubble {
 }
 
 const religions: ReligionBubble[] = [
-  { id: 'christianity', icon: <Cross className="w-8 h-8" />, color: 'bg-blue-500 hover:bg-blue-600' },
-  { id: 'islam', icon: <Moon className="w-8 h-8" />, color: 'bg-green-500 hover:bg-green-600' },
-  { id: 'judaism', icon: <Star className="w-8 h-8" />, color: 'bg-yellow-500 hover:bg-yellow-600' },
-  { id: 'buddhism', icon: <Flower2 className="w-8 h-8" />, color: 'bg-orange-500 hover:bg-orange-600' },
-  { id: 'hinduism', icon: <Sun className="w-8 h-8" />, color: 'bg-red-500 hover:bg-red-600' },
-  { id: 'astronomy', icon: <Telescope className="w-8 h-8" />, color: 'bg-purple-500 hover:bg-purple-600' },
-  { id: 'traditional', icon: <Users className="w-8 h-8" />, color: 'bg-amber-600 hover:bg-amber-700' },
-  { id: 'atheism', icon: <AtSign className="w-8 h-8" />, color: 'bg-gray-500 hover:bg-gray-600' }
+  { id: 'christianity', icon: <Church className="w-8 h-8" />, color: 'bg-secondary hover:bg-secondary/90' },
+  { id: 'islam', icon: <Moon className="w-8 h-8" />, color: 'bg-[hsl(var(--sacred-blue))] hover:bg-[hsl(var(--sacred-blue-dark))]' },
+  { id: 'judaism', icon: <StarIcon className="w-8 h-8" />, color: 'bg-primary hover:bg-[hsl(var(--sacred-gold-dark))]' },
+  { id: 'buddhism', icon: <Flower2 className="w-8 h-8" />, color: 'bg-[hsl(48_100%_65%)] hover:bg-[hsl(48_95%_55%)]' },
+  { id: 'hinduism', icon: <Sun className="w-8 h-8" />, color: 'bg-accent hover:bg-accent/90' },
+  { id: 'astronomy', icon: <Telescope className="w-8 h-8" />, color: 'bg-[hsl(250_70%_50%)] hover:bg-[hsl(250_70%_40%)]' },
+  { id: 'traditional', icon: <Flame className="w-8 h-8" />, color: 'bg-[hsl(30_85%_50%)] hover:bg-[hsl(30_85%_40%)]' },
+  { id: 'atheism', icon: <AtSign className="w-8 h-8" />, color: 'bg-muted-foreground hover:bg-muted-foreground/80' }
 ];
 
 const languages = [
@@ -59,21 +59,21 @@ const Selection = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 flex flex-col" style={{ background: 'linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(36 85% 55%) 100%)' }}>
+    <div className="min-h-screen p-6 flex flex-col bg-gradient-to-br from-background via-[hsl(var(--sacred-blue-light))] to-[hsl(var(--sacred-red-light))]">
       <Header showBack backTo="/" backLabel="Retour" transparent />
       <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col">
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 drop-shadow-lg">
+          <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-foreground mb-3 drop-shadow-lg">
             {t('selection.title')}
           </h1>
-          <p className="text-lg text-white/90 drop-shadow">
+          <p className="font-inter text-lg text-foreground/80 drop-shadow">
             {t('selection.subtitle')}
           </p>
         </div>
 
         <div className="mb-8 flex justify-center animate-fade-in">
           <div className="w-full max-w-xs">
-            <label className="block text-sm font-medium text-white mb-2 drop-shadow">
+            <label className="font-inter block text-sm font-medium text-foreground mb-2 drop-shadow">
               {t('selection.language')}
             </label>
             <Select value={selectedLanguage} onValueChange={handleLanguageChange}>
@@ -101,12 +101,12 @@ const Selection = () => {
                   aspect-square rounded-full ${religion.color} text-white
                   flex flex-col items-center justify-center p-6 md:p-8
                   transition-all duration-300 hover:scale-110 hover:shadow-2xl
-                  ${selectedReligion === religion.id ? 'ring-4 ring-foreground scale-105' : ''}
+                  ${selectedReligion === religion.id ? 'ring-4 ring-primary scale-105 shadow-[0_0_30px_rgba(255,215,0,0.5)]' : ''}
                 `}
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {religion.icon}
-                <span className="mt-3 text-sm font-medium text-center">
+                <span className="font-inter mt-3 text-sm font-medium text-center">
                   {t(`selection.religions.${religion.id}`)}
                 </span>
               </button>
@@ -119,7 +119,7 @@ const Selection = () => {
             size="lg"
             onClick={handleContinue}
             disabled={!selectedReligion}
-            className="px-12 py-6 text-lg rounded-full"
+            className="font-inter px-12 py-6 text-lg rounded-full bg-primary hover:bg-[hsl(var(--sacred-gold-dark))] text-primary-foreground shadow-[var(--shadow-gold)]"
           >
             {t('selection.continue')}
           </Button>
