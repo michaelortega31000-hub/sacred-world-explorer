@@ -1699,6 +1699,688 @@ export const mockPlaces: Place[] = [
     points: 80,
     coordinates: [7.5467, 61.0403],
     imageUrl: '/src/assets/places/borgund-stave.jpg'
+  },
+  {
+    id: 'nor-3',
+    name: 'Cathédrale de Nidaros',
+    country: 'Norway',
+    city: 'Trondheim',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique (1070-1300) construite sur tombeau Saint Olaf, roi patron de Norvège. Plus important édifice médiéval Scandinavie. Lieu couronnement rois norvégiens. Destination pèlerinage nordique majeure (Chemin Saint-Olaf). Façade occidentale sculptée somptueuse. Détruite incendies, restaurée XIXe-XXe. Elle incarne christianisation Norvège, monarchie sacrée nordique et patrimoine médiéval scandinave.',
+    points: 70,
+    coordinates: [10.3951, 63.4270],
+    imageUrl: '/src/assets/places/nidaros-cathedral.jpg'
+  },
+  
+  // ========== ADDITIONAL EUROPEAN MONUMENTS ==========
+  
+  // Czech Republic
+  {
+    id: 'cze-1',
+    name: 'Cathédrale Saint-Guy',
+    country: 'Czech Republic',
+    city: 'Prague',
+    type: 'Cathédrale',
+    description: 'Joyau gothique du château de Prague (1344-1929), Saint-Guy abrite joyaux couronne tchèque, tombeaux rois de Bohême et reliques Saint Venceslas. Vitraux Art Nouveau Alfons Mucha (1931). Flèches de 96m dominant Prague. Chapelle Saint-Venceslas recouverte pierres précieuses. Lieu couronnement souverains tchèques. Patrimoine UNESCO. Elle incarne histoire tchèque millénaire, identité nationale et foi catholique bohémienne.',
+    points: 75,
+    coordinates: [14.4003, 50.0910],
+    imageUrl: '/src/assets/places/st-vitus-prague.jpg'
+  },
+  {
+    id: 'cze-2',
+    name: 'Synagogue Vieille-Nouvelle',
+    country: 'Czech Republic',
+    city: 'Prague',
+    type: 'Synagogue',
+    description: 'Plus ancienne synagogue active d\'Europe (1270), la Staronová synagóga gothique est cœur quartier juif Josefov. Légende du Golem créé par Rabbi Loew au XVIe siècle. Communauté juive pragoise florissante avant Shoah (118 000 victimes). Elle symbolise judaïsme ashkénaze médiéval, richesse culturelle juive tchèque et mémoire Shoah. Patrimoine UNESCO.',
+    points: 70,
+    coordinates: [14.4189, 50.0900],
+    imageUrl: '/src/assets/places/old-new-synagogue.jpg'
+  },
+  {
+    id: 'cze-3',
+    name: 'Église Saint-Nicolas de Malá Strana',
+    country: 'Czech Republic',
+    city: 'Prague',
+    type: 'Église baroque',
+    description: 'Chef-d\'œuvre baroque (1704-1755), l\'église Saint-Nicolas avec dôme de 79m domine quartier Malá Strana. Fresques monumentales, sculptures dorées, orgue joué par Mozart en 1787. Architecture Dientzenhofer père et fils. Trésor baroque tchèque incarnant Contre-Réforme catholique et splendeur baroque bohémien. Concerts classiques réguliers.',
+    points: 65,
+    coordinates: [14.4038, 50.0881],
+    imageUrl: '/src/assets/places/st-nicholas-prague.jpg'
+  },
+  
+  // Belgium
+  {
+    id: 'bel-1',
+    name: 'Cathédrale Saints-Michel-et-Gudule',
+    country: 'Belgium',
+    city: 'Brussels',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique (1226-1519) de Bruxelles, lieu mariages royaux belges et cérémonies nationales. Vitraux Renaissance exceptionnels XVIe siècle. Tours jumelles de 69m. Chaire baroque Jean-François van Geel (1699). Elle symbolise catholicisme belge, monarchie constitutionnelle et unité nationale belge. Patrimoine architectural bruxellois majeur.',
+    points: 65,
+    coordinates: [4.3604, 50.8479],
+    imageUrl: '/src/assets/places/brussels-cathedral.jpg'
+  },
+  {
+    id: 'bel-2',
+    name: 'Basilique du Sacré-Cœur de Bruxelles',
+    country: 'Belgium',
+    city: 'Brussels',
+    type: 'Basilique',
+    description: 'Une des plus grandes églises monde (1905-1970), basilique Art Déco avec dôme vert de 89m culminant à 164m d\'altitude sur plateau Koekelberg. Capacité 3500 fidèles. Architecture unique mêlant Art Déco et néo-gothique. Vue panoramique sur Bruxelles. Elle incarne ambition architecturale belge XXe siècle et foi catholique flamande.',
+    points: 70,
+    coordinates: [4.3275, 50.8670],
+    imageUrl: '/src/assets/places/sacre-coeur-brussels.jpg'
+  },
+  {
+    id: 'bel-3',
+    name: 'Cathédrale Notre-Dame d\'Anvers',
+    country: 'Belgium',
+    city: 'Antwerp',
+    type: 'Cathédrale',
+    description: 'Plus grande église gothique Pays-Bas (1352-1521), cathédrale d\'Anvers avec flèche de 123m abrite 4 chefs-d\'œuvre Rubens dont "La Descente de Croix". 49 cloches carillon. Patrimoine UNESCO. Elle symbolise richesse commerciale Anvers baroque, génie Rubens et catholicisme flamand. Trésor d\'art religieux exceptionnel.',
+    points: 70,
+    coordinates: [4.4010, 51.2206],
+    imageUrl: '/src/assets/places/antwerp-cathedral.jpg'
+  },
+  {
+    id: 'bel-4',
+    name: 'Cathédrale Saint-Bavon',
+    country: 'Belgium',
+    city: 'Ghent',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique et romane (Xe-XVIe) abritant le retable mystique "L\'Agneau mystique" des frères Van Eyck (1432), chef-d\'œuvre absolu art flamand primitif. 24 panneaux restaurés récemment. Crypte romane XIe siècle. Chaire baroque rococo. Elle incarne splendeur Gand médiéval, Renaissance flamande et patrimoine artistique belge inestimable.',
+    points: 75,
+    coordinates: [3.7266, 51.0537],
+    imageUrl: '/src/assets/places/ghent-cathedral.jpg'
+  },
+  {
+    id: 'bel-5',
+    name: 'Basilique Notre-Dame de Tongres',
+    country: 'Belgium',
+    city: 'Tongeren',
+    type: 'Basilique',
+    description: 'Basilique gothique (1240-1541) de plus ancienne ville Belgique. Trésor exceptionnel d\'orfèvrerie médiévale mosane. Cloître roman, statue miraculeuse Notre-Dame de Tongres (pèlerinage). Tour de 64m. Elle incarne art mosan, christianisation primitive Belgique et tradition mariale limbourgeoise.',
+    points: 60,
+    coordinates: [5.4646, 50.7804],
+    imageUrl: '/src/assets/places/tongeren-basilica.jpg'
+  },
+  
+  // Denmark
+  {
+    id: 'dnk-1',
+    name: 'Cathédrale de Roskilde',
+    country: 'Denmark',
+    city: 'Roskilde',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique brique (1170-1280), panthéon royal danois abritant 39 rois et reines depuis 1536. Patrimoine UNESCO, première cathédrale gothique brique Scandinavie, influençant architecture nordique. Orgue baroque, chapelles Renaissance. Elle incarne monarchie millénaire danoise, luthéranisme nordique et identité nationale danoise.',
+    points: 70,
+    coordinates: [12.0806, 55.6419],
+    imageUrl: '/src/assets/places/roskilde-cathedral.jpg'
+  },
+  {
+    id: 'dnk-2',
+    name: 'Église de Marbre',
+    country: 'Denmark',
+    city: 'Copenhagen',
+    type: 'Église',
+    description: 'Frederiks Kirke (1749-1894), église baroque luthérienne avec dôme de 31m inspiré Saint-Pierre Rome. Architecture néoclassique danoise monumentale. Statues 12 apôtres et figures religieuses. Lieu mariages royaux danois. Elle symbolise âge d\'or danois, monarchie absolue et architecture néoclassique nordique.',
+    points: 65,
+    coordinates: [12.5860, 55.6846],
+    imageUrl: '/src/assets/places/marble-church-copenhagen.jpg'
+  },
+  {
+    id: 'dnk-3',
+    name: 'Cathédrale d\'Aarhus',
+    country: 'Denmark',
+    city: 'Aarhus',
+    type: 'Cathédrale',
+    description: 'Plus longue et haute église Danemark (1201-1520), cathédrale gothique brique de 93m. Fresques médiévales redécouvertes après Réforme. Retable triptyque doré Renaissance (1479). Orgue moderne. Elle incarne catholicisme médiéval danois, Réforme luthérienne et patrimoine Jylland.',
+    points: 60,
+    coordinates: [10.2105, 56.1575],
+    imageUrl: '/src/assets/places/aarhus-cathedral.jpg'
+  },
+  
+  // Ireland  
+  {
+    id: 'irl-1',
+    name: 'Cathédrale Saint-Patrick',
+    country: 'Ireland',
+    city: 'Dublin',
+    type: 'Cathédrale',
+    description: 'Cathédrale nationale anglicane Irlande (1191-1270), Saint-Patrick honore saint patron Irlande ayant christianisé île Ve siècle. Jonathan Swift y fut doyen (1713-1745), enterré dans cathédrale. Architecture gothique victorienne restaurée. Lieu cérémonies nationales irlandaises. Elle incarne christianisation Irlande, littérature irlandaise et coexistence confessionnelle post-indépendance.',
+    points: 65,
+    coordinates: [-6.2714, 53.3394],
+    imageUrl: '/src/assets/places/st-patrick-dublin.jpg'
+  },
+  {
+    id: 'irl-2',
+    name: 'Cathédrale Christ Church',
+    country: 'Ireland',
+    city: 'Dublin',
+    type: 'Cathédrale',
+    description: 'Plus ancienne cathédrale Dublin (1030), fondée Vikings, reconstruite Normands XIIe. Architecture médiévale restaurée XIXe. Crypte médiévale plus grande Irlande-Angleterre. Pont couvert vers Synod Hall. Lieu couronnement Lambert Simnel (1487). Elle symbolise Dublin viking et normand, Église d\'Irlande et histoire médiévale irlandaise.',
+    points: 65,
+    coordinates: [-6.2713, 53.3432],
+    imageUrl: '/src/assets/places/christ-church-dublin.jpg'
+  },
+  {
+    id: 'irl-3',
+    name: 'Abbaye de Kylemore',
+    country: 'Ireland',
+    city: 'Connemara',
+    type: 'Abbaye',
+    description: 'Abbaye bénédictine (1920) dans château néo-gothique romantique (1868) au bord lac Connemara. Église néo-gothique miniature réplique cathédrale Norwich. Jardins victoriens restaurés. Communauté bénédictine vivante. Elle incarne romantisme victorien, foi bénédictine et beauté sauvage irlandaise. Icône touristique Connemara.',
+    points: 60,
+    coordinates: [-9.8908, 53.5604],
+    imageUrl: '/src/assets/places/kylemore-abbey.jpg'
+  },
+  {
+    id: 'irl-4',
+    name: 'Abbaye de Clonmacnoise',
+    country: 'Ireland',
+    city: 'Clonmacnoise',
+    type: 'Site monastique',
+    description: 'Site monastique majeur (544) fondé Saint Ciarán sur Shannon. Centre d\'érudition européen VIe-XIIe siècles. Tours rondes, croix celtiques sculptées, églises médiévales en ruines. Nécropole rois irlandais. Raids vikings, suppression anglaise. Patrimoine national. Il incarne âge d\'or monastique irlandais, érudition celtique et christianisme gaélique.',
+    points: 70,
+    coordinates: [-7.9879, 53.3267],
+    imageUrl: '/src/assets/places/clonmacnoise.jpg'
+  },
+  
+  // Switzerland
+  {
+    id: 'che-1',
+    name: 'Cathédrale de Lausanne',
+    country: 'Switzerland',
+    city: 'Lausanne',
+    type: 'Cathédrale',
+    description: 'Chef-d\'œuvre gothique suisse (1170-1275), cathédrale protestante depuis Réforme 1536. Portail peint XIIIe, rosace de 9m, crypte. Guetteur annonce heures chaque nuit depuis 1405, tradition unique mondiale. Elle incarne transition catholique-protestant, Réforme calviniste et patrimoine vaudois.',
+    points: 65,
+    coordinates: [6.6356, 46.5225],
+    imageUrl: '/src/assets/places/lausanne-cathedral.jpg'
+  },
+  {
+    id: 'che-2',
+    name: 'Abbaye de Saint-Gall',
+    country: 'Switzerland',
+    city: 'Saint Gallen',
+    type: 'Abbaye',
+    description: 'Abbaye bénédictine (719), centre culturel européen majeur Moyen Âge. Bibliothèque baroque (1758) patrimoine UNESCO : 170 000 volumes, 2100 manuscrits médiévaux dont plan monastique carolingien plus ancien (820). Architecture baroque rococo. Elle incarne érudition monastique médiévale, Réforme suisse et transmission savoir millénaire.',
+    points: 75,
+    coordinates: [9.3767, 47.4239],
+    imageUrl: '/src/assets/places/st-gallen-abbey.jpg'
+  },
+  {
+    id: 'che-3',
+    name: 'Cathédrale de Berne',
+    country: 'Switzerland',
+    city: 'Bern',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique tardif (1421-1893), plus haute flèche Suisse (100m). Protestante depuis Réforme 1528. Portail Jugement Dernier avec 234 figures sculptées. Vitraux XIXe. Vue panoramique Alpes. Elle symbolise Réforme bernoise, confédération suisse et identité protestante alémanique.',
+    points: 60,
+    coordinates: [7.4513, 46.9472],
+    imageUrl: '/src/assets/places/bern-cathedral.jpg'
+  },
+  {
+    id: 'che-4',
+    name: 'Abbaye d\'Einsiedeln',
+    country: 'Switzerland',
+    city: 'Einsiedeln',
+    type: 'Abbaye',
+    description: 'Abbaye bénédictine baroque (934), pèlerinage marial majeur Suisse. Statue Vierge Noire miraculeuse. Église baroque somptueuse (1719-1735), fresques, stucs. Bibliothèque 230 000 volumes. Communauté monastique active. Elle incarne dévotion mariale suisse, baroque alpin et tradition bénédictine millénaire.',
+    points: 70,
+    coordinates: [8.7462, 47.1279],
+    imageUrl: '/src/assets/places/einsiedeln-abbey.jpg'
+  },
+  
+  // Croatia
+  {
+    id: 'hrv-1',
+    name: 'Cathédrale de Zagreb',
+    country: 'Croatia',
+    city: 'Zagreb',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique (1093-1217) avec flèches néo-gothiques de 108m (1880) dominant Zagreb. Trésor médiéval exceptionnel. Endommagée séisme 2020, en restauration. Lieu couronnement rois croato-hongrois. Elle symbolise catholicisme croate, identité nationale et résilience face envahisseurs ottomans.',
+    points: 65,
+    coordinates: [15.9795, 45.8144],
+    imageUrl: '/src/assets/places/zagreb-cathedral.jpg'
+  },
+  {
+    id: 'hrv-2',
+    name: 'Cathédrale Saint-Jacques de Šibenik',
+    country: 'Croatia',
+    city: 'Sibenik',
+    type: 'Cathédrale',
+    description: 'Chef-d\'œuvre Renaissance (1431-1535), entièrement pierre sans bois ni brique. 71 têtes sculptées citoyens XVe siècle sur abside. Architecture Juraj Dalmatinac. Patrimoine UNESCO. Elle incarne Renaissance dalmate, indépendance Šibenik et génie sculpteurs croates.',
+    points: 70,
+    coordinates: [15.8956, 43.7350],
+    imageUrl: '/src/assets/places/sibenik-cathedral.jpg'
+  },
+  {
+    id: 'hrv-3',
+    name: 'Cathédrale de l\'Assomption de Dubrovnik',
+    country: 'Croatia',
+    city: 'Dubrovnik',
+    type: 'Cathédrale',
+    description: 'Cathédrale baroque (1672-1713) reconstruite après séisme 1667. Trésor reliquaires or et argent byzantins, dont crâne Saint Blaise patron Dubrovnik. Tableaux Titien, Raphaël. Elle symbolise République Raguse (Dubrovnik), commerce méditerranéen et résilience face catastrophes.',
+    points: 65,
+    coordinates: [18.1108, 42.6414],
+    imageUrl: '/src/assets/places/dubrovnik-cathedral.jpg'
+  },
+  
+  // Serbia
+  {
+    id: 'srb-1',
+    name: 'Cathédrale Saint-Sava',
+    country: 'Serbia',
+    city: 'Belgrade',
+    type: 'Cathédrale orthodoxe',
+    description: 'Plus grande église orthodoxe monde (1935-2004), Saint-Sava domine Belgrade avec dôme de 70m pesant 4000 tonnes. Dédiée fondateur église serbe autocéphale (XIIIe). Architecture néo-byzantine monumentale blanche. Mosaïques dorées intérieures. Elle incarne orthodoxie serbe, nationalisme religieux et renaissance post-communiste. Symbole Belgrade.',
+    points: 80,
+    coordinates: [20.4689, 44.7982],
+    imageUrl: '/src/assets/places/st-sava-belgrade.jpg'
+  },
+  {
+    id: 'srb-2',
+    name: 'Monastère de Studenica',
+    country: 'Serbia',
+    city: 'Studenica',
+    type: 'Monastère',
+    description: 'Monastère orthodoxe (1190), berceau école fresques serbes médiévales. Fondé Stefan Nemanja, fondateur dynastie Nemanjić. Églises marbre blanc byzantines, fresques XIIIe-XIVe chefs-d\'œuvre. Patrimoine UNESCO. Il incarne médiéval serbe, orthodoxie balkanique et identité nationale serbe millénaire.',
+    points: 70,
+    coordinates: [20.5350, 43.4894],
+    imageUrl: '/src/assets/places/studenica-monastery.jpg'
+  },
+  
+  // Lithuania
+  {
+    id: 'ltu-1',
+    name: 'Cathédrale de Vilnius',
+    country: 'Lithuania',
+    city: 'Vilnius',
+    type: 'Cathédrale',
+    description: 'Cathédrale néoclassique (1783) sur site temple païen Perkūnas. Lieu baptême Lituanie 1387 (dernier pays européen christianisé). Crypte royale, chapelle Saint-Casimir baroque. Clocher séparé 57m. Elle incarne christianisation tardive Lituanie, catholicisme lituanien et résistance soviétique (messe clandestine).',
+    points: 65,
+    coordinates: [25.2878, 54.6859],
+    imageUrl: '/src/assets/places/vilnius-cathedral.jpg'
+  },
+  {
+    id: 'ltu-2',
+    name: 'Église Sainte-Anne',
+    country: 'Lithuania',
+    city: 'Vilnius',
+    type: 'Église',
+    description: 'Chef-d\'œuvre gothique flamboyant brique rouge (1495-1500), 33 types briques différentes. Façade dentelle pierre admirée Napoléon (aurait voulu l\'emporter à Paris). Architecture gothique balte unique. Patrimoine UNESCO Vilnius. Elle incarne artisanat lituanien, gothique tardif et beauté architecturale ville baroque.',
+    points: 70,
+    coordinates: [25.2970, 54.6837],
+    imageUrl: '/src/assets/places/st-anne-vilnius.jpg'
+  },
+  
+  // Latvia
+  {
+    id: 'lva-1',
+    name: 'Cathédrale du Dôme de Riga',
+    country: 'Latvia',
+    city: 'Riga',
+    type: 'Cathédrale',
+    description: 'Plus grande église médiévale États baltes (1211), cathédrale luthérienne. Architecture mêlant roman, gothique, baroque. Orgue monumental 6718 tuyaux (1884), un des plus grands Europe. Cloître médiéval, musée Histoire Riga. Elle incarne conquête germanique Livonie, Réforme balte et identité lettone.',
+    points: 65,
+    coordinates: [24.1045, 56.9496],
+    imageUrl: '/src/assets/places/riga-cathedral.jpg'
+  },
+  {
+    id: 'lva-2',
+    name: 'Église Saint-Pierre',
+    country: 'Latvia',
+    city: 'Riga',
+    type: 'Église',
+    description: 'Église gothique brique (1209) avec flèche baroque de 123m dominant Riga. Plateforme observation panoramique. Détruite WWII, reconstruite ère soviétique. Architecture gothique balte hanséatique. Patrimoine UNESCO centre historique. Elle symbolise Ligue hanséatique, commerce balte et reconstruction post-guerre.',
+    points: 60,
+    coordinates: [24.1091, 56.9477],
+    imageUrl: '/src/assets/places/st-peter-riga.jpg'
+  },
+  
+  // Estonia
+  {
+    id: 'est-1',
+    name: 'Cathédrale Alexandre-Nevski',
+    country: 'Estonia',
+    city: 'Tallinn',
+    type: 'Cathédrale orthodoxe',
+    description: 'Cathédrale orthodoxe russe (1900), symbole russification tsariste. Architecture russo-byzantine avec 5 bulbes. Bells 11 cloches. Controversée indépendance estonienne 1991 (débats démolition). Toujours active malgré tensions. Elle incarne occupation russe, minorité orthodoxe Estonie et histoire complexe balto-russe.',
+    points: 60,
+    coordinates: [24.7393, 59.4356],
+    imageUrl: '/src/assets/places/alexander-nevsky-tallinn.jpg'
+  },
+  {
+    id: 'est-2',
+    name: 'Cathédrale Sainte-Marie',
+    country: 'Estonia',
+    city: 'Tallinn',
+    type: 'Cathédrale',
+    description: 'Plus ancienne église Estonie (XIIIe), cathédrale luthérienne. Architecture gothique balte, intérieur baroque. Armoiries noblesse balto-allemande. Orgue baroque. Panthéon élite germano-balte. Elle incarne domination germanique médiévale, Réforme luthérienne et stratification sociale Tallinn hanséatique.',
+    points: 60,
+    coordinates: [24.7450, 59.4367],
+    imageUrl: '/src/assets/places/st-mary-tallinn.jpg'
+  },
+  
+  // Slovakia
+  {
+    id: 'svk-1',
+    name: 'Cathédrale Saint-Martin',
+    country: 'Slovakia',
+    city: 'Bratislava',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique (1452) où furent couronnés 11 rois et 8 reines Hongrie (1563-1830) quand Bratislava était capitale. Couronne dorée 150kg sur tour. Crypte royale. Architecture gothique tardif. Elle symbolise royaume Hongrie, monarchie Habsbourg et identité slovaque.',
+    points: 65,
+    coordinates: [17.1050, 48.1415],
+    imageUrl: '/src/assets/places/bratislava-cathedral.jpg'
+  },
+  {
+    id: 'svk-2',
+    name: 'Église Sainte-Élisabeth',
+    country: 'Slovakia',
+    city: 'Bratislava',
+    type: 'Église',
+    description: 'Église Art Nouveau unique (1913), surnommée "Église Bleue" pour ses façades bleu pastel et mosaïques bleues. Architecture Ödön Lechner style Sécession hongroise. Dédiée Sainte Élisabeth Hongrie. Elle incarne modernisme centre-européen, Art Nouveau et patrimoine austro-hongrois.',
+    points: 60,
+    coordinates: [17.1180, 48.1402],
+    imageUrl: '/src/assets/places/blue-church-bratislava.jpg'
+  },
+  
+  // Slovenia
+  {
+    id: 'svn-1',
+    name: 'Cathédrale Saint-Nicolas',
+    country: 'Slovenia',
+    city: 'Ljubljana',
+    type: 'Cathédrale',
+    description: 'Cathédrale baroque (1707-1706) sur site église romane XIIIe. Fresques baroques Giulio Quaglio. Portes bronze modernes (1996) : 1250 ans christianisme slovène. Elle incarne Contre-Réforme catholique, baroque alpin et identité slovène catholique face protestantisme germanique.',
+    points: 60,
+    coordinates: [14.5068, 46.0505],
+    imageUrl: '/src/assets/places/ljubljana-cathedral.jpg'
+  },
+  {
+    id: 'svn-2',
+    name: 'Île de Bled',
+    country: 'Slovenia',
+    city: 'Bled',
+    type: 'Église de pèlerinage',
+    description: 'Église baroque (1698) sur île lac Bled, unique île naturelle Slovénie. Accessible barques traditionnelles pletna. Cloche des vœux, escalier 99 marches, tradition marié porte mariée. Lieu mariage romantique. Elle incarne paysage alpin slovène, traditions locales et tourisme romantique.',
+    points: 65,
+    coordinates: [14.0993, 46.3686],
+    imageUrl: '/src/assets/places/bled-island.jpg'
+  },
+  
+  // Albania
+  {
+    id: 'alb-1',
+    name: 'Cathédrale de la Résurrection',
+    country: 'Albania',
+    city: 'Tirana',
+    type: 'Cathédrale orthodoxe',
+    description: 'Cathédrale orthodoxe (2012), troisième plus grande Balkans. Construite après chute régime communiste athée Enver Hoxha (1967-1991, religion interdite). Architecture néo-byzantine moderne. Elle symbolise renaissance religieuse post-communiste, liberté culte et renouveau orthodoxe albanais.',
+    points: 60,
+    coordinates: [19.8227, 41.3275],
+    imageUrl: '/src/assets/places/tirana-cathedral.jpg'
+  },
+  
+  // Luxembourg
+  {
+    id: 'lux-1',
+    name: 'Cathédrale Notre-Dame',
+    country: 'Luxembourg',
+    city: 'Luxembourg',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique tardif (1613-1621) devenue cathédrale 1870. Architecture gothique Renaissance. Notre-Dame Consolatrice Affligés, patronne Luxembourg, statue miraculeuse pèlerinage. Tombeaux famille grand-ducale. Elle incarne catholicisme luxembourgeois, dynastie grand-ducale et petite nation européenne.',
+    points: 55,
+    coordinates: [6.1319, 49.6095],
+    imageUrl: '/src/assets/places/luxembourg-cathedral.jpg'
+  },
+  
+  // Malta
+  {
+    id: 'mlt-1',
+    name: 'Co-Cathédrale Saint-Jean',
+    country: 'Malta',
+    city: 'Valletta',
+    type: 'Cathédrale',
+    description: 'Cathédrale baroque (1577) Ordre Malte, trésor art baroque méditerranéen. Sol marbre avec 400 tombes chevaliers. Voûtes peintes Mattia Preti. Oratoire abrite 2 Caravage dont "Décollation Saint Jean-Baptiste". Elle incarne Ordre Malte, Contre-Réforme et richesse baroque insulaire. Patrimoine UNESCO Valletta.',
+    points: 75,
+    coordinates: [14.5116, 35.8978],
+    imageUrl: '/src/assets/places/st-john-valletta.jpg'
+  },
+  
+  // Cyprus
+  {
+    id: 'cyp-1',
+    name: 'Monastère de Kykkos',
+    country: 'Cyprus',
+    city: 'Kykkos',
+    type: 'Monastère orthodoxe',
+    description: 'Monastère orthodoxe (1100) montagnes Troodos, plus riche Chypre. Icône miraculeuse Vierge attribuée Saint Luc. Mosaïques dorées byzantines modernes. Musée byzantin. Lieu naissance Makarios III, premier président Chypre. Il incarne orthodoxie chypriote, résistance ottomane et identité grecque-chypriote.',
+    points: 65,
+    coordinates: [32.7417, 34.9824],
+    imageUrl: '/src/assets/places/kykkos-monastery.jpg'
+  },
+  
+  // Additional French monuments
+  {
+    id: 'fra-13',
+    name: 'Basilique Notre-Dame de la Garde',
+    country: 'France',
+    city: 'Marseille',
+    type: 'Basilique',
+    description: 'Basilique romano-byzantine (1864) dominant Marseille et Méditerranée depuis colline 162m. Statue dorée Vierge de 11m ("Bonne Mère"). Mosaïques intérieures somptueuses. Ex-voto marins. Elle incarne protection maritime, dévotion mariale provençale et identité marseillaise. Vue panoramique exceptionnelle.',
+    points: 65,
+    coordinates: [5.3716, 43.2842],
+    imageUrl: '/src/assets/places/notre-dame-garde.jpg'
+  },
+  {
+    id: 'fra-14',
+    name: 'Basilique Saint-Denis',
+    country: 'France',
+    city: 'Saint-Denis',
+    type: 'Basilique',
+    description: 'Nécropole royale française (639-1824), Saint-Denis abrite 42 rois, 32 reines, 63 princes dans 70 gisants et tombeaux sculptés. Première église gothique monde (1135-1144) Suger. Profanée Révolution 1793. Patrimoine UNESCO. Elle incarne monarchie française millénaire, art funéraire royal et naissance architecture gothique.',
+    points: 80,
+    coordinates: [2.3599, 48.9356],
+    imageUrl: '/src/assets/places/st-denis-basilica.jpg'
+  },
+  {
+    id: 'fra-15',
+    name: 'Abbaye du Mont-Saint-Odile',
+    country: 'France',
+    city: 'Ottrott',
+    type: 'Abbaye',
+    description: 'Abbaye (680) perchée 763m Vosges, fondée Sainte Odile patronne Alsace. Pèlerinage alsacien majeur. Vue panoramique plaine Alsace, Forêt-Noire. Mur païen énigmatique 11km. Chapelle tombeaux, source miraculeuse. Elle incarne christianisation Alsace, dévotion alsacienne et identité régionale.',
+    points: 60,
+    coordinates: [7.4049, 48.4374],
+    imageUrl: '/src/assets/places/mont-sainte-odile.jpg'
+  },
+  {
+    id: 'fra-16',
+    name: 'Cathédrale Notre-Dame de Rouen',
+    country: 'France',
+    city: 'Rouen',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique normande (1020-1506), immortalisée par Monet (30 tableaux "Cathédrales"). Flèche fonte 151m, plus haute France jusqu\'à Tour Eiffel. Tombeaux ducs Normandie dont cœur Richard Cœur de Lion. Vitraux XIIIe. Elle incarne gothique normand, conquête Angleterre et art impressionniste.',
+    points: 70,
+    coordinates: [1.0939, 49.4404],
+    imageUrl: '/src/assets/places/rouen-cathedral.jpg'
+  },
+  {
+    id: 'fra-17',
+    name: 'Basilique Notre-Dame de Fourvière',
+    country: 'France',
+    city: 'Lyon',
+    type: 'Basilique',
+    description: 'Basilique romano-byzantine (1872-1896) dominant Lyon depuis colline Fourvière. Architecture éclectique, mosaïques dorées, vitraux Art Nouveau. Construite vœu épidémie 1643 et vœu guerre 1870. Vue panoramique Lyon, Alpes. Elle incarne dévotion mariale lyonnaise, Vierge sauvant ville des fléaux et identité lyonnaise.',
+    points: 65,
+    coordinates: [4.8227, 45.7622],
+    imageUrl: '/src/assets/places/fourviere-lyon.jpg'
+  },
+  
+  // Additional Italian monuments
+  {
+    id: 'ita-15',
+    name: 'Basilique Saint-Antoine de Padoue',
+    country: 'Italy',
+    city: 'Padua',
+    type: 'Basilique',
+    description: 'Basilique (1232-1310) abritant reliques Saint Antoine Padoue, langue miraculeusement préservée. Architecture romano-gothique-byzantine 8 dômes. Fresques, bronzes Donatello. Pèlerinage majeur 6,5 millions visiteurs. Elle incarne ordre franciscain, dévotion antonienne et patrimoine Padoue.',
+    points: 70,
+    coordinates: [11.8812, 45.4015],
+    imageUrl: '/src/assets/places/padua-st-anthony.jpg'
+  },
+  {
+    id: 'ita-16',
+    name: 'Basilique Saint-François de Ravenne',
+    country: 'Italy',
+    city: 'Ravenna',
+    type: 'Basilique',
+    description: 'Basilique (450) où furent célébrées funérailles Dante 1321. Crypte inondée eau de nappe phréatique, poissons rouges. Mosaïques byzantines. Tombe Dante adjacente. Elle incarne capitale byzantine occidentale, mosaïques paléochrétiennes et exil Dante.',
+    points: 60,
+    coordinates: [12.2035, 44.4184],
+    imageUrl: '/src/assets/places/ravenna-basilica.jpg'
+  },
+  {
+    id: 'ita-17',
+    name: 'Basilique de la Sainte-Maison',
+    country: 'Italy',
+    city: 'Loreto',
+    type: 'Basilique',
+    description: 'Basilique (1469-1587) abritant Santa Casa, maison nazaréenne Vierge Marie miraculeusement transportée anges 1294. Pèlerinage marial majeur. Fortifications Renaissance. Elle incarne dévotion mariale, légende médiévale et foi populaire italienne. Patronne aviateurs.',
+    points: 70,
+    coordinates: [13.6099, 43.4406],
+    imageUrl: '/src/assets/places/loreto-basilica.jpg'
+  },
+  
+  // Additional Spanish monuments
+  {
+    id: 'esp-11',
+    name: 'Cathédrale de la Almudena',
+    country: 'Spain',
+    city: 'Madrid',
+    type: 'Cathédrale',
+    description: 'Cathédrale néoclassique (1883-1993) Madrid, consacrée Jean-Paul II 1993. Architecture éclectique mêlant styles. Face Palais Royal. Crypte néo-romane polychrome. Mariage royal 2004. Elle symbolise Madrid capitale, monarchie espagnole moderne et catholicisme madrilène.',
+    points: 60,
+    coordinates: [-3.7144, 40.4156],
+    imageUrl: '/src/assets/places/almudena-cathedral.jpg'
+  },
+  {
+    id: 'esp-12',
+    name: 'Monastère de l\'Escurial',
+    country: 'Spain',
+    city: 'San Lorenzo de El Escorial',
+    type: 'Monastère',
+    description: 'Complexe monumental Renaissance (1563-1584) Philippe II : monastère, palais, bibliothèque, panthéon rois Espagne. Architecture austère Juan de Herrera. 2673 pièces. Bibliothèque 40 000 volumes, fresques. Patrimoine UNESCO. Il incarne puissance empire espagnol, Contre-Réforme et Siècle d\'Or.',
+    points: 80,
+    coordinates: [-4.1476, 40.5892],
+    imageUrl: '/src/assets/places/el-escorial.jpg'
+  },
+  {
+    id: 'esp-13',
+    name: 'Cathédrale de Valence',
+    country: 'Spain',
+    city: 'Valencia',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique (1262-1482) sur mosquée. Abrite Saint Calice (Graal), coupe Cène selon tradition. Mélange roman, gothique, Renaissance, baroque, néoclassique. Clocher Miguelete 51m emblème Valence. Elle incarne Reconquista, relique christique et diversité architecturale valencienne.',
+    points: 65,
+    coordinates: [-0.3750, 39.4755],
+    imageUrl: '/src/assets/places/valencia-cathedral.jpg'
+  },
+  {
+    id: 'esp-14',
+    name: 'Cathédrale de Salamanque',
+    country: 'Spain',
+    city: 'Salamanca',
+    type: 'Cathédrale',
+    description: 'Deux cathédrales accolées : Vieille (1120) romane, Nouvelle (1513-1733) gothique-Renaissance. Tour 110m. Façade plateresque sculptée. Astronaute sculpté restauration 1992 (anachronisme voulu). Patrimoine UNESCO. Elles incarnent université médiévale, Siècle d\'Or et pierre dorée Salamanque.',
+    points: 65,
+    coordinates: [-5.6643, 40.9607],
+    imageUrl: '/src/assets/places/salamanca-cathedral.jpg'
+  },
+  
+  // Additional German monuments  
+  {
+    id: 'deu-4',
+    name: 'Cathédrale d\'Ulm',
+    country: 'Germany',
+    city: 'Ulm',
+    type: 'Cathédrale',
+    description: 'Plus haute flèche église monde (1890) : 161,53m, 768 marches. Gothique (1377-1890). Protestante depuis 1530. Capacité 20 000 personnes. Vitraux modernes. Elle incarne ambition citadine médiévale, Réforme luthérienne et prouesse architecturale gothique.',
+    points: 70,
+    coordinates: [9.9925, 48.3986],
+    imageUrl: '/src/assets/places/ulm-cathedral.jpg'
+  },
+  {
+    id: 'deu-5',
+    name: 'Abbaye de Corvey',
+    country: 'Germany',
+    city: 'Höxter',
+    type: 'Abbaye',
+    description: 'Abbaye bénédictine (822), centre culturel carolingien. Westwerk carolingien unique (873-885) patrimoine UNESCO. Bibliothèque ducale 74 000 volumes. Tombeau poète Heinrich Hoffmann von Fallersleben (hymne national). Elle incarne Renaissance carolingienne, érudition monastique et patrimoine westphalien.',
+    points: 60,
+    coordinates: [9.4127, 51.7769],
+    imageUrl: '/src/assets/places/corvey-abbey.jpg'
+  },
+  {
+    id: 'deu-6',
+    name: 'Église Kaiser-Wilhelm-Gedächtniskirche',
+    country: 'Germany',
+    city: 'Berlin',
+    type: 'Église mémorial',
+    description: 'Église néo-romane (1895) bombardée 1943, ruine conservée mémorial guerre. Église moderne bleue adjacente (1963) Egon Eiermann. 20 000 vitraux bleus. Symbole paix, réconciliation. Elle incarne destruction guerre, reconstruction et mémoire pacifiste berlinoise.',
+    points: 60,
+    coordinates: [13.3355, 52.5050],
+    imageUrl: '/src/assets/places/kaiser-wilhelm-church.jpg'
+  },
+  
+  // Additional UK monuments
+  {
+    id: 'uk-5',
+    name: 'Cathédrale Saint-Paul',
+    country: 'United Kingdom',
+    city: 'London',
+    type: 'Cathédrale',
+    description: 'Cathédrale baroque anglicane (1675-1710) Christopher Wren. Dôme 111m inspiré Saint-Pierre Rome. Funérailles Churchill, Wellington, Horatio Nelson. Mariage Charles et Diana 1981. Résista Blitz WWII, symbole résilience britannique. Elle incarne anglicanisme, empire britannique et architecture baroque anglaise.',
+    points: 75,
+    coordinates: [-0.0983, 51.5138],
+    imageUrl: '/src/assets/places/st-paul-london.jpg'
+  },
+  {
+    id: 'uk-6',
+    name: 'Cathédrale de Durham',
+    country: 'United Kingdom',
+    city: 'Durham',
+    type: 'Cathédrale',
+    description: 'Chef-d\'œuvre roman normand (1093-1133), première voûtes croisées ogives Europe. Patrimoine UNESCO. Reliques Saint Cuthbert, Bède Vénérable. Architecture massive forteresse spirituelle. Lieu tournage Harry Potter. Elle incarne conquête normande, monachisme bénédictin et roman anglais.',
+    points: 70,
+    coordinates: [-1.5760, 54.7733],
+    imageUrl: '/src/assets/places/durham-cathedral.jpg'
+  },
+  {
+    id: 'uk-7',
+    name: 'Abbaye de Glastonbury',
+    country: 'United Kingdom',
+    city: 'Glastonbury',
+    type: 'Abbaye en ruines',
+    description: 'Ruines abbaye (VIIe-1539), légende tombeau roi Arthur et Guenièvre. Premier sanctuaire chrétien Angleterre selon tradition. Supprimée Henri VIII. Pèlerinage New Age, ésotérisme. Elle incarne légendes arthuriennes, christianisme celtique et dissolution monastères Tudor.',
+    points: 65,
+    coordinates: [-2.7184, 51.1473],
+    imageUrl: '/src/assets/places/glastonbury-abbey.jpg'
+  },
+  {
+    id: 'uk-8',
+    name: 'Cathédrale de Lincoln',
+    country: 'United Kingdom',
+    city: 'Lincoln',
+    type: 'Cathédrale',
+    description: 'Cathédrale gothique anglaise (1072-1311), fut plus haut édifice monde (1311-1549) avec flèche centrale 160m effondrée. Architecture gothique anglais perpendiculaire. Magna Carta originale conservée. Elle incarne pouvoir épiscopal médiéval, gothique anglais et histoire constitutionnelle britannique.',
+    points: 65,
+    coordinates: [-0.5366, 53.2347],
+    imageUrl: '/src/assets/places/lincoln-cathedral.jpg'
   }
 ];
 
