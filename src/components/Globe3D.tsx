@@ -80,34 +80,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       });
     });
 
-    // Ajouter des marqueurs pour les lieux
-    map.current.on('load', () => {
-      if (!map.current) return;
-
-      // Charger les données des lieux
-      import('@/data/placesData').then(({ mockPlaces }) => {
-        if (!map.current) return;
-
-        // Ajouter les marqueurs
-        mockPlaces.forEach(place => {
-          const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
-            .setHTML(`
-              <div style="padding: 12px;">
-                ${place.imageUrl ? `<img src="${place.imageUrl}" alt="${place.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" />` : ''}
-                <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #1a1a1a;">${place.name}</h3>
-                <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${place.type} • ${place.country}</p>
-                <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #333;">${place.description}</p>
-                <p style="margin: 12px 0 0 0; font-size: 14px; font-weight: bold; color: hsl(45 100% 51%);">🏆 ${place.points} points</p>
-              </div>
-            `);
-
-          new mapboxgl.Marker({ color: '#FFD700' })
-            .setLngLat([place.coordinates[0], place.coordinates[1]])
-            .setPopup(popup)
-            .addTo(map.current!);
-        });
-      });
-    });
+    // Ne pas afficher les marqueurs par défaut - les monuments seront visibles sur la page du pays
 
     // Click sur un pays
     map.current.on('click', (e) => {

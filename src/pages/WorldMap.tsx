@@ -25,9 +25,13 @@ const WorldMap = () => {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    if (value.trim()) {
-      const filtered = countries.filter(c => c.toLowerCase().includes(value.toLowerCase()));
-      if (filtered.length === 1) {
+    // Ne pas naviguer automatiquement, seulement mettre à jour le terme de recherche
+  };
+
+  const handleSearchSubmit = () => {
+    if (searchTerm.trim()) {
+      const filtered = countries.filter(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
+      if (filtered.length > 0) {
         navigate(`/country/${filtered[0]}`);
       }
     }
@@ -97,11 +101,8 @@ const WorldMap = () => {
                 value={searchTerm}
                 onChange={(e) => handleSearch(e.target.value)}
                 onKeyPress={(e) => {
-                  if (e.key === 'Enter' && searchTerm.trim()) {
-                    const filtered = countries.filter(c => c.toLowerCase().includes(searchTerm.toLowerCase()));
-                    if (filtered.length > 0) {
-                      navigate(`/country/${filtered[0]}`);
-                    }
+                  if (e.key === 'Enter') {
+                    handleSearchSubmit();
                   }
                 }}
                 className={`bg-transparent text-white placeholder:text-gray-400 focus:outline-none transition-all ${
