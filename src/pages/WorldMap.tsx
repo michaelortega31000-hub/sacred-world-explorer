@@ -53,11 +53,11 @@ const WorldMap = () => {
           <div className="max-w-7xl mx-auto">
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
               <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeWidth="2" />
+                </svg>
                 {t('worldMap.title')}
-              </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <MapPin className="w-4 h-4" />
-                Lieux & Classements
               </TabsTrigger>
               <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Calendar className="w-4 h-4" />
@@ -66,6 +66,10 @@ const WorldMap = () => {
               <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
+              </TabsTrigger>
+              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <MapPin className="w-4 h-4" />
+                Lieux & Classements
               </TabsTrigger>
             </TabsList>
           </div>

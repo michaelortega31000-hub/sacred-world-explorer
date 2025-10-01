@@ -84,6 +84,26 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
         'star-intensity': 0.8
       });
 
+      // Ajouter un layer pour l'effet hover doré sur les pays
+      if (!map.current.getLayer('country-fills-hover')) {
+        map.current.addLayer({
+          id: 'country-fills-hover',
+          type: 'fill',
+          source: 'composite',
+          'source-layer': 'admin',
+          filter: ['==', ['get', 'admin_level'], 0],
+          paint: {
+            'fill-color': 'hsl(45, 100%, 51%)',
+            'fill-opacity': [
+              'case',
+              ['boolean', ['feature-state', 'hover'], false],
+              0.3,
+              0
+            ]
+          }
+        }, 'country-label');
+      }
+
       // Configurer la langue des labels selon la langue sélectionnée
       const langCode = i18n.language || 'fr';
       const mapboxLangMap: { [key: string]: string } = {
@@ -166,7 +186,9 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       }
     });
 
-    // Curseur pointer sur les pays
+    // Curseur pointer sur les pays et effet hover doré
+    let hoveredCountryId: string | number | null = null;
+    
     map.current.on('mousemove', (e) => {
       if (!map.current) return;
       
@@ -174,7 +196,43 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
         layers: ['country-label']
       });
       
+      // Récupérer les features de la couche admin pour l'effet hover
+      const countryFeatures = map.current.queryRenderedFeatures(e.point, {
+        layers: ['country-fills-hover']
+      });
+
+      // Réinitialiser le hover précédent
+      if (hoveredCountryId !== null) {
+        map.current.setFeatureState(
+          { source: 'composite', sourceLayer: 'admin', id: hoveredCountryId },
+          { hover: false }
+        );
+      }
+
+      // Activer le hover sur le nouveau pays
+      if (countryFeatures && countryFeatures.length > 0) {
+        hoveredCountryId = countryFeatures[0].id;
+        if (hoveredCountryId !== undefined) {
+          map.current.setFeatureState(
+            { source: 'composite', sourceLayer: 'admin', id: hoveredCountryId },
+            { hover: true }
+          );
+        }
+      } else {
+        hoveredCountryId = null;
+      }
+      
       map.current.getCanvas().style.cursor = features && features.length > 0 ? 'pointer' : '';
+    });
+
+    // Réinitialiser le hover quand la souris quitte la carte
+    map.current.on('mouseleave', () => {
+      if (!map.current || hoveredCountryId === null) return;
+      map.current.setFeatureState(
+        { source: 'composite', sourceLayer: 'admin', id: hoveredCountryId },
+        { hover: false }
+      );
+      hoveredCountryId = null;
     });
 
     // Nettoyage
