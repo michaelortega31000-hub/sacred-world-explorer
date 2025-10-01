@@ -49,25 +49,28 @@ const WorldMap = () => {
       </Header>
 
       <Tabs defaultValue="map" className="flex-1 flex flex-col">
-        <div className="border-b border-border bg-card">
+        <div className="border-b-2" style={{ 
+          background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+          borderColor: 'hsl(45 100% 51%)'
+        }}>
           <div className="max-w-7xl mx-auto">
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
-              <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" strokeWidth="2" />
                   <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeWidth="2" />
                 </svg>
                 {t('worldMap.title')}
               </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
                 <Calendar className="w-4 h-4" />
                 {t('tabs.tripPlanner')}
               </TabsTrigger>
-              <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
                 <Target className="w-4 h-4" />
                 {t('tabs.weeklyQuest')}
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 text-black font-medium data-[state=active]:border-black data-[state=active]:bg-black/10">
                 <MapPin className="w-4 h-4" />
                 Lieux & Classements
               </TabsTrigger>
@@ -79,16 +82,19 @@ const WorldMap = () => {
           {/* Globe 3D avec fond étoilé */}
           <Globe3D />
 
-          {/* Barre de recherche overlay */}
+          {/* Barre de recherche overlay - côté gauche */}
           <div 
-            className={`absolute top-4 left-1/2 -translate-x-1/2 bg-black/80 backdrop-blur-sm rounded-xl shadow-2xl border-2 transition-all duration-300 z-50 ${
-              isSearchExpanded ? 'w-[90%] max-w-2xl p-4' : 'w-auto px-4 py-2'
+            className={`absolute top-4 left-4 backdrop-blur-sm rounded-xl shadow-2xl border-2 transition-all duration-300 z-50 ${
+              isSearchExpanded ? 'w-96 p-4' : 'w-auto px-3 py-2'
             }`} 
-            style={{ borderColor: 'hsl(45 100% 51%)' }}
+            style={{ 
+              background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+              borderColor: 'hsl(45 100% 51%)'
+            }}
           >
             <div className="flex items-center gap-2">
               {isSearchExpanded && (
-                <span style={{ color: 'hsl(45 100% 51%)' }} className="text-lg">🌍</span>
+                <span className="text-lg">🌍</span>
               )}
               <input
                 type="text"
@@ -100,15 +106,15 @@ const WorldMap = () => {
                     handleSearchSubmit();
                   }
                 }}
-                className={`bg-transparent text-white placeholder:text-gray-400 focus:outline-none transition-all ${
-                  isSearchExpanded ? 'w-full px-2 py-1' : 'w-24 text-center'
+                className={`bg-transparent text-black placeholder:text-black/60 font-medium focus:outline-none transition-all ${
+                  isSearchExpanded ? 'w-full px-2 py-1' : 'w-10 text-center'
                 }`}
               />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-                className="text-white hover:bg-white/10 p-1 h-auto"
+                className="text-black hover:bg-black/10 p-1 h-auto"
               >
                 {isSearchExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
