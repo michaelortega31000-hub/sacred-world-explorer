@@ -3,12 +3,13 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Target, Maximize2, Minimize2, Calendar } from 'lucide-react';
+import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries } from '@/data/placesData';
 import RankingsTab from '@/components/RankingsTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
+import LocationsStatsTab from '@/components/LocationsStatsTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 
@@ -54,6 +55,10 @@ const WorldMap = () => {
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
               <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 {t('worldMap.title')}
+              </TabsTrigger>
+              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <MapPin className="w-4 h-4" />
+                Lieux recensés
               </TabsTrigger>
               <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Calendar className="w-4 h-4" />
@@ -110,6 +115,10 @@ const WorldMap = () => {
               </Button>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="locations" className="flex-1 m-0">
+          <LocationsStatsTab />
         </TabsContent>
 
         <TabsContent value="trip" className="flex-1 m-0">
