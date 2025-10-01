@@ -97,7 +97,33 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
             'fill-opacity': [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              0.3,
+              0.5,
+              0
+            ]
+          }
+        }, 'country-label');
+      }
+
+      // Ajouter un contour pour mieux voir le hover
+      if (!map.current.getLayer('country-outline-hover')) {
+        map.current.addLayer({
+          id: 'country-outline-hover',
+          type: 'line',
+          source: 'composite',
+          'source-layer': 'admin',
+          filter: ['==', ['get', 'admin_level'], 0],
+          paint: {
+            'line-color': 'hsl(45, 100%, 51%)',
+            'line-width': [
+              'case',
+              ['boolean', ['feature-state', 'hover'], false],
+              3,
+              0
+            ],
+            'line-opacity': [
+              'case',
+              ['boolean', ['feature-state', 'hover'], false],
+              0.8,
               0
             ]
           }
