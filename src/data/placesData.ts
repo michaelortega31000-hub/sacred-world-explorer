@@ -12,7 +12,8 @@ export const mockPlaces: Place[] = [
     type: 'Cathédrale',
     description: 'Cathédrale gothique emblématique au cœur de Paris',
     points: 50,
-    coordinates: [2.3499, 48.8530]
+    coordinates: [2.3499, 48.8530],
+    imageUrl: '/src/assets/places/notre-dame.jpg'
   },
   {
     id: 'fra-2',
@@ -68,7 +69,8 @@ export const mockPlaces: Place[] = [
     type: 'Basilique',
     description: 'Centre du catholicisme mondial',
     points: 100,
-    coordinates: [12.4534, 41.9022]
+    coordinates: [12.4534, 41.9022],
+    imageUrl: '/src/assets/places/vatican.jpg'
   },
   {
     id: 'ita-2',
@@ -124,7 +126,8 @@ export const mockPlaces: Place[] = [
     type: 'Basilique',
     description: 'Basilique moderniste de Gaudí à Barcelone',
     points: 90,
-    coordinates: [2.1744, 41.4036]
+    coordinates: [2.1744, 41.4036],
+    imageUrl: '/src/assets/places/sagrada-familia.jpg'
   },
   {
     id: 'esp-2',
@@ -405,7 +408,8 @@ export const mockPlaces: Place[] = [
     type: 'Monument',
     description: 'Tombeaux des pharaons, merveille antique',
     points: 120,
-    coordinates: [31.1342, 29.9792]
+    coordinates: [31.1342, 29.9792],
+    imageUrl: '/src/assets/places/pyramids-giza.jpg'
   },
   {
     id: 'egy-2',
@@ -494,7 +498,8 @@ export const mockPlaces: Place[] = [
     type: 'Mausolée',
     description: 'Monument funéraire emblématique',
     points: 100,
-    coordinates: [78.0421, 27.1751]
+    coordinates: [78.0421, 27.1751],
+    imageUrl: '/src/assets/places/taj-mahal.jpg'
   },
   {
     id: 'ind-2',
@@ -911,7 +916,8 @@ export const mockPlaces: Place[] = [
     type: 'Site inca',
     description: 'Cité inca emblématique dans les Andes',
     points: 120,
-    coordinates: [-72.5450, -13.1631]
+    coordinates: [-72.5450, -13.1631],
+    imageUrl: '/src/assets/places/machu-picchu.jpg'
   },
   {
     id: 'per-2',

@@ -115,9 +115,19 @@ const Country = () => {
                 const visited = isPlaceVisited(place.id);
                 return (
                   <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
-                    <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                      <MapPin className="w-16 h-16 text-primary" />
-                    </div>
+                    {place.imageUrl ? (
+                      <div className="h-48 overflow-hidden">
+                        <img 
+                          src={place.imageUrl} 
+                          alt={place.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                        <MapPin className="w-16 h-16 text-primary" />
+                      </div>
+                    )}
                     <CardHeader>
                       <CardTitle className="flex items-start justify-between gap-2">
                         <span>{place.name}</span>
