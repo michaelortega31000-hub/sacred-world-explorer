@@ -1,6 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin, TrendingUp, Users } from 'lucide-react';
@@ -25,6 +25,14 @@ const WorldMap = () => {
   const params = new URLSearchParams(location.search);
   const initialTab = params.get('tab') || 'map';
   const [activeTab, setActiveTab] = useState(initialTab);
+
+  // Mettre à jour l'onglet actif quand l'URL change
+  useEffect(() => {
+    const currentTab = params.get('tab');
+    if (currentTab && currentTab !== activeTab) {
+      setActiveTab(currentTab);
+    }
+  }, [location.search]);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
