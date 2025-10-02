@@ -71,7 +71,7 @@ const Welcome = () => {
   const StepIcon = currentStep?.icon;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[hsl(200,100%,85%)] via-[hsl(200,100%,90%)] to-[hsl(200,100%,95%)]">
       {/* Sélecteur de langue en haut à droite */}
       <header className="w-full p-4 flex justify-end">
         <LanguageSelector />
@@ -85,7 +85,7 @@ const Welcome = () => {
             <img 
               src={logo} 
               alt="SacredWorld Logo" 
-              className="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56"
+              className="w-56 h-56 md:w-64 md:h-64 lg:w-72 lg:h-72"
               style={{
                 animation: 'logoEntry 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
               }}
@@ -93,11 +93,11 @@ const Welcome = () => {
           </div>
 
           {/* Promesse (2 phrases) */}
-          <div className="space-y-4 mb-12 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight font-poppins">
+          <div className="space-y-6 mb-12 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <p className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight font-poppins tracking-tight">
               {t('welcome.promise1')}
             </p>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
+            <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-poppins font-light">
               {t('welcome.promise2')}
             </p>
           </div>
@@ -125,7 +125,7 @@ const Welcome = () => {
           </div>
 
           {/* Accessibilité note */}
-          <p className="mt-8 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <p className="mt-8 text-sm text-gray-600 animate-fade-in" style={{ animationDelay: '300ms' }}>
             {t('welcome.accessibility')}
           </p>
         </div>
