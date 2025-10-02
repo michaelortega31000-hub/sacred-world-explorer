@@ -180,6 +180,11 @@ const DailyQuiz = () => {
     const isCorrect = selectedAnswer === dailyQuestions[currentQuestion].correctAnswer;
     if (isCorrect) {
       setScore(score + 1);
+      // Ajouter 2 points immédiatement pour chaque bonne réponse
+      addPoints(2);
+      toast.success('✅ Bonne réponse ! +2 points', { duration: 2000 });
+    } else {
+      toast.error('❌ Mauvaise réponse', { duration: 2000 });
     }
 
     setShowResult(true);
@@ -194,8 +199,7 @@ const DailyQuiz = () => {
       // Quiz terminé
       const finalScore = score + (selectedAnswer === dailyQuestions[currentQuestion].correctAnswer ? 1 : 0);
       if (finalScore === 5) {
-        addPoints(10);
-        toast.success('🎉 Quiz parfait ! +10 points');
+        toast.success('🎉 Quiz parfait ! Toutes les réponses étaient correctes !');
       } else {
         toast.info(`Quiz terminé ! ${finalScore}/5 bonnes réponses`);
       }
@@ -281,7 +285,7 @@ const DailyQuiz = () => {
           </div>
         </div>
         <CardDescription>
-          5 questions quotidiennes • Répondez correctement à toutes pour gagner 10 points
+          5 questions quotidiennes • 2 points par bonne réponse (10 points max)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">

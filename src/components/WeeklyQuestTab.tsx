@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -5,9 +6,31 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Target, Clock, Gift, CheckCircle2 } from 'lucide-react';
 import DailyQuiz from './DailyQuiz';
+import { useApp } from '@/contexts/AppContext';
+import { toast } from 'sonner';
 
 const WeeklyQuestTab = () => {
   const { t } = useTranslation();
+  const { addPoints } = useApp();
+  const [claimedQuests, setClaimedQuests] = useState<number[]>(() => {
+    const stored = localStorage.getItem('claimedQuests');
+    return stored ? JSON.parse(stored) : [];
+  });
+
+  useEffect(() => {
+    localStorage.setItem('claimedQuests', JSON.stringify(claimedQuests));
+  }, [claimedQuests]);
+
+  const handleClaimReward = (questId: number, reward: number, title: string) => {
+    if (!claimedQuests.includes(questId)) {
+      addPoints(reward);
+      setClaimedQuests(prev => [...prev, questId]);
+      toast.success(`🎉 Quête complétée ! +${reward} points`, {
+        description: title,
+        duration: 3000
+      });
+    }
+  };
 
   // Calcul du nombre de jours jusqu'au prochain lundi
   const getDaysUntilMonday = () => {
@@ -129,10 +152,19 @@ const WeeklyQuestTab = () => {
                     className="h-2"
                   />
                 </div>
-                {quest.progress === quest.goal && (
+                {quest.progress === quest.goal && !claimedQuests.includes(quest.id) && (
+                  <Button 
+                    className="w-full" 
+                    onClick={() => handleClaimReward(quest.id, quest.reward, quest.title)}
+                  >
+                    <Gift className="w-4 h-4 mr-2" />
+                    Réclamer +{quest.reward} pts
+                  </Button>
+                )}
+                {quest.progress === quest.goal && claimedQuests.includes(quest.id) && (
                   <Button className="w-full" variant="secondary" disabled>
                     <CheckCircle2 className="w-4 h-4 mr-2" />
-                    Complétée !
+                    Récompense réclamée !
                   </Button>
                 )}
               </CardContent>
