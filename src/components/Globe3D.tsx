@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
+import { getAllPlaceImages } from '@/lib/imageHelper';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -171,11 +172,23 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
         import('@/data/placesData').then(({ mockPlaces }) => {
           if (!map.current) return;
 
+          const placeImages = getAllPlaceImages();
+          
+          // Function to resolve image URL
+          const resolveImageUrl = (url?: string) => {
+            if (!url) return undefined;
+            const filename = url.split('/').pop() as string;
+            const match = Object.entries(placeImages).find(([path]) => path.endsWith(filename));
+            return (match?.[1] as string) || url;
+          };
+
           mockPlaces.forEach(place => {
+            const resolvedImageUrl = place.imageUrl ? resolveImageUrl(place.imageUrl) : undefined;
+            
             const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
               .setHTML(`
                 <div style="padding: 12px;">
-                  ${place.imageUrl ? `<img src="${place.imageUrl}" alt="${place.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" />` : ''}
+                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" onerror="this.src='/placeholder.svg';" />` : ''}
                   <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #1a1a1a;">${place.name}</h3>
                   <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${place.type} • ${place.country}</p>
                   <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #333; max-height: 150px; overflow-y: auto;">${place.description}</p>

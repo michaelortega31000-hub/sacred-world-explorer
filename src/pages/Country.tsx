@@ -58,7 +58,7 @@ const Country = () => {
   });
 
   // Resolve local asset URLs via Vite to avoid broken /src paths
-  const placeImages = import.meta.glob('../assets/places/*', { eager: true, as: 'url' }) as Record<string, string>;
+  const placeImages = import.meta.glob('/src/assets/places/*.{jpg,jpeg,png}', { eager: true, as: 'url' }) as Record<string, string>;
   const resolveImageUrl = (url?: string) => {
     if (!url) return undefined;
     const filename = url.split('/').pop() as string;

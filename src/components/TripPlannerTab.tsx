@@ -14,6 +14,15 @@ const TripPlannerTab = () => {
   const [startingCity, setStartingCity] = useState<string>('');
   const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
   
+  // Resolve local asset URLs via Vite to avoid broken /src paths
+  const placeImages = import.meta.glob('/src/assets/places/*.{jpg,jpeg,png}', { eager: true, as: 'url' }) as Record<string, string>;
+  const resolveImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    const filename = url.split('/').pop() as string;
+    const match = Object.entries(placeImages).find(([path]) => path.endsWith(filename));
+    return (match?.[1] as string) || url;
+  };
+  
   const allPlaces = getAllPlaces();
   const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
   
@@ -230,9 +239,10 @@ const TripPlannerTab = () => {
                               <div className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
                                 {place.imageUrl && (
                                   <img 
-                                    src={place.imageUrl} 
+                                    src={resolveImageUrl(place.imageUrl) || place.imageUrl} 
                                     alt={place.name}
                                     className="w-16 h-16 object-cover rounded"
+                                    onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                                   />
                                 )}
                                 <div className="flex-1">
@@ -302,9 +312,10 @@ const TripPlannerTab = () => {
                             {place.imageUrl && (
                               <div className="h-32 overflow-hidden">
                                 <img 
-                                  src={place.imageUrl} 
+                                  src={resolveImageUrl(place.imageUrl) || place.imageUrl} 
                                   alt={place.name}
                                   className="w-full h-full object-cover"
+                                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                                 />
                               </div>
                             )}

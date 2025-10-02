@@ -36,6 +36,15 @@ const PlaceDetail = () => {
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
+  // Resolve local asset URLs via Vite to avoid broken /src paths
+  const placeImages = import.meta.glob('/src/assets/places/*.{jpg,jpeg,png}', { eager: true, as: 'url' }) as Record<string, string>;
+  const resolveImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    const filename = url.split('/').pop() as string;
+    const match = Object.entries(placeImages).find(([path]) => path.endsWith(filename));
+    return (match?.[1] as string) || url;
+  };
+
   const allPlaces = getAllPlaces();
   const place = allPlaces.find(p => p.id === placeId);
 
@@ -177,7 +186,11 @@ const PlaceDetail = () => {
   };
 
   // Images de la galerie (pour l'exemple, on utilise la même image)
-  const galleryImages = place.imageUrl ? [place.imageUrl, place.imageUrl, place.imageUrl] : [];
+  const galleryImages = place.imageUrl ? [
+    resolveImageUrl(place.imageUrl) || place.imageUrl, 
+    resolveImageUrl(place.imageUrl) || place.imageUrl, 
+    resolveImageUrl(place.imageUrl) || place.imageUrl
+  ] : [];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
