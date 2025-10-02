@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Target, Clock, Gift, CheckCircle2 } from 'lucide-react';
+import DailyQuiz from './DailyQuiz';
 
 const WeeklyQuestTab = () => {
   const { t } = useTranslation();
@@ -74,6 +75,9 @@ const WeeklyQuestTab = () => {
   return (
     <div className="p-6 max-w-4xl mx-auto">
       <div className="space-y-6">
+        {/* Quiz du jour */}
+        <DailyQuiz />
+
         {/* En-tête avec compte à rebours */}
         <Card className="border-2 border-primary">
           <CardHeader>

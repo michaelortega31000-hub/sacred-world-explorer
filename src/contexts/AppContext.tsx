@@ -33,6 +33,7 @@ interface AppContextType {
   removeFromTrip: (placeId: string) => void;
   isInTrip: (placeId: string) => boolean;
   clearTrip: () => void;
+  addPoints: (points: number) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -133,6 +134,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
   };
 
+  const addPoints = (points: number) => {
+    setUserProgress(prev => {
+      const newTotalPoints = prev.totalPoints + points;
+      const newBadges = [...prev.badges];
+      
+      // Award badges based on milestones
+      if (newTotalPoints >= 100 && !newBadges.includes('explorer')) {
+        newBadges.push('explorer');
+      }
+      if (newTotalPoints >= 500 && !newBadges.includes('pilgrim')) {
+        newBadges.push('pilgrim');
+      }
+      if (newTotalPoints >= 1000 && !newBadges.includes('master')) {
+        newBadges.push('master');
+      }
+      
+      return {
+        ...prev,
+        totalPoints: newTotalPoints,
+        badges: newBadges
+      };
+    });
+  };
+
   return (
     <AppContext.Provider value={{ 
       userProgress, 
@@ -143,7 +168,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addToTrip,
       removeFromTrip,
       isInTrip,
-      clearTrip
+      clearTrip,
+      addPoints
     }}>
       {children}
     </AppContext.Provider>
