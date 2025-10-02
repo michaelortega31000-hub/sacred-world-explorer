@@ -665,6 +665,17 @@ export const mockPlaces: Place[] = [
     coordinates: [39.6111, 24.4672],
     imageUrl: '/src/assets/places/medina-mosque.jpg'
   },
+  {
+    id: 'sau-3',
+    name: 'Mosquée Quba',
+    country: 'Saudi Arabia',
+    city: 'Médine',
+    type: 'Mosquée',
+    description: 'Première mosquée construite dans l\'histoire de l\'Islam (622), édifiée par le Prophète Muhammad lors de sa migration (Hijra) de La Mecque à Médine. Architecture moderne blanche éclatante avec 4 minarets élancés. Capacité 20 000 fidèles. Selon la tradition, prier deux rak\'ahs ici équivaut à une Omra. Elle symbolise les débuts de l\'Islam et la communauté musulmane originelle. Lieu de grande bénédiction spirituelle.',
+    points: 80,
+    coordinates: [39.6161, 24.4397],
+    imageUrl: '/src/assets/places/quba-mosque.jpg'
+  },
   
   // Egypt
   {
@@ -710,6 +721,39 @@ export const mockPlaces: Place[] = [
     points: 100,
     coordinates: [33.9756, 28.5569],
     imageUrl: '/src/assets/places/st-catherine-sinai.jpg'
+  },
+  {
+    id: 'egy-5',
+    name: 'Mosquée du Sultan Hassan',
+    country: 'Egypt',
+    city: 'Le Caire',
+    type: 'Mosquée',
+    description: 'Chef-d\'œuvre de l\'architecture mamelouke (1356-1363), la mosquée du Sultan Hassan est l\'une des plus grandes mosquées médiévales du monde islamique. Architecture monumentale avec minarets de 81m, cour centrale, iwans immenses. Madrasa abritant 4 écoles juridiques islamiques. Décoration de marbre, stalactites, calligraphie coranique. Elle incarne l\'âge d\'or mamelouk, grandeur architecturale cairote et science islamique médiévale.',
+    points: 75,
+    coordinates: [31.2565, 30.0321],
+    imageUrl: '/src/assets/places/sultan-hassan.jpg'
+  },
+  {
+    id: 'egy-6',
+    name: 'Mosquée Mohammed Ali',
+    country: 'Egypt',
+    city: 'Le Caire',
+    type: 'Mosquée',
+    description: 'Mosquée monumentale ottomane (1830-1848) dominant la Citadelle du Caire. Architecture inspirée Mosquée Bleue Istanbul avec dôme central 52m, 2 minarets élancés 82m. Intérieur somptueux : albâtre, lustres cristal, tapis persan. Tombeau Mohammed Ali fondateur Égypte moderne. Vue panoramique exceptionnelle sur tout Le Caire. Elle symbolise modernisation Égypte XIXe, influence ottomane et pouvoir dynastie Muhammad Ali.',
+    points: 70,
+    coordinates: [31.2602, 30.0288],
+    imageUrl: '/src/assets/places/mohammed-ali.jpg'
+  },
+  {
+    id: 'egy-7',
+    name: 'Mosquée Ibn Tulun',
+    country: 'Egypt',
+    city: 'Le Caire',
+    type: 'Mosquée',
+    description: 'Plus ancienne mosquée du Caire conservée intacte (876-879), Ibn Tulun est chef-d\'œuvre architecture abbasside. Minaret hélicoïdal unique inspiré Samarra (Irak), cour immense 92x92m, arcades sur piliers massifs, ziyadas (extensions). Architecture sobre et monumentale en brique. Elle témoigne indépendance dynastie tulunide, influences mésopotamiennes et préservation exceptionnelle architecture islamique précoce.',
+    points: 75,
+    coordinates: [31.2477, 30.0288],
+    imageUrl: '/src/assets/places/ibn-tulun.jpg'
   },
   
   // Turkey
@@ -769,6 +813,28 @@ export const mockPlaces: Place[] = [
     points: 65,
     coordinates: [-7.9847, 31.6315],
     imageUrl: '/src/assets/places/ben-youssef.jpg'
+  },
+  {
+    id: 'mor-4',
+    name: 'Mosquée Quaraouiyine',
+    country: 'Morocco',
+    city: 'Fès',
+    type: 'Mosquée',
+    description: 'Fondée en 859 par Fatima al-Fihri, la mosquée-université Quaraouiyine est reconnue par le Guinness comme plus ancienne université en activité continue au monde. Architecture idrisside, almoravide, almohade sur 12 siècles. Capacité 20 000 fidèles. Bibliothèque manuscrits rares dont Coran IXe siècle. Interdite non-musulmans. Patrimoine UNESCO Fès. Elle incarne excellence éducative islamique millénaire, rôle féminin fondateur et rayonnement intellectuel marocain.',
+    points: 90,
+    coordinates: [-4.9747, 34.0647],
+    imageUrl: '/src/assets/places/quaraouiyine.jpg'
+  },
+  {
+    id: 'mor-5',
+    name: 'Mosquée Hassan de Rabat',
+    country: 'Morocco',
+    city: 'Rabat',
+    type: 'Mosquée',
+    description: 'Mosquée inachevée (1195) du sultan almohade Yacoub el-Mansour, le minaret Tour Hassan de 44m devait culminer à 86m. Projet monumental interrompu par mort du sultan 1199 et séisme 1755. 200 colonnes subsistent. Mausolée Mohammed V (1971) et son fils Hassan II complètent site. Architecture almohade inspirant Giralda Séville et Koutoubia Marrakech. Patrimoine UNESCO. Elle symbolise ambition almohade, grandeur inachevée et pouvoir royal alaouite.',
+    points: 75,
+    coordinates: [-6.8214, 34.0241],
+    imageUrl: '/src/assets/places/hassan-rabat.jpg'
   },
   
   // ========== ASIA ==========
@@ -1463,6 +1529,133 @@ export const mockPlaces: Place[] = [
     points: 85,
     coordinates: [10.1029, 35.6781],
     imageUrl: '/src/assets/places/kairouan-mosque.jpg'
+  },
+  {
+    id: 'tun-2',
+    name: 'Mosquée Zitouna',
+    country: 'Tunisia',
+    city: 'Tunis',
+    type: 'Mosquée',
+    description: 'Grande Mosquée de Tunis (732), cœur spirituel et intellectuel de la capitale. Nom "Zitouna" (olivier) référence arbre légendaire du site. Architecture aghlabide, hafside et ottomane. Minaret carré 43m, 184 colonnes antiques, bibliothèque manuscrits. Université Zitouna forma savants et réformistes tunisiens. Patrimoine médina UNESCO. Elle incarne histoire millénaire Tunis, tradition intellectuelle tunisienne et identité nationale.',
+    points: 70,
+    coordinates: [10.1731, 36.8163],
+    imageUrl: '/src/assets/places/zitouna.jpg'
+  },
+  {
+    id: 'tun-3',
+    name: 'Mosquée Sidi Sahbi',
+    country: 'Tunisia',
+    city: 'Kairouan',
+    type: 'Mosquée',
+    description: 'Mosquée du Barbier (VIIe siècle), abritant tombeau Abu Zama el-Balawi, compagnon Prophète portant 3 cheveux sacrés. Architecture andalouse-maghrébine, cour mosaïques zellige colorées, stucs ciselés, coupoles peintes. Lieu pèlerinage important Kairouan. Restaurations hafside et husseinite. Elle symbolise vénération compagnons Prophète, artisanat tunisien et piété populaire.',
+    points: 65,
+    coordinates: [10.1033, 35.6692],
+    imageUrl: '/src/assets/places/sidi-sahbi.jpg'
+  },
+  
+  // UAE
+  {
+    id: 'uae-1',
+    name: 'Grande Mosquée Cheikh Zayed',
+    country: 'United Arab Emirates',
+    city: 'Abu Dhabi',
+    type: 'Mosquée',
+    description: 'Une des plus grandes et luxueuses mosquées au monde (2007), la Mosquée Cheikh Zayed peut accueillir 41 000 fidèles. 4 minarets de 107m, 82 dômes blancs, 1000 colonnes incrustées pierres semi-précieuses. Plus grand tapis tissé main au monde (5627m²), 7 lustres cristal Swarovski dont le plus grand (10 tonnes). Marbre blanc Macédoine, or 24 carats. Ouverte aux non-musulmans. Elle symbolise modernité, richesse et ouverture des Émirats Arabes Unis.',
+    points: 90,
+    coordinates: [54.4747, 24.4128],
+    imageUrl: '/src/assets/places/sheikh-zayed.jpg'
+  },
+  {
+    id: 'uae-2',
+    name: 'Mosquée Jumeirah',
+    country: 'United Arab Emirates',
+    city: 'Dubai',
+    type: 'Mosquée',
+    description: 'Icône architecturale de Dubaï (1979), la Mosquée Jumeirah est l\'une des rares mosquées ouvertes aux non-musulmans pour visites guidées "Portes ouvertes, esprits ouverts". Architecture fatimide médiévale avec 2 minarets élancés et dôme central. Illuminée de nuit, elle devient spectacle lumineux. Capacité 1200 fidèles. Elle incarne tradition islamique et dialogue interculturel émirati.',
+    points: 70,
+    coordinates: [55.2323, 25.2321],
+    imageUrl: '/src/assets/places/jumeirah.jpg'
+  },
+  {
+    id: 'uae-3',
+    name: 'Mosquée Al Noor',
+    country: 'United Arab Emirates',
+    city: 'Sharjah',
+    type: 'Mosquée',
+    description: 'Joyau ottoman de Sharjah (2005), Al Noor est construite dans pur style ottoman avec dôme central, 2 minarets, arcades et fontaine ablutions. Première mosquée Émirats ouverte au public non-musulman pour visites éducatives. Architecture inspirée Mosquée Bleue Istanbul. Illumination nocturne spectaculaire. Elle symbolise patrimoine islamique et éducation interculturelle à Sharjah, capitale culturelle UAE.',
+    points: 65,
+    coordinates: [55.3776, 25.3268],
+    imageUrl: '/src/assets/places/al-noor.jpg'
+  },
+  
+  // Jordan
+  {
+    id: 'jor-1',
+    name: 'Mosquée du Roi Abdallah',
+    country: 'Jordan',
+    city: 'Amman',
+    type: 'Mosquée',
+    description: 'Mosquée emblématique d\'Amman (1989) avec son dôme bleu éclatant de 35m visible de toute la capitale. Construite par le roi Hussein en mémoire de son grand-père Abdallah Ier. Architecture islamique moderne avec mosaïques, calligraphies, marbres. Capacité 10 000 fidèles. Musée islamique attenant. Ouverte aux non-musulmans. Elle incarne monarchie hachémite, modernité jordanienne et identité nationale.',
+    points: 70,
+    coordinates: [35.9265, 32.0026],
+    imageUrl: '/src/assets/places/king-abdullah.jpg'
+  },
+  {
+    id: 'jor-2',
+    name: 'Mosquée du Roi Hussein Ben Talal',
+    country: 'Jordan',
+    city: 'Amman',
+    type: 'Mosquée',
+    description: 'Plus grande mosquée de Jordanie (2005), construite par le roi Abdallah II en l\'honneur de son père Hussein. Architecture ottomane avec 4 minarets de 65m, dôme principal 35m. Capacité 7000 fidèles intériieurs, 3000 cour. Marbre italien, bois sculpté, calligraphies dorées. Centre islamique avec bibliothèque, salles conférences. Elle symbolise la continuité de la dynastie hachémite et le leadership spirituel jordanien.',
+    points: 75,
+    coordinates: [35.8667, 31.9667],
+    imageUrl: '/src/assets/places/king-hussein.jpg'
+  },
+  {
+    id: 'jor-3',
+    name: 'Mosquée Abu Darwish',
+    country: 'Jordan',
+    city: 'Amman',
+    type: 'Mosquée',
+    description: 'Mosquée unique (1961) reconnaissable à son architecture noir et blanc en damier inspirée de styles syrien et ottoman. Perchée sur Jabal Ashrafieh dominant Amman. Commandée par Abu Darwish, marchand circassien. 2 minarets octogonaux. Architecture distincte créant motifs géométriques islamiques. Elle incarne diversité architecturale jordanienne et héritage circassien.',
+    points: 60,
+    coordinates: [35.9456, 31.9636],
+    imageUrl: '/src/assets/places/abu-darwish.jpg'
+  },
+  
+  // Algeria
+  {
+    id: 'alg-1',
+    name: 'Mosquée Djamaa el-Djazaïr',
+    country: 'Algeria',
+    city: 'Algiers',
+    type: 'Mosquée',
+    description: 'Troisième plus grande mosquée au monde (2019), Djamaa el-Djazaïr possède le plus haut minaret du monde (265m). Capacité 120 000 fidèles. Architecture algéro-mauresque moderne avec influences ottomanes et andalouses. Bibliothèque d\'un million de livres, musée d\'art islamique, centre de recherche. Elle symbolise renaissance algérienne, fierté nationale et ambition architecturale post-indépendance.',
+    points: 95,
+    coordinates: [3.1530, 36.7500],
+    imageUrl: '/src/assets/places/djamaa-djazair.jpg'
+  },
+  {
+    id: 'alg-2',
+    name: 'Mosquée Ketchaoua',
+    country: 'Algeria',
+    city: 'Algiers',
+    type: 'Mosquée',
+    description: 'Mosquée historique (1612) de la Casbah d\'Alger, convertie en cathédrale 1832-1962 durant colonisation française, rendue au culte musulman 1962 après indépendance. Architecture ottomane avec 2 minarets, transformations byzantines durant période coloniale, restauration ottomane post-indépendance. Patrimoine UNESCO Casbah. Elle incarne histoire complexe algérienne, colonisation et décolonisation.',
+    points: 70,
+    coordinates: [3.0603, 36.7841],
+    imageUrl: '/src/assets/places/ketchaoua.jpg'
+  },
+  {
+    id: 'alg-3',
+    name: 'Mosquée Emir Abdelkader',
+    country: 'Algeria',
+    city: 'Constantine',
+    type: 'Mosquée',
+    description: 'Mosquée monumentale de Constantine (1994), dédiée au héros national Emir Abdelkader, résistant contre colonisation française (XIXe siècle). Architecture néo-mauresque avec minaret octogonal 107m. Capacité 15 000 fidèles. Vue panoramique gorges Rhumel. Elle symbolise résistance algérienne, patrimoine ottoman-maghrébin et fierté constantinoise.',
+    points: 75,
+    coordinates: [6.6147, 36.3650],
+    imageUrl: '/src/assets/places/emir-abdelkader.jpg'
   },
   
   // Austria
