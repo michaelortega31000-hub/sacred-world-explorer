@@ -64,30 +64,30 @@ const WorldMap = () => {
 
       <Tabs defaultValue="map" className="flex-1 flex flex-col">
         <div className="border-b border-border bg-card">
-          <div className="max-w-7xl mx-auto">
-            <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
-              <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+          <div className="max-w-7xl mx-auto px-2">
+            <TabsList className="w-full h-auto p-0 bg-transparent grid grid-cols-3 gap-0">
+              <TabsTrigger value="map" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary justify-center">
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" strokeWidth="2" />
                   <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeWidth="2" />
                 </svg>
-                {t('worldMap.title')}
+                <span className="hidden sm:inline">{t('worldMap.title')}</span>
               </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary justify-center">
                 <Calendar className="w-4 h-4" />
-                {t('tabs.tripPlanner')}
+                <span className="hidden sm:inline">{t('tabs.tripPlanner')}</span>
               </TabsTrigger>
-              <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary justify-center">
                 <Target className="w-4 h-4" />
-                {t('tabs.weeklyQuest')}
+                <span className="hidden sm:inline">{t('tabs.weeklyQuest')}</span>
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="locations" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary justify-center col-span-1">
                 <MapPin className="w-4 h-4" />
-                Lieux
+                <span className="hidden sm:inline">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary justify-center col-span-2">
                 <TrendingUp className="w-4 h-4" />
-                Classements
+                <span className="hidden sm:inline">Classements</span>
               </TabsTrigger>
             </TabsList>
           </div>
