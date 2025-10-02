@@ -66,28 +66,28 @@ const WorldMap = () => {
         <div className="border-b border-border bg-card">
           <div className="w-full px-2 py-1">
             <TabsList className="w-full h-auto p-0 bg-transparent grid grid-cols-3 gap-1">
-              <TabsTrigger value="map" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-xs">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <TabsTrigger value="map" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" strokeWidth="2" />
                   <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeWidth="2" />
                 </svg>
-                <span className="hidden xs:inline sm:text-sm">{t('worldMap.title')}</span>
+                <span className="truncate">{t('worldMap.title')}</span>
               </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-xs">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline sm:text-sm">{t('tabs.tripPlanner')}</span>
+              <TabsTrigger value="trip" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                <span className="truncate">{t('tabs.tripPlanner')}</span>
               </TabsTrigger>
-              <TabsTrigger value="quest" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-xs">
-                <Target className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline sm:text-sm">{t('tabs.weeklyQuest')}</span>
+              <TabsTrigger value="quest" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
+                <Target className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                <span className="truncate">{t('tabs.weeklyQuest')}</span>
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-xs col-span-1">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline sm:text-sm">Lieux</span>
+              <TabsTrigger value="locations" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-1">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                <span className="truncate">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-xs col-span-2">
-                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden xs:inline sm:text-sm">Classements</span>
+              <TabsTrigger value="rankings" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-2">
+                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                <span className="truncate">Classements</span>
               </TabsTrigger>
             </TabsList>
           </div>
