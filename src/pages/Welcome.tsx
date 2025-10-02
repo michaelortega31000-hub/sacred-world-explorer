@@ -71,15 +71,16 @@ const Welcome = () => {
   const StepIcon = currentStep?.icon;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[hsl(200,100%,85%)] via-[hsl(200,100%,90%)] to-[hsl(200,100%,95%)] relative overflow-hidden">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[hsl(220,100%,20%)] via-[hsl(220,100%,25%)] to-[hsl(220,100%,30%)] relative overflow-hidden">
       {/* Logo en arrière-plan */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
         <img 
           src={logo} 
           alt="SacredWorld Background" 
-          className="w-[120%] h-[120%] object-contain opacity-10 mix-blend-multiply"
+          className="w-[120%] h-[120%] object-contain opacity-15"
           style={{
-            animation: 'logoEntry 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+            animation: 'logoEntry 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards',
+            filter: 'sepia(1) saturate(3) hue-rotate(15deg) brightness(1.2)'
           }}
         />
       </div>
@@ -95,10 +96,10 @@ const Welcome = () => {
 
           {/* Promesse (2 phrases) */}
           <div className="space-y-6 mb-12 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            <p className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight font-poppins tracking-tight">
+            <p className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-white leading-tight font-poppins tracking-tight">
               {t('welcome.promise1')}
             </p>
-            <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-poppins font-light">
+            <p className="text-xl md:text-2xl text-gray-100 leading-relaxed font-poppins font-light">
               {t('welcome.promise2')}
             </p>
           </div>
@@ -126,11 +127,18 @@ const Welcome = () => {
           </div>
 
           {/* Accessibilité note */}
-          <p className="mt-8 text-sm text-gray-600 animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <p className="mt-8 text-sm text-gray-300 animate-fade-in" style={{ animationDelay: '300ms' }}>
             {t('welcome.accessibility')}
           </p>
         </div>
       </div>
+
+      {/* SacredWorld en bas */}
+      <footer className="w-full p-8 flex justify-center relative z-10">
+        <h1 className="text-6xl md:text-7xl lg:text-8xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-yellow-500 to-yellow-600 font-poppins tracking-wider animate-fade-in" style={{ animationDelay: '400ms' }}>
+          SacredWorld
+        </h1>
+      </footer>
 
       {/* Tutorial Dialog */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
