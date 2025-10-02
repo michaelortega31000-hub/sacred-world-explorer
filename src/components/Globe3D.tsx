@@ -195,35 +195,45 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
 
     // Ne pas afficher les marqueurs par défaut - les monuments seront visibles sur la page du pays
 
-    // Click sur un pays
+    // Click sur un pays - amélioration de la zone cliquable
     map.current.on('click', (e) => {
       if (!map.current) return;
       
-      const features = map.current.queryRenderedFeatures(e.point, {
-        layers: ['country-label']
+      // Augmenter la zone de détection en utilisant un buffer de 10 pixels autour du clic
+      const bbox: [mapboxgl.PointLike, mapboxgl.PointLike] = [
+        [e.point.x - 10, e.point.y - 10],
+        [e.point.x + 10, e.point.y + 10]
+      ];
+      
+      // Chercher dans les polygones des pays (pas juste les labels)
+      const features = map.current.queryRenderedFeatures(bbox, {
+        layers: ['country-fills-hover']
       });
       
       if (features && features.length > 0) {
         // Récupérer le nom en anglais qui est la clé standard
         const countryName = features[0].properties?.name_en || features[0].properties?.name;
         if (countryName) {
+          console.log('Country clicked:', countryName);
           navigate(`/country/${countryName}`);
         }
       }
     });
 
-    // Curseur pointer sur les pays et effet hover doré
+    // Curseur pointer sur les pays et effet hover doré - amélioration de la zone détectable
     let hoveredCountryId: string | number | null = null;
     
     map.current.on('mousemove', (e) => {
       if (!map.current) return;
       
-      const features = map.current.queryRenderedFeatures(e.point, {
-        layers: ['country-label']
-      });
+      // Augmenter la zone de détection avec un buffer
+      const bbox: [mapboxgl.PointLike, mapboxgl.PointLike] = [
+        [e.point.x - 10, e.point.y - 10],
+        [e.point.x + 10, e.point.y + 10]
+      ];
       
       // Récupérer les features de la couche admin pour l'effet hover
-      const countryFeatures = map.current.queryRenderedFeatures(e.point, {
+      const countryFeatures = map.current.queryRenderedFeatures(bbox, {
         layers: ['country-fills-hover']
       });
 
@@ -248,7 +258,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
         hoveredCountryId = null;
       }
       
-      map.current.getCanvas().style.cursor = features && features.length > 0 ? 'pointer' : '';
+      map.current.getCanvas().style.cursor = countryFeatures && countryFeatures.length > 0 ? 'pointer' : '';
     });
 
     // Réinitialiser le hover quand la souris quitte la carte
