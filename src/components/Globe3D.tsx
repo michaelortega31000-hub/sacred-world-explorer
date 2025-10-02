@@ -172,18 +172,8 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
         import('@/data/placesData').then(({ mockPlaces }) => {
           if (!map.current) return;
 
-          const placeImages = getAllPlaceImages();
-          
-          // Function to resolve image URL
-          const resolveImageUrl = (url?: string) => {
-            if (!url) return undefined;
-            const filename = url.split('/').pop() as string;
-            const match = Object.entries(placeImages).find(([path]) => path.endsWith(filename));
-            return (match?.[1] as string) || url;
-          };
-
           mockPlaces.forEach(place => {
-            const resolvedImageUrl = place.imageUrl ? resolveImageUrl(place.imageUrl) : undefined;
+            const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
             const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
               .setHTML(`
