@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Cross, Moon, Star, CircleDot, Flower2, Mountain, Compass, Church, Palette, Award } from 'lucide-react';
+import { Cross, Moon, Star, CircleDot, Flower2, Mountain, Compass, Church, Palette, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 type Tradition = {
@@ -23,9 +23,10 @@ const traditions: Tradition[] = [
 ];
 
 const interests = [
+  { id: 'art', name: 'Art & Culture', icon: Palette },
   { id: 'architecture', name: 'Architecture', icon: Church },
   { id: 'history', name: 'Histoire', icon: Award },
-  { id: 'art', name: 'Art & Culture', icon: Palette },
+  { id: 'religions', name: 'Religions', icon: BookOpen },
 ];
 
 const Traditions = () => {
