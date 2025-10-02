@@ -27,11 +27,11 @@ const Splash = () => {
       }
     });
 
-    // Timer principal: 1.4s avant de passer à la suite
+    // Timer principal: 5s avant de passer à la suite
     const mainTimer = setTimeout(() => {
       setIsLoading(false);
       navigate('/welcome');
-    }, 1400);
+    }, 5000);
 
     // Timer skeleton: si ça charge plus de 1.6s, afficher le skeleton
     const skeletonTimer = setTimeout(() => {
