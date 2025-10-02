@@ -9,6 +9,7 @@ import Splash from "./pages/Splash";
 import Welcome from "./pages/Welcome";
 import Traditions from "./pages/Traditions";
 import Selection from "./pages/Selection";
+import ModeSelection from "./pages/ModeSelection";
 import WorldMap from "./pages/WorldMap";
 import Country from "./pages/Country";
 import PlaceDetail from "./pages/PlaceDetail";
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/mode-selection" element={<ModeSelection />} />
           <Route path="/traditions" element={<Traditions />} />
           <Route path="/selection" element={<Selection />} />
           <Route path="/world" element={<WorldMap />} />

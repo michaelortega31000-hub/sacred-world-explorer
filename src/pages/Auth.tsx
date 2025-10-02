@@ -36,14 +36,14 @@ const Auth = () => {
     // Vérifier si l'utilisateur est déjà connecté
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/selection');
+        navigate('/mode-selection');
       }
     });
 
     // Écouter les changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate('/selection');
+        navigate('/mode-selection');
       }
     });
 
@@ -137,7 +137,7 @@ const Auth = () => {
         return;
       }
 
-      navigate('/selection');
+      navigate('/mode-selection');
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({
