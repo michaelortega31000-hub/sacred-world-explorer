@@ -114,7 +114,7 @@ const LocationsStatsTab = () => {
 
   // Statistiques par pays (filtrées par continent si sélectionné)
   const countryStats = allPlaces
-    .filter(place => !selectedContinent || countryToContinentMap[place.country] === selectedContinent)
+    .filter(place => !selectedContinent || (countryToContinentMap[place.country] || 'Autre') === selectedContinent)
     .reduce((acc, place) => {
       if (!acc[place.country]) {
         acc[place.country] = { count: 0, cities: new Set<string>() };
