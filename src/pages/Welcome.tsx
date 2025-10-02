@@ -71,26 +71,27 @@ const Welcome = () => {
   const StepIcon = currentStep?.icon;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[hsl(200,100%,85%)] via-[hsl(200,100%,90%)] to-[hsl(200,100%,95%)]">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[hsl(200,100%,85%)] via-[hsl(200,100%,90%)] to-[hsl(200,100%,95%)] relative overflow-hidden">
+      {/* Logo en arrière-plan */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <img 
+          src={logo} 
+          alt="SacredWorld Background" 
+          className="w-[120%] h-[120%] object-contain opacity-10 mix-blend-multiply"
+          style={{
+            animation: 'logoEntry 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
+          }}
+        />
+      </div>
+
       {/* Sélecteur de langue en haut à droite */}
-      <header className="w-full p-4 flex justify-end">
+      <header className="w-full p-4 flex justify-end relative z-10">
         <LanguageSelector />
       </header>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 relative z-10">
         <div className="max-w-2xl w-full text-center">
-          {/* Logo */}
-          <div className="mb-12 flex justify-center animate-fade-in">
-            <img 
-              src={logo} 
-              alt="SacredWorld Logo" 
-              className="w-56 h-56 md:w-64 md:h-64 lg:w-72 lg:h-72"
-              style={{
-                animation: 'logoEntry 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
-              }}
-            />
-          </div>
 
           {/* Promesse (2 phrases) */}
           <div className="space-y-6 mb-12 animate-fade-in" style={{ animationDelay: '100ms' }}>
