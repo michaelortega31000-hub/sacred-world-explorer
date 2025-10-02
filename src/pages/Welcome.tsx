@@ -14,12 +14,12 @@ const tutorialSteps = [
     descKey: 'welcome.tutorial.step1.desc',
   },
   {
-    icon: Award,
+    icon: BookOpen,
     titleKey: 'welcome.tutorial.step2.title',
     descKey: 'welcome.tutorial.step2.desc',
   },
   {
-    icon: BookOpen,
+    icon: Award,
     titleKey: 'welcome.tutorial.step3.title',
     descKey: 'welcome.tutorial.step3.desc',
   },
@@ -81,25 +81,20 @@ const Welcome = () => {
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
         <div className="max-w-2xl w-full text-center">
           {/* Logo */}
-          <div className="mb-8 flex justify-center animate-fade-in">
+          <div className="mb-12 flex justify-center animate-fade-in">
             <img 
               src={logo} 
               alt="SacredWorld Logo" 
-              className="w-24 h-24 md:w-32 md:h-32"
+              className="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56"
               style={{
                 animation: 'logoEntry 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
               }}
             />
           </div>
 
-          {/* Titre */}
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-foreground mb-6 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            {t('welcome.title')}
-          </h1>
-
           {/* Promesse (2 phrases) */}
-          <div className="space-y-3 mb-12 animate-fade-in" style={{ animationDelay: '200ms' }}>
-            <p className="text-lg md:text-xl text-foreground/90 leading-relaxed">
+          <div className="space-y-4 mb-12 animate-fade-in" style={{ animationDelay: '100ms' }}>
+            <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground leading-tight font-poppins">
               {t('welcome.promise1')}
             </p>
             <p className="text-lg md:text-xl text-muted-foreground leading-relaxed">
@@ -108,11 +103,11 @@ const Welcome = () => {
           </div>
 
           {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{ animationDelay: '200ms' }}>
             <Button
               onClick={handleStart}
               size="lg"
-              className="w-full sm:w-auto px-8 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+              className="w-full sm:w-auto px-8 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 font-poppins"
             >
               {t('welcome.cta.start')}
               <ArrowRight className="ml-2 w-5 h-5" />
@@ -122,7 +117,7 @@ const Welcome = () => {
               onClick={handleTutorialOpen}
               variant="outline"
               size="lg"
-              className="w-full sm:w-auto px-8 py-6 text-lg font-semibold rounded-full hover:bg-muted transition-all duration-200"
+              className="w-full sm:w-auto px-8 py-6 text-lg font-semibold rounded-full hover:bg-muted transition-all duration-200 font-poppins"
             >
               <BookOpen className="mr-2 w-5 h-5" />
               {t('welcome.cta.tutorial')}
@@ -130,7 +125,7 @@ const Welcome = () => {
           </div>
 
           {/* Accessibilité note */}
-          <p className="mt-8 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '400ms' }}>
+          <p className="mt-8 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
             {t('welcome.accessibility')}
           </p>
         </div>

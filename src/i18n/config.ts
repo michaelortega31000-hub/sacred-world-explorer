@@ -23,12 +23,12 @@ const resources = {
             desc: 'Découvre des milliers de lieux sacrés et monuments culturels à travers le monde.'
           },
           step2: {
-            title: 'Collectionne des badges',
-            desc: 'Gagne des points et des badges rares en visitant des lieux et en accomplissant des quêtes.'
-          },
-          step3: {
             title: 'Apprends et partage',
             desc: 'Écoute des histoires fascinantes et partage tes découvertes avec la communauté.'
+          },
+          step3: {
+            title: 'Collectionne des badges',
+            desc: 'Gagne des points et des badges rares en visitant des lieux et en accomplissant des quêtes.'
           },
           prev: 'Précédent',
           next: 'Suivant',
@@ -133,12 +133,12 @@ const resources = {
             desc: 'Discover thousands of sacred places and cultural monuments around the world.'
           },
           step2: {
-            title: 'Collect badges',
-            desc: 'Earn points and rare badges by visiting places and completing quests.'
-          },
-          step3: {
             title: 'Learn and share',
             desc: 'Listen to fascinating stories and share your discoveries with the community.'
+          },
+          step3: {
+            title: 'Collect badges',
+            desc: 'Earn points and rare badges by visiting places and completing quests.'
           },
           prev: 'Previous',
           next: 'Next',
@@ -243,12 +243,12 @@ const resources = {
             desc: 'Descubre miles de lugares sagrados y monumentos culturales de todo el mundo.'
           },
           step2: {
-            title: 'Colecciona insignias',
-            desc: 'Gana puntos e insignias raras visitando lugares y completando misiones.'
-          },
-          step3: {
             title: 'Aprende y comparte',
             desc: 'Escucha historias fascinantes y comparte tus descubrimientos con la comunidad.'
+          },
+          step3: {
+            title: 'Colecciona insignias',
+            desc: 'Gana puntos e insignias raras visitando lugares y completando misiones.'
           },
           prev: 'Anterior',
           next: 'Siguiente',
@@ -353,12 +353,12 @@ const resources = {
             desc: 'Scopri migliaia di luoghi sacri e monumenti culturali in tutto il mondo.'
           },
           step2: {
-            title: 'Colleziona distintivi',
-            desc: 'Guadagna punti e distintivi rari visitando luoghi e completando missioni.'
-          },
-          step3: {
             title: 'Impara e condividi',
             desc: 'Ascolta storie affascinanti e condividi le tue scoperte con la comunità.'
+          },
+          step3: {
+            title: 'Colleziona distintivi',
+            desc: 'Guadagna punti e distintivi rari visitando luoghi e completando missioni.'
           },
           prev: 'Precedente',
           next: 'Avanti',
@@ -463,12 +463,12 @@ const resources = {
             desc: 'Entdecke Tausende von heiligen Stätten und kulturellen Denkmälern auf der ganzen Welt.'
           },
           step2: {
-            title: 'Sammle Abzeichen',
-            desc: 'Verdiene Punkte und seltene Abzeichen, indem du Orte besuchst und Quests abschließt.'
-          },
-          step3: {
             title: 'Lerne und teile',
             desc: 'Höre faszinierende Geschichten und teile deine Entdeckungen mit der Community.'
+          },
+          step3: {
+            title: 'Sammle Abzeichen',
+            desc: 'Verdiene Punkte und seltene Abzeichen, indem du Orte besuchst und Quests abschließt.'
           },
           prev: 'Zurück',
           next: 'Weiter',
