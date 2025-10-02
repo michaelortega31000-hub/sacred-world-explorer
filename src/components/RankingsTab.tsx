@@ -11,20 +11,37 @@ const RankingsTab = () => {
   return (
     <div className="container mx-auto p-6">
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6 bg-transparent p-0">
-          <TabsTrigger value="personal" className="gap-2 w-full justify-center">
-            <Trophy className="w-4 h-4" />
-            {t('tabs.myRanking')}
-          </TabsTrigger>
-          <TabsTrigger value="country" className="gap-2 w-full justify-center">
-            <Flag className="w-4 h-4" />
-            {t('tabs.countryRanking')}
-          </TabsTrigger>
-          <TabsTrigger value="religion" className="gap-2 w-full justify-center">
-            <Users className="w-4 h-4" />
-            {t('tabs.religionRanking')}
-          </TabsTrigger>
-        </TabsList>
+        <div className="flex flex-col gap-2 mb-6">
+          <TabsList className="w-full bg-transparent p-0 h-auto">
+            <TabsTrigger 
+              value="personal" 
+              className="gap-2 w-full justify-start data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg py-3"
+            >
+              <Trophy className="w-4 h-4" />
+              {t('tabs.myRanking')}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsList className="w-full bg-transparent p-0 h-auto">
+            <TabsTrigger 
+              value="country" 
+              className="gap-2 w-full justify-start data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg py-3"
+            >
+              <Flag className="w-4 h-4" />
+              {t('tabs.countryRanking')}
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsList className="w-full bg-transparent p-0 h-auto">
+            <TabsTrigger 
+              value="religion" 
+              className="gap-2 w-full justify-start data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg py-3"
+            >
+              <Users className="w-4 h-4" />
+              {t('tabs.religionRanking')}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         <TabsContent value="personal">
           <RankingTab />

@@ -1,9 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, LogOut, Mail } from 'lucide-react';
 import logo from '@/assets/sacredworld-logo.jpg';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 
 interface HeaderProps {
   showBack?: boolean;
@@ -16,6 +18,7 @@ interface HeaderProps {
 const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children, transparent = false }: HeaderProps) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { unreadCount, markAsRead } = useUnreadMessages();
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -28,6 +31,11 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
     } else {
       navigate('/');
     }
+  };
+
+  const handleMessagesClick = () => {
+    markAsRead();
+    navigate('/world?tab=social&sub=messages');
   };
 
   return (
@@ -52,17 +60,26 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
           />
         </div>
         
-        <div className="flex items-center gap-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => navigate('/world?tab=social&sub=messages')}
-            className={`p-2 ${transparent ? 'text-white hover:bg-white/10' : 'text-muted-foreground hover:text-foreground'}`}
-            aria-label="Messages"
-            title="Messages"
-          >
-            <Mail className="w-5 h-5" />
-          </Button>
+        <div className="flex items-center gap-2">
+          <div className="relative">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleMessagesClick}
+              className={`p-2 ${transparent ? 'text-white hover:bg-white/10' : 'text-black hover:bg-black/10'}`}
+              aria-label="Messages"
+              title="Messages"
+            >
+              <Mail className="w-5 h-5" />
+            </Button>
+            {unreadCount > 0 && (
+              <Badge 
+                className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center p-1 bg-red-500 text-white text-xs"
+              >
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </Badge>
+            )}
+          </div>
           {children}
           
           <Button
