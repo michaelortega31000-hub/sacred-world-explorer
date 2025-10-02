@@ -3,13 +3,14 @@ import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin, TrendingUp } from 'lucide-react';
+import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin, TrendingUp, Users } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries, mockPlaces } from '@/data/placesData';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
 import LocationsTab from '@/components/LocationsTab';
 import RankingsTab from '@/components/RankingsTab';
+import SocialTab from '@/components/SocialTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 
@@ -81,13 +82,17 @@ const WorldMap = () => {
                 <Target className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                 <span className="truncate">{t('tabs.weeklyQuest')}</span>
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-2">
+              <TabsTrigger value="locations" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                 <span className="truncate">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-1">
+              <TabsTrigger value="rankings" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                 <span className="truncate">Classements</span>
+              </TabsTrigger>
+              <TabsTrigger value="social" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
+                <Users className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                <span className="truncate">Social</span>
               </TabsTrigger>
             </TabsList>
           </div>
@@ -151,6 +156,10 @@ const WorldMap = () => {
 
         <TabsContent value="quest" className="flex-1 m-0">
           <WeeklyQuestTab />
+        </TabsContent>
+
+        <TabsContent value="social" className="flex-1 m-0">
+          <SocialTab />
         </TabsContent>
       </Tabs>
     </div>
