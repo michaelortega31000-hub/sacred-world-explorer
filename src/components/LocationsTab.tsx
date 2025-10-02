@@ -69,9 +69,13 @@ const LocationsTab = () => {
     
     // Middle East & North Africa
     'Israel': 'Moyen-Orient',
+    'Palestine': 'Moyen-Orient',
     'Saudi Arabia': 'Moyen-Orient',
+    'Jordan': 'Moyen-Orient',
+    'UAE': 'Moyen-Orient',
     'Egypt': 'Afrique',
     'Morocco': 'Afrique',
+    'Algeria': 'Afrique',
     'Tunisia': 'Afrique',
     'Ethiopia': 'Afrique',
     'South Africa': 'Afrique',
