@@ -9,7 +9,7 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* SacredWorld Design System - OR, BLEU, ROUGE */
-    --background: 39 36% 93%; /* Beige clair */
+    --background: 210 100% 95%; /* Bleu clair */
     --foreground: 222 47% 11%; /* Bleu très foncé */
 
     --card: 0 0% 100%;
@@ -24,7 +24,7 @@ All colors MUST be HSL.
     --secondary: 220 70% 45%; /* BLEU royal #2563EB */
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 39 36% 88%;
+    --muted: 210 100% 90%;
     --muted-foreground: 222 20% 35%;
 
     --accent: 0 84% 48%; /* ROUGE vif #DC2626 */
