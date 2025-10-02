@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
-import { getAllPlaceImages } from '@/lib/imageHelper';
+import { getImageUrl } from '@/lib/imageHelper';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;

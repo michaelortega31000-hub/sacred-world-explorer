@@ -24,6 +24,7 @@ import {
 import Header from '@/components/Header';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/hooks/use-toast';
+import { getImageUrl } from '@/lib/imageHelper';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -36,14 +37,8 @@ const PlaceDetail = () => {
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
 
-  // Resolve local asset URLs via Vite to avoid broken /src paths
-  const placeImages = import.meta.glob('/src/assets/places/*.{jpg,jpeg,png}', { eager: true, as: 'url' }) as Record<string, string>;
-  const resolveImageUrl = (url?: string) => {
-    if (!url) return undefined;
-    const filename = url.split('/').pop() as string;
-    const match = Object.entries(placeImages).find(([path]) => path.endsWith(filename));
-    return (match?.[1] as string) || url;
-  };
+  // Resolve via shared helper (fuzzy filename support)
+  const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
 
   const allPlaces = getAllPlaces();
   const place = allPlaces.find(p => p.id === placeId);

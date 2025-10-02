@@ -7,6 +7,7 @@ import { getAllPlaces } from '@/data/placesData';
 import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { getImageUrl } from '@/lib/imageHelper';
 
 const TripPlannerTab = () => {
   const { t } = useTranslation();
@@ -14,14 +15,8 @@ const TripPlannerTab = () => {
   const [startingCity, setStartingCity] = useState<string>('');
   const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
   
-  // Resolve local asset URLs via Vite to avoid broken /src paths
-  const placeImages = import.meta.glob('/src/assets/places/*.{jpg,jpeg,png}', { eager: true, as: 'url' }) as Record<string, string>;
-  const resolveImageUrl = (url?: string) => {
-    if (!url) return undefined;
-    const filename = url.split('/').pop() as string;
-    const match = Object.entries(placeImages).find(([path]) => path.endsWith(filename));
-    return (match?.[1] as string) || url;
-  };
+  // Resolve via shared helper (fuzzy filename support)
+  const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
   
   const allPlaces = getAllPlaces();
   const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
