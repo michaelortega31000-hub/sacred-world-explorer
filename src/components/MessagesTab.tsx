@@ -43,29 +43,6 @@ const MessagesTab = () => {
   useEffect(() => {
     if (selectedFriend && currentUserId) {
       loadMessages(selectedFriend.id);
-      
-      // Subscribe to new messages
-      const channel = supabase
-        .channel('messages')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'messages',
-            filter: `receiver_id=eq.${currentUserId}`,
-          },
-          (payload) => {
-            if (payload.new.sender_id === selectedFriend.id) {
-              loadMessages(selectedFriend.id);
-            }
-          }
-        )
-        .subscribe();
-
-      return () => {
-        supabase.removeChannel(channel);
-      };
     }
   }, [selectedFriend, currentUserId]);
 
@@ -111,12 +88,9 @@ const MessagesTab = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    const { data, error } = await supabase
-      .from('messages')
-      .select(`
-        *,
-        sender:profiles!messages_sender_id_fkey(username)
-      `)
+    const { data, error } = await (supabase as any)
+      .from('messages' as any)
+      .select('id, sender_id, receiver_id, content, created_at')
       .or(`and(sender_id.eq.${user.id},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${user.id})`)
       .order('created_at', { ascending: true });
 
@@ -130,8 +104,8 @@ const MessagesTab = () => {
   const sendMessage = async () => {
     if (!newMessage.trim() || !selectedFriend || !currentUserId) return;
 
-    const { error } = await supabase
-      .from('messages')
+    const { error } = await (supabase as any)
+      .from('messages' as any)
       .insert({
         sender_id: currentUserId,
         receiver_id: selectedFriend.id,
