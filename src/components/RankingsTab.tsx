@@ -11,16 +11,16 @@ const RankingsTab = () => {
   return (
     <div className="container mx-auto p-6">
       <Tabs defaultValue="personal" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 mb-6">
-          <TabsTrigger value="personal" className="gap-2">
+        <TabsList className="w-full grid grid-cols-1 sm:grid-cols-3 gap-2 mb-6 bg-transparent p-0">
+          <TabsTrigger value="personal" className="gap-2 w-full justify-center">
             <Trophy className="w-4 h-4" />
             {t('tabs.myRanking')}
           </TabsTrigger>
-          <TabsTrigger value="country" className="gap-2">
+          <TabsTrigger value="country" className="gap-2 w-full justify-center">
             <Flag className="w-4 h-4" />
             {t('tabs.countryRanking')}
           </TabsTrigger>
-          <TabsTrigger value="religion" className="gap-2">
+          <TabsTrigger value="religion" className="gap-2 w-full justify-center">
             <Users className="w-4 h-4" />
             {t('tabs.religionRanking')}
           </TabsTrigger>

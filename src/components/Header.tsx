@@ -1,6 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, LogOut } from 'lucide-react';
+import { ArrowLeft, LogOut, Mail } from 'lucide-react';
 import logo from '@/assets/sacredworld-logo.jpg';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -53,6 +53,16 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
         </div>
         
         <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/world?tab=social&sub=messages')}
+            className={`p-2 ${transparent ? 'text-white hover:bg-white/10' : 'text-muted-foreground hover:text-foreground'}`}
+            aria-label="Messages"
+            title="Messages"
+          >
+            <Mail className="w-5 h-5" />
+          </Button>
           {children}
           
           <Button

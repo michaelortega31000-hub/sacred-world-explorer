@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,10 @@ const WorldMap = () => {
   const countries = getAllCountries();
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const location = useLocation();
+  const params = new URLSearchParams(location.search);
+  const initialTab = params.get('tab') || 'map';
+  const [activeTab, setActiveTab] = useState(initialTab);
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
@@ -63,7 +67,7 @@ const WorldMap = () => {
         </div>
       </Header>
 
-      <Tabs defaultValue="map" className="flex-1 flex flex-col">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <div className="border-b border-border bg-card">
           <div className="w-full px-2 py-1">
             <TabsList className="w-full h-auto p-0 bg-transparent grid grid-cols-3 gap-1">
@@ -159,7 +163,7 @@ const WorldMap = () => {
         </TabsContent>
 
         <TabsContent value="social" className="flex-1 m-0">
-          <SocialTab />
+          <SocialTab defaultTab={(params.get('sub') as 'friends' | 'messages' | 'forum') || 'friends'} />
         </TabsContent>
       </Tabs>
     </div>

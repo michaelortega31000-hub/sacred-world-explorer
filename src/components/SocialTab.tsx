@@ -4,10 +4,10 @@ import FriendsTab from './FriendsTab';
 import ForumTab from './ForumTab';
 import MessagesTab from './MessagesTab';
 
-const SocialTab = () => {
+const SocialTab = ({ defaultTab = 'friends' }: { defaultTab?: 'friends' | 'messages' | 'forum' }) => {
   return (
     <div className="w-full">
-      <Tabs defaultValue="friends" className="w-full">
+      <Tabs defaultValue={defaultTab} className="w-full">
         <div className="border-b border-border bg-card">
           <div className="container mx-auto px-4">
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent grid grid-cols-3">
