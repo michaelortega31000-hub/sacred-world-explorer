@@ -81,11 +81,11 @@ const WorldMap = () => {
                 <Target className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                 <span className="truncate">{t('tabs.weeklyQuest')}</span>
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-1">
+              <TabsTrigger value="locations" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-2">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                 <span className="truncate">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-2">
+              <TabsTrigger value="rankings" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs col-span-1">
                 <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
                 <span className="truncate">Classements</span>
               </TabsTrigger>
