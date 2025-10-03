@@ -185,20 +185,67 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          stripe_customer_id: string | null
+          subscription_end: string | null
+          subscription_tier: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           created_at?: string
           id: string
+          stripe_customer_id?: string | null
+          subscription_end?: string | null
+          subscription_tier?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           created_at?: string
           id?: string
+          stripe_customer_id?: string | null
+          subscription_end?: string | null
+          subscription_tier?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_subscription_tier_fkey"
+            columns: ["subscription_tier"]
+            isOneToOne: false
+            referencedRelation: "subscription_tiers"
+            referencedColumns: ["name"]
+          },
+        ]
+      }
+      subscription_tiers: {
+        Row: {
+          created_at: string
+          description: string | null
+          features: Json | null
+          id: string
+          name: string
+          price_monthly: number | null
+          stripe_price_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          name: string
+          price_monthly?: number | null
+          stripe_price_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          features?: Json | null
+          id?: string
+          name?: string
+          price_monthly?: number | null
+          stripe_price_id?: string | null
         }
         Relationships: []
       }
@@ -232,6 +279,51 @@ export type Database = {
           subscription_tier?: string
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      vr_content: {
+        Row: {
+          content_type: string
+          created_at: string
+          description: string | null
+          file_url: string
+          id: string
+          is_active: boolean | null
+          metadata: Json | null
+          place_id: string
+          position: Json | null
+          thumbnail_url: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          content_type: string
+          created_at?: string
+          description?: string | null
+          file_url: string
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          place_id: string
+          position?: Json | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          content_type?: string
+          created_at?: string
+          description?: string | null
+          file_url?: string
+          id?: string
+          is_active?: boolean | null
+          metadata?: Json | null
+          place_id?: string
+          position?: Json | null
+          thumbnail_url?: string | null
+          title?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
