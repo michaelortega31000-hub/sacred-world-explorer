@@ -92,15 +92,6 @@ const Splash = () => {
           >
             S'inscrire
           </Button>
-          
-          <Button
-            onClick={handleAuth}
-            size="lg"
-            variant="outline"
-            className="w-full max-w-md bg-white/10 border-white/30 text-white hover:bg-white/20 backdrop-blur-sm text-lg font-semibold py-6"
-          >
-            Connexion
-          </Button>
         </div>
         </div>
       </div>
