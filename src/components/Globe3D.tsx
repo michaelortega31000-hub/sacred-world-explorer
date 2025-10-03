@@ -7,6 +7,9 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
 import { getImageUrl } from '@/lib/imageHelper';
+import { useApp } from '@/contexts/AppContext';
+import { religionColors } from '@/config/religionColors';
+import { inferReligionFromPlace } from '@/lib/religionHelper';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -18,6 +21,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
   const markers = useRef<mapboxgl.Marker[]>([]);
   const navigate = useNavigate();
   const { i18n } = useTranslation();
+  const { userProgress } = useApp();
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [showMonuments, setShowMonuments] = useState(false);
@@ -175,6 +179,10 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
           mockPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
+            // Déterminer la couleur du marqueur en fonction de la religion du lieu
+            const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
+            const markerColor = religionColors[placeReligion]?.marker || '#FFD700';
+            
             const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
               .setHTML(`
                 <div style="padding: 12px;">
@@ -186,7 +194,7 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
                 </div>
               `);
 
-            const marker = new mapboxgl.Marker({ color: '#FFD700' })
+            const marker = new mapboxgl.Marker({ color: markerColor })
               .setLngLat([place.coordinates[0], place.coordinates[1]])
               .setPopup(popup)
               .addTo(map.current!);

@@ -12,6 +12,7 @@ export interface Place {
   points: number;
   coordinates: [number, number];
   imageUrl?: string;
+  religion?: Religion;
 }
 
 export interface UserProgress {
