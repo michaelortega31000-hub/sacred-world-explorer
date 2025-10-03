@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useGeolocation, UserGeolocation } from '@/hooks/useGeolocation';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
@@ -22,6 +23,7 @@ export interface UserProgress {
   visitedPlaces: string[];
   badges: string[];
   tripPlaces: string[];
+  geolocationEnabled: boolean;
 }
 
 interface AppContextType {
@@ -35,6 +37,9 @@ interface AppContextType {
   isInTrip: (placeId: string) => boolean;
   clearTrip: () => void;
   addPoints: (points: number) => void;
+  toggleGeolocation: () => void;
+  userLocation: UserGeolocation | null;
+  geolocationError: string | null;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -45,7 +50,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      return {
+        ...parsed,
+        geolocationEnabled: parsed.geolocationEnabled ?? false
+      };
     }
     return {
       selectedReligion: null,
@@ -53,9 +62,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       totalPoints: 0,
       visitedPlaces: [],
       badges: [],
-      tripPlaces: []
+      tripPlaces: [],
+      geolocationEnabled: false
     };
   });
+
+  const { position, error } = useGeolocation(userProgress.geolocationEnabled);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
@@ -159,6 +171,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     });
   };
 
+  const toggleGeolocation = () => {
+    setUserProgress(prev => ({
+      ...prev,
+      geolocationEnabled: !prev.geolocationEnabled
+    }));
+  };
+
   return (
     <AppContext.Provider value={{ 
       userProgress, 
@@ -170,7 +189,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       removeFromTrip,
       isInTrip,
       clearTrip,
-      addPoints
+      addPoints,
+      toggleGeolocation,
+      userLocation: position,
+      geolocationError: error?.message || null
     }}>
       {children}
     </AppContext.Provider>
