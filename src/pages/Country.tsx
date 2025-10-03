@@ -303,7 +303,7 @@ const Country = () => {
 
           <div className="max-w-7xl mx-auto">
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
-              {country}
+              {t(`countries.${country}`, country)}
             </h1>
             <p className="text-muted-foreground mb-8">
               {places.length} {places.length === 1 ? 'lieu sacré' : 'lieux sacrés'}
