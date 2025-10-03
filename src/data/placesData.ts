@@ -2857,6 +2857,126 @@ export const mockPlaces: Place[] = [
     points: 70,
     coordinates: [100.5413, 14.3423],
     imageUrl: '/src/assets/places/ayutthaya-chaiwatthanaram.jpg'
+  },
+  {
+    id: 'tha-13',
+    name: 'Wat Yai Chai Mongkhon',
+    country: 'Thailand',
+    city: 'Ayutthaya',
+    type: 'Temple',
+    description: 'Temple fondé en 1357 par le roi U-Thong pour des moines revenus du Sri Lanka après étude du bouddhisme theravada. Son immense chedi de 62 mètres construit en 1592 commémore la victoire du roi Naresuan sur les Birmans au combat d\'éléphants. Rangées de Bouddhas en robes safran entourant le chedi créent atmosphère méditative unique. Temple toujours actif avec moines résidents. Lieu de culte et pèlerinage important. Vue panoramique depuis le sommet du chedi. Symbole de la victoire siamoise et de la continuité spirituelle malgré destructions. Centre vivant de pratique bouddhiste à Ayutthaya.',
+    points: 65,
+    coordinates: [100.5892, 14.3389],
+    imageUrl: '/src/assets/places/ayutthaya-yai-chai.jpg'
+  },
+  
+  // Sukhothai
+  {
+    id: 'tha-14',
+    name: 'Wat Mahathat Sukhothai',
+    country: 'Thailand',
+    city: 'Sukhothai',
+    type: 'Temple en ruines',
+    description: 'Temple principal du parc historique de Sukhothai, première capitale siamoise (1238-1438), berceau de la civilisation thaïe. Complexe massif avec chedi central de style Sri Lankan entouré de 200 chedis et 10 viharns. Statue iconique du Bouddha marchant, invention artistique de Sukhothai symbolisant grâce et sérénité. Architecture reflétant âge d\'or culturel sous le roi Ramkhamhaeng qui créa l\'alphabet thaï. Parc historique patrimoine UNESCO depuis 1991. Ruines majestueuses dans jardins paisibles évoquant splendeur passée. Berceau spirituel et culturel de la nation thaïe, source identité bouddhiste siamoise.',
+    points: 85,
+    coordinates: [99.7076, 17.0169],
+    imageUrl: '/src/assets/places/sukhothai-mahathat.jpg'
+  },
+  {
+    id: 'tha-15',
+    name: 'Wat Si Chum',
+    country: 'Thailand',
+    city: 'Sukhothai',
+    type: 'Temple en ruines',
+    description: 'Temple célèbre pour son gigantesque Bouddha assis Phra Achana, l\'une des plus grandes statues de Bouddha de Thaïlande. Statue de 15 mètres de haut et 11 mètres de large enchâssée dans un mondop (chapelle carrée) avec ouverture frontale spectaculaire. Construit au XIVe siècle sous style Sukhothai. Escalier secret dans les murs mène au sommet avec plafond décoré de 50 plaques de schiste gravées de Jataka (vies antérieures du Bouddha). Atmosphère mystique renforcée par jeu d\'ombre et lumière. Symbole de sérénité bouddhiste et génie architectural de Sukhothai. Lieu de contemplation puissant.',
+    points: 75,
+    coordinates: [99.7315, 17.0389],
+    imageUrl: '/src/assets/places/sukhothai-si-chum.jpg'
+  },
+  {
+    id: 'tha-16',
+    name: 'Wat Sa Si',
+    country: 'Thailand',
+    city: 'Sukhothai',
+    type: 'Temple en ruines',
+    description: 'Temple pittoresque situé sur une île au milieu d\'un lac (Traphang Trakuan) dans le parc historique de Sukhothai. Construit aux XIVe-XVe siècles, il présente un chedi de style sri-lankais et les ruines d\'un viharn avec Bouddha assis gracieux. Pont en bois traverse le lac menant au temple, créant reflets spectaculaires à l\'aube et au crépuscule. Environnement naturel paisible avec lotus et végétation tropicale. Architecture Sukhothai élégante et proportions harmonieuses. Lieu photographique emblématique symbolisant beauté et sérénité de l\'art siamois ancien. Fusion parfaite spiritualité, architecture et nature.',
+    points: 70,
+    coordinates: [99.6996, 17.0197],
+    imageUrl: '/src/assets/places/sukhothai-sa-si.jpg'
+  },
+  
+  // Phuket
+  {
+    id: 'tha-17',
+    name: 'Wat Chalong',
+    country: 'Thailand',
+    city: 'Phuket',
+    type: 'Temple',
+    description: 'Temple bouddhiste le plus grand et le plus vénéré de Phuket, construit au début du XIXe siècle. Dédie aux moines Luang Pho Chaem et Luang Pho Chuang qui aidèrent habitants lors rébellion des travailleurs d\'étain en 1876. Grand Pagode (Chedi) de 60 mètres achevé en 2001 contient fragment d\'os de Bouddha rapporté du Sri Lanka. Architecture colorée ornée de dorures et peintures murales racontant vies de Bouddha. Statues de cire des moines vénérés où fidèles déposent feuilles d\'or. Centre spirituel et culturel pour communauté sino-thaïe de Phuket. Lieu de bénédictions, guérisons et pèlerinage majeur du sud.',
+    points: 65,
+    coordinates: [98.3375, 7.8926],
+    imageUrl: '/src/assets/places/chalong.jpg'
+  },
+  {
+    id: 'tha-18',
+    name: 'Grand Bouddha de Phuket',
+    country: 'Thailand',
+    city: 'Phuket',
+    type: 'Monument',
+    description: 'Statue monumentale de Bouddha en marbre blanc de Birmanie de 45 mètres de haut, située au sommet des collines de Nakkerd à 400 mètres d\'altitude. Construite entre 2004 et 2014 grâce aux dons publics. Vue panoramique spectaculaire à 360° sur Phuket, baie de Chalong, Kata, Karon et Rawai. Représente Bouddha en position de Maravijaya (victoire sur Mara). Site de pèlerinage et méditation avec cloches à vœux et plaques de marbre gravées de donateurs. Visible de presque toute l\'île. Symbole moderne de foi bouddhiste et point de repère emblématique de Phuket. Lieu spirituel offrant paix et vues époustouflantes.',
+    points: 70,
+    coordinates: [98.3075, 7.8411],
+    imageUrl: '/src/assets/places/big-buddha-phuket.jpg'
+  },
+  
+  // Chiang Rai
+  {
+    id: 'tha-19',
+    name: 'Wat Rong Khun (Temple Blanc)',
+    country: 'Thailand',
+    city: 'Chiang Rai',
+    type: 'Temple',
+    description: 'Temple bouddhiste contemporain extraordinaire conçu par l\'artiste Chalermchai Kositpipat en 1997, toujours en construction. Entièrement blanc avec miroirs incrustés symbolisant pureté de Bouddha et sagesse illuminant le monde. Architecture fusion tradition thaïe et surréalisme moderne avec sculptures de démons, mains tendues symbolisant désirs humains, pont représentant cycle vie-mort-renaissance. Salle principale contient fresques murales mêlant iconographie bouddhiste et culture pop (Matrix, Star Wars, super-héros). Projet personnel financé par l\'artiste pour inspirer dévotion et réflexion. Temple unique défiant conventions, œuvre d\'art total fusionnant spiritualité et critique sociale moderne.',
+    points: 80,
+    coordinates: [99.7632, 19.8242],
+    imageUrl: '/src/assets/places/white-temple.jpg'
+  },
+  {
+    id: 'tha-20',
+    name: 'Wat Phra That Doi Chom Thong',
+    country: 'Thailand',
+    city: 'Chiang Rai',
+    type: 'Temple',
+    description: 'Temple ancien sur colline au cœur de Chiang Rai, fondé en 940, bien avant la ville elle-même établie en 1262 par le roi Mengrai. Légende raconte que le roi choisit emplacement de la ville depuis cette colline après avoir vu éléphant blanc auspicieux. Chedi doré abrite reliques sacrées. Vue panoramique sur Chiang Rai moderne et montagnes. Centre spirituel historique de la province. Architecture Lanna traditionnelle. Lieu de pèlerinage local lors festivals. Temple tranquille hors sentiers touristiques. Symbole fondateur de Chiang Rai et lien vivant avec royaume Lanna médiéval. Point observation stratégique devenu sanctuaire spirituel.',
+    points: 60,
+    coordinates: [99.8325, 19.9100],
+    imageUrl: '/src/assets/places/doi-chom-thong.jpg'
+  },
+  
+  // Kanchanaburi
+  {
+    id: 'tha-21',
+    name: 'Temple Wat Tham Sua',
+    country: 'Thailand',
+    city: 'Kanchanaburi',
+    type: 'Temple',
+    description: 'Temple de la Grotte du Tigre, complexe bouddhiste chinois-thaï spectaculaire fondé en 1975, célèbre pour son immense pagode dorée de 9 étages (69 mètres) et gigantesque statue de Bouddha doré assis de 18 mètres. 157 marches escarpées mènent au sommet offrant vue panoramique sur rizières, montagnes et rivière Kwai. Grottes naturelles abritant sanctuaires et méditation. Architecture fusion styles chinois Mahayana et thaï Theravada avec dragons, Bouddhas et divinités chinoises. Empreinte de pied géante de Bouddha. Centre monastique actif et retraite méditative. Site hors sentiers battus offrant beauté architecturale, spiritualité et panoramas exceptionnels de l\'ouest thaïlandais.',
+    points: 70,
+    coordinates: [99.4736, 14.0147],
+    imageUrl: '/src/assets/places/tham-sua.jpg'
+  },
+  
+  // Nakhon Pathom
+  {
+    id: 'tha-22',
+    name: 'Phra Pathom Chedi',
+    country: 'Thailand',
+    city: 'Nakhon Pathom',
+    type: 'Stupa',
+    description: 'Plus haut stupa bouddhiste du monde avec 120 mètres de hauteur, dominant la plaine centrale thaïlandaise. Marque le lieu où le bouddhisme aurait été introduit en Thaïlande au IIIe siècle avant J.-C. Structure originale remontant à l\'empire Dvaravati (VIe-XIe siècle). Chedi actuel reconstruit par le roi Rama IV en 1860 recouvrant stupa ancien. Architecture Mon-Khmer avec influence sri-lankaise. Dorure éclatante visible à des kilomètres. Quatre viharns aux quatre points cardinaux abritent statues de Bouddha. Centre spirituel majeur et symbole introduction bouddhisme en Asie du Sud-Est. Lieu de pèlerinage historique fondamental pour bouddhistes thaïs.',
+    points: 75,
+    coordinates: [100.0620, 13.8156],
+    imageUrl: '/src/assets/places/phra-pathom.jpg'
   }
 ];
 
