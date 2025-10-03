@@ -37,9 +37,9 @@ const Splash = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 relative" style={{ background: 'linear-gradient(135deg, hsl(220 70% 45%) 0%, hsl(0 84% 48%) 100%)' }}>
+    <div className="min-h-screen flex flex-col p-6 relative" style={{ background: 'linear-gradient(135deg, hsl(220 70% 45%) 0%, hsl(0 84% 48%) 100%)' }}>
       {/* Bouton Mode hors-ligne en haut à droite */}
-      <div className="absolute top-6 right-6 animate-fade-in">
+      <div className="absolute top-4 right-4 z-10 animate-fade-in">
         <Button
           onClick={handleOfflineMode}
           variant="outline"
@@ -51,7 +51,8 @@ const Splash = () => {
         </Button>
       </div>
 
-      <div className="text-center max-w-2xl w-full space-y-12">
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center max-w-2xl w-full space-y-12">
         {/* Logo et titre */}
         <div className="animate-fade-in">
           <div className="mb-8 flex justify-center">
@@ -100,6 +101,7 @@ const Splash = () => {
           >
             Connexion
           </Button>
+        </div>
         </div>
       </div>
 
