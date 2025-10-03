@@ -2717,6 +2717,146 @@ export const mockPlaces: Place[] = [
     points: 65,
     coordinates: [-0.5366, 53.2347],
     imageUrl: '/src/assets/places/lincoln-cathedral.jpg'
+  },
+  
+  // ========== THAILAND ==========
+  
+  // Bangkok
+  {
+    id: 'tha-1',
+    name: 'Wat Phra Kaew',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple',
+    description: 'Le Temple du Bouddha d\'Émeraude, situé dans l\'enceinte du Grand Palais de Bangkok, est le temple le plus sacré de Thaïlande. Construit en 1782 sous le roi Rama I, il abrite le Bouddha d\'Émeraude (Phra Kaew Morakot), statue vénérée de 66 cm taillée dans un bloc de jade vert. Le roi change personnellement les habits dorés du Bouddha trois fois par an selon les saisons. Architecture somptueuse avec toitures dorées, mosaïques éclatantes et gardiens démons Yaksha. Chef-d\'œuvre de l\'art siamois, sanctuaire royal et spirituel du royaume de Thaïlande depuis plus de 240 ans.',
+    points: 85,
+    coordinates: [100.4913, 13.7515],
+    imageUrl: '/src/assets/places/wat-phra-kaew.jpg'
+  },
+  {
+    id: 'tha-2',
+    name: 'Wat Arun',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple',
+    description: 'Le Temple de l\'Aube (Wat Arun Ratchawararam), érigé sur les rives du fleuve Chao Phraya, est l\'un des monuments les plus emblématiques de Bangkok. Son prang central de style khmer s\'élève à 82 mètres et est incrusté de milliers de morceaux de porcelaine chinoise colorée créant des mosaïques éblouissantes. Construit durant la période d\'Ayutthaya et restauré sous Rama II et Rama III (1820-1850). Symbolise le Mont Meru, centre de l\'univers dans la cosmologie bouddhiste. Vue spectaculaire au coucher du soleil quand le temple s\'illumine. Chef-d\'œuvre architectural représentant l\'aube d\'une nouvelle ère pour Bangkok capitale.',
+    points: 80,
+    coordinates: [100.4893, 13.7437],
+    imageUrl: '/src/assets/places/wat-arun.jpg'
+  },
+  {
+    id: 'tha-3',
+    name: 'Wat Pho',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple',
+    description: 'Wat Phra Chetuphon (Wat Pho), plus ancien et plus grand temple de Bangkok, fondé au XVIe siècle et reconstruit en 1788 sous Rama I. Célèbre pour son gigantesque Bouddha couché doré de 46 mètres de long et 15 mètres de haut, représentant l\'entrée du Bouddha dans le Nirvana. Ses pieds de 5 mètres sont incrustés de nacre en 108 motifs auspicieux. Le temple abrite 1000 images de Bouddha et 95 stupas. Considéré comme la première université de Thaïlande, berceau de la médecine traditionnelle thaïe et du massage traditionnel. École de massage toujours active. Patrimoine spirituel, médical et architectural exceptionnel.',
+    points: 75,
+    coordinates: [100.4933, 13.7465],
+    imageUrl: '/src/assets/places/wat-pho.jpg'
+  },
+  {
+    id: 'tha-4',
+    name: 'Wat Benchamabophit',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple',
+    description: 'Le Temple de Marbre (Wat Benchamabophit Dusitvanaram), construit en 1899 sous le roi Rama V, est un chef-d\'œuvre du style thaï-européen. Entièrement revêtu de marbre blanc italien de Carrare importé, il fusionne architecture traditionnelle siamoise et influences néoclassiques. Galerie abritant 52 images de Bouddha représentant différents styles asiatiques. Cour paisible avec étang et jardins. Temple royal encore utilisé pour cérémonies royales et ordinations monastiques. Représente la modernisation du Siam sous Rama V et dialogue entre traditions bouddhistes et modernité occidentale. Joyau architectural de Bangkok.',
+    points: 70,
+    coordinates: [100.5155, 13.7658],
+    imageUrl: '/src/assets/places/bangkok-marble-temple.jpg'
+  },
+  {
+    id: 'tha-5',
+    name: 'Wat Saket (Golden Mount)',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple',
+    description: 'Wat Saket et sa Montagne Dorée (Phu Khao Thong) dominent Bangkok depuis une colline artificielle de 80 mètres créée au XIXe siècle. Le chedi doré au sommet abrite des reliques du Bouddha offertes par l\'Inde. 318 marches serpentent à travers jardins tropicaux et cloches rituelles jusqu\'au sommet offrant vue panoramique à 360° sur Bangkok. Construit sous Rama III et achevé sous Rama V. Lieu de pèlerinage majeur lors de la fête de Loy Krathong en novembre. Symbole de Bangkok, fusion de spiritualité bouddhiste et architecture royale, offrant paix et contemplation au cœur de la métropole moderne.',
+    points: 65,
+    coordinates: [100.5061, 13.7545],
+    imageUrl: '/src/assets/places/golden-mount.jpg'
+  },
+  
+  // Chiang Mai
+  {
+    id: 'tha-6',
+    name: 'Wat Phra That Doi Suthep',
+    country: 'Thailand',
+    city: 'Chiang Mai',
+    type: 'Temple',
+    description: 'Temple sacré perché à 1676 mètres d\'altitude sur le mont Doi Suthep dominant Chiang Mai. Fondé en 1383 sous le roi Ku Na du royaume Lanna, il fut construit là où un éléphant blanc portant une relique du Bouddha s\'arrêta et mourut. Escalier naga de 306 marches gardé par serpents mythiques mène au chedi doré de 24 mètres contenant des reliques de Bouddha. Vue spectaculaire sur Chiang Mai et vallée. Lieu de pèlerinage majeur du nord de la Thaïlande. Symbole spirituel de Chiang Mai et du royaume Lanna, incarnant légende, architecture dorée et dévotion bouddhiste theravada.',
+    points: 85,
+    coordinates: [98.9218, 18.8047],
+    imageUrl: '/src/assets/places/doi-suthep.jpg'
+  },
+  {
+    id: 'tha-7',
+    name: 'Wat Chedi Luang',
+    country: 'Thailand',
+    city: 'Chiang Mai',
+    type: 'Temple',
+    description: 'Temple royal fondé en 1391 sous le roi Saen Muang Ma, Wat Chedi Luang abrite un immense chedi (stupa) qui culminait à 82 mètres avant d\'être partiellement détruit par un tremblement de terre en 1545. Aujourd\'hui restauré à 60 mètres, il reste l\'un des plus imposants de Thaïlande. Abrita le Bouddha d\'Émeraude de 1468 à 1552 avant son transfert au Laos puis Bangkok. Architecture Lanna massive avec escaliers gardés par nagas serpents. Arbre sacré Sao Inthakin protégeant Chiang Mai. Cœur spirituel de la vieille ville, symbole du pouvoir et de la foi du royaume Lanna médiéval.',
+    points: 75,
+    coordinates: [98.9876, 18.7868],
+    imageUrl: '/src/assets/places/chedi-luang.jpg'
+  },
+  {
+    id: 'tha-8',
+    name: 'Wat Phra Singh',
+    country: 'Thailand',
+    city: 'Chiang Mai',
+    type: 'Temple',
+    description: 'Wat Phra Singh Woramahaviharn, temple royal fondé en 1345 par le roi Pha Yu, est le temple le plus vénéré de Chiang Mai. Il abrite la statue sacrée du Bouddha Phra Singh (Lion de Bouddha) dans le viharn Lai Kham, chef-d\'œuvre de l\'art Lanna avec ses fresques murales du XIXe siècle racontant la vie locale. Architecture classique Lanna avec toits superposés dorés, bibliothèque Ho Trai en teck et chedi doré de style cinghalais. Centre de formation monastique important. Durant Songkran (Nouvel An thaï), le Bouddha Phra Singh est promené dans la ville pour bénédiction des habitants. Joyau spirituel et culturel de Chiang Mai.',
+    points: 70,
+    coordinates: [98.9847, 18.7883],
+    imageUrl: '/src/assets/places/phra-singh.jpg'
+  },
+  {
+    id: 'tha-9',
+    name: 'Wat Umong',
+    country: 'Thailand',
+    city: 'Chiang Mai',
+    type: 'Temple',
+    description: 'Temple forestier unique fondé en 1297 sous le roi Mangrai, Wat Umong se distingue par ses tunnels (umong) méditatifs souterrains décorés de fresques bouddhistes anciennes. Situé au pied du mont Suthep dans une forêt paisible, il offre retraite spirituelle et méditation loin de l\'agitation urbaine. Stupa en briques recouvert de mousse, lac aux poissons et tortues, sentiers forestiers et statues de Bouddha. Centre de méditation Vipassana actif. Arbres centenaires et sérénité naturelle en font lieu privilégié pour moines et pratiquants. Incarne tradition méditative bouddhiste theravada et harmonie avec la nature selon philosophie Lanna.',
+    points: 65,
+    coordinates: [98.9647, 18.7914],
+    imageUrl: '/src/assets/places/umong.jpg'
+  },
+  
+  // Ayutthaya
+  {
+    id: 'tha-10',
+    name: 'Wat Mahathat Ayutthaya',
+    country: 'Thailand',
+    city: 'Ayutthaya',
+    type: 'Temple en ruines',
+    description: 'Wat Mahathat, temple royal central d\'Ayutthaya fondé en 1374 sous le roi Borommaracha I, fut l\'un des plus importants du royaume de Siam. Célèbre mondialement pour la tête de Bouddha en grès enchâssée dans les racines d\'un arbre banian, image iconique symbolisant fusion nature et spiritualité. Le temple abritait reliques de Bouddha dans son prang central de 50 mètres. Détruit par les Birmans en 1767, ses ruines majestueuses témoignent de la grandeur passée. Patrimoine UNESCO, il incarne splendeur et destruction du royaume d\'Ayutthaya, centre politique et religieux pendant 417 ans.',
+    points: 80,
+    coordinates: [100.5673, 14.3569],
+    imageUrl: '/src/assets/places/ayutthaya-mahathat.jpg'
+  },
+  {
+    id: 'tha-11',
+    name: 'Wat Phra Si Sanphet',
+    country: 'Thailand',
+    city: 'Ayutthaya',
+    type: 'Temple en ruines',
+    description: 'Temple royal le plus sacré d\'Ayutthaya, construit en 1448 dans l\'enceinte du palais royal sous le roi Borommatrailokkanat. Ses trois chedis iconiques en rangée abritaient les cendres de trois rois siamois. Modèle architectural pour Wat Phra Kaew de Bangkok. Abritait un Bouddha debout de 16 mètres recouvert de 250 kg d\'or, fondu par les Birmans en 1767. Ruines majestueuses des trois stupas blancs se dressent encore, symboles de la royauté d\'Ayutthaya. Patrimoine UNESCO, il représente apogée architecturale et spirituelle du royaume, équivalent du Wat Phra Kaew moderne. Chef-d\'œuvre de l\'art siamois médiéval.',
+    points: 75,
+    coordinates: [100.5577, 14.3558],
+    imageUrl: '/src/assets/places/ayutthaya-sanphet.jpg'
+  },
+  {
+    id: 'tha-12',
+    name: 'Wat Chaiwatthanaram',
+    country: 'Thailand',
+    city: 'Ayutthaya',
+    type: 'Temple en ruines',
+    description: 'Temple royal majestueux construit en 1630 par le roi Prasat Thong en mémoire de sa mère, sur les rives de la rivière Chao Phraya. Architecture inspirée d\'Angkor Wat au Cambodge avec prang central khmer de 35 mètres entouré de 4 prangs et 8 chedis. Complexe symétrique représentant le Mont Meru cosmique. Utilisé pour cérémonies royales et crémations royales. Sévèrement endommagé par les Birmans en 1767, restauré depuis 1987. Patrimoine UNESCO. Silhouette spectaculaire au coucher du soleil. Symbole de la grandeur architecturale d\'Ayutthaya et de l\'influence khmère sur l\'art siamois. Chef-d\'œuvre spirituel et esthétique.',
+    points: 70,
+    coordinates: [100.5413, 14.3423],
+    imageUrl: '/src/assets/places/ayutthaya-chaiwatthanaram.jpg'
   }
 ];
 
