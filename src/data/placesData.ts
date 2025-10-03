@@ -1012,41 +1012,6 @@ export const mockPlaces: Place[] = [
     imageUrl: '/src/assets/places/jokhang.jpg'
   },
   
-  // Thailand
-  {
-    id: 'tha-1',
-    name: 'Wat Phra Kaew',
-    country: 'Thailand',
-    city: 'Bangkok',
-    type: 'Temple',
-    description: 'Temple du Bouddha d\'Émeraude (Palais Royal, 1782), sanctuaire le plus sacré de Thaïlande. La statue de jade du Bouddha d\'Émeraude (66cm) change de costumes 3 fois par an selon saisons. Architecture thaïe éblouissante : toits dorés, mosaïques colorées, fresques du Ramakien. Interdit aux moines, réservé à la famille royale et cérémonies d\'État. Aucun culte public. Patrimoine national symbolisant monarchie, bouddhisme theravada et âme thaïlandaise.',
-    points: 80,
-    coordinates: [100.4927, 13.7508],
-    imageUrl: '/src/assets/places/wat-phra-kaew.jpg'
-  },
-  {
-    id: 'tha-2',
-    name: 'Wat Arun',
-    country: 'Thailand',
-    city: 'Bangkok',
-    type: 'Temple',
-    description: 'Temple de l\'Aube dominant la Chao Phraya, Wat Arun possède un prang khmer de 82m incrusté de millions de porcelaines chinoises. Nommé d\'après Aruna, dieu hindou de l\'aube. Construit sous Ayutthaya, agrandi sous Rama II-III. Escaliers raides symbolisent difficulté d\'atteindre l\'illumination. Vue spectaculaire au coucher du soleil. Icône de Bangkok, symbole du renouveau après la chute d\'Ayutthaya.',
-    points: 70,
-    coordinates: [100.4887, 13.7437],
-    imageUrl: '/src/assets/places/wat-arun.jpg'
-  },
-  {
-    id: 'tha-3',
-    name: 'Wat Pho',
-    country: 'Thailand',
-    city: 'Bangkok',
-    type: 'Temple',
-    description: 'Plus ancien et plus grand temple de Bangkok (1688), Wat Pho abrite le Bouddha couché géant de 46m recouvert de feuilles d\'or. Berceau du massage thaï traditionnel depuis Rama III. Université ouverte avec inscriptions médicales gravées. 1000 images de Bouddha, 91 stupas. Patrimoine UNESCO du massage. Symbole du savoir traditionnel thaïlandais, médecine et spiritualité bouddhiste theravada.',
-    points: 75,
-    coordinates: [100.4931, 13.7465],
-    imageUrl: '/src/assets/places/wat-pho.jpg'
-  },
-  
   // Cambodia
   {
     id: 'cam-1',
