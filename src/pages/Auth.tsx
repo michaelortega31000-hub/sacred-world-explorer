@@ -176,12 +176,9 @@ const Auth = () => {
           <img 
             src={logo} 
             alt="SacredWorld Logo" 
-            className="w-32 h-32 mx-auto object-contain"
+            className="w-52 h-52 mx-auto object-contain"
           />
-          <CardTitle className="text-3xl font-bold">
-            {isLogin ? 'Connexion' : 'Créer un compte'}
-          </CardTitle>
-          <CardDescription>
+          <CardDescription className="text-base">
             {isLogin 
               ? 'Connectez-vous pour continuer votre voyage' 
               : 'Rejoignez la communauté SacredWorld'}
