@@ -116,11 +116,11 @@ const WorldMap = () => {
 
           {/* Barre de recherche overlay - côté gauche */}
           <div 
-            className={`absolute top-4 left-4 backdrop-blur-sm rounded-xl shadow-2xl border-2 transition-all duration-300 z-50 ${
+            className={`absolute top-4 left-4 rounded-xl shadow-2xl border-2 transition-all duration-300 z-50 ${
               isSearchExpanded ? 'w-96 p-4' : 'w-auto px-3 py-2'
             }`} 
             style={{ 
-              background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+              background: 'rgba(0, 0, 0, 0.8)',
               borderColor: 'hsl(45 100% 51%)'
             }}
           >
@@ -138,7 +138,7 @@ const WorldMap = () => {
                     handleSearchSubmit();
                   }
                 }}
-                className={`bg-transparent text-black placeholder:text-black/60 font-medium focus:outline-none transition-all ${
+                className={`bg-transparent text-white placeholder:text-white/60 font-medium focus:outline-none transition-all ${
                   isSearchExpanded ? 'w-full px-2 py-1' : 'w-10 text-center'
                 }`}
               />
@@ -146,7 +146,7 @@ const WorldMap = () => {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-                className="text-black hover:bg-black/10 p-1 h-auto"
+                className="text-white hover:bg-white/10 p-1 h-auto"
               >
                 {isSearchExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
