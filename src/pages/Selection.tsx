@@ -6,23 +6,23 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useApp, Religion } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { religionColors } from '@/config/religionColors';
 // Icons for religious symbols
 import { Church, Moon, Star as StarIcon, Sparkles, Flame as FlameIcon, Users, AtSign, LogOut } from 'lucide-react';
 
 interface ReligionBubble {
   id: Religion;
   icon: React.ReactNode;
-  color: string;
 }
 
 const religions: ReligionBubble[] = [
-  { id: 'christianity', icon: <Church className="w-8 h-8" />, color: 'bg-secondary hover:bg-secondary/90' },
-  { id: 'islam', icon: <Moon className="w-8 h-8" />, color: 'bg-[hsl(142_76%_36%)] hover:bg-[hsl(142_76%_26%)]' },
-  { id: 'judaism', icon: <StarIcon className="w-8 h-8" />, color: 'bg-primary hover:bg-[hsl(var(--sacred-gold-dark))]' },
-  { id: 'buddhism', icon: <Sparkles className="w-8 h-8" />, color: 'bg-[hsl(25_95%_53%)] hover:bg-[hsl(25_95%_43%)]' },
-  { id: 'hinduism', icon: <FlameIcon className="w-8 h-8" />, color: 'bg-accent hover:bg-accent/90' },
-  { id: 'traditional', icon: <Users className="w-8 h-8" />, color: 'bg-[hsl(30_85%_50%)] hover:bg-[hsl(30_85%_40%)]' },
-  { id: 'atheism', icon: <AtSign className="w-8 h-8" />, color: 'bg-muted-foreground hover:bg-muted-foreground/80' }
+  { id: 'christianity', icon: <Church className="w-8 h-8" /> },
+  { id: 'islam', icon: <Moon className="w-8 h-8" /> },
+  { id: 'judaism', icon: <StarIcon className="w-8 h-8" /> },
+  { id: 'buddhism', icon: <Sparkles className="w-8 h-8" /> },
+  { id: 'hinduism', icon: <FlameIcon className="w-8 h-8" /> },
+  { id: 'traditional', icon: <Users className="w-8 h-8" /> },
+  { id: 'atheism', icon: <AtSign className="w-8 h-8" /> }
 ];
 
 const languages = [
@@ -124,24 +124,30 @@ const Selection = () => {
 
         <div className="flex-1 flex items-center justify-center mb-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 md:gap-8 max-w-4xl animate-scale-in">
-            {religions.map((religion, index) => (
-              <button
-                key={religion.id}
-                onClick={() => handleReligionSelect(religion.id)}
-                className={`
-                  aspect-square rounded-full ${religion.color} text-white
-                  flex flex-col items-center justify-center p-6 md:p-8
-                  transition-all duration-300 hover:scale-110 hover:shadow-2xl
-                  ${selectedReligion === religion.id ? 'ring-4 ring-primary scale-105 shadow-[0_0_30px_rgba(255,215,0,0.5)]' : ''}
-                `}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                {religion.icon}
-                <span className="font-inter mt-3 text-sm font-medium text-center">
-                  {t(`selection.religions.${religion.id}`)}
-                </span>
-              </button>
-            ))}
+            {religions.map((religion, index) => {
+              const colors = religionColors[religion.id];
+              return (
+                <button
+                  key={religion.id}
+                  onClick={() => handleReligionSelect(religion.id)}
+                  className={`
+                    aspect-square rounded-full ${colors.bg} ${colors.bgHover} ${colors.text}
+                    flex flex-col items-center justify-center p-6 md:p-8
+                    transition-all duration-300 hover:scale-110
+                    ${selectedReligion === religion.id ? 'ring-4 ring-white scale-105' : ''}
+                  `}
+                  style={{ 
+                    animationDelay: `${index * 0.1}s`,
+                    boxShadow: selectedReligion === religion.id ? colors.shadow : undefined
+                  }}
+                >
+                  {religion.icon}
+                  <span className="font-inter mt-3 text-sm font-medium text-center">
+                    {t(`selection.religions.${religion.id}`)}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
 
