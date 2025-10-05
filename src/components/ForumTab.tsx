@@ -61,7 +61,7 @@ const ForumTab = () => {
       .from('forum_topics')
       .select(`
         *,
-        author:profiles!forum_topics_author_id_fkey(username)
+        author:public_profiles!forum_topics_author_id_fkey(username)
       `)
       .order('created_at', { ascending: false });
 
@@ -77,7 +77,7 @@ const ForumTab = () => {
       .from('forum_posts')
       .select(`
         *,
-        author:profiles!forum_posts_author_id_fkey(username)
+        author:public_profiles!forum_posts_author_id_fkey(username)
       `)
       .eq('topic_id', topicId)
       .order('created_at', { ascending: true });

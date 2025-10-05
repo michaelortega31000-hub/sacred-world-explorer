@@ -66,13 +66,13 @@ const MessagesTab = () => {
     // Get accepted friendships
     const { data: friendships1 } = await supabase
       .from('friendships')
-      .select('friend:profiles!friendships_friend_id_fkey(id, username)')
+      .select('friend:public_profiles!friendships_friend_id_fkey(id, username)')
       .eq('user_id', user.id)
       .eq('status', 'accepted');
 
     const { data: friendships2 } = await supabase
       .from('friendships')
-      .select('friend:profiles!friendships_user_id_fkey(id, username)')
+      .select('friend:public_profiles!friendships_user_id_fkey(id, username)')
       .eq('friend_id', user.id)
       .eq('status', 'accepted');
 

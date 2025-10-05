@@ -52,7 +52,7 @@ const FriendsTab = () => {
         user_id,
         friend_id,
         status,
-        friend:profiles!friendships_friend_id_fkey(id, username)
+        friend:public_profiles!friendships_friend_id_fkey(id, username)
       `)
       .eq('user_id', user.id)
       .eq('status', 'accepted');
@@ -65,7 +65,7 @@ const FriendsTab = () => {
         user_id,
         friend_id,
         status,
-        friend:profiles!friendships_user_id_fkey(id, username)
+        friend:public_profiles!friendships_user_id_fkey(id, username)
       `)
       .eq('friend_id', user.id)
       .eq('status', 'accepted');
@@ -84,7 +84,7 @@ const FriendsTab = () => {
         user_id,
         friend_id,
         status,
-        friend:profiles!friendships_user_id_fkey(id, username)
+        friend:public_profiles!friendships_user_id_fkey(id, username)
       `)
       .eq('friend_id', user.id)
       .eq('status', 'pending');
@@ -100,7 +100,7 @@ const FriendsTab = () => {
 
     setLoading(true);
     const { data, error } = await supabase
-      .from('profiles')
+      .from('public_profiles')
       .select('id, username')
       .ilike('username', `%${searchTerm}%`)
       .neq('id', currentUserId || '')
