@@ -55,6 +55,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "forum_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "forum_posts_topic_id_fkey"
             columns: ["topic_id"]
             isOneToOne: false
@@ -109,6 +116,13 @@ export type Database = {
             referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "forum_topics_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
         ]
       }
       friendships: {
@@ -152,6 +166,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "friendships_friend_id_fkey"
+            columns: ["friend_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "friendships_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -163,6 +184,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friendships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
         ]
@@ -208,6 +236,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_sender_id_fkey"
             columns: ["sender_id"]
             isOneToOne: false
@@ -219,6 +254,13 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
         ]
@@ -389,9 +431,37 @@ export type Database = {
         }
         Relationships: []
       }
+      user_profile: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          updated_at: string | null
+          username: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          updated_at?: string | null
+          username?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
-      [_ in never]: never
+      get_user_payment_info: {
+        Args: { _user_id: string }
+        Returns: {
+          stripe_customer_id: string
+          subscription_end: string
+          subscription_tier: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
