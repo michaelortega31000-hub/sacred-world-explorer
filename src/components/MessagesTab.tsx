@@ -63,24 +63,33 @@ const MessagesTab = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Get accepted friendships
     const { data: friendships1 } = await supabase
       .from('friendships')
-      .select('friend:public_profiles!friendships_friend_id_fkey(id, username)')
+      .select('user_id, friend_id, status')
       .eq('user_id', user.id)
       .eq('status', 'accepted');
 
     const { data: friendships2 } = await supabase
       .from('friendships')
-      .select('friend:public_profiles!friendships_user_id_fkey(id, username)')
+      .select('user_id, friend_id, status')
       .eq('friend_id', user.id)
       .eq('status', 'accepted');
 
-    const allFriends: Friend[] = [
-      ...(friendships1?.map(f => f.friend).filter(Boolean) || []),
-      ...(friendships2?.map(f => f.friend).filter(Boolean) || []),
-    ].filter((f): f is Friend => f !== null);
+    const ids1 = (friendships1 || []).map((f: any) => f.friend_id);
+    const ids2 = (friendships2 || []).map((f: any) => f.user_id);
+    const friendIds = Array.from(new Set([...ids1, ...ids2]));
 
+    if (!friendIds.length) {
+      setFriends([]);
+      return;
+    }
+
+    const { data: profiles } = await supabase
+      .from('public_profiles_store')
+      .select('id, username')
+      .in('id', friendIds as string[]);
+
+    const allFriends: Friend[] = (profiles || []).map((p: any) => ({ id: p.id, username: p.username || '' }));
     setFriends(allFriends);
   };
 

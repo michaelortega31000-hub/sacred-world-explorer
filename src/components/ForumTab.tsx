@@ -59,33 +59,53 @@ const ForumTab = () => {
   const loadTopics = async () => {
     const { data, error } = await supabase
       .from('forum_topics')
-      .select(`
-        *,
-        author:public_profiles!forum_topics_author_id_fkey(username)
-      `)
+      .select('*')
       .order('created_at', { ascending: false });
 
     if (error) {
       toast.error('Erreur lors du chargement des topics');
     } else {
-      setTopics(data || []);
+      const authorIds = Array.from(new Set((data || []).map((t: any) => t.author_id)));
+      let profilesMap: Record<string, string> = {};
+      if (authorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('public_profiles_store')
+          .select('id, username')
+          .in('id', authorIds as string[]);
+        profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.username || '']));
+      }
+      const withAuthors = (data || []).map((t: any) => ({
+        ...t,
+        author: { username: profilesMap[t.author_id] || '' },
+      }));
+      setTopics(withAuthors);
     }
   };
 
   const loadPosts = async (topicId: string) => {
     const { data, error } = await supabase
       .from('forum_posts')
-      .select(`
-        *,
-        author:public_profiles!forum_posts_author_id_fkey(username)
-      `)
+      .select('*')
       .eq('topic_id', topicId)
       .order('created_at', { ascending: true });
 
     if (error) {
       toast.error('Erreur lors du chargement des posts');
     } else {
-      setPosts(data || []);
+      const authorIds = Array.from(new Set((data || []).map((p: any) => p.author_id)));
+      let profilesMap: Record<string, string> = {};
+      if (authorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from('public_profiles_store')
+          .select('id, username')
+          .in('id', authorIds as string[]);
+        profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.username || '']));
+      }
+      const withAuthors = (data || []).map((p: any) => ({
+        ...p,
+        author: { username: profilesMap[p.author_id] || '' },
+      }));
+      setPosts(withAuthors);
     }
   };
 

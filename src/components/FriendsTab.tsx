@@ -44,52 +44,61 @@ const FriendsTab = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
-    // Load accepted friends
     const { data: acceptedFriends } = await supabase
       .from('friendships')
-      .select(`
-        id,
-        user_id,
-        friend_id,
-        status,
-        friend:public_profiles!friendships_friend_id_fkey(id, username)
-      `)
+      .select('id, user_id, friend_id, status')
       .eq('user_id', user.id)
       .eq('status', 'accepted');
 
-    // Also load friends where current user is the friend_id
     const { data: reverseFriends } = await supabase
       .from('friendships')
-      .select(`
-        id,
-        user_id,
-        friend_id,
-        status,
-        friend:public_profiles!friendships_user_id_fkey(id, username)
-      `)
+      .select('id, user_id, friend_id, status')
       .eq('friend_id', user.id)
       .eq('status', 'accepted');
 
-    const allFriends = [
-      ...(acceptedFriends || []).map(f => ({ ...f, status: f.status as 'pending' | 'accepted' | 'rejected' })),
-      ...(reverseFriends || []).map(f => ({ ...f, status: f.status as 'pending' | 'accepted' | 'rejected' }))
-    ];
-    setFriends(allFriends);
+    const all = [
+      ...(acceptedFriends || []),
+      ...(reverseFriends || []),
+    ].map((f: any) => ({ ...f, status: f.status as 'pending' | 'accepted' | 'rejected' }));
 
-    // Load pending requests (received)
+    const friendIds = Array.from(new Set(all.map((f: any) => (f.user_id === user.id ? f.friend_id : f.user_id))));
+
+    let profilesMap: Record<string, Profile> = {};
+    if (friendIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('public_profiles_store')
+        .select('id, username')
+        .in('id', friendIds as string[]);
+      profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, { id: p.id, username: p.username || '' }]));
+    }
+
+    const enriched = all.map((f: any) => {
+      const fid = f.user_id === user.id ? f.friend_id : f.user_id;
+      return { ...f, friend: profilesMap[fid] };
+    });
+    setFriends(enriched);
+
     const { data: pending } = await supabase
       .from('friendships')
-      .select(`
-        id,
-        user_id,
-        friend_id,
-        status,
-        friend:public_profiles!friendships_user_id_fkey(id, username)
-      `)
+      .select('id, user_id, friend_id, status')
       .eq('friend_id', user.id)
       .eq('status', 'pending');
 
-    setPendingRequests((pending || []).map(p => ({ ...p, status: p.status as 'pending' | 'accepted' | 'rejected' })));
+    const pendingFriendIds = Array.from(new Set((pending || []).map((p: any) => p.user_id)));
+    let pendingProfilesMap: Record<string, Profile> = {};
+    if (pendingFriendIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('public_profiles_store')
+        .select('id, username')
+        .in('id', pendingFriendIds as string[]);
+      pendingProfilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, { id: p.id, username: p.username || '' }]));
+    }
+
+    setPendingRequests((pending || []).map((p: any) => ({
+      ...p,
+      status: p.status as 'pending' | 'accepted' | 'rejected',
+      friend: pendingProfilesMap[p.user_id],
+    })));
   };
 
   const searchUsers = async () => {
@@ -100,7 +109,7 @@ const FriendsTab = () => {
 
     setLoading(true);
     const { data, error } = await supabase
-      .from('public_profiles')
+      .from('public_profiles_store')
       .select('id, username')
       .ilike('username', `%${searchTerm}%`)
       .neq('id', currentUserId || '')
