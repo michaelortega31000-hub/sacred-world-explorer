@@ -227,39 +227,22 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          stripe_customer_id: string | null
-          subscription_end: string | null
-          subscription_tier: string | null
           updated_at: string
           username: string | null
         }
         Insert: {
           created_at?: string
           id: string
-          stripe_customer_id?: string | null
-          subscription_end?: string | null
-          subscription_tier?: string | null
           updated_at?: string
           username?: string | null
         }
         Update: {
           created_at?: string
           id?: string
-          stripe_customer_id?: string | null
-          subscription_end?: string | null
-          subscription_tier?: string | null
           updated_at?: string
           username?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "profiles_subscription_tier_fkey"
-            columns: ["subscription_tier"]
-            isOneToOne: false
-            referencedRelation: "subscription_tiers"
-            referencedColumns: ["name"]
-          },
-        ]
+        Relationships: []
       }
       public_profiles_store: {
         Row: {
