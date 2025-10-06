@@ -51,13 +51,6 @@ export type Database = {
             foreignKeyName: "forum_posts_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "forum_posts_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
@@ -113,13 +106,6 @@ export type Database = {
             foreignKeyName: "forum_topics_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "forum_topics_author_id_fkey"
-            columns: ["author_id"]
-            isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
@@ -162,13 +148,6 @@ export type Database = {
             foreignKeyName: "friendships_friend_id_fkey"
             columns: ["friend_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "friendships_friend_id_fkey"
-            columns: ["friend_id"]
-            isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
@@ -177,13 +156,6 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "friendships_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -232,13 +204,6 @@ export type Database = {
             foreignKeyName: "messages_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
-            referencedRelation: "public_profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_receiver_id_fkey"
-            columns: ["receiver_id"]
-            isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
           },
@@ -247,13 +212,6 @@ export type Database = {
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "messages_sender_id_fkey"
-            columns: ["sender_id"]
-            isOneToOne: false
-            referencedRelation: "public_profiles"
             referencedColumns: ["id"]
           },
           {
@@ -300,6 +258,39 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "subscription_tiers"
             referencedColumns: ["name"]
+          },
+        ]
+      }
+      public_profiles_store: {
+        Row: {
+          created_at: string
+          id: string
+          username: string | null
+        }
+        Insert: {
+          created_at?: string
+          id: string
+          username?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          username?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "public_profiles_store_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_profiles_store_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
           },
         ]
       }
@@ -429,7 +420,22 @@ export type Database = {
           id?: string | null
           username?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "public_profiles_store_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "public_profiles_store_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "user_profile"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_profile: {
         Row: {
