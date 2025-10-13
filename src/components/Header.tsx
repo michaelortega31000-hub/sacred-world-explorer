@@ -178,7 +178,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                 {showBack && (
                   <Button
                     variant="ghost"
-                    onClick={() => navigate(backTo)}
+                    onClick={() => backTo ? navigate(backTo) : navigate(-1)}
                     className="gap-2 text-foreground hover:bg-primary/10"
                   >
                     <ArrowLeft className="w-4 h-4" />

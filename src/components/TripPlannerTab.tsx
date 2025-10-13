@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import { useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
@@ -11,6 +12,7 @@ import { getImageUrl } from '@/lib/imageHelper';
 
 const TripPlannerTab = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { userProgress, removeFromTrip, clearTrip } = useApp();
   const [startingCity, setStartingCity] = useState<string>('');
   const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
@@ -231,7 +233,10 @@ const TripPlannerTab = () => {
                               <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
                                 {index + 1}
                               </div>
-                              <div className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                              <div 
+                                className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                                onClick={() => navigate(`/place/${place.id}`)}
+                              >
                                 {place.imageUrl && (
                                   <img 
                                     src={resolveImageUrl(place.imageUrl) || place.imageUrl} 
@@ -303,7 +308,11 @@ const TripPlannerTab = () => {
                       </div>
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {places.map(place => (
-                          <Card key={place.id} className="overflow-hidden">
+                          <Card 
+                            key={place.id} 
+                            className="overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                            onClick={() => navigate(`/place/${place.id}`)}
+                          >
                             {place.imageUrl && (
                               <div className="h-32 overflow-hidden">
                                 <img 
@@ -328,7 +337,10 @@ const TripPlannerTab = () => {
                               <Button
                                 variant="ghost"
                                 size="sm"
-                                onClick={() => removeFromTrip(place.id)}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  removeFromTrip(place.id);
+                                }}
                                 className="w-full"
                               >
                                 <Trash2 className="w-3 h-3 mr-2" />

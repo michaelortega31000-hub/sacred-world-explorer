@@ -241,7 +241,7 @@ const PlaceDetail = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header showBack backTo={`/country/${place.country}`} backLabel="Retour" />
+      <Header showBack backLabel="Retour" />
 
       <div className="flex-1 overflow-y-auto">
         {/* Galerie d'images */}
