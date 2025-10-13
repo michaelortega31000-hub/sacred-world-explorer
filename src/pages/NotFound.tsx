@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/logo-glow.png';
 
 const NotFound = () => {
   const location = useLocation();
@@ -19,9 +19,6 @@ const NotFound = () => {
             src={logo} 
             alt="SacredWorld Logo" 
             className="w-24 h-24 object-contain"
-            style={{
-              filter: 'drop-shadow(0 0 15px rgba(244, 197, 66, 0.5))'
-            }}
           />
         </div>
         <h1 className="text-6xl font-bold text-foreground">404</h1>

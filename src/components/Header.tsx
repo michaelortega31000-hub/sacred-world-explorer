@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, LogOut, Mail, MapPin, Target } from 'lucide-react';
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/logo-glow.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
@@ -75,9 +75,6 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                 src={logo} 
                 alt="SacredWorld Logo" 
                 className="h-10 w-10 object-contain"
-                style={{
-                  filter: 'drop-shadow(0 0 10px rgba(244, 197, 66, 0.4))'
-                }}
               />
               <div className="flex items-center gap-2">
                 <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
@@ -161,9 +158,6 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                 alt="SacredWorld Logo" 
                 className="h-16 w-16 object-contain cursor-pointer mb-2"
                 onClick={() => navigate('/')}
-                style={{
-                  filter: 'drop-shadow(0 0 15px rgba(244, 197, 66, 0.5))'
-                }}
               />
               <h1 
                 className="font-serif text-foreground tracking-wide cursor-pointer text-2xl"
