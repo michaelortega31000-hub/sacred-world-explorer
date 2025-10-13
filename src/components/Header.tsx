@@ -118,7 +118,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                 className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
               >
                 <Target className="w-4 h-4" />
-                Quête de la semaine
+                Quête
               </Button>
               
               <div className="relative">
@@ -204,7 +204,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                   className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
                 >
                   <Target className="w-4 h-4" />
-                  Quête de la semaine
+                  Quête
                 </Button>
                 
                 <div className="relative">

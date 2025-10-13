@@ -101,7 +101,7 @@ const resources = {
         myRanking: 'Mon classement',
         countryRanking: 'Classement par pays',
         religionRanking: 'Classement par religion',
-        weeklyQuest: 'Quête de la semaine',
+        weeklyQuest: 'Quête',
         tripPlanner: 'Préparer son voyage',
         rankings: 'Classements'
       },
@@ -211,7 +211,7 @@ const resources = {
         myRanking: 'My Ranking',
         countryRanking: 'Country Rankings',
         religionRanking: 'Religion Rankings',
-        weeklyQuest: 'Weekly Quest',
+        weeklyQuest: 'Quest',
         tripPlanner: 'Plan Your Trip',
         rankings: 'Rankings'
       },
@@ -321,7 +321,7 @@ const resources = {
         myRanking: 'Mi Clasificación',
         countryRanking: 'Clasificación por País',
         religionRanking: 'Clasificación por Religión',
-        weeklyQuest: 'Misión Semanal',
+        weeklyQuest: 'Misión',
         tripPlanner: 'Planificar Viaje',
         rankings: 'Clasificaciones'
       },
@@ -431,7 +431,7 @@ const resources = {
         myRanking: 'La Mia Classifica',
         countryRanking: 'Classifica per Paese',
         religionRanking: 'Classifica per Religione',
-        weeklyQuest: 'Missione Settimanale',
+        weeklyQuest: 'Missione',
         tripPlanner: 'Pianifica Viaggio',
         rankings: 'Classifiche'
       },
@@ -541,7 +541,7 @@ const resources = {
         myRanking: 'Meine Rangliste',
         countryRanking: 'Rangliste nach Land',
         religionRanking: 'Rangliste nach Religion',
-        weeklyQuest: 'Wöchentliche Quest',
+        weeklyQuest: 'Quest',
         tripPlanner: 'Reise Planen',
         rankings: 'Ranglisten'
       },
@@ -651,7 +651,7 @@ const resources = {
         myRanking: 'Minha Classificação',
         countryRanking: 'Classificação por País',
         religionRanking: 'Classificação por Religião',
-        weeklyQuest: 'Missão Semanal',
+        weeklyQuest: 'Missão',
         tripPlanner: 'Planejar Viagem',
         rankings: 'Classificações'
       },
@@ -761,7 +761,7 @@ const resources = {
         myRanking: 'ترتيبي',
         countryRanking: 'الترتيب حسب البلد',
         religionRanking: 'الترتيب حسب الديانة',
-        weeklyQuest: 'المهمة الأسبوعية',
+        weeklyQuest: 'المهمة',
         tripPlanner: 'خطط رحلتك',
         rankings: 'التصنيفات'
       },
