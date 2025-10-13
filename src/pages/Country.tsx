@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock } from 'lucide-react';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock, Utensils } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { getPlacesByCountry, getAllCountries } from '@/data/placesData';
 import RankingTab from '@/components/RankingTab';
@@ -15,6 +15,7 @@ import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
+import RestaurantsTab from '@/components/RestaurantsTab';
 import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
 import Header from '@/components/Header';
 import { toast } from 'sonner';
@@ -271,6 +272,10 @@ const Country = () => {
                 <Calendar className="w-4 h-4" />
                 {t('tabs.tripPlanner')}
               </TabsTrigger>
+              <TabsTrigger value="restaurants" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <Utensils className="w-4 h-4" />
+                Restaurants
+              </TabsTrigger>
               <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Trophy className="w-4 h-4" />
                 Classements
@@ -472,6 +477,10 @@ const Country = () => {
 
         <TabsContent value="trip" className="flex-1 m-0">
           <TripPlannerTab />
+        </TabsContent>
+
+        <TabsContent value="restaurants" className="flex-1 m-0 p-6">
+          <RestaurantsTab country={country || ''} />
         </TabsContent>
       </Tabs>
 
