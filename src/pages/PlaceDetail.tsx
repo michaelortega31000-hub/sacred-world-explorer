@@ -29,12 +29,14 @@ import { useToast } from '@/hooks/use-toast';
 import { getImageUrl } from '@/lib/imageHelper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import { useApp } from '@/contexts/AppContext';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
+  const { visitPlace, isPlaceVisited } = useApp();
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -128,6 +130,7 @@ const PlaceDetail = () => {
 
         if (distance <= 500) {
           // Dans le rayon de 500m
+          visitPlace(placeId!, place.points);
           setIsCheckinModalOpen(false);
           setTimeout(() => {
             setIsRewardModalOpen(true);
@@ -166,6 +169,7 @@ const PlaceDetail = () => {
     const file = e.target.files?.[0];
     if (file) {
       setPhotoFile(file);
+      visitPlace(placeId!, place.points);
       toast({
         title: "Photo capturée",
         description: "Votre photo a été enregistrée comme preuve de visite",
@@ -346,19 +350,28 @@ const PlaceDetail = () => {
 
           {/* Actions principales */}
           <div className="grid md:grid-cols-2 gap-4">
-            {/* Vérifier ma visite */}
-            <Button
-              onClick={() => setIsCheckinModalOpen(true)}
-              size="lg"
-              className="w-full gap-2 text-lg py-6"
-              style={{
-                background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
-                color: 'black'
-              }}
-            >
-              <CheckCircle2 className="w-5 h-5" />
-              Vérifier ma visite
-            </Button>
+            {/* Vérifier ma visite - caché si déjà visité */}
+            {!isPlaceVisited(placeId!) && (
+              <Button
+                onClick={() => setIsCheckinModalOpen(true)}
+                size="lg"
+                className="w-full gap-2 text-lg py-6"
+                style={{
+                  background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                  color: 'black'
+                }}
+              >
+                <CheckCircle2 className="w-5 h-5" />
+                Vérifier ma visite
+              </Button>
+            )}
+
+            {isPlaceVisited(placeId!) && (
+              <div className="w-full p-4 bg-success/10 border border-success rounded-lg flex items-center justify-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-success" />
+                <span className="font-semibold text-success">Lieu déjà visité</span>
+              </div>
+            )}
 
             {/* Partager */}
             <Button
