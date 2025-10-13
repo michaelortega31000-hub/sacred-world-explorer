@@ -143,36 +143,6 @@ const WorldMap = () => {
               <Target className="w-4 h-4 group-hover:text-[#34E0A1] transition-colors" />
               <span className="hidden sm:inline">Recentrer</span>
             </Button>
-
-            <Button
-              onClick={() => setIsPaused(!isPaused)}
-              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
-              style={{
-                background: isPaused 
-                  ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' 
-                  : 'rgba(20, 43, 79, 0.85)',
-                color: isPaused ? '#0E1B3F' : '#F5F5F5',
-                borderColor: isPaused ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
-                boxShadow: isPaused ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 15px rgba(244, 197, 66, 0.2)'
-              }}
-            >
-              {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
-              <span className="hidden sm:inline">{isPaused ? 'Rotation' : 'Pause'}</span>
-            </Button>
-
-            <Button
-              onClick={() => navigate('/world?tab=locations')}
-              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
-              style={{
-                background: 'rgba(20, 43, 79, 0.85)',
-                color: '#F5F5F5',
-                borderColor: 'rgba(52, 224, 161, 0.3)',
-                boxShadow: '0 0 15px rgba(244, 197, 66, 0.2)'
-              }}
-            >
-              <BookOpen className="w-4 h-4 group-hover:text-[#F4C542] transition-colors" />
-              <span className="hidden sm:inline">Journal</span>
-            </Button>
           </div>
         </TabsContent>
 

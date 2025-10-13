@@ -66,82 +66,144 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
   return (
     <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
-        {/* Affichage conditionnel : texte seul ou logo + texte */}
-        <div className={`flex ${isTextOnlyPage ? 'flex-row justify-center items-center' : 'flex-col items-center mb-4'}`}>
-          {!isTextOnlyPage && (
-            <img 
-              src={logo} 
-              alt="SacredWorld Logo" 
-              className="h-16 w-16 object-contain cursor-pointer gold-halo mb-2"
-              onClick={() => navigate('/')}
-            />
-          )}
-          <h1 
-            className={`font-serif text-foreground tracking-wide cursor-pointer ${isTextOnlyPage ? 'text-3xl' : 'text-2xl'}`}
-            onClick={() => navigate('/')}
-          >
-            Sacred World
-          </h1>
-        </div>
-        
-        {/* Barre de navigation */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            {showBack && (
-            <Button
-              variant="ghost"
-              onClick={() => navigate(backTo)}
-              className="gap-2 text-foreground hover:bg-primary/10"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              {backLabel}
-            </Button>
-            )}
-          </div>
-          
-          <div className="flex items-center gap-2">
-            {/* Mode Géolocalisation */}
-            <div className="flex items-center gap-2">
-              <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
-              <Switch
-                checked={userProgress.geolocationEnabled}
-                onCheckedChange={handleGeolocationToggle}
-                aria-label="Activer la géolocalisation"
+        {isTextOnlyPage ? (
+          // Header compact pour les pages Globe/Planifier/Journal/Classements
+          <div className="flex items-center justify-between gap-4">
+            {/* Gauche : Logo + Géolocalisation */}
+            <div className="flex items-center gap-3">
+              <img 
+                src={logo} 
+                alt="SacredWorld Logo" 
+                className="h-10 w-10 object-contain cursor-pointer opacity-80"
+                onClick={() => navigate('/')}
               />
+              <div className="flex items-center gap-2">
+                <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
+                <Switch
+                  checked={userProgress.geolocationEnabled}
+                  onCheckedChange={handleGeolocationToggle}
+                  aria-label="Activer la géolocalisation"
+                />
+              </div>
             </div>
             
-            <div className="relative">
+            {/* Centre : Sacred World */}
+            <h1 
+              className="font-serif text-foreground tracking-wide cursor-pointer text-3xl absolute left-1/2 transform -translate-x-1/2"
+              onClick={() => navigate('/')}
+            >
+              Sacred World
+            </h1>
+            
+            {/* Droite : Messages + Déconnexion */}
+            <div className="flex items-center gap-2">
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleMessagesClick}
+                  className="p-2 text-foreground hover:bg-primary/10"
+                  aria-label="Messages"
+                  title="Messages"
+                >
+                  <Mail className="w-5 h-5" />
+                </Button>
+                {unreadCount > 0 && (
+                  <Badge 
+                    className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center p-1 bg-primary text-primary-foreground text-xs"
+                  >
+                    {unreadCount > 99 ? '99+' : unreadCount}
+                  </Badge>
+                )}
+              </div>
+              
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleMessagesClick}
-                className="p-2 text-foreground hover:bg-primary/10"
-                aria-label="Messages"
-                title="Messages"
+                onClick={handleLogout}
+                className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
               >
-                <Mail className="w-5 h-5" />
+                <LogOut className="w-4 h-4" />
+                Déconnexion
               </Button>
-              {unreadCount > 0 && (
-                <Badge 
-                  className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center p-1 bg-primary text-primary-foreground text-xs"
-                >
-                  {unreadCount > 99 ? '99+' : unreadCount}
-                </Badge>
-              )}
             </div>
-            {children}
-            
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleLogout}
-              className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
-            >
-              <LogOut className="w-4 h-4" />
-              Déconnexion
-            </Button>
           </div>
-        </div>
+        ) : (
+          // Header normal pour les autres pages
+          <>
+            <div className="flex flex-col items-center mb-4">
+              <img 
+                src={logo} 
+                alt="SacredWorld Logo" 
+                className="h-16 w-16 object-contain cursor-pointer gold-halo mb-2"
+                onClick={() => navigate('/')}
+              />
+              <h1 
+                className="font-serif text-foreground tracking-wide cursor-pointer text-2xl"
+                onClick={() => navigate('/')}
+              >
+                Sacred World
+              </h1>
+            </div>
+            
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                {showBack && (
+                  <Button
+                    variant="ghost"
+                    onClick={() => navigate(backTo)}
+                    className="gap-2 text-foreground hover:bg-primary/10"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    {backLabel}
+                  </Button>
+                )}
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2">
+                  <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
+                  <Switch
+                    checked={userProgress.geolocationEnabled}
+                    onCheckedChange={handleGeolocationToggle}
+                    aria-label="Activer la géolocalisation"
+                  />
+                </div>
+                
+                <div className="relative">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleMessagesClick}
+                    className="p-2 text-foreground hover:bg-primary/10"
+                    aria-label="Messages"
+                    title="Messages"
+                  >
+                    <Mail className="w-5 h-5" />
+                  </Button>
+                  {unreadCount > 0 && (
+                    <Badge 
+                      className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center p-1 bg-primary text-primary-foreground text-xs"
+                    >
+                      {unreadCount > 99 ? '99+' : unreadCount}
+                    </Badge>
+                  )}
+                </div>
+                {children}
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLogout}
+                  className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                >
+                  <LogOut className="w-4 h-4" />
+                  Déconnexion
+                </Button>
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
