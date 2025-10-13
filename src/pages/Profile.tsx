@@ -38,11 +38,18 @@ const Profile = () => {
         .from('profiles')
         .select('avatar_url')
         .eq('id', uid)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching avatar:', error);
+        return;
+      }
+      
       if (data?.avatar_url) {
+        console.log('Avatar URL found:', data.avatar_url);
         setAvatarUrl(data.avatar_url);
+      } else {
+        console.log('No avatar URL found for user');
       }
     } catch (error) {
       console.error('Error fetching avatar:', error);
@@ -73,15 +80,22 @@ const Profile = () => {
         .from('avatars')
         .getPublicUrl(filePath);
 
+      console.log('Public URL generated:', publicUrl);
+
       // Update profile with avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
         .eq('id', userId);
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw updateError;
+      }
 
+      console.log('Avatar URL updated in profile');
       setAvatarUrl(publicUrl);
+      
       toast({
         title: 'Photo de profil mise à jour',
         description: 'Votre photo de profil a été mise à jour avec succès',
