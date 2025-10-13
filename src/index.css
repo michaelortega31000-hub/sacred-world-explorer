@@ -185,6 +185,18 @@ All colors MUST be HSL.
   }
 }
 
+@keyframes float-pattern {
+  0% {
+    transform: translate(0, 0);
+  }
+  50% {
+    transform: translate(5px, 5px);
+  }
+  100% {
+    transform: translate(0, 0);
+  }
+}
+
 .breathing-glow {
   animation: breathing-glow 3s ease-in-out infinite;
 }

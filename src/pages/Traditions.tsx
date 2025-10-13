@@ -83,30 +83,39 @@ const Traditions = () => {
         </div>
         
         {/* En-tête */}
-        <div className="text-center mb-8 animate-fade-in">
+        <div className="text-center mb-6 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 font-playfair relative inline-block">
             <span className="relative z-10 bg-gradient-to-r from-[#F5F5F5] via-[#EAD7B5] to-[#F5F5F5] bg-clip-text text-transparent illuminated-text">
               Quelles traditions t'intéressent ?
             </span>
           </h1>
           <p className="text-lg text-[#EAD7B5]/90 mb-2 font-inter">
-            Choisis ta préférence principale
-          </p>
-          <p className="text-sm text-[#EAD7B5]/60 font-inter">
-            Tu pourras changer plus tard.
+            Sélectionnez une religion ou une philosophie
           </p>
         </div>
 
-        {/* Message de respect des coutumes */}
-        <div className="mb-8 animate-fade-in" style={{ animationDelay: '50ms' }}>
-          <div className="max-w-2xl mx-auto px-6 py-4 bg-white/5 backdrop-blur-sm border border-[#EAD7B5]/20 rounded-xl">
-            <p className="text-sm text-[#EAD7B5]/90 text-center font-inter leading-relaxed">
-              🙏 SacredWorld célèbre la diversité culturelle et spirituelle. Nous vous invitons à respecter les coutumes, traditions et lois de chaque lieu et religion que vous découvrez. Voyagez avec ouverture d'esprit et bienveillance.
-            </p>
+        {/* Message de respect des lieux de visite */}
+        <div className="mb-10 animate-fade-in" style={{ animationDelay: '50ms' }}>
+          <div className="max-w-3xl mx-auto px-6 py-5 bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-md border-2 border-[#34E0A1]/30 rounded-2xl shadow-2xl" style={{
+            boxShadow: '0 0 30px rgba(52, 224, 161, 0.15), inset 0 0 20px rgba(52, 224, 161, 0.05)'
+          }}>
+            <div className="flex items-start gap-4">
+              <div className="flex-shrink-0 w-12 h-12 rounded-full bg-[#34E0A1]/20 flex items-center justify-center">
+                <span className="text-2xl">🙏</span>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-base font-semibold text-[#34E0A1] mb-2 font-inter">
+                  Respect et Bienveillance
+                </h3>
+                <p className="text-sm text-[#EAD7B5]/90 font-inter leading-relaxed">
+                  En visitant ces lieux sacrés, nous vous invitons à respecter les coutumes locales, les traditions religieuses et les règles de chaque site. Veillez à adopter une tenue appropriée, à suivre les protocoles de visite et à vous comporter avec respect et dignité dans ces espaces de spiritualité et de recueillement.
+                </p>
+              </div>
+            </div>
           </div>
         </div>
 
-        {/* Bulles principales */}
+        {/* Bulles principales - Design modernisé */}
         <div className="mb-10">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-8">
             {traditions.map((tradition, index) => {
@@ -118,57 +127,85 @@ const Traditions = () => {
                   key={tradition.id}
                   onClick={() => handleMainSelect(tradition.id)}
                   className={cn(
-                    "flex flex-col items-center gap-3 p-4 rounded-2xl transition-all duration-300 group relative",
-                    "animate-fade-in mystic-card",
+                    "flex flex-col items-center gap-4 p-5 rounded-3xl transition-all duration-300 group relative overflow-hidden",
+                    "animate-fade-in mystic-card hover:shadow-2xl",
                     isSelected
-                      ? "scale-105"
+                      ? "scale-105 shadow-2xl"
                       : "hover:scale-102"
                   )}
                   style={{
                     animationDelay: `${index * 50}ms`,
-                    backgroundColor: isSelected ? tradition.color + '25' : 'rgba(255,255,255,0.05)',
-                    border: isSelected ? `2px solid ${tradition.color}` : '2px solid rgba(234, 215, 181, 0.2)',
-                    backdropFilter: 'blur(10px)',
+                    background: isSelected 
+                      ? `linear-gradient(135deg, ${tradition.color}30, ${tradition.color}20)` 
+                      : 'linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.03))',
+                    border: isSelected ? `3px solid ${tradition.color}` : '2px solid rgba(234, 215, 181, 0.15)',
+                    backdropFilter: 'blur(20px)',
+                    boxShadow: isSelected 
+                      ? `0 8px 32px ${tradition.color}40, 0 0 60px ${tradition.color}20, inset 0 0 40px ${tradition.color}10`
+                      : '0 4px 16px rgba(0, 0, 0, 0.2)',
                   }}
                 >
-                  {/* Sacred geometry background */}
-                  <div className="absolute inset-0 opacity-5 pointer-events-none">
-                    <div className="w-full h-full sacred-geometry" style={{ 
-                      borderRadius: '1rem',
-                      background: `radial-gradient(circle at 50% 50%, ${tradition.color} 1px, transparent 1px)`,
-                      backgroundSize: '20px 20px'
+                  {/* Animated background pattern */}
+                  <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+                    <div className="w-full h-full" style={{ 
+                      background: `radial-gradient(circle at 30% 30%, ${tradition.color} 1px, transparent 1px), radial-gradient(circle at 70% 70%, ${tradition.color} 1px, transparent 1px)`,
+                      backgroundSize: '30px 30px',
+                      animation: 'float-pattern 20s linear infinite'
                     }} />
                   </div>
+
+                  {/* Glow effect on hover */}
+                  <div 
+                    className="absolute inset-0 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"
+                    style={{
+                      background: `radial-gradient(circle at 50% 50%, ${tradition.color}20, transparent 70%)`,
+                    }}
+                  />
                   
                   <div
                     className={cn(
-                      "w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 relative z-10 luminous-circle",
-                      isSelected && "mystic-pulse"
+                      "w-24 h-24 rounded-full flex items-center justify-center transition-all duration-300 relative z-10",
+                      isSelected && "mystic-pulse animate-pulse"
                     )}
                     style={{
-                      backgroundColor: tradition.color + (isSelected ? 'dd' : '40'),
+                      background: isSelected
+                        ? `linear-gradient(135deg, ${tradition.color}ee, ${tradition.color}cc)`
+                        : `linear-gradient(135deg, ${tradition.color}60, ${tradition.color}40)`,
                       boxShadow: isSelected 
-                        ? `0 0 30px ${tradition.color}80, 0 0 60px ${tradition.color}40, inset 0 0 20px ${tradition.color}30`
-                        : `0 0 15px ${tradition.color}40, inset 0 0 10px ${tradition.color}20`,
+                        ? `0 0 40px ${tradition.color}90, 0 0 80px ${tradition.color}50, inset 0 0 30px ${tradition.color}40`
+                        : `0 0 20px ${tradition.color}50, inset 0 0 15px ${tradition.color}30`,
                     }}
                   >
-                    {/* Particle aura */}
-                    <div className="absolute inset-0 rounded-full particle-aura" style={{
-                      boxShadow: `0 0 40px ${tradition.color}60`
-                    }} />
+                    {/* Inner glow ring */}
+                    <div 
+                      className="absolute inset-2 rounded-full"
+                      style={{
+                        background: `radial-gradient(circle, transparent 40%, ${tradition.color}30)`,
+                      }}
+                    />
                     
                     <Icon
-                      className="w-10 h-10 transition-transform duration-300 group-hover:scale-110 relative z-10"
+                      className="w-12 h-12 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 relative z-10 drop-shadow-lg"
                       style={{ color: isSelected ? 'white' : tradition.color }}
                       strokeWidth={2.5}
                     />
                   </div>
+                  
                   <span className={cn(
-                    "text-sm font-medium text-center transition-colors font-inter relative z-10",
-                    isSelected ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
+                    "text-sm font-semibold text-center transition-all duration-300 font-inter relative z-10",
+                    isSelected ? "text-[#F5F5F5] scale-105" : "text-[#EAD7B5]/80 group-hover:text-[#EAD7B5]"
                   )}>
                     {tradition.name}
                   </span>
+
+                  {/* Selection indicator */}
+                  {isSelected && (
+                    <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-[#34E0A1] flex items-center justify-center animate-scale-in shadow-lg">
+                      <svg className="w-4 h-4 text-[#0E1B3F]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    </div>
+                  )}
                 </button>
               );
             })}
