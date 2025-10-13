@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronRight, MapPin, Globe, CheckCircle2 } from 'lucide-react';
+import { ChevronRight, MapPin, Globe, CheckCircle2, Calendar } from 'lucide-react';
 import { getAllCountries, getAllPlaces } from '@/data/placesData';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '@/contexts/AppContext';
@@ -69,16 +69,23 @@ const CountriesByContinent = () => {
   const { userProgress } = useApp();
   const [expandedContinent, setExpandedContinent] = useState<string | null>(null);
   const [showVisitedPlaces, setShowVisitedPlaces] = useState(false);
+  const [showPlannedPlaces, setShowPlannedPlaces] = useState(false);
   const allCountries = getAllCountries();
   const allPlaces = getAllPlaces();
   
   // Calculer les statistiques
   const totalPlaces = allPlaces.length;
   const visitedPlaces = userProgress.visitedPlaces.length;
+  const plannedPlaces = userProgress.tripPlaces.length;
   
   // Obtenir les lieux visités
   const visitedPlacesDetails = allPlaces.filter(place => 
     userProgress.visitedPlaces.includes(place.id)
+  );
+  
+  // Obtenir les lieux planifiés
+  const plannedPlacesDetails = allPlaces.filter(place => 
+    userProgress.tripPlaces.includes(place.id)
   );
 
   const getCountriesForContinent = (continent: string) => {
@@ -99,7 +106,88 @@ const CountriesByContinent = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      {showVisitedPlaces ? (
+      {showPlannedPlaces ? (
+        // Vue des lieux à visiter
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-8 h-8 text-primary" />
+                <div>
+                  <CardTitle className="text-2xl">Mes Lieux à Visiter</CardTitle>
+                  <CardDescription>
+                    {plannedPlaces} lieu{plannedPlaces > 1 ? 'x' : ''} planifié{plannedPlaces > 1 ? 's' : ''}
+                  </CardDescription>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowPlannedPlaces(false)}
+              >
+                Retour aux continents
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[calc(100vh-280px)]">
+              {plannedPlacesDetails.length === 0 ? (
+                <div className="text-center py-12">
+                  <Calendar className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Aucun lieu planifié</h3>
+                  <p className="text-muted-foreground">
+                    Ajoutez des lieux à votre voyage depuis le planificateur
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {plannedPlacesDetails.map((place) => (
+                    <Card
+                      key={place.id}
+                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/place/${place.id}`)}
+                    >
+                      {place.imageUrl && (
+                        <div className="h-40 overflow-hidden">
+                          <img
+                            src={place.imageUrl}
+                            alt={place.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
+                          />
+                        </div>
+                      )}
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex-1">
+                            <h4 className="font-semibold line-clamp-1">{place.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {place.city || place.country}
+                            </p>
+                          </div>
+                          <Calendar className="w-5 h-5 text-primary flex-shrink-0" />
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                          {place.description}
+                        </p>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-primary font-medium">
+                            {place.points} points
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {place.type}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      ) : showVisitedPlaces ? (
         // Vue des lieux visités
         <Card className="border-primary/20">
           <CardHeader>
@@ -195,7 +283,7 @@ const CountriesByContinent = () => {
           </div>
           
           {/* Statistiques globales */}
-          <div className="grid grid-cols-2 gap-4 mt-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6">
             <Card className="bg-primary/5 border-primary/20">
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
@@ -204,6 +292,20 @@ const CountriesByContinent = () => {
                     <p className="text-3xl font-bold text-primary">{totalPlaces}</p>
                   </div>
                   <MapPin className="w-8 h-8 text-primary opacity-50" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-primary/5 border-primary/20 cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setShowPlannedPlaces(true)}
+            >
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Lieux à visiter</p>
+                    <p className="text-3xl font-bold text-primary">{plannedPlaces}</p>
+                  </div>
+                  <Calendar className="w-8 h-8 text-primary opacity-50" />
                 </div>
               </CardContent>
             </Card>
