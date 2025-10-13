@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, LogOut, Mail, MapPin } from 'lucide-react';
+import { ArrowLeft, LogOut, Mail, MapPin, Target } from 'lucide-react';
 import logo from '@/assets/logo-icon.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -97,8 +97,18 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
               Sacred World
             </h1>
             
-            {/* Droite : Messages + Déconnexion */}
+            {/* Droite : Quête + Messages + Déconnexion */}
             <div className="flex items-center gap-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/world?tab=quest')}
+                className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
+              >
+                <Target className="w-4 h-4" />
+                Quête de la semaine
+              </Button>
+              
               <div className="relative">
                 <Button
                   variant="ghost"
@@ -174,6 +184,16 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                     aria-label="Activer la géolocalisation"
                   />
                 </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/world?tab=quest')}
+                  className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                >
+                  <Target className="w-4 h-4" />
+                  Quête de la semaine
+                </Button>
                 
                 <div className="relative">
                   <Button

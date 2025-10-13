@@ -22,6 +22,7 @@ import {
   Info
 } from 'lucide-react';
 import Header from '@/components/Header';
+import BottomNavigation from '@/components/BottomNavigation';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/hooks/use-toast';
 import { getImageUrl } from '@/lib/imageHelper';
@@ -375,6 +376,9 @@ const PlaceDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Navigation du bas */}
+      <BottomNavigation />
 
       {/* Modal Check-in */}
       <Dialog open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen}>
