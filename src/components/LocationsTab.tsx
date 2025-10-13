@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Image as ImageIcon, Text, Plus, Calendar, Trash2 } from 'lucide-react';
+import { MapPin, Image as ImageIcon, Text, Plus, Calendar, Trash2, X } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getPlaceById } from '@/data/placesData';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,6 +37,7 @@ const LocationsTab = () => {
   });
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   useEffect(() => {
     fetchMemories();
@@ -389,7 +390,7 @@ const LocationsTab = () => {
                                     src={url}
                                     alt={`Souvenir ${idx + 1}`}
                                     className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => window.open(url, '_blank')}
+                                    onClick={() => setFullscreenImage(url)}
                                   />
                                 ))}
                               </div>
@@ -412,6 +413,29 @@ const LocationsTab = () => {
             })}
           </div>
         </ScrollArea>
+      )}
+      
+      {/* Lightbox pour affichage photo en plein écran */}
+      {fullscreenImage && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-fade-in"
+          onClick={() => setFullscreenImage(null)}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-4 right-4 text-white hover:bg-white/20 z-10"
+            onClick={() => setFullscreenImage(null)}
+          >
+            <X className="w-6 h-6" />
+          </Button>
+          <img
+            src={fullscreenImage}
+            alt="Souvenir en plein écran"
+            className="max-w-full max-h-full object-contain"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
       )}
     </div>
   );
