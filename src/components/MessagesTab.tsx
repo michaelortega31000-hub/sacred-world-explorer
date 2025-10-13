@@ -9,6 +9,12 @@ import { Send, ArrowLeft } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { z } from 'zod';
+
+// Validation schema
+const messageSchema = z.object({
+  content: z.string().trim().min(1, 'Le message est requis').max(2000, 'Le message ne peut pas dépasser 2000 caractères'),
+});
 
 interface Friend {
   id: string;
@@ -111,14 +117,25 @@ const MessagesTab = () => {
   };
 
   const sendMessage = async () => {
-    if (!newMessage.trim() || !selectedFriend || !currentUserId) return;
+    if (!selectedFriend || !currentUserId) return;
+
+    // Validate input
+    const validation = messageSchema.safeParse({
+      content: newMessage,
+    });
+
+    if (!validation.success) {
+      const error = validation.error.errors[0];
+      toast.error(error.message);
+      return;
+    }
 
     const { error } = await (supabase as any)
       .from('messages' as any)
       .insert({
         sender_id: currentUserId,
         receiver_id: selectedFriend.id,
-        content: newMessage,
+        content: validation.data.content,
       });
 
     if (error) {

@@ -10,6 +10,19 @@ import { Badge } from '@/components/ui/badge';
 import { Plus, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { z } from 'zod';
+
+// Validation schema
+const restaurantSchema = z.object({
+  name: z.string().trim().min(1, 'Le nom est requis').max(200, 'Le nom ne peut pas dépasser 200 caractères'),
+  cuisine: z.string().trim().min(1, 'Le type de cuisine est requis').max(100, 'Le type de cuisine ne peut pas dépasser 100 caractères'),
+  address: z.string().trim().min(1, 'L\'adresse est requise').max(300, 'L\'adresse ne peut pas dépasser 300 caractères'),
+  city: z.string().trim().min(1, 'La ville est requise').max(100, 'La ville ne peut pas dépasser 100 caractères'),
+  country: z.string().trim().min(1, 'Le pays est requis').max(100, 'Le pays ne peut pas dépasser 100 caractères'),
+  phone: z.string().trim().regex(/^[+]?[0-9\s\-()]*$/, 'Format de téléphone invalide').max(20, 'Le téléphone ne peut pas dépasser 20 caractères').optional().or(z.literal('')),
+  website: z.string().trim().url('URL invalide').max(500, 'L\'URL ne peut pas dépasser 500 caractères').optional().or(z.literal('')),
+  description: z.string().trim().max(2000, 'La description ne peut pas dépasser 2000 caractères').optional().or(z.literal('')),
+});
 
 type RestaurantType = 'halal' | 'kosher' | 'vegetarian' | 'vegan' | 'neutral';
 
@@ -53,6 +66,15 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
       return;
     }
 
+    // Validate input
+    const validation = restaurantSchema.safeParse(formData);
+
+    if (!validation.success) {
+      const error = validation.error.errors[0];
+      toast.error(error.message);
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -66,7 +88,14 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
       const { error } = await supabase
         .from('restaurants')
         .insert({
-          ...formData,
+          name: validation.data.name,
+          cuisine: validation.data.cuisine,
+          address: validation.data.address,
+          city: validation.data.city,
+          country: validation.data.country,
+          phone: validation.data.phone || null,
+          website: validation.data.website || null,
+          description: validation.data.description || null,
           type: selectedTypes,
           created_by: user.id,
         });

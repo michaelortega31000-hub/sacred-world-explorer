@@ -11,6 +11,17 @@ import { MessageSquare, Plus, Send, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { z } from 'zod';
+
+// Validation schemas
+const topicSchema = z.object({
+  title: z.string().trim().min(1, 'Le titre est requis').max(200, 'Le titre ne peut pas dépasser 200 caractères'),
+  description: z.string().trim().min(1, 'La description est requise').max(2000, 'La description ne peut pas dépasser 2000 caractères'),
+});
+
+const postSchema = z.object({
+  content: z.string().trim().min(1, 'Le message est requis').max(5000, 'Le message ne peut pas dépasser 5000 caractères'),
+});
 
 interface Topic {
   id: string;
@@ -125,8 +136,15 @@ const ForumTab = () => {
   };
 
   const createTopic = async () => {
-    if (!newTopicTitle.trim() || !newTopicDescription.trim()) {
-      toast.error('Veuillez remplir tous les champs');
+    // Validate input
+    const validation = topicSchema.safeParse({
+      title: newTopicTitle,
+      description: newTopicDescription,
+    });
+
+    if (!validation.success) {
+      const error = validation.error.errors[0];
+      toast.error(error.message);
       return;
     }
 
@@ -139,8 +157,8 @@ const ForumTab = () => {
     const { error } = await supabase
       .from('forum_topics')
       .insert({
-        title: newTopicTitle,
-        description: newTopicDescription,
+        title: validation.data.title,
+        description: validation.data.description,
         author_id: user.id,
       });
 
@@ -156,8 +174,19 @@ const ForumTab = () => {
   };
 
   const createPost = async () => {
-    if (!newPostContent.trim() || !selectedTopic) {
-      toast.error('Veuillez écrire un message');
+    if (!selectedTopic) {
+      toast.error('Aucun topic sélectionné');
+      return;
+    }
+
+    // Validate input
+    const validation = postSchema.safeParse({
+      content: newPostContent,
+    });
+
+    if (!validation.success) {
+      const error = validation.error.errors[0];
+      toast.error(error.message);
       return;
     }
 
@@ -171,7 +200,7 @@ const ForumTab = () => {
       .from('forum_posts')
       .insert({
         topic_id: selectedTopic.id,
-        content: newPostContent,
+        content: validation.data.content,
         author_id: user.id,
       });
 
