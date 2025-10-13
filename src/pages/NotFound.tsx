@@ -1,7 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/logo-icon.png';
 
 const NotFound = () => {
   const location = useLocation();
