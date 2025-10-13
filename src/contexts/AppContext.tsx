@@ -119,13 +119,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       // Remove place from trip planner when visited
       const newTripPlaces = prev.tripPlaces.filter(id => id !== placeId);
       
-      return {
+      const newProgress = {
         ...prev,
         visitedPlaces: [...prev.visitedPlaces, placeId],
         totalPoints: newTotalPoints,
         badges: newBadges,
         tripPlaces: newTripPlaces
       };
+      
+      // Sauvegarder immédiatement dans localStorage
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+      
+      return newProgress;
     });
   };
 
