@@ -167,6 +167,42 @@ export type Database = {
           },
         ]
       }
+      memories: {
+        Row: {
+          content: string | null
+          created_at: string
+          id: string
+          media_urls: string[] | null
+          memory_type: string
+          place_id: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_urls?: string[] | null
+          memory_type?: string
+          place_id: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          content?: string | null
+          created_at?: string
+          id?: string
+          media_urls?: string[] | null
+          memory_type?: string
+          place_id?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       messages: {
         Row: {
           content: string
