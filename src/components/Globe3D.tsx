@@ -309,7 +309,19 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
             filteredPlaces = mockPlaces.filter(place => {
               const placeReligion = inferReligionFromPlace(place.type, place.name);
               const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
-              const matchesType = filters.types.length === 0 || filters.types.includes(place.type);
+              
+              const typeSelected = filters.types;
+              const normalizedType = place.type.toLowerCase();
+              const textBlob = `${place.name} ${place.description ?? ''} ${place.type}`.toLowerCase();
+              const matchesType =
+                typeSelected.length === 0 ||
+                typeSelected.some(t => {
+                  const tLower = t.toLowerCase();
+                  if (tLower === 'pyramide') {
+                    return textBlob.includes('pyram');
+                  }
+                  return tLower === normalizedType;
+                });
               
               return matchesReligion && matchesType;
             });
@@ -505,8 +517,31 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
         // Charger les données des lieux
         import('@/data/placesData').then(({ mockPlaces }) => {
           if (!map.current) return;
+          // Appliquer les filtres actifs
+          let filteredPlaces = mockPlaces;
+          if (filters.religions.length > 0 || filters.types.length > 0) {
+            filteredPlaces = mockPlaces.filter(place => {
+              const placeReligion = inferReligionFromPlace(place.type, place.name);
+              const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
 
-          mockPlaces.forEach(place => {
+              const typeSelected = filters.types;
+              const normalizedType = place.type.toLowerCase();
+              const textBlob = `${place.name} ${place.description ?? ''} ${place.type}`.toLowerCase();
+              const matchesType =
+                typeSelected.length === 0 ||
+                typeSelected.some(t => {
+                  const tLower = t.toLowerCase();
+                  if (tLower === 'pyramide') {
+                    return textBlob.includes('pyram');
+                  }
+                  return tLower === normalizedType;
+                });
+
+              return matchesReligion && matchesType;
+            });
+          }
+
+          filteredPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
             // Déterminer la religion du lieu pour appliquer sa couleur
