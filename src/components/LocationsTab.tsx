@@ -35,6 +35,8 @@ const LocationsTab = () => {
     content: '',
     type: 'text' as 'text' | 'photo'
   });
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
 
   useEffect(() => {
     fetchMemories();
@@ -60,19 +62,51 @@ const LocationsTab = () => {
     }
   };
 
+  const uploadPhotos = async (userId: string): Promise<string[]> => {
+    const uploadedUrls: string[] = [];
+
+    for (const file of selectedFiles) {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/${Date.now()}_${Math.random()}.${fileExt}`;
+
+      const { error: uploadError, data } = await supabase.storage
+        .from('memory-photos')
+        .upload(fileName, file);
+
+      if (uploadError) {
+        console.error('Error uploading photo:', uploadError);
+        continue;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('memory-photos')
+        .getPublicUrl(fileName);
+
+      uploadedUrls.push(publicUrl);
+    }
+
+    return uploadedUrls;
+  };
+
   const addMemory = async () => {
-    if (!newMemory.content && !newMemory.title) {
+    if (!newMemory.content && !newMemory.title && selectedFiles.length === 0) {
       toast({
         title: 'Erreur',
-        description: 'Veuillez ajouter un titre ou un contenu',
+        description: 'Veuillez ajouter un titre, un contenu ou des photos',
         variant: 'destructive'
       });
       return;
     }
 
     try {
+      setUploadingPhotos(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !selectedPlace) return;
+
+      let photoUrls: string[] = [];
+      if (selectedFiles.length > 0) {
+        photoUrls = await uploadPhotos(user.id);
+      }
 
       const { error } = await supabase
         .from('memories')
@@ -81,7 +115,8 @@ const LocationsTab = () => {
           place_id: selectedPlace,
           title: newMemory.title || null,
           content: newMemory.content || null,
-          memory_type: newMemory.type
+          memory_type: selectedFiles.length > 0 ? 'photo' : 'text',
+          media_urls: photoUrls.length > 0 ? photoUrls : null
         });
 
       if (error) throw error;
@@ -92,6 +127,7 @@ const LocationsTab = () => {
       });
 
       setNewMemory({ title: '', content: '', type: 'text' });
+      setSelectedFiles([]);
       setSelectedPlace(null);
       fetchMemories();
     } catch (error) {
@@ -101,7 +137,18 @@ const LocationsTab = () => {
         description: 'Impossible d\'ajouter la mémoire',
         variant: 'destructive'
       });
+    } finally {
+      setUploadingPhotos(false);
     }
+  };
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    setSelectedFiles(prev => [...prev, ...files]);
+  };
+
+  const removeFile = (index: number) => {
+    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
   const deleteMemory = async (memoryId: string) => {
@@ -217,7 +264,7 @@ const LocationsTab = () => {
                             Ajouter un souvenir
                           </Button>
                         </DialogTrigger>
-                        <DialogContent className="bg-sacred-beige">
+                        <DialogContent className="bg-sacred-beige max-w-2xl max-h-[90vh] overflow-y-auto">
                           <DialogHeader>
                             <DialogTitle className="text-sacred-blue">
                               Nouveau souvenir - {place.name}
@@ -245,11 +292,45 @@ const LocationsTab = () => {
                                 className="mt-2 bg-white/50"
                               />
                             </div>
+                            <div>
+                              <Label htmlFor="memory-photos" className="text-sacred-blue">Photos</Label>
+                              <Input
+                                id="memory-photos"
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                onChange={handleFileSelect}
+                                className="mt-2 bg-white/50"
+                              />
+                              {selectedFiles.length > 0 && (
+                                <div className="mt-3 grid grid-cols-3 gap-2">
+                                  {selectedFiles.map((file, index) => (
+                                    <div key={index} className="relative group">
+                                      <img
+                                        src={URL.createObjectURL(file)}
+                                        alt={`Preview ${index + 1}`}
+                                        className="w-full h-24 object-cover rounded"
+                                      />
+                                      <Button
+                                        type="button"
+                                        variant="destructive"
+                                        size="sm"
+                                        onClick={() => removeFile(index)}
+                                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6"
+                                      >
+                                        <Trash2 className="w-3 h-3" />
+                                      </Button>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                             <Button
                               onClick={addMemory}
+                              disabled={uploadingPhotos}
                               className="w-full bg-primary hover:bg-primary/90"
                             >
-                              Enregistrer
+                              {uploadingPhotos ? 'Upload en cours...' : 'Enregistrer'}
                             </Button>
                           </div>
                         </DialogContent>
@@ -296,9 +377,22 @@ const LocationsTab = () => {
                               </h4>
                             )}
                             {memory.content && (
-                              <p className="text-muted-foreground whitespace-pre-wrap">
+                              <p className="text-muted-foreground whitespace-pre-wrap mb-3">
                                 {memory.content}
                               </p>
+                            )}
+                            {memory.media_urls && memory.media_urls.length > 0 && (
+                              <div className="grid grid-cols-2 gap-2 mt-3">
+                                {memory.media_urls.map((url, idx) => (
+                                  <img
+                                    key={idx}
+                                    src={url}
+                                    alt={`Souvenir ${idx + 1}`}
+                                    className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                    onClick={() => window.open(url, '_blank')}
+                                  />
+                                ))}
+                              </div>
                             )}
                           </div>
                         ))}
