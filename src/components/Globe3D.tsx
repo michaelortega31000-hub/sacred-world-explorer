@@ -307,12 +307,13 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
             const placeReligion = inferReligionFromPlace(place.type, place.name);
             const isVisited = userProgress.visitedPlaces.includes(place.id);
             
-            // Utiliser la couleur de la religion du parcours choisi
+            // Utiliser la couleur de la religion du parcours choisi pour TOUS les points
             const religionColor = userProgress.selectedReligion 
               ? religionColors[userProgress.selectedReligion].marker 
               : religionColors[placeReligion].marker;
             
-            const markerColor = isVisited ? religionColor : '#EAD7B5'; // Couleur de la religion si visité, beige sinon
+            // Tous les points utilisent la couleur de la religion (plus intense si visité)
+            const markerColor = religionColor;
             
             const popup = new mapboxgl.Popup({ 
               offset: 25, 
@@ -502,12 +503,13 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
             const placeReligion = inferReligionFromPlace(place.type, place.name);
             const isVisited = userProgress.visitedPlaces.includes(place.id);
             
-            // Utiliser la couleur de la religion du parcours choisi
+            // Utiliser la couleur de la religion du parcours choisi pour TOUS les points
             const religionColor = userProgress.selectedReligion 
               ? religionColors[userProgress.selectedReligion].marker 
               : religionColors[placeReligion].marker;
             
-            const markerColor = isVisited ? religionColor : '#EAD7B5'; // Couleur de la religion si visité, beige sinon
+            // Tous les points utilisent la couleur de la religion (plus intense si visité)
+            const markerColor = religionColor;
             
             const popup = new mapboxgl.Popup({ 
               offset: 25, 
