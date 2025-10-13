@@ -325,31 +325,34 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
                 </div>
               `);
 
-            // Créer un élément personnalisé pour le marqueur avec effet de halo
+            // Créer un élément personnalisé pour le marqueur avec effet subtil
             const el = document.createElement('div');
             el.className = 'sacred-marker';
             el.style.cssText = `
-              width: 16px;
-              height: 16px;
+              width: 14px;
+              height: 14px;
               background: ${markerColor};
-              border: 2px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.5)'};
+              border: 2px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.3)'};
               border-radius: 50%;
-              box-shadow: 0 0 20px ${isVisited ? 'rgba(244, 197, 66, 0.6)' : 'rgba(52, 224, 161, 0.4)'};
+              box-shadow: 0 0 8px ${isVisited ? 'rgba(244, 197, 66, 0.3)' : 'rgba(52, 224, 161, 0.2)'};
               cursor: pointer;
-              transition: all 0.3s ease;
+              transition: transform 0.2s ease;
             `;
             
             el.addEventListener('mouseenter', () => {
-              el.style.transform = 'scale(1.3)';
-              el.style.boxShadow = `0 0 30px ${isVisited ? 'rgba(244, 197, 66, 0.9)' : 'rgba(52, 224, 161, 0.7)'}`;
+              el.style.transform = 'scale(1.2)';
             });
             
             el.addEventListener('mouseleave', () => {
               el.style.transform = 'scale(1)';
-              el.style.boxShadow = `0 0 20px ${isVisited ? 'rgba(244, 197, 66, 0.6)' : 'rgba(52, 224, 161, 0.4)'}`;
             });
 
-            const marker = new mapboxgl.Marker({ element: el })
+            const marker = new mapboxgl.Marker({ 
+              element: el,
+              anchor: 'center',
+              pitchAlignment: 'map',
+              rotationAlignment: 'map'
+            })
               .setLngLat([place.coordinates[0], place.coordinates[1]])
               .setPopup(popup)
               .addTo(map.current!);
