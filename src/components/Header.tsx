@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
@@ -19,9 +19,16 @@ interface HeaderProps {
 
 const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children, transparent = false }: HeaderProps) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { unreadCount, markAsRead } = useUnreadMessages();
   const { userProgress, toggleGeolocation, userLocation, geolocationError } = useApp();
+
+  // Pages où on affiche uniquement le texte "Sacred World" sans logo
+  const isTextOnlyPage = location.pathname === '/world' || 
+                         location.pathname === '/profile' ||
+                         location.pathname.startsWith('/country') ||
+                         location.pathname.startsWith('/place');
 
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
@@ -57,18 +64,23 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
   };
 
   return (
-    <div className={`relative p-4 ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
+    <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
-        {/* Logo centré en haut avec texte */}
-        <div className="flex flex-col items-center mb-4">
-          <img 
-            src={logo} 
-            alt="SacredWorld Logo" 
-            className="h-16 w-16 object-contain cursor-pointer gold-halo mb-2"
+        {/* Affichage conditionnel : texte seul ou logo + texte */}
+        <div className={`flex ${isTextOnlyPage ? 'flex-row justify-center items-center' : 'flex-col items-center mb-4'}`}>
+          {!isTextOnlyPage && (
+            <img 
+              src={logo} 
+              alt="SacredWorld Logo" 
+              className="h-16 w-16 object-contain cursor-pointer gold-halo mb-2"
+              onClick={() => navigate('/')}
+            />
+          )}
+          <h1 
+            className={`font-serif text-foreground tracking-wide cursor-pointer ${isTextOnlyPage ? 'text-3xl' : 'text-2xl'}`}
             onClick={() => navigate('/')}
-          />
-          <h1 className="text-2xl font-serif text-foreground tracking-wide">
-            SacredWorld
+          >
+            Sacred World
           </h1>
         </div>
         

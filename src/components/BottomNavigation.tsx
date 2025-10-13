@@ -6,11 +6,11 @@ const BottomNavigation = () => {
   const location = useLocation();
 
   const navItems = [
-    { icon: User, label: 'Profil', path: '/profile' },
     { icon: Globe, label: 'Globe', path: '/world?tab=map' },
     { icon: MapPin, label: 'Planifier', path: '/world?tab=trip' },
     { icon: BookOpen, label: 'Journal', path: '/world?tab=locations' },
     { icon: Trophy, label: 'Classements', path: '/world?tab=rankings' },
+    { icon: User, label: 'Profil', path: '/profile' },
   ];
 
   const isActive = (path: string) => {
