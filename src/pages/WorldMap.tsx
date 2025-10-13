@@ -11,6 +11,7 @@ import TripPlannerTab from '@/components/TripPlannerTab';
 import LocationsTab from '@/components/LocationsTab';
 import RankingsTab from '@/components/RankingsTab';
 import SocialTab from '@/components/SocialTab';
+import CountriesByContinent from '@/components/CountriesByContinent';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -190,6 +191,10 @@ const WorldMap = () => {
               <span className="hidden sm:inline">Recentrer</span>
             </Button>
           </div>
+        </TabsContent>
+
+        <TabsContent value="countries" className="flex-1 m-0">
+          <CountriesByContinent />
         </TabsContent>
 
         <TabsContent value="locations" className="flex-1 m-0">

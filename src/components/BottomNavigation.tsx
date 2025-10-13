@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Globe, MapPin, BookOpen, Trophy } from 'lucide-react';
+import { User, Globe, MapPin, BookOpen, Trophy, Map } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -7,6 +7,7 @@ const BottomNavigation = () => {
 
   const navItems = [
     { icon: Globe, label: 'Globe', path: '/world?tab=map' },
+    { icon: Map, label: 'Lieux', path: '/world?tab=countries' },
     { icon: MapPin, label: 'Planifier', path: '/world?tab=trip' },
     { icon: BookOpen, label: 'Journal', path: '/world?tab=locations' },
     { icon: Trophy, label: 'Classements', path: '/world?tab=rankings' },
@@ -35,7 +36,7 @@ const BottomNavigation = () => {
       }}
     >
       <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-6 gap-1">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
