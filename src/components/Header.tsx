@@ -59,14 +59,17 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
   return (
     <div className={`relative p-4 ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
-        {/* Logo centré en haut */}
-        <div className="flex justify-center mb-4">
+        {/* Logo centré en haut avec texte */}
+        <div className="flex flex-col items-center mb-4">
           <img 
             src={logo} 
             alt="SacredWorld Logo" 
-            className="h-16 w-16 object-contain cursor-pointer gold-halo"
+            className="h-16 w-16 object-contain cursor-pointer gold-halo mb-2"
             onClick={() => navigate('/')}
           />
+          <h1 className="text-2xl font-serif text-foreground tracking-wide">
+            SacredWorld
+          </h1>
         </div>
         
         {/* Barre de navigation */}

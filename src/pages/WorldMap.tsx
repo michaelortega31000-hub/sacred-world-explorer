@@ -13,6 +13,7 @@ import RankingsTab from '@/components/RankingsTab';
 import SocialTab from '@/components/SocialTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
+import BottomNavigation from '@/components/BottomNavigation';
 
 const WorldMap = () => {
   const navigate = useNavigate();
@@ -70,7 +71,7 @@ const WorldMap = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col pb-20">
       <Header>
         <div className="text-sm text-muted-foreground">
           <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
@@ -78,40 +79,6 @@ const WorldMap = () => {
       </Header>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        <div className="border-b border-border bg-card">
-          <div className="w-full px-2 py-1">
-            <TabsList className="w-full h-auto p-0 bg-transparent grid grid-cols-3 gap-1">
-              <TabsTrigger value="map" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
-                <svg className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                  <path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" strokeWidth="2" />
-                </svg>
-                <span className="truncate">{t('worldMap.title')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
-                <Calendar className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                <span className="truncate">{t('tabs.tripPlanner')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="quest" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
-                <Target className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                <span className="truncate">{t('tabs.weeklyQuest')}</span>
-              </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                <span className="truncate">Lieux</span>
-              </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
-                <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                <span className="truncate">Classements</span>
-              </TabsTrigger>
-              <TabsTrigger value="social" className="gap-1 rounded-sm border-b-2 data-[state=active]:border-primary py-2 px-1 text-[10px] sm:text-xs">
-                <Users className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
-                <span className="truncate">Social</span>
-              </TabsTrigger>
-            </TabsList>
-          </div>
-        </div>
-
         <TabsContent value="map" className="flex-1 m-0 relative min-h-[70vh]">
           {/* Globe 3D immersif */}
           <Globe3D 
@@ -229,6 +196,8 @@ const WorldMap = () => {
           <SocialTab defaultTab={(params.get('sub') as 'friends' | 'messages' | 'forum') || 'friends'} />
         </TabsContent>
       </Tabs>
+
+      <BottomNavigation />
     </div>
   );
 };
