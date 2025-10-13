@@ -134,39 +134,38 @@ const Splash = () => {
         </Button>
       </div>
       
-      {/* Action buttons stacked */}
+      {/* Clickable zones overlay - transparent areas positioned on the image */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-        <div className="flex-1 flex items-center justify-center w-full max-w-2xl" />
-
-        <div className="w-full max-w-md mb-10 space-y-4 z-10">
-          <Button
+        {/* Empty space for logo and text - centered */}
+        <div className="flex-1 flex items-center justify-center w-full max-w-2xl">
+          {/* This space contains the logo and text from the image */}
+        </div>
+        
+        {/* Button zone 1 - "Commencer l'exploration" */}
+        <div className="w-full max-w-md mb-3">
+          <button
             onClick={handleStartExploration}
-            size="lg"
-            className="w-full h-14 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
-          >
-            {"Commencer l'exploration"}
-          </Button>
-
-          <Button
+            className="w-full h-16 cursor-pointer opacity-0 hover:opacity-5 transition-opacity bg-primary rounded-full"
+            aria-label="Commencer l'exploration"
+          />
+        </div>
+        
+        {/* Button zone 2 - "Tutoriel" */}
+        <div className="w-full max-w-md mb-3">
+          <button
             onClick={handleTutorialOpen}
-            size="lg"
-            variant="outline"
-            className="w-full h-14 text-lg font-semibold rounded-full border-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground shadow-lg"
-          >
-            <BookOpen className="w-5 h-5 mr-2" />
-            Tutoriel
-          </Button>
-
-          <Button
+            className="w-full h-12 cursor-pointer opacity-0 hover:opacity-5 transition-opacity bg-primary rounded-full"
+            aria-label="Tutoriel"
+          />
+        </div>
+        
+        {/* Button zone 3 - "Français" (Language selector) */}
+        <div className="mb-8">
+          <button
             onClick={handleLanguageClick}
-            size="lg"
-            variant="outline"
-            className="w-full h-14 text-lg font-semibold rounded-full border-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground"
+            className="w-48 h-10 cursor-pointer opacity-0 hover:opacity-5 transition-opacity bg-primary rounded-lg"
             aria-label="Choisir la langue"
-          >
-            <span className="mr-2 text-xl">{currentLang.flag}</span>
-            {currentLang.name}
-          </Button>
+          />
         </div>
       </div>
 
