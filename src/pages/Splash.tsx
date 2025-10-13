@@ -53,7 +53,9 @@ const Splash = () => {
 
   const handleOfflineMode = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate('/mode-selection');
+    // Stocker le mode hors ligne et aller directement à la sélection
+    localStorage.setItem('selectedMode', 'offline');
+    navigate('/selection');
   };
 
   return (

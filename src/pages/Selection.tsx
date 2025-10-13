@@ -45,7 +45,10 @@ const Selection = () => {
 
   // Redirect to world if religion already selected
   useEffect(() => {
-    if (userProgress.selectedReligion) {
+    const isOfflineMode = localStorage.getItem('selectedMode') === 'offline';
+    
+    // Si mode hors ligne, pas de vérification d'auth
+    if (!isOfflineMode && userProgress.selectedReligion) {
       navigate('/world');
     }
   }, [userProgress.selectedReligion, navigate]);
@@ -61,15 +64,24 @@ const Selection = () => {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: "Erreur",
-        description: "Impossible de se déconnecter",
-        variant: "destructive",
-      });
+    const isOfflineMode = localStorage.getItem('selectedMode') === 'offline';
+    
+    if (isOfflineMode) {
+      // En mode hors ligne, simplement retourner à l'accueil
+      localStorage.removeItem('selectedMode');
+      navigate('/');
     } else {
-      navigate('/auth');
+      // En mode connecté, déconnexion normale
+      const { error } = await supabase.auth.signOut();
+      if (error) {
+        toast({
+          title: "Erreur",
+          description: "Impossible de se déconnecter",
+          variant: "destructive",
+        });
+      } else {
+        navigate('/auth');
+      }
     }
   };
 
