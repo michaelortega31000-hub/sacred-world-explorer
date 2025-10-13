@@ -10,6 +10,7 @@ import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
 import { religionColors } from '@/config/religionColors';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
+import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -29,6 +30,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [showMonuments, setShowMonuments] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
 
   // Exposer la fonction de recentrage via callback
   useEffect(() => {
@@ -300,7 +302,20 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
         import('@/data/placesData').then(({ mockPlaces }) => {
           if (!map.current) return;
 
-          mockPlaces.forEach(place => {
+          // Filtrer les lieux selon les filtres actifs
+          let filteredPlaces = mockPlaces;
+          
+          if (filters.religions.length > 0 || filters.types.length > 0) {
+            filteredPlaces = mockPlaces.filter(place => {
+              const placeReligion = inferReligionFromPlace(place.type, place.name);
+              const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
+              const matchesType = filters.types.length === 0 || filters.types.includes(place.type);
+              
+              return matchesReligion && matchesType;
+            });
+          }
+
+          filteredPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
             // Déterminer la religion du lieu pour appliquer sa couleur
@@ -555,7 +570,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
         });
       }
     }
-  }, [showMonuments, userProgress.visitedPlaces]);
+  }, [showMonuments, userProgress.visitedPlaces, filters]);
 
   const handleRecenter = () => {
     if (map.current) {
@@ -623,6 +638,13 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
         <MapPin className="w-4 h-4" />
         <span className="hidden sm:inline">{showMonuments ? 'Masquer' : 'Afficher'}</span>
       </Button>
+
+      {/* Monument Filter - positioned bottom right, aligned with show monuments button */}
+      {showMonuments && (
+        <div className="absolute bottom-4 right-4">
+          <MonumentFilter onFilterChange={setFilters} />
+        </div>
+      )}
     </div>
   );
 };
