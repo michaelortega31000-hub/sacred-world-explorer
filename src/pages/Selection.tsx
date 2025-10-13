@@ -7,6 +7,7 @@ import { useApp, Religion } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { religionColors } from '@/config/religionColors';
+import logo from '@/assets/logo-icon.png';
 // Icons for religious symbols
 import { Church, Moon, Star as StarIcon, Sparkles, Flame as FlameIcon, Users, AtSign, LogOut } from 'lucide-react';
 
@@ -108,6 +109,18 @@ const Selection = () => {
         </Button>
       </div>
       <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center relative z-10">
+        {/* Logo au-dessus du titre */}
+        <div className="mb-6 flex justify-center animate-fade-in">
+          <img 
+            src={logo} 
+            alt="SacredWorld Logo" 
+            className="w-20 h-20 md:w-24 md:h-24 object-contain"
+            style={{
+              filter: 'drop-shadow(0 0 15px rgba(244, 197, 66, 0.5))'
+            }}
+          />
+        </div>
+        
         <div className="text-center mb-12 animate-fade-in">
           <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-foreground mb-3">
             {t('selection.title')}
