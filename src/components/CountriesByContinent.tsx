@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronRight, MapPin, Globe } from 'lucide-react';
-import { getAllCountries } from '@/data/placesData';
+import { ChevronRight, MapPin, Globe, CheckCircle2 } from 'lucide-react';
+import { getAllCountries, getAllPlaces } from '@/data/placesData';
 import { useTranslation } from 'react-i18next';
+import { useApp } from '@/contexts/AppContext';
 
 // Organisation des pays par continent
 const continents = {
@@ -65,12 +66,24 @@ const continentEmojis: Record<string, string> = {
 const CountriesByContinent = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { userProgress } = useApp();
   const [expandedContinent, setExpandedContinent] = useState<string | null>(null);
   const allCountries = getAllCountries();
+  const allPlaces = getAllPlaces();
+  
+  // Calculer les statistiques
+  const totalPlaces = allPlaces.length;
+  const visitedPlaces = userProgress.visitedPlaces.length;
 
   const getCountriesForContinent = (continent: string) => {
     const continentCountries = continents[continent as keyof typeof continents] || [];
-    return continentCountries.filter(country => allCountries.includes(country));
+    const filteredCountries = continentCountries.filter(country => allCountries.includes(country));
+    // Trier par ordre alphabétique avec traduction
+    return filteredCountries.sort((a, b) => {
+      const nameA = t(`countries.${a}`, a);
+      const nameB = t(`countries.${b}`, b);
+      return nameA.localeCompare(nameB);
+    });
   };
 
   const getContinentStats = (continent: string) => {
@@ -84,12 +97,39 @@ const CountriesByContinent = () => {
         <CardHeader>
           <div className="flex items-center gap-3">
             <Globe className="w-8 h-8 text-primary" />
-            <div>
+            <div className="flex-1">
               <CardTitle className="text-2xl">Explorer par Continent</CardTitle>
               <CardDescription>
                 Découvrez les lieux sacrés organisés par continent
               </CardDescription>
             </div>
+          </div>
+          
+          {/* Statistiques globales */}
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <Card className="bg-primary/5 border-primary/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Lieux recensés</p>
+                    <p className="text-3xl font-bold text-primary">{totalPlaces}</p>
+                  </div>
+                  <MapPin className="w-8 h-8 text-primary opacity-50" />
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="bg-secondary/5 border-secondary/20">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-muted-foreground mb-1">Lieux visités</p>
+                    <p className="text-3xl font-bold text-secondary">{visitedPlaces}</p>
+                  </div>
+                  <CheckCircle2 className="w-8 h-8 text-secondary opacity-50" />
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </CardHeader>
         <CardContent>
