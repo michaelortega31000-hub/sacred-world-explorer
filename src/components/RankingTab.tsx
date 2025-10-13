@@ -4,6 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { Trophy, Award, Star, Lock, Church, Sparkles, Mountain, Heart } from 'lucide-react';
 
 const RankingTab = () => {
@@ -261,77 +262,66 @@ const RankingTab = () => {
         </Card>
       </div>
 
-      {/* Dialog pour afficher tous les badges */}
+      {/* Dialog pour afficher tous les badges obtenus */}
       <Dialog open={badgesDialogOpen} onOpenChange={setBadgesDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-3xl max-h-[85vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Award className="w-6 h-6 text-secondary" />
-              Collection de badges
+              Mes Badges Obtenus
             </DialogTitle>
             <DialogDescription>
-              Vos récompenses obtenues et à débloquer
+              {userProgress.badges.length} badge{userProgress.badges.length > 1 ? 's' : ''} débloqué{userProgress.badges.length > 1 ? 's' : ''}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            {allBadges.map((badge) => {
-              const isUnlocked = userProgress.badges.includes(badge.id);
-              const Icon = badge.icon;
-              const progress = Math.min((userProgress.totalPoints / badge.pointsRequired) * 100, 100);
-              
-              return (
-                <Card 
-                  key={badge.id}
-                  className={`relative overflow-hidden ${
-                    isUnlocked ? 'border-primary' : 'opacity-60'
-                  }`}
-                >
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-lg">
-                      <div className={`p-2 rounded-full ${isUnlocked ? 'bg-primary/10' : 'bg-muted'}`}>
-                        {isUnlocked ? (
-                          <Icon className={`w-6 h-6 ${badge.color}`} />
-                        ) : (
-                          <Lock className="w-6 h-6 text-muted-foreground" />
-                        )}
-                      </div>
-                      {badge.name}
-                      {isUnlocked && (
-                        <Badge variant="default" className="ml-auto">Obtenu ✓</Badge>
-                      )}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-sm text-muted-foreground mb-3">
-                      {badge.description}
-                    </p>
+          <ScrollArea className="h-[60vh] pr-4">
+            {userProgress.badges.length === 0 ? (
+              <div className="text-center py-12">
+                <Lock className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                <p className="text-lg text-muted-foreground">
+                  Vous n'avez pas encore débloqué de badges
+                </p>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Visitez des lieux pour commencer votre collection !
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {allBadges
+                  .filter((badge) => userProgress.badges.includes(badge.id))
+                  .map((badge) => {
+                    const Icon = badge.icon;
                     
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Progression</span>
-                        <span className="font-medium">
-                          {userProgress.totalPoints} / {badge.pointsRequired} pts
-                        </span>
-                      </div>
-                      <div className="w-full bg-muted rounded-full h-2">
-                        <div 
-                          className="bg-primary h-2 rounded-full transition-all duration-300"
-                          style={{ width: `${progress}%` }}
-                        />
-                      </div>
-                      
-                      {!isUnlocked && (
-                        <p className="text-xs text-muted-foreground mt-2">
-                          Encore {badge.pointsRequired - userProgress.totalPoints} points à gagner
-                        </p>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
+                    return (
+                      <Card 
+                        key={badge.id}
+                        className="relative overflow-hidden border-primary shadow-lg hover:shadow-xl transition-shadow"
+                      >
+                        <CardHeader className="pb-3">
+                          <CardTitle className="flex items-center gap-3 text-lg">
+                            <div className="p-3 rounded-full bg-primary/10">
+                              <Icon className={`w-7 h-7 ${badge.color}`} />
+                            </div>
+                            <div className="flex-1">
+                              <div className="font-semibold">{badge.name}</div>
+                              <Badge variant="default" className="mt-1 text-xs">
+                                ✓ Obtenu
+                              </Badge>
+                            </div>
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">
+                            {badge.description}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+              </div>
+            )}
+          </ScrollArea>
         </DialogContent>
       </Dialog>
     </div>
