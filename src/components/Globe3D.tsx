@@ -13,9 +13,11 @@ import { inferReligionFromPlace } from '@/lib/religionHelper';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
+  onRecenterRef?: (fn: () => void) => void;
+  onPausedChange?: (paused: boolean) => void;
 }
 
-const Globe3D = ({ onCountryClick }: Globe3DProps) => {
+const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
@@ -25,6 +27,20 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [showMonuments, setShowMonuments] = useState(false);
+  const [isPaused, setIsPaused] = useState(false);
+
+  // Exposer la fonction de recentrage via callback
+  useEffect(() => {
+    if (onRecenterRef && map.current) {
+      onRecenterRef(() => handleRecenter());
+    }
+  }, [onRecenterRef]);
+
+  useEffect(() => {
+    if (onPausedChange) {
+      onPausedChange(isPaused);
+    }
+  }, [isPaused, onPausedChange]);
 
   useEffect(() => {
     // Essayer de récupérer depuis l'env
@@ -58,14 +74,15 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
     mapboxgl.accessToken = mapboxToken;
     console.log('Globe3D init with token', !!mapboxToken, 'container size', mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
     
-    // Initialiser la carte en mode globe
+    // Initialiser la carte en mode globe - style immersif sombre
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
       projection: { name: 'globe' },
-      zoom: 1.2,
-      center: [10, 20],
+      zoom: 1.5,
+      center: [10, 50], // Centré sur l'Europe
       pitch: 0,
+      maxPitch: 85,
     });
 
     // Ajouter les contrôles de navigation
@@ -76,18 +93,23 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       'top-right'
     );
 
-    // Configuration de l'atmosphère et du fog
+    // Configuration de l'atmosphère et du fog immersif
     map.current.on('style.load', () => {
       if (!map.current) return;
       
-      // Fond noir avec étoiles
+      // Fond spatial avec atmosphère turquoise-dorée
       map.current.setFog({
-        color: '#000000',
-        'high-color': '#000000',
-        'horizon-blend': 0.02,
-        'space-color': '#000000',
-        'star-intensity': 0.8
+        color: 'rgb(14, 27, 63)', // Deep blue
+        'high-color': 'rgb(52, 224, 161)', // Turquoise
+        'horizon-blend': 0.1,
+        'space-color': 'rgb(14, 27, 63)',
+        'star-intensity': 0.6
       });
+
+      // Modifier la couleur de l'océan en bleu profond
+      if (map.current.getLayer('water')) {
+        map.current.setPaintProperty('water', 'fill-color', '#0E1B3F');
+      }
 
       // Source précise des frontières pays (meilleure détection clic)
       if (!map.current.getSource('country-boundaries')) {
@@ -105,18 +127,18 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
           source: 'country-boundaries',
           'source-layer': 'country_boundaries',
           paint: {
-            'fill-color': 'hsl(45, 100%, 51%)',
+            'fill-color': '#34E0A1', // Turquoise
             'fill-opacity': [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              0.4,
+              0.3,
               0
             ]
           }
         });
       }
 
-      // Contour pour feedback visuel
+      // Contour pour feedback visuel en or
       if (!map.current.getLayer('country-boundaries-outline')) {
         map.current.addLayer({
           id: 'country-boundaries-outline',
@@ -124,17 +146,17 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
           source: 'country-boundaries',
           'source-layer': 'country_boundaries',
           paint: {
-            'line-color': 'hsl(45, 100%, 51%)',
+            'line-color': '#F4C542', // Gold
             'line-width': [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              2,
+              2.5,
               0
             ],
             'line-opacity': [
               'case',
               ['boolean', ['feature-state', 'hover'], false],
-              0.9,
+              0.8,
               0
             ]
           }
@@ -179,22 +201,53 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
           mockPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
-            // Déterminer la couleur du marqueur en fonction de la religion du lieu
-            const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
-            const markerColor = religionColors[placeReligion]?.marker || '#FFD700';
+            // Points turquoise pour les monuments visités
+            const isVisited = userProgress.visitedPlaces.includes(place.id);
+            const markerColor = isVisited ? '#34E0A1' : '#EAD7B5'; // Turquoise si visité, beige sinon
             
-            const popup = new mapboxgl.Popup({ offset: 25, maxWidth: '400px' })
+            const popup = new mapboxgl.Popup({ 
+              offset: 25, 
+              maxWidth: '320px',
+              className: 'sacred-popup'
+            })
               .setHTML(`
-                <div style="padding: 12px;">
-                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" style="width: 100%; height: 200px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" onerror="this.src='/placeholder.svg';" />` : ''}
-                  <h3 style="margin: 0 0 8px 0; font-size: 18px; font-weight: bold; color: #1a1a1a;">${place.name}</h3>
-                  <p style="margin: 0 0 8px 0; font-size: 14px; color: #666;">${place.type} • ${place.country}</p>
-                  <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #333; max-height: 150px; overflow-y: auto;">${place.description}</p>
-                  <p style="margin: 12px 0 0 0; font-size: 14px; font-weight: bold; color: hsl(45 100% 51%);">🏆 ${place.points} points</p>
+                <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
+                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" onerror="this.src='/placeholder.svg';" />` : ''}
+                  <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
+                  <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
+                  <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${place.description.substring(0, 150)}...</p>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${place.points} points</span>
+                    ${isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
+                  </div>
                 </div>
               `);
 
-            const marker = new mapboxgl.Marker({ color: markerColor })
+            // Créer un élément personnalisé pour le marqueur avec effet de halo
+            const el = document.createElement('div');
+            el.className = 'sacred-marker';
+            el.style.cssText = `
+              width: 16px;
+              height: 16px;
+              background: ${markerColor};
+              border: 2px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.5)'};
+              border-radius: 50%;
+              box-shadow: 0 0 20px ${isVisited ? 'rgba(244, 197, 66, 0.6)' : 'rgba(52, 224, 161, 0.4)'};
+              cursor: pointer;
+              transition: all 0.3s ease;
+            `;
+            
+            el.addEventListener('mouseenter', () => {
+              el.style.transform = 'scale(1.3)';
+              el.style.boxShadow = `0 0 30px ${isVisited ? 'rgba(244, 197, 66, 0.9)' : 'rgba(52, 224, 161, 0.7)'}`;
+            });
+            
+            el.addEventListener('mouseleave', () => {
+              el.style.transform = 'scale(1)';
+              el.style.boxShadow = `0 0 20px ${isVisited ? 'rgba(244, 197, 66, 0.6)' : 'rgba(52, 224, 161, 0.4)'}`;
+            });
+
+            const marker = new mapboxgl.Marker({ element: el })
               .setLngLat([place.coordinates[0], place.coordinates[1]])
               .setPopup(popup)
               .addTo(map.current!);
@@ -210,7 +263,29 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       loadMonuments();
     }
 
-    // Ne pas afficher les marqueurs par défaut - les monuments seront visibles sur la page du pays
+    // Animation de rotation automatique du globe
+    let userInteracting = false;
+    const secondsPerRevolution = 240;
+    const maxSpinZoom = 3;
+
+    function spinGlobe() {
+      if (!map.current || isPaused) return;
+      const zoom = map.current.getZoom();
+      if (!userInteracting && zoom < maxSpinZoom) {
+        const distancePerSecond = 360 / secondsPerRevolution;
+        const center = map.current.getCenter();
+        center.lng -= distancePerSecond / 60;
+        map.current.easeTo({ center, duration: 1000, easing: (n) => n });
+      }
+    }
+
+    map.current.on('mousedown', () => { userInteracting = true; });
+    map.current.on('touchstart', () => { userInteracting = true; });
+    map.current.on('mouseup', () => { userInteracting = false; spinGlobe(); });
+    map.current.on('touchend', () => { userInteracting = false; spinGlobe(); });
+    map.current.on('moveend', spinGlobe);
+
+    spinGlobe();
 
     // Click sur un pays - amélioration de la zone cliquable
     map.current.on('click', (e) => {
@@ -293,101 +368,73 @@ const Globe3D = ({ onCountryClick }: Globe3DProps) => {
       markers.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [navigate, mapboxToken, showTokenInput, showMonuments]);
+  }, [navigate, mapboxToken, showTokenInput, showMonuments, isPaused]);
+
+  const handleRecenter = () => {
+    if (map.current) {
+      map.current.flyTo({
+        center: [10, 50],
+        zoom: 1.5,
+        pitch: 0,
+        duration: 2000
+      });
+    }
+  };
 
   if (showTokenInput) {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center bg-black">
-        <div className="bg-black/90 backdrop-blur-sm p-8 rounded-xl border-2 max-w-md w-full mx-4" style={{ borderColor: 'hsl(45 100% 51%)' }}>
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span style={{ color: 'hsl(45 100% 51%)' }}>🗺️</span>
-            Configuration Mapbox
-          </h2>
-          <p className="text-gray-300 mb-4">
-            Pour afficher le globe 3D, vous devez fournir votre token public Mapbox.
-          </p>
-          <ol className="text-sm text-gray-400 mb-6 space-y-2 list-decimal list-inside">
-            <li>Créez un compte sur <a href="https://mapbox.com" target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline">mapbox.com</a></li>
-            <li>Copiez votre token public</li>
-            <li>Collez-le ci-dessous</li>
-          </ol>
-          <Input
-            type="text"
-            placeholder="pk.eyJ1Ijo..."
-            value={mapboxToken}
-            onChange={(e) => setMapboxToken(e.target.value)}
-            className="mb-4 bg-black/50 border-2 text-white"
-            style={{ borderColor: 'hsl(220 70% 45%)' }}
-          />
-          <Button
-            onClick={handleTokenSubmit}
-            disabled={!mapboxToken}
-            className="w-full"
-            style={{ 
-              background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
-              color: 'black'
-            }}
-          >
-            Valider
-          </Button>
-        </div>
-        
-        {/* Étoiles en arrière-plan */}
-        <div 
-          className="absolute inset-0 pointer-events-none -z-10"
-          style={{
-            backgroundImage: `radial-gradient(2px 2px at 20% 30%, white, transparent),
-                             radial-gradient(2px 2px at 60% 70%, white, transparent),
-                             radial-gradient(1px 1px at 50% 50%, white, transparent),
-                             radial-gradient(1px 1px at 80% 10%, white, transparent),
-                             radial-gradient(2px 2px at 90% 60%, white, transparent),
-                             radial-gradient(1px 1px at 33% 80%, white, transparent),
-                             radial-gradient(1px 1px at 15% 90%, white, transparent)`,
-            backgroundSize: '200% 200%',
-            animation: 'twinkle 200s linear infinite',
-          }}
-        />
-      </div>
-    );
-  }
+    if (map.current) {
+      map.current.flyTo({
+        center: [10, 50],
+        zoom: 1.5,
+        pitch: 0,
+        duration: 2000
+      });
+    }
+  };
 
   return (
     <div className="relative w-full h-[calc(100vh-160px)] min-h-[520px]">
-      <div 
-        ref={mapContainer} 
-        className="absolute inset-0"
-        style={{ background: '#000000' }}
-      />
-      
-      {/* Effet d'étoiles en arrière-plan */}
+      {/* Fond étoilé immersif */}
       <div 
         className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage: `radial-gradient(2px 2px at 20% 30%, white, transparent),
-                           radial-gradient(2px 2px at 60% 70%, white, transparent),
-                           radial-gradient(1px 1px at 50% 50%, white, transparent),
-                           radial-gradient(1px 1px at 80% 10%, white, transparent),
-                           radial-gradient(2px 2px at 90% 60%, white, transparent),
-                           radial-gradient(1px 1px at 33% 80%, white, transparent),
-                           radial-gradient(1px 1px at 15% 90%, white, transparent)`,
+          background: 'radial-gradient(ellipse at center, rgba(14, 27, 63, 0.8) 0%, rgba(14, 27, 63, 1) 100%)',
+          backgroundImage: `radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.8), transparent),
+                           radial-gradient(1px 1px at 60% 70%, rgba(52, 224, 161, 0.6), transparent),
+                           radial-gradient(1px 1px at 50% 50%, rgba(244, 197, 66, 0.5), transparent),
+                           radial-gradient(2px 2px at 80% 10%, rgba(255,255,255,0.7), transparent),
+                           radial-gradient(1px 1px at 90% 60%, rgba(52, 224, 161, 0.5), transparent),
+                           radial-gradient(1px 1px at 33% 80%, rgba(255,255,255,0.6), transparent),
+                           radial-gradient(2px 2px at 15% 90%, rgba(244, 197, 66, 0.4), transparent)`,
           backgroundSize: '200% 200%',
           animation: 'twinkle 200s linear infinite',
+        }}
+      />
+      
+      <div 
+        ref={mapContainer} 
+        className="absolute inset-0"
+        style={{ 
+          background: 'transparent',
+          filter: 'brightness(0.9) contrast(1.1)'
         }}
       />
       
       {/* Toggle monuments button */}
       <Button
         onClick={() => setShowMonuments(!showMonuments)}
-        className="absolute top-4 right-4 gap-2"
+        className="absolute top-4 right-4 gap-2 backdrop-blur-md border-2 transition-all duration-300"
         style={{
-          background: showMonuments ? 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)' : 'rgba(0, 0, 0, 0.8)',
-          color: showMonuments ? 'black' : 'white',
-          border: '2px solid',
-          borderColor: 'hsl(45 100% 51%)'
+          background: showMonuments 
+            ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' 
+            : 'rgba(20, 43, 79, 0.8)',
+          color: showMonuments ? '#0E1B3F' : '#F5F5F5',
+          borderColor: showMonuments ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
+          boxShadow: showMonuments ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 10px rgba(244, 197, 66, 0.2)'
         }}
       >
         <MapPin className="w-4 h-4" />
-        {showMonuments ? 'Masquer les monuments' : 'Afficher les monuments'}
+        <span className="hidden sm:inline">{showMonuments ? 'Masquer' : 'Afficher'}</span>
       </Button>
     </div>
   );

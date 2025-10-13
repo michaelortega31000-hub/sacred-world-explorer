@@ -1,9 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin, TrendingUp, Users } from 'lucide-react';
+import { Trophy, Target, Maximize2, Minimize2, Calendar, MapPin, TrendingUp, Users, Pause, Play, BookOpen } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { getAllCountries, mockPlaces } from '@/data/placesData';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
@@ -25,6 +25,8 @@ const WorldMap = () => {
   const params = new URLSearchParams(location.search);
   const initialTab = params.get('tab') || 'map';
   const [activeTab, setActiveTab] = useState(initialTab);
+  const [isPaused, setIsPaused] = useState(false);
+  const recenterFunction = useRef<() => void>(() => {});
 
   // Mettre à jour l'onglet actif quand l'URL change
   useEffect(() => {
@@ -111,17 +113,21 @@ const WorldMap = () => {
         </div>
 
         <TabsContent value="map" className="flex-1 m-0 relative min-h-[70vh]">
-          {/* Globe 3D avec fond étoilé */}
-          <Globe3D />
+          {/* Globe 3D immersif */}
+          <Globe3D 
+            onRecenterRef={(fn) => { recenterFunction.current = fn; }}
+            onPausedChange={setIsPaused}
+          />
 
           {/* Barre de recherche overlay - côté gauche */}
           <div 
-            className={`absolute top-4 left-4 rounded-xl shadow-2xl border-2 transition-all duration-300 z-50 ${
+            className={`absolute top-4 left-4 rounded-xl backdrop-blur-md border-2 transition-all duration-300 z-50 ${
               isSearchExpanded ? 'w-96 p-4' : 'w-auto px-3 py-2'
             }`} 
             style={{ 
-              background: 'rgba(0, 0, 0, 0.8)',
-              borderColor: 'hsl(45 100% 51%)'
+              background: 'rgba(20, 43, 79, 0.85)',
+              borderColor: 'rgba(52, 224, 161, 0.4)',
+              boxShadow: '0 0 20px rgba(244, 197, 66, 0.2)'
             }}
           >
             <div className="flex items-center gap-2">
@@ -138,19 +144,68 @@ const WorldMap = () => {
                     handleSearchSubmit();
                   }
                 }}
-                className={`bg-transparent text-white placeholder:text-white/60 font-medium focus:outline-none transition-all ${
+                className={`bg-transparent text-[#F5F5F5] placeholder:text-[#EAD7B5]/60 font-medium focus:outline-none transition-all ${
                   isSearchExpanded ? 'w-full px-2 py-1' : 'w-10 text-center'
                 }`}
+                style={{ fontFamily: 'Inter, sans-serif' }}
               />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsSearchExpanded(!isSearchExpanded)}
-                className="text-white hover:bg-white/10 p-1 h-auto"
+                className="hover:bg-[#34E0A1]/10 p-1 h-auto transition-all duration-300"
+                style={{ color: '#34E0A1' }}
               >
                 {isSearchExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
             </div>
+          </div>
+
+          {/* Contrôles immersifs en bas */}
+          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-50">
+            <Button
+              onClick={() => recenterFunction.current()}
+              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
+              style={{
+                background: 'rgba(20, 43, 79, 0.85)',
+                color: '#F5F5F5',
+                borderColor: 'rgba(52, 224, 161, 0.3)',
+                boxShadow: '0 0 15px rgba(244, 197, 66, 0.2)'
+              }}
+            >
+              <Target className="w-4 h-4 group-hover:text-[#34E0A1] transition-colors" />
+              <span className="hidden sm:inline">Recentrer</span>
+            </Button>
+
+            <Button
+              onClick={() => setIsPaused(!isPaused)}
+              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
+              style={{
+                background: isPaused 
+                  ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' 
+                  : 'rgba(20, 43, 79, 0.85)',
+                color: isPaused ? '#0E1B3F' : '#F5F5F5',
+                borderColor: isPaused ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
+                boxShadow: isPaused ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 15px rgba(244, 197, 66, 0.2)'
+              }}
+            >
+              {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
+              <span className="hidden sm:inline">{isPaused ? 'Rotation' : 'Pause'}</span>
+            </Button>
+
+            <Button
+              onClick={() => navigate('/world?tab=locations')}
+              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
+              style={{
+                background: 'rgba(20, 43, 79, 0.85)',
+                color: '#F5F5F5',
+                borderColor: 'rgba(52, 224, 161, 0.3)',
+                boxShadow: '0 0 15px rgba(244, 197, 66, 0.2)'
+              }}
+            >
+              <BookOpen className="w-4 h-4 group-hover:text-[#F4C542] transition-colors" />
+              <span className="hidden sm:inline">Journal</span>
+            </Button>
           </div>
         </TabsContent>
 
