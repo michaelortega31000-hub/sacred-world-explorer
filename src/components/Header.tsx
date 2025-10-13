@@ -89,13 +89,25 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
               </div>
             </div>
             
-            {/* Centre : Sacred World */}
-            <h1 
-              className="font-serif text-foreground tracking-wide cursor-pointer text-3xl absolute left-1/2 transform -translate-x-1/2"
-              onClick={() => navigate('/')}
-            >
-              Sacred World
-            </h1>
+            {/* Centre : Sacred World avec halo doré */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <div className="relative">
+                {/* Halo doré derrière le texte */}
+                <div 
+                  className="absolute inset-0 blur-2xl opacity-60"
+                  style={{
+                    background: 'radial-gradient(circle, hsl(43, 76%, 70%) 0%, transparent 70%)',
+                    transform: 'scale(1.5)',
+                  }}
+                />
+                <h1 
+                  className="font-serif text-foreground tracking-wide cursor-pointer text-3xl relative z-10"
+                  onClick={() => navigate('/')}
+                >
+                  Sacred World
+                </h1>
+              </div>
+            </div>
             
             {/* Droite : Quête + Messages + Déconnexion */}
             <div className="flex items-center gap-2">
