@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,23 +35,24 @@ interface Message {
 
 const MessagesTab = () => {
   const { t } = useTranslation();
+  const { session } = useApp();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    getCurrentUser();
-    loadFriends();
-  }, []);
+    if (session?.user) {
+      loadFriends();
+    }
+  }, [session]);
 
   useEffect(() => {
-    if (selectedFriend && currentUserId) {
+    if (selectedFriend && session?.user) {
       loadMessages(selectedFriend.id);
     }
-  }, [selectedFriend, currentUserId]);
+  }, [selectedFriend, session]);
 
   useEffect(() => {
     scrollToBottom();
@@ -60,25 +62,19 @@ const MessagesTab = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUserId(user?.id || null);
-  };
-
   const loadFriends = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!session?.user) return;
 
     const { data: friendships1 } = await supabase
       .from('friendships')
       .select('user_id, friend_id, status')
-      .eq('user_id', user.id)
+      .eq('user_id', session.user.id)
       .eq('status', 'accepted');
 
     const { data: friendships2 } = await supabase
       .from('friendships')
       .select('user_id, friend_id, status')
-      .eq('friend_id', user.id)
+      .eq('friend_id', session.user.id)
       .eq('status', 'accepted');
 
     const ids1 = (friendships1 || []).map((f: any) => f.friend_id);
@@ -100,13 +96,12 @@ const MessagesTab = () => {
   };
 
   const loadMessages = async (friendId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!session?.user) return;
 
     const { data, error } = await (supabase as any)
       .from('messages' as any)
       .select('id, sender_id, receiver_id, content, created_at')
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${user.id})`)
+      .or(`and(sender_id.eq.${session.user.id},receiver_id.eq.${friendId}),and(sender_id.eq.${friendId},receiver_id.eq.${session.user.id})`)
       .order('created_at', { ascending: true });
 
     if (error) {
@@ -117,7 +112,7 @@ const MessagesTab = () => {
   };
 
   const sendMessage = async () => {
-    if (!selectedFriend || !currentUserId) return;
+    if (!selectedFriend || !session?.user) return;
 
     // Validate input
     const validation = messageSchema.safeParse({
@@ -133,7 +128,7 @@ const MessagesTab = () => {
     const { error } = await (supabase as any)
       .from('messages' as any)
       .insert({
-        sender_id: currentUserId,
+        sender_id: session.user.id,
         receiver_id: selectedFriend.id,
         content: validation.data.content,
       });
@@ -208,11 +203,11 @@ const MessagesTab = () => {
             messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex ${message.sender_id === currentUserId ? 'justify-end' : 'justify-start'}`}
+                className={`flex ${message.sender_id === session?.user.id ? 'justify-end' : 'justify-start'}`}
               >
                 <div
                   className={`max-w-[70%] rounded-lg p-3 ${
-                    message.sender_id === currentUserId
+                    message.sender_id === session?.user.id
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-muted'
                   }`}

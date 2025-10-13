@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -23,37 +24,32 @@ interface Friendship {
 
 const FriendsTab = () => {
   const { t } = useTranslation();
+  const { session } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [friends, setFriends] = useState<Friendship[]>([]);
   const [pendingRequests, setPendingRequests] = useState<Friendship[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
   useEffect(() => {
-    getCurrentUser();
-    loadFriends();
-  }, []);
-
-  const getCurrentUser = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    setCurrentUserId(user?.id || null);
-  };
+    if (session?.user) {
+      loadFriends();
+    }
+  }, [session]);
 
   const loadFriends = async () => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!session?.user) return;
 
     const { data: acceptedFriends } = await supabase
       .from('friendships')
       .select('id, user_id, friend_id, status')
-      .eq('user_id', user.id)
+      .eq('user_id', session.user.id)
       .eq('status', 'accepted');
 
     const { data: reverseFriends } = await supabase
       .from('friendships')
       .select('id, user_id, friend_id, status')
-      .eq('friend_id', user.id)
+      .eq('friend_id', session.user.id)
       .eq('status', 'accepted');
 
     const all = [
@@ -61,7 +57,7 @@ const FriendsTab = () => {
       ...(reverseFriends || []),
     ].map((f: any) => ({ ...f, status: f.status as 'pending' | 'accepted' | 'rejected' }));
 
-    const friendIds = Array.from(new Set(all.map((f: any) => (f.user_id === user.id ? f.friend_id : f.user_id))));
+    const friendIds = Array.from(new Set(all.map((f: any) => (f.user_id === session.user.id ? f.friend_id : f.user_id))));
 
     let profilesMap: Record<string, Profile> = {};
     if (friendIds.length > 0) {
@@ -73,7 +69,7 @@ const FriendsTab = () => {
     }
 
     const enriched = all.map((f: any) => {
-      const fid = f.user_id === user.id ? f.friend_id : f.user_id;
+      const fid = f.user_id === session.user.id ? f.friend_id : f.user_id;
       return { ...f, friend: profilesMap[fid] };
     });
     setFriends(enriched);
@@ -81,7 +77,7 @@ const FriendsTab = () => {
     const { data: pending } = await supabase
       .from('friendships')
       .select('id, user_id, friend_id, status')
-      .eq('friend_id', user.id)
+      .eq('friend_id', session.user.id)
       .eq('status', 'pending');
 
     const pendingFriendIds = Array.from(new Set((pending || []).map((p: any) => p.user_id)));
@@ -102,7 +98,7 @@ const FriendsTab = () => {
   };
 
   const searchUsers = async () => {
-    if (!searchTerm.trim()) {
+    if (!searchTerm.trim() || !session?.user) {
       setSearchResults([]);
       return;
     }
@@ -112,7 +108,7 @@ const FriendsTab = () => {
       .from('public_profiles_store')
       .select('id, username')
       .ilike('username', `%${searchTerm}%`)
-      .neq('id', currentUserId || '')
+      .neq('id', session.user.id)
       .limit(10);
 
     if (error) {
@@ -124,14 +120,12 @@ const FriendsTab = () => {
   };
 
   const sendFriendRequest = async (friendId: string) => {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!session?.user) return;
 
-    // Check if friendship already exists
     const { data: existing } = await supabase
       .from('friendships')
       .select('id')
-      .or(`and(user_id.eq.${user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${user.id})`)
+      .or(`and(user_id.eq.${session.user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${session.user.id})`)
       .single();
 
     if (existing) {
@@ -141,7 +135,7 @@ const FriendsTab = () => {
 
     const { error } = await supabase
       .from('friendships')
-      .insert({ user_id: user.id, friend_id: friendId, status: 'pending' });
+      .insert({ user_id: session.user.id, friend_id: friendId, status: 'pending' });
 
     if (error) {
       toast.error('Erreur lors de l\'envoi de la demande');
@@ -182,7 +176,6 @@ const FriendsTab = () => {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl space-y-6">
-      {/* Search Section */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -227,7 +220,6 @@ const FriendsTab = () => {
         </CardContent>
       </Card>
 
-      {/* Pending Requests */}
       {pendingRequests.length > 0 && (
         <Card>
           <CardHeader>
@@ -257,7 +249,6 @@ const FriendsTab = () => {
         </Card>
       )}
 
-      {/* Friends List */}
       <Card>
         <CardHeader>
           <CardTitle>Mes amis ({friends.length}/100)</CardTitle>

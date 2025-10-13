@@ -78,7 +78,8 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
     setLoading(true);
 
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user;
       
       if (!user) {
         toast.error('Vous devez être connecté pour ajouter un restaurant');

@@ -48,7 +48,8 @@ const LocationsTab = () => {
 
   const fetchMemories = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
 
       const { data, error } = await supabase
@@ -128,7 +129,8 @@ const LocationsTab = () => {
 
     try {
       setUploadingPhotos(true);
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user || !selectedPlace) return;
 
       let photoUrls: string[] = [];

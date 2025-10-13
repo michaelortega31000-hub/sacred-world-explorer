@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
+import { useApp } from '@/contexts/AppContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -48,6 +49,7 @@ interface Post {
 
 const ForumTab = () => {
   const { t } = useTranslation();
+  const { session } = useApp();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -136,6 +138,11 @@ const ForumTab = () => {
   };
 
   const createTopic = async () => {
+    if (!session?.user) {
+      toast.error('Vous devez être connecté');
+      return;
+    }
+
     // Validate input
     const validation = topicSchema.safeParse({
       title: newTopicTitle,
@@ -148,18 +155,12 @@ const ForumTab = () => {
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error('Vous devez être connecté');
-      return;
-    }
-
     const { error } = await supabase
       .from('forum_topics')
       .insert({
         title: validation.data.title,
         description: validation.data.description,
-        author_id: user.id,
+        author_id: session.user.id,
       });
 
     if (error) {
@@ -174,8 +175,8 @@ const ForumTab = () => {
   };
 
   const createPost = async () => {
-    if (!selectedTopic) {
-      toast.error('Aucun topic sélectionné');
+    if (!session?.user || !selectedTopic) {
+      toast.error('Vous devez être connecté');
       return;
     }
 
@@ -190,18 +191,12 @@ const ForumTab = () => {
       return;
     }
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) {
-      toast.error('Vous devez être connecté');
-      return;
-    }
-
     const { error } = await supabase
       .from('forum_posts')
       .insert({
         topic_id: selectedTopic.id,
         content: validation.data.content,
-        author_id: user.id,
+        author_id: session.user.id,
       });
 
     if (error) {

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useGeolocation, UserGeolocation } from '@/hooks/useGeolocation';
 import { supabase } from '@/integrations/supabase/client';
+import type { Session } from '@supabase/supabase-js';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
@@ -29,6 +30,7 @@ export interface UserProgress {
 
 interface AppContextType {
   userProgress: UserProgress;
+  session: Session | null;
   updateReligion: (religion: Religion) => void;
   updateLanguage: (language: string) => void;
   visitPlace: (placeId: string, points: number) => void;
@@ -48,6 +50,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 const STORAGE_KEY = 'sacredworld_progress';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [session, setSession] = useState<Session | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -70,16 +73,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const { position, error } = useGeolocation(userProgress.geolocationEnabled);
 
-  // Load progress from database on mount
+  // Establish auth state listener and session management
+  useEffect(() => {
+    // Set up auth state listener first
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+      }
+    );
+
+    // Then check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  // Load progress from database when session is established
   useEffect(() => {
     const loadProgressFromDB = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!session?.user) return;
 
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
-        .eq('user_id', user.id)
+        .eq('user_id', session.user.id)
         .maybeSingle();
 
       if (error) {
@@ -105,7 +124,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         if (stored) {
           const parsed = JSON.parse(stored);
           await supabase.from('user_progress').insert({
-            user_id: user.id,
+            user_id: session.user.id,
             selected_religion: parsed.selectedReligion,
             language: parsed.language || 'fr',
             total_points: parsed.totalPoints || 0,
@@ -119,13 +138,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     loadProgressFromDB();
-  }, []);
+  }, [session]);
 
   // Sync progress to database whenever it changes
   useEffect(() => {
     const syncToDB = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      if (!session?.user) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
         return;
       }
@@ -133,7 +151,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       await supabase
         .from('user_progress')
         .upsert({
-          user_id: user.id,
+          user_id: session.user.id,
           selected_religion: userProgress.selectedReligion,
           language: userProgress.language,
           total_points: userProgress.totalPoints,
@@ -149,7 +167,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
 
     syncToDB();
-  }, [userProgress]);
+  }, [userProgress, session]);
 
   const updateReligion = (religion: Religion) => {
     setUserProgress(prev => ({ ...prev, selectedReligion: religion }));
@@ -274,7 +292,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   return (
     <AppContext.Provider value={{ 
-      userProgress, 
+      userProgress,
+      session,
       updateReligion, 
       updateLanguage, 
       visitPlace, 
