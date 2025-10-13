@@ -97,19 +97,43 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps
     map.current.on('style.load', () => {
       if (!map.current) return;
       
-      // Fond spatial avec atmosphère plus claire
+      // Fond spatial immersif (espace sombre conservé)
       map.current.setFog({
-        color: 'rgb(100, 150, 200)', // Bleu clair atmosphérique
-        'high-color': 'rgb(180, 220, 255)', // Bleu ciel
-        'horizon-blend': 0.15,
-        'space-color': 'rgb(20, 40, 80)',
-        'star-intensity': 0.4
+        color: 'rgb(14, 27, 63)', // Deep space blue
+        'high-color': 'rgb(52, 224, 161)', // Turquoise glow
+        'horizon-blend': 0.1,
+        'space-color': 'rgb(14, 27, 63)',
+        'star-intensity': 0.6
       });
 
-      // Modifier la couleur de l'océan en bleu océan réaliste et vibrant
+      // Teinte bleue sur les océans (sans modifier le fond)
+      const labelBeforeId = map.current.getLayer('country-label') ? 'country-label' : undefined;
+
+      // 1) Recolorer la couche 'water' si présente (styles vectoriels)
       if (map.current.getLayer('water')) {
-        map.current.setPaintProperty('water', 'fill-color', '#3B9DE8');
-        map.current.setPaintProperty('water', 'fill-opacity', 0.85);
+        map.current.setPaintProperty('water', 'fill-color', '#2EA5FF');
+        map.current.setPaintProperty('water', 'fill-opacity', 0.5);
+      }
+
+      // 2) Ajouter une couche de teinte personnalisée au-dessus du satellite si nécessaire
+      if (!map.current.getLayer('custom-water-tint')) {
+        try {
+          map.current.addLayer(
+            {
+              id: 'custom-water-tint',
+              type: 'fill',
+              source: 'composite',
+              'source-layer': 'water',
+              paint: {
+                'fill-color': '#2EA5FF',
+                'fill-opacity': 0.45
+              }
+            } as any,
+            labelBeforeId
+          );
+        } catch (e) {
+          console.warn('Water tint layer add failed', e);
+        }
       }
 
       // Source précise des frontières pays (meilleure détection clic)
