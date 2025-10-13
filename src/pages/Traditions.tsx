@@ -52,32 +52,47 @@ const Traditions = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative p-6">
-      {/* Overlay gradient turquoise subtil */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+    <div className="min-h-screen flex flex-col relative p-6 overflow-hidden">
+      {/* Cosmic gradient background with slow vertical glow motion */}
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0E1B3F] via-[#1a2847] to-[#34E0A1]/20" />
+      <div className="absolute inset-0 cosmic-glow pointer-events-none" />
+      
+      {/* Atmospheric particles */}
+      <div className="absolute inset-0 pointer-events-none opacity-30">
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 rounded-full bg-[#34E0A1] animate-float-particle" />
+        <div className="absolute top-1/3 right-1/3 w-1 h-1 rounded-full bg-[#EAD7B5] animate-float-particle" style={{ animationDelay: '2s' }} />
+        <div className="absolute bottom-1/3 left-1/2 w-1.5 h-1.5 rounded-full bg-[#34E0A1] animate-float-particle" style={{ animationDelay: '4s' }} />
+        <div className="absolute top-1/2 right-1/4 w-1 h-1 rounded-full bg-[#EAD7B5] animate-float-particle" style={{ animationDelay: '6s' }} />
+      </div>
       
       <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col justify-center py-8 relative z-10">
         {/* Logo au-dessus du titre */}
         <div className="mb-6 flex justify-center animate-fade-in">
-          <img 
-            src={logo} 
-            alt="SacredWorld Logo" 
-            className="w-20 h-20 md:w-24 md:h-24 object-contain"
-            style={{
-              filter: 'drop-shadow(0 0 15px rgba(244, 197, 66, 0.5))'
-            }}
-          />
+          <div className="relative">
+            <img 
+              src={logo} 
+              alt="SacredWorld Logo" 
+              className="w-20 h-20 md:w-24 md:h-24 object-contain relative z-10"
+              style={{
+                filter: 'drop-shadow(0 0 20px rgba(52, 224, 161, 0.6)) drop-shadow(0 0 40px rgba(52, 224, 161, 0.3))'
+              }}
+            />
+            {/* Soft glow behind logo */}
+            <div className="absolute inset-0 bg-gradient-radial from-[#34E0A1]/20 to-transparent blur-2xl" />
+          </div>
         </div>
         
         {/* En-tête */}
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-cinzel">
-            Quelles traditions t'intéressent ?
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 font-playfair relative inline-block">
+            <span className="relative z-10 bg-gradient-to-r from-[#F5F5F5] via-[#EAD7B5] to-[#F5F5F5] bg-clip-text text-transparent illuminated-text">
+              Quelles traditions t'intéressent ?
+            </span>
           </h1>
-          <p className="text-lg text-muted-foreground mb-2">
+          <p className="text-lg text-[#EAD7B5]/90 mb-2 font-inter">
             Choisis ta préférence principale
           </p>
-          <p className="text-sm text-muted-foreground/80">
+          <p className="text-sm text-[#EAD7B5]/60 font-inter">
             Tu pourras changer plus tard.
           </p>
         </div>
@@ -94,36 +109,54 @@ const Traditions = () => {
                   key={tradition.id}
                   onClick={() => handleMainSelect(tradition.id)}
                   className={cn(
-                    "flex flex-col items-center gap-3 p-4 rounded-2xl transition-all duration-200 group",
-                    "animate-fade-in",
+                    "flex flex-col items-center gap-3 p-4 rounded-2xl transition-all duration-300 group relative",
+                    "animate-fade-in mystic-card",
                     isSelected
-                      ? "scale-105 shadow-lg"
-                      : "hover:scale-102 hover:shadow-md"
+                      ? "scale-105"
+                      : "hover:scale-102"
                   )}
                   style={{
                     animationDelay: `${index * 50}ms`,
-                    backgroundColor: isSelected ? tradition.color + '15' : 'transparent',
-                    border: isSelected ? `2px solid ${tradition.color}` : '2px solid hsl(var(--border))',
+                    backgroundColor: isSelected ? tradition.color + '25' : 'rgba(255,255,255,0.05)',
+                    border: isSelected ? `2px solid ${tradition.color}` : '2px solid rgba(234, 215, 181, 0.2)',
+                    backdropFilter: 'blur(10px)',
                   }}
                 >
+                  {/* Sacred geometry background */}
+                  <div className="absolute inset-0 opacity-5 pointer-events-none">
+                    <div className="w-full h-full sacred-geometry" style={{ 
+                      borderRadius: '1rem',
+                      background: `radial-gradient(circle at 50% 50%, ${tradition.color} 1px, transparent 1px)`,
+                      backgroundSize: '20px 20px'
+                    }} />
+                  </div>
+                  
                   <div
                     className={cn(
-                      "w-20 h-20 rounded-full flex items-center justify-center transition-all duration-200",
-                      isSelected ? "shadow-lg" : "group-hover:shadow-md"
+                      "w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 relative z-10 luminous-circle",
+                      isSelected && "mystic-pulse"
                     )}
                     style={{
-                      backgroundColor: tradition.color + (isSelected ? '' : '20'),
+                      backgroundColor: tradition.color + (isSelected ? 'dd' : '40'),
+                      boxShadow: isSelected 
+                        ? `0 0 30px ${tradition.color}80, 0 0 60px ${tradition.color}40, inset 0 0 20px ${tradition.color}30`
+                        : `0 0 15px ${tradition.color}40, inset 0 0 10px ${tradition.color}20`,
                     }}
                   >
+                    {/* Particle aura */}
+                    <div className="absolute inset-0 rounded-full particle-aura" style={{
+                      boxShadow: `0 0 40px ${tradition.color}60`
+                    }} />
+                    
                     <Icon
-                      className="w-10 h-10 transition-transform duration-200 group-hover:scale-110"
+                      className="w-10 h-10 transition-transform duration-300 group-hover:scale-110 relative z-10"
                       style={{ color: isSelected ? 'white' : tradition.color }}
                       strokeWidth={2.5}
                     />
                   </div>
                   <span className={cn(
-                    "text-sm font-medium text-center transition-colors",
-                    isSelected ? "text-foreground" : "text-muted-foreground"
+                    "text-sm font-medium text-center transition-colors font-inter relative z-10",
+                    isSelected ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
                   )}>
                     {tradition.name}
                   </span>
@@ -135,8 +168,8 @@ const Traditions = () => {
 
         {/* Centres d'intérêt (optionnel) */}
         <div className="mb-10 animate-fade-in" style={{ animationDelay: '350ms' }}>
-          <h2 className="text-xl font-semibold text-foreground mb-4 text-center">
-            Centres d'intérêt <span className="text-muted-foreground text-sm">(optionnel)</span>
+          <h2 className="text-xl font-semibold text-[#F5F5F5] mb-4 text-center font-playfair">
+            Centres d'intérêt <span className="text-[#EAD7B5]/60 text-sm font-inter">(optionnel)</span>
           </h2>
           <div className="flex flex-wrap gap-4 justify-center">
             {interests.map((interest) => {
@@ -147,12 +180,15 @@ const Traditions = () => {
                 <label
                   key={interest.id}
                   className={cn(
-                    "flex items-center gap-3 px-6 py-3 rounded-full cursor-pointer transition-all duration-200",
-                    "border-2",
+                    "flex items-center gap-3 px-6 py-3 rounded-full cursor-pointer transition-all duration-300",
+                    "border-2 backdrop-blur-sm",
                     isChecked
-                      ? "bg-primary/10 border-primary shadow-md"
-                      : "bg-background border-border hover:border-primary/50 hover:shadow-sm"
+                      ? "bg-[#34E0A1]/20 border-[#34E0A1] shadow-lg"
+                      : "bg-white/5 border-[#EAD7B5]/20 hover:border-[#34E0A1]/50 hover:bg-white/10"
                   )}
+                  style={{
+                    boxShadow: isChecked ? '0 0 20px rgba(52, 224, 161, 0.3)' : 'none'
+                  }}
                 >
                   <Checkbox
                     checked={isChecked}
@@ -161,11 +197,11 @@ const Traditions = () => {
                   />
                   <Icon className={cn(
                     "w-5 h-5 transition-colors",
-                    isChecked ? "text-primary" : "text-muted-foreground"
+                    isChecked ? "text-[#34E0A1]" : "text-[#EAD7B5]/70"
                   )} />
                   <span className={cn(
-                    "text-sm font-medium transition-colors",
-                    isChecked ? "text-foreground" : "text-muted-foreground"
+                    "text-sm font-medium transition-colors font-inter",
+                    isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
                   )}>
                     {interest.name}
                   </span>
@@ -177,7 +213,7 @@ const Traditions = () => {
 
         {/* Note de respect */}
         <div className="text-center mb-8 animate-fade-in" style={{ animationDelay: '400ms' }}>
-          <p className="text-sm text-muted-foreground bg-muted/30 px-4 py-3 rounded-lg inline-block">
+          <p className="text-sm text-[#EAD7B5]/70 bg-white/5 backdrop-blur-sm px-4 py-3 rounded-lg inline-block border border-[#EAD7B5]/20 font-inter">
             ℹ️ Contenus culturels présentés avec neutralité
           </p>
         </div>
@@ -189,15 +225,17 @@ const Traditions = () => {
             disabled={!selectedMain}
             size="lg"
             className={cn(
-              "px-8 py-6 text-lg font-semibold rounded-full transition-all duration-200",
+              "px-8 py-6 text-lg font-semibold rounded-full transition-all duration-300 font-inter",
               "disabled:opacity-50 disabled:cursor-not-allowed",
-              selectedMain && "shadow-lg hover:shadow-xl hover:scale-105"
+              "bg-gradient-to-r from-[#34E0A1] to-[#2ab385] text-[#0E1B3F]",
+              "hover:from-[#3ffab8] hover:to-[#34E0A1]",
+              selectedMain && "shadow-[0_0_30px_rgba(52,224,161,0.5)] hover:shadow-[0_0_40px_rgba(52,224,161,0.7)] hover:scale-105"
             )}
           >
             Continuer
           </Button>
           {!selectedMain && (
-            <p className="text-sm text-muted-foreground mt-3">
+            <p className="text-sm text-[#EAD7B5]/60 mt-3 font-inter">
               Sélectionne au moins une tradition pour continuer
             </p>
           )}

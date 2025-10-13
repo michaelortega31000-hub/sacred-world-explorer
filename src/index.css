@@ -140,6 +140,51 @@ All colors MUST be HSL.
   }
 }
 
+@keyframes cosmic-flow {
+  0%, 100% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 50% 100%;
+  }
+}
+
+@keyframes float-particle {
+  0%, 100% {
+    transform: translateY(0) translateX(0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-30px) translateX(10px);
+    opacity: 0.8;
+  }
+}
+
+@keyframes mystic-pulse {
+  0%, 100% {
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    transform: scale(1.05);
+    filter: brightness(1.2);
+  }
+}
+
+@keyframes particle-drift {
+  0% {
+    opacity: 0.3;
+    transform: rotate(0deg);
+  }
+  50% {
+    opacity: 0.6;
+  }
+  100% {
+    opacity: 0.3;
+    transform: rotate(360deg);
+  }
+}
+
 .breathing-glow {
   animation: breathing-glow 3s ease-in-out infinite;
 }
@@ -180,4 +225,72 @@ All colors MUST be HSL.
   height: 200%;
   background: linear-gradient(45deg, transparent 30%, hsl(165 72% 54% / 0.1) 50%, transparent 70%);
   animation: shimmer 3s ease-in-out infinite;
+}
+
+/* Mystic Modern Utilities */
+.cosmic-glow {
+  background: linear-gradient(180deg, 
+    transparent 0%, 
+    rgba(52, 224, 161, 0.1) 30%, 
+    rgba(52, 224, 161, 0.15) 50%, 
+    rgba(52, 224, 161, 0.1) 70%, 
+    transparent 100%);
+  background-size: 100% 200%;
+  animation: cosmic-flow 15s ease-in-out infinite;
+}
+
+.illuminated-text {
+  text-shadow: 
+    0 0 20px rgba(234, 215, 181, 0.8),
+    0 0 40px rgba(234, 215, 181, 0.4),
+    0 0 60px rgba(234, 215, 181, 0.2),
+    inset 0 0 10px rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.02em;
+}
+
+.mystic-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mystic-card:hover {
+  box-shadow: 0 8px 32px rgba(52, 224, 161, 0.2);
+}
+
+.luminous-circle {
+  position: relative;
+}
+
+.luminous-circle::before {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.mystic-card:hover .luminous-circle::before {
+  opacity: 0.3;
+}
+
+.mystic-pulse {
+  animation: mystic-pulse 2s ease-in-out infinite;
+}
+
+.particle-aura {
+  animation: particle-drift 8s linear infinite;
+}
+
+.animate-float-particle {
+  animation: float-particle 8s ease-in-out infinite;
+}
+
+.sacred-geometry {
+  opacity: 0.05;
+  transition: opacity 0.3s ease;
+}
+
+.mystic-card:hover .sacred-geometry {
+  opacity: 0.1;
 }
