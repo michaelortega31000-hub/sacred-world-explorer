@@ -106,9 +106,9 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps
         'star-intensity': 0.6
       });
 
-      // Modifier la couleur de l'océan en bleu profond
+      // Modifier la couleur de l'océan en bleu océan vibrant
       if (map.current.getLayer('water')) {
-        map.current.setPaintProperty('water', 'fill-color', '#0E1B3F');
+        map.current.setPaintProperty('water', 'fill-color', '#1E5A8E');
       }
 
       // Source précise des frontières pays (meilleure détection clic)
