@@ -363,11 +363,11 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
       }
     };
 
-    // Recharger les monuments et l'itinéraire quand nécessaire
-    if (map.current.loaded()) {
+    // Recharger les monuments et l'itinéraire quand la carte est chargée
+    map.current.on('load', () => {
       loadMonuments();
       drawTripRoute();
-    }
+    });
 
     // Animation de rotation automatique du globe
     let userInteracting = false;
@@ -474,7 +474,81 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
       markers.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [navigate, mapboxToken, showTokenInput, showMonuments, isPaused, tripPlaces]);
+  }, [navigate, mapboxToken, showTokenInput, isPaused, tripPlaces]);
+
+  // Effet séparé pour recharger les monuments sans réinitialiser la carte
+  useEffect(() => {
+    if (map.current && map.current.loaded()) {
+      // Supprimer les anciens marqueurs
+      markers.current.forEach(marker => marker.remove());
+      markers.current = [];
+
+      if (showMonuments) {
+        // Charger les données des lieux
+        import('@/data/placesData').then(({ mockPlaces }) => {
+          if (!map.current) return;
+
+          mockPlaces.forEach(place => {
+            const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
+            
+            const isVisited = userProgress.visitedPlaces.includes(place.id);
+            const markerColor = isVisited ? '#34E0A1' : '#EAD7B5';
+            
+            const popup = new mapboxgl.Popup({ 
+              offset: 25, 
+              maxWidth: '320px',
+              className: 'sacred-popup'
+            })
+              .setHTML(`
+                <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
+                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" onerror="this.src='/placeholder.svg';" />` : ''}
+                  <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
+                  <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
+                  <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${place.description.substring(0, 150)}...</p>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${place.points} points</span>
+                    ${isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
+                  </div>
+                </div>
+              `);
+
+            const el = document.createElement('div');
+            el.className = 'sacred-marker';
+            el.style.cssText = `
+              width: 14px;
+              height: 14px;
+              background: ${markerColor};
+              border: 2px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.3)'};
+              border-radius: 50%;
+              box-shadow: 0 0 8px ${isVisited ? 'rgba(244, 197, 66, 0.3)' : 'rgba(52, 224, 161, 0.2)'};
+              cursor: pointer;
+              transition: transform 0.2s ease;
+            `;
+            
+            el.addEventListener('mouseenter', () => {
+              el.style.transform = 'scale(1.2)';
+            });
+            
+            el.addEventListener('mouseleave', () => {
+              el.style.transform = 'scale(1)';
+            });
+
+            const marker = new mapboxgl.Marker({ 
+              element: el,
+              anchor: 'center',
+              pitchAlignment: 'map',
+              rotationAlignment: 'map'
+            })
+              .setLngLat([place.coordinates[0], place.coordinates[1]])
+              .setPopup(popup)
+              .addTo(map.current!);
+            
+            markers.current.push(marker);
+          });
+        });
+      }
+    }
+  }, [showMonuments, userProgress.visitedPlaces]);
 
   const handleRecenter = () => {
     if (map.current) {
