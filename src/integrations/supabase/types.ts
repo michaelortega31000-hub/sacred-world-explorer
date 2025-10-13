@@ -172,6 +172,7 @@ export type Database = {
           content: string | null
           created_at: string
           id: string
+          is_public: boolean
           media_urls: string[] | null
           memory_type: string
           place_id: string
@@ -183,6 +184,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          is_public?: boolean
           media_urls?: string[] | null
           memory_type?: string
           place_id: string
@@ -194,6 +196,7 @@ export type Database = {
           content?: string | null
           created_at?: string
           id?: string
+          is_public?: boolean
           media_urls?: string[] | null
           memory_type?: string
           place_id?: string

@@ -19,13 +19,16 @@ import {
   Download,
   Trophy,
   Sparkles,
-  Info
+  Info,
+  Users
 } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/hooks/use-toast';
 import { getImageUrl } from '@/lib/imageHelper';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { supabase } from '@/integrations/supabase/client';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -37,6 +40,9 @@ const PlaceDetail = () => {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [communityPhotos, setCommunityPhotos] = useState<any[]>([]);
+  const [loadingPhotos, setLoadingPhotos] = useState(true);
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
 
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
@@ -47,8 +53,53 @@ const PlaceDetail = () => {
   useEffect(() => {
     if (!place) {
       navigate('/world');
+    } else {
+      fetchCommunityPhotos();
     }
   }, [place, navigate]);
+
+  const fetchCommunityPhotos = async () => {
+    if (!placeId) return;
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      // Fetch public photos + user's private photos
+      let query = supabase
+        .from('memories')
+        .select('id, media_urls, title, created_at, is_public, user_id')
+        .eq('place_id', placeId)
+        .not('media_urls', 'is', null);
+      
+      if (user) {
+        // Include public photos and user's own photos (public or private)
+        query = query.or(`is_public.eq.true,user_id.eq.${user.id}`);
+      } else {
+        // Only public photos for non-authenticated users
+        query = query.eq('is_public', true);
+      }
+      
+      const { data, error } = await query.order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      
+      // Flatten the media_urls arrays
+      const photos = data?.flatMap(memory => 
+        (memory.media_urls || []).map(url => ({
+          url,
+          title: memory.title,
+          created_at: memory.created_at,
+          is_own: user?.id === memory.user_id
+        }))
+      ) || [];
+      
+      setCommunityPhotos(photos);
+    } catch (error) {
+      console.error('Error fetching community photos:', error);
+    } finally {
+      setLoadingPhotos(false);
+    }
+  };
 
   if (!place) return null;
 
@@ -362,6 +413,55 @@ const PlaceDetail = () => {
             </CardContent>
           </Card>
 
+          {/* Photos de la communauté */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Users className="w-5 h-5" />
+                Photos des visiteurs
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {loadingPhotos ? (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">Chargement...</p>
+                </div>
+              ) : communityPhotos.length === 0 ? (
+                <div className="text-center py-8">
+                  <Camera className="w-12 h-12 mx-auto mb-3 text-muted-foreground" />
+                  <p className="text-muted-foreground">
+                    Aucune photo partagée pour l'instant
+                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Soyez le premier à partager vos souvenirs !
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2">
+                  {communityPhotos.map((photo, index) => (
+                    <div 
+                      key={index} 
+                      className="relative aspect-square cursor-pointer group"
+                      onClick={() => setFullscreenImage(photo.url)}
+                    >
+                      <img
+                        src={photo.url}
+                        alt={photo.title || 'Photo visiteur'}
+                        className="w-full h-full object-cover rounded-lg transition-transform group-hover:scale-105"
+                        onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                      />
+                      {photo.is_own && (
+                        <div className="absolute top-1 right-1 bg-primary/90 text-primary-foreground text-xs px-2 py-1 rounded">
+                          Vous
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Signalement */}
           <div className="text-center">
             <Button
@@ -501,6 +601,20 @@ const PlaceDetail = () => {
                 Continuer
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal Fullscreen Image */}
+      <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
+        <DialogContent className="max-w-4xl p-0">
+          <div className="relative">
+            <img
+              src={fullscreenImage || ''}
+              alt="Photo en plein écran"
+              className="w-full h-auto max-h-[90vh] object-contain"
+              onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+            />
           </div>
         </DialogContent>
       </Dialog>

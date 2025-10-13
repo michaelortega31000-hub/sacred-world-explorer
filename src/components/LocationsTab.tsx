@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
+import { Switch } from '@/components/ui/switch';
 
 interface Memory {
   id: string;
@@ -22,6 +23,7 @@ interface Memory {
   media_urls: string[] | null;
   memory_type: string;
   created_at: string;
+  is_public: boolean;
 }
 
 const LocationsTab = () => {
@@ -33,7 +35,8 @@ const LocationsTab = () => {
   const [newMemory, setNewMemory] = useState({
     title: '',
     content: '',
-    type: 'text' as 'text' | 'photo'
+    type: 'text' as 'text' | 'photo',
+    isPublic: false
   });
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
@@ -117,7 +120,8 @@ const LocationsTab = () => {
           title: newMemory.title || null,
           content: newMemory.content || null,
           memory_type: selectedFiles.length > 0 ? 'photo' : 'text',
-          media_urls: photoUrls.length > 0 ? photoUrls : null
+          media_urls: photoUrls.length > 0 ? photoUrls : null,
+          is_public: newMemory.isPublic
         });
 
       if (error) throw error;
@@ -127,7 +131,7 @@ const LocationsTab = () => {
         description: 'Votre souvenir a été enregistré avec succès'
       });
 
-      setNewMemory({ title: '', content: '', type: 'text' });
+      setNewMemory({ title: '', content: '', type: 'text', isPublic: false });
       setSelectedFiles([]);
       setSelectedPlace(null);
       fetchMemories();
@@ -246,10 +250,10 @@ const LocationsTab = () => {
                           {place.city}, {place.country}
                         </CardDescription>
                       </div>
-                      <Dialog open={selectedPlace === place.id} onOpenChange={(open) => {
+                        <Dialog open={selectedPlace === place.id} onOpenChange={(open) => {
                         if (!open) {
                           setSelectedPlace(null);
-                          setNewMemory({ title: '', content: '', type: 'text' });
+                          setNewMemory({ title: '', content: '', type: 'text', isPublic: false });
                         }
                       }}>
                         <DialogTrigger asChild>
@@ -325,6 +329,21 @@ const LocationsTab = () => {
                                   ))}
                                 </div>
                               )}
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <Label htmlFor="memory-public" className="text-sacred-blue">
+                                  Partager avec la communauté
+                                </Label>
+                                <p className="text-xs text-muted-foreground mt-1">
+                                  Rendez votre souvenir visible par tous les utilisateurs
+                                </p>
+                              </div>
+                              <Switch
+                                id="memory-public"
+                                checked={newMemory.isPublic}
+                                onCheckedChange={(checked) => setNewMemory({ ...newMemory, isPublic: checked })}
+                              />
                             </div>
                             <Button
                               onClick={addMemory}
