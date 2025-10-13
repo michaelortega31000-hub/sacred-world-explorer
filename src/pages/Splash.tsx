@@ -26,7 +26,7 @@ const Splash = () => {
 
   return (
     <div 
-      className="w-screen h-screen flex items-center justify-center overflow-hidden cursor-pointer"
+      className="w-screen h-screen flex items-center justify-center overflow-hidden cursor-pointer p-4"
       onClick={handleClick}
       style={{
         background: 'linear-gradient(180deg, #0A1628 0%, #0E1B3F 30%, #1a3a52 60%, #0E1B3F 100%)'
@@ -35,7 +35,7 @@ const Splash = () => {
       <img 
         src={splashHero} 
         alt="SacredWorld" 
-        className="w-full h-full object-cover"
+        className="w-full h-full object-contain"
       />
     </div>
   );
