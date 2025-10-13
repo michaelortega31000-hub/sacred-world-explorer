@@ -27,7 +27,6 @@ const MonumentFilter = ({ onFilterChange }: MonumentFilterProps) => {
     { id: 'buddhism', name: 'Bouddhisme' },
     { id: 'hinduism', name: 'Hindouisme' },
     { id: 'traditional', name: 'Traditions' },
-    { id: 'astronomy', name: 'Astronomie' },
   ];
 
   const monumentTypes = [
