@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Globe, ArrowRight, BookOpen, MapPin, Award, X } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import logo from '@/assets/sacredworld-logo.jpg';
+import logo from '@/assets/sacredworld-logo.png';
 
 const tutorialSteps = [
   {
@@ -71,21 +71,24 @@ const Welcome = () => {
   const StepIcon = currentStep?.icon;
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-[hsl(200,100%,85%)] via-[hsl(200,100%,90%)] to-[hsl(200,100%,95%)]">
+    <div className="min-h-screen flex flex-col bg-background relative">
+      {/* Overlay gradient turquoise subtil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+      
       {/* Sélecteur de langue en haut à droite */}
-      <header className="w-full p-4 flex justify-end">
+      <header className="w-full p-4 flex justify-end relative z-10">
         <LanguageSelector />
       </header>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12">
+      <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 relative z-10">
         <div className="max-w-2xl w-full text-center">
           {/* Logo */}
           <div className="mb-12 flex justify-center animate-fade-in">
             <img 
               src={logo} 
               alt="SacredWorld Logo" 
-              className="w-56 h-56 md:w-64 md:h-64 lg:w-72 lg:h-72"
+              className="w-40 h-40 md:w-48 md:h-48 lg:w-56 lg:h-56 gold-halo breathing-glow"
               style={{
                 animation: 'logoEntry 0.8s cubic-bezier(0.4, 0, 0.2, 1) forwards'
               }}
@@ -94,10 +97,10 @@ const Welcome = () => {
 
           {/* Promesse (2 phrases) */}
           <div className="space-y-6 mb-12 animate-fade-in" style={{ animationDelay: '100ms' }}>
-            <p className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-gray-900 leading-tight font-poppins tracking-tight">
+            <p className="text-3xl md:text-4xl lg:text-5xl font-extrabold text-foreground leading-tight font-cinzel tracking-tight">
               {t('welcome.promise1')}
             </p>
-            <p className="text-xl md:text-2xl text-gray-700 leading-relaxed font-poppins font-light">
+            <p className="text-xl md:text-2xl text-muted-foreground leading-relaxed font-inter font-light">
               {t('welcome.promise2')}
             </p>
           </div>
@@ -125,7 +128,7 @@ const Welcome = () => {
           </div>
 
           {/* Accessibilité note */}
-          <p className="mt-8 text-sm text-gray-600 animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <p className="mt-8 text-sm text-muted-foreground animate-fade-in" style={{ animationDelay: '300ms' }}>
             {t('welcome.accessibility')}
           </p>
         </div>

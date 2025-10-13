@@ -81,23 +81,26 @@ const Selection = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 flex flex-col bg-gradient-to-br from-background via-[hsl(var(--sacred-blue-light))] to-[hsl(var(--sacred-red-light))]">
-      <div className="absolute top-6 right-6">
+    <div className="min-h-screen p-6 flex flex-col bg-background relative">
+      {/* Overlay gradient turquoise subtil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+      
+      <div className="absolute top-6 right-6 z-10">
         <Button
           variant="ghost"
           size="icon"
           onClick={handleLogout}
-          className="text-foreground hover:bg-background/20"
+          className="text-foreground hover:bg-primary/10"
         >
           <LogOut className="w-5 h-5" />
         </Button>
       </div>
-      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center">
+      <div className="max-w-6xl mx-auto w-full flex-1 flex flex-col justify-center relative z-10">
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-foreground mb-3 drop-shadow-lg">
+          <h1 className="font-cinzel text-4xl md:text-5xl font-bold text-foreground mb-3">
             {t('selection.title')}
           </h1>
-          <p className="font-inter text-lg text-foreground/80 drop-shadow">
+          <p className="font-inter text-lg text-muted-foreground">
             {t('selection.subtitle')}
           </p>
         </div>

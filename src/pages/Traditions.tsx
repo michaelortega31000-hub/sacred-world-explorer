@@ -51,11 +51,14 @@ const Traditions = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background via-background to-muted/20 p-6">
-      <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col justify-center py-8">
+    <div className="min-h-screen flex flex-col bg-background relative p-6">
+      {/* Overlay gradient turquoise subtil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+      
+      <div className="max-w-3xl mx-auto w-full flex-1 flex flex-col justify-center py-8 relative z-10">
         {/* En-tête */}
         <div className="text-center mb-12 animate-fade-in">
-          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4">
+          <h1 className="text-4xl md:text-5xl font-bold text-foreground mb-4 font-cinzel">
             Quelles traditions t'intéressent ?
           </h1>
           <p className="text-lg text-muted-foreground mb-2">

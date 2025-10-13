@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import logo from '@/assets/sacredworld-logo.jpg';
+import logo from '@/assets/sacredworld-logo.png';
 import { z } from 'zod';
 
 const signupSchema = z.object({
@@ -158,27 +158,20 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-gradient-to-br from-orange-500 via-red-500 to-orange-600">
-      {/* Animated background */}
-      <div 
-        className="absolute inset-0 opacity-20"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
-                           radial-gradient(circle at 80% 50%, white 1px, transparent 1px),
-                           radial-gradient(circle at 50% 80%, white 1px, transparent 1px)`,
-          backgroundSize: '100px 100px',
-          animation: 'pulse 4s ease-in-out infinite'
-        }}
-      />
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
+      {/* Overlay gradient turquoise subtil */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
 
-      <Card className="w-full max-w-md relative z-10 border-2 border-yellow-400">
+      <Card className="w-full max-w-md relative z-10 bg-card/90 backdrop-blur-md border-primary/20 shadow-halo turquoise-reflection">
         <CardHeader className="space-y-4 text-center">
-          <img 
-            src={logo} 
-            alt="SacredWorld Logo" 
-            className="w-52 h-52 mx-auto object-contain"
-          />
-          <CardDescription className="text-base">
+          <div className="flex justify-center">
+            <img 
+              src={logo} 
+              alt="SacredWorld Logo" 
+              className="w-32 h-32 object-contain gold-halo breathing-glow"
+            />
+          </div>
+          <CardDescription className="text-base text-muted-foreground">
             {isLogin 
               ? 'Connectez-vous pour continuer votre voyage' 
               : 'Rejoignez la communauté SacredWorld'}
@@ -229,12 +222,8 @@ const Auth = () => {
 
             <Button
               type="submit"
-              className="w-full"
+              className="w-full bg-primary text-primary-foreground hover:scale-105 transition-transform shadow-turquoise"
               disabled={loading}
-              style={{
-                background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
-                color: 'black'
-              }}
             >
               {loading ? (
                 <>
@@ -254,7 +243,7 @@ const Auth = () => {
                 setIsLogin(!isLogin);
                 setFormData({ username: '', email: '', password: '' });
               }}
-              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
               disabled={loading}
             >
               {isLogin 
