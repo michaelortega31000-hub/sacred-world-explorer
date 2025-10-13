@@ -26,6 +26,8 @@ export interface UserProgress {
   badges: string[];
   tripPlaces: string[];
   geolocationEnabled: boolean;
+  plannedRouteStartCity: string;
+  showPlannedRoute: boolean;
 }
 
 interface AppContextType {
@@ -41,6 +43,7 @@ interface AppContextType {
   clearTrip: () => void;
   addPoints: (points: number) => void;
   toggleGeolocation: () => void;
+  updatePlannedRoute: (startCity: string, showRoute: boolean) => void;
   userLocation: UserGeolocation | null;
   geolocationError: string | null;
 }
@@ -67,7 +70,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       visitedPlaces: [],
       badges: [],
       tripPlaces: [],
-      geolocationEnabled: false
+      geolocationEnabled: false,
+      plannedRouteStartCity: '',
+      showPlannedRoute: false
     };
   });
 
@@ -114,7 +119,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           visitedPlaces: data.visited_places,
           badges: data.badges,
           tripPlaces: data.trip_places,
-          geolocationEnabled: data.geolocation_enabled
+          geolocationEnabled: data.geolocation_enabled,
+          plannedRouteStartCity: data.planned_route_start_city || '',
+          showPlannedRoute: data.show_planned_route || false
         };
         setUserProgress(dbProgress);
         localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProgress));
@@ -131,7 +138,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             visited_places: parsed.visitedPlaces || [],
             badges: parsed.badges || [],
             trip_places: parsed.tripPlaces || [],
-            geolocation_enabled: parsed.geolocationEnabled || false
+            geolocation_enabled: parsed.geolocationEnabled || false,
+            planned_route_start_city: parsed.plannedRouteStartCity || '',
+            show_planned_route: parsed.showPlannedRoute || false
           });
         }
       }
@@ -158,7 +167,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           visited_places: userProgress.visitedPlaces,
           badges: userProgress.badges,
           trip_places: userProgress.tripPlaces,
-          geolocation_enabled: userProgress.geolocationEnabled
+          geolocation_enabled: userProgress.geolocationEnabled,
+          planned_route_start_city: userProgress.plannedRouteStartCity,
+          show_planned_route: userProgress.showPlannedRoute
         }, {
           onConflict: 'user_id'
         });
@@ -290,6 +301,14 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const updatePlannedRoute = (startCity: string, showRoute: boolean) => {
+    setUserProgress(prev => ({
+      ...prev,
+      plannedRouteStartCity: startCity,
+      showPlannedRoute: showRoute
+    }));
+  };
+
   return (
     <AppContext.Provider value={{ 
       userProgress,
@@ -304,6 +323,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       clearTrip,
       addPoints,
       toggleGeolocation,
+      updatePlannedRoute,
       userLocation: position,
       geolocationError: error?.message || null
     }}>

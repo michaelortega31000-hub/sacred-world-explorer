@@ -413,7 +413,9 @@ export type Database = {
           geolocation_enabled: boolean
           id: string
           language: string
+          planned_route_start_city: string
           selected_religion: string | null
+          show_planned_route: boolean
           total_points: number
           trip_places: string[]
           updated_at: string
@@ -426,7 +428,9 @@ export type Database = {
           geolocation_enabled?: boolean
           id?: string
           language?: string
+          planned_route_start_city?: string
           selected_religion?: string | null
+          show_planned_route?: boolean
           total_points?: number
           trip_places?: string[]
           updated_at?: string
@@ -439,7 +443,9 @@ export type Database = {
           geolocation_enabled?: boolean
           id?: string
           language?: string
+          planned_route_start_city?: string
           selected_religion?: string | null
+          show_planned_route?: boolean
           total_points?: number
           trip_places?: string[]
           updated_at?: string

@@ -13,9 +13,18 @@ import { getImageUrl } from '@/lib/imageHelper';
 const TripPlannerTab = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { userProgress, removeFromTrip, clearTrip } = useApp();
-  const [startingCity, setStartingCity] = useState<string>('');
-  const [showOptimizedRoute, setShowOptimizedRoute] = useState(false);
+  const { userProgress, removeFromTrip, clearTrip, updatePlannedRoute } = useApp();
+  
+  const startingCity = userProgress.plannedRouteStartCity;
+  const showOptimizedRoute = userProgress.showPlannedRoute;
+  
+  const setStartingCity = (city: string) => {
+    updatePlannedRoute(city, userProgress.showPlannedRoute);
+  };
+  
+  const setShowOptimizedRoute = (show: boolean) => {
+    updatePlannedRoute(userProgress.plannedRouteStartCity, show);
+  };
   
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
