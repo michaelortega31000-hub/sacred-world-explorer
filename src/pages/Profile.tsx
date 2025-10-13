@@ -65,6 +65,29 @@ const Profile = () => {
       }
 
       const file = event.target.files[0];
+      
+      // Validate file size (2MB limit)
+      const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+      if (file.size > MAX_SIZE) {
+        toast({
+          variant: 'destructive',
+          title: 'Fichier trop volumineux',
+          description: 'La photo de profil doit faire moins de 2 Mo',
+        });
+        return;
+      }
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        toast({
+          variant: 'destructive',
+          title: 'Type de fichier non autorisé',
+          description: 'Veuillez utiliser une image JPG, PNG ou WebP',
+        });
+        return;
+      }
+      
       const fileExt = file.name.split('.').pop();
       const filePath = `${userId}/avatar.${fileExt}`;
 

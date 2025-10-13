@@ -70,6 +70,30 @@ const LocationsTab = () => {
     const uploadedUrls: string[] = [];
 
     for (const file of selectedFiles) {
+      // Validate file size (10MB limit)
+      const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+      if (file.size > MAX_SIZE) {
+        console.error(`File ${file.name} exceeds 10MB limit`);
+        toast({
+          variant: 'destructive',
+          title: 'Fichier trop volumineux',
+          description: `${file.name} dépasse la limite de 10 Mo`,
+        });
+        continue;
+      }
+      
+      // Validate file type
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      if (!allowedTypes.includes(file.type)) {
+        console.error(`File ${file.name} has invalid type: ${file.type}`);
+        toast({
+          variant: 'destructive',
+          title: 'Type de fichier non autorisé',
+          description: `${file.name} doit être une image JPG, PNG ou WebP`,
+        });
+        continue;
+      }
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/${Date.now()}_${Math.random()}.${fileExt}`;
 
