@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import splashHero from '@/assets/splash-hero.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Check } from 'lucide-react';
+import { Check, WifiOff } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const languages = [
@@ -51,6 +51,11 @@ const Splash = () => {
     setShowLanguages(false);
   };
 
+  const handleOfflineMode = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    navigate('/mode-selection');
+  };
+
   return (
     <div 
       className="w-screen h-screen flex items-center justify-center overflow-hidden relative"
@@ -64,6 +69,18 @@ const Splash = () => {
         alt="SacredWorld" 
         className="w-full h-full object-contain"
       />
+      
+      {/* Bouton Mode hors ligne en haut à droite */}
+      <div className="absolute top-6 right-6 z-10">
+        <Button
+          onClick={handleOfflineMode}
+          variant="outline"
+          className="gap-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground"
+        >
+          <WifiOff className="w-4 h-4" />
+          Mode hors ligne
+        </Button>
+      </div>
       
       {/* Clickable zones overlay */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
