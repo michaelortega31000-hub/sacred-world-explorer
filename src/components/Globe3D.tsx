@@ -97,18 +97,19 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps
     map.current.on('style.load', () => {
       if (!map.current) return;
       
-      // Fond spatial avec atmosphère turquoise-dorée
+      // Fond spatial avec atmosphère plus claire
       map.current.setFog({
-        color: 'rgb(14, 27, 63)', // Deep blue
-        'high-color': 'rgb(52, 224, 161)', // Turquoise
-        'horizon-blend': 0.1,
-        'space-color': 'rgb(14, 27, 63)',
-        'star-intensity': 0.6
+        color: 'rgb(100, 150, 200)', // Bleu clair atmosphérique
+        'high-color': 'rgb(180, 220, 255)', // Bleu ciel
+        'horizon-blend': 0.15,
+        'space-color': 'rgb(20, 40, 80)',
+        'star-intensity': 0.4
       });
 
-      // Modifier la couleur de l'océan en bleu océan vibrant
+      // Modifier la couleur de l'océan en bleu océan réaliste et vibrant
       if (map.current.getLayer('water')) {
-        map.current.setPaintProperty('water', 'fill-color', '#1E5A8E');
+        map.current.setPaintProperty('water', 'fill-color', '#3B9DE8');
+        map.current.setPaintProperty('water', 'fill-opacity', 0.85);
       }
 
       // Source précise des frontières pays (meilleure détection clic)
