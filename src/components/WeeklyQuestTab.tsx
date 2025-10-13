@@ -107,7 +107,7 @@ const WeeklyQuestTab = () => {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2 text-2xl">
                 <Target className="w-6 h-6 text-primary" />
-                Quêtes de la semaine
+                Quêtes
               </CardTitle>
               <Badge variant="secondary" className="gap-1 text-base px-3 py-1">
                 <Clock className="w-4 h-4" />
