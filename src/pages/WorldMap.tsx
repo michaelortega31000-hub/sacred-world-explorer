@@ -102,6 +102,7 @@ const WorldMap = () => {
           <Globe3D 
             onRecenterRef={(fn) => { recenterFunction.current = fn; }}
             onPausedChange={setIsPaused}
+            tripPlaces={userProgress.tripPlaces}
           />
 
           {/* Barre de recherche overlay - côté gauche */}

@@ -15,9 +15,10 @@ interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
   onRecenterRef?: (fn: () => void) => void;
   onPausedChange?: (paused: boolean) => void;
+  tripPlaces?: string[];
 }
 
-const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps) => {
+const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [] }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
@@ -202,7 +203,89 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps
 
       // Charger les monuments
       loadMonuments();
+      
+      // Dessiner l'itinéraire du voyage
+      drawTripRoute();
     });
+
+    // Fonction pour dessiner l'itinéraire du voyage
+    const drawTripRoute = () => {
+      if (!map.current || tripPlaces.length === 0) return;
+
+      // Supprimer l'ancienne source et couche si elles existent
+      if (map.current.getLayer('trip-route-glow')) {
+        map.current.removeLayer('trip-route-glow');
+      }
+      if (map.current.getLayer('trip-route')) {
+        map.current.removeLayer('trip-route');
+      }
+      if (map.current.getSource('trip-route')) {
+        map.current.removeSource('trip-route');
+      }
+
+      // Charger les données des lieux pour obtenir les coordonnées
+      import('@/data/placesData').then(({ mockPlaces }) => {
+        if (!map.current) return;
+
+        const tripCoordinates = tripPlaces
+          .map(placeId => {
+            const place = mockPlaces.find(p => p.id === placeId);
+            return place ? place.coordinates : null;
+          })
+          .filter((coord): coord is [number, number] => coord !== null);
+
+        if (tripCoordinates.length < 2) return;
+
+        // Créer une ligne GeoJSON
+        const routeGeoJSON = {
+          type: 'Feature' as const,
+          properties: {},
+          geometry: {
+            type: 'LineString' as const,
+            coordinates: tripCoordinates
+          }
+        };
+
+        // Ajouter la source
+        map.current.addSource('trip-route', {
+          type: 'geojson',
+          data: routeGeoJSON
+        });
+
+        // Couche de halo (effet de lueur externe)
+        map.current.addLayer({
+          id: 'trip-route-glow',
+          type: 'line',
+          source: 'trip-route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#2EA5FF',
+            'line-width': 8,
+            'line-blur': 6,
+            'line-opacity': 0.6
+          }
+        });
+
+        // Couche principale (trait lumineux)
+        map.current.addLayer({
+          id: 'trip-route',
+          type: 'line',
+          source: 'trip-route',
+          layout: {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          paint: {
+            'line-color': '#5EC8FF',
+            'line-width': 3,
+            'line-opacity': 0.9
+          }
+        });
+      });
+    };
 
     // Fonction pour charger les monuments
     const loadMonuments = () => {
@@ -277,9 +360,10 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps
       }
     };
 
-    // Recharger les monuments quand le toggle change
+    // Recharger les monuments et l'itinéraire quand nécessaire
     if (map.current.loaded()) {
       loadMonuments();
+      drawTripRoute();
     }
 
     // Animation de rotation automatique du globe
@@ -387,7 +471,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps
       markers.current.forEach(marker => marker.remove());
       map.current?.remove();
     };
-  }, [navigate, mapboxToken, showTokenInput, showMonuments, isPaused]);
+  }, [navigate, mapboxToken, showTokenInput, showMonuments, isPaused, tripPlaces]);
 
   const handleRecenter = () => {
     if (map.current) {
