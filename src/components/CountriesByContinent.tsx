@@ -68,12 +68,18 @@ const CountriesByContinent = () => {
   const { t } = useTranslation();
   const { userProgress } = useApp();
   const [expandedContinent, setExpandedContinent] = useState<string | null>(null);
+  const [showVisitedPlaces, setShowVisitedPlaces] = useState(false);
   const allCountries = getAllCountries();
   const allPlaces = getAllPlaces();
   
   // Calculer les statistiques
   const totalPlaces = allPlaces.length;
   const visitedPlaces = userProgress.visitedPlaces.length;
+  
+  // Obtenir les lieux visités
+  const visitedPlacesDetails = allPlaces.filter(place => 
+    userProgress.visitedPlaces.includes(place.id)
+  );
 
   const getCountriesForContinent = (continent: string) => {
     const continentCountries = continents[continent as keyof typeof continents] || [];
@@ -93,7 +99,90 @@ const CountriesByContinent = () => {
 
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <Card className="border-primary/20">
+      {showVisitedPlaces ? (
+        // Vue des lieux visités
+        <Card className="border-primary/20">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CheckCircle2 className="w-8 h-8 text-secondary" />
+                <div>
+                  <CardTitle className="text-2xl">Mes Lieux Visités</CardTitle>
+                  <CardDescription>
+                    {visitedPlaces} lieu{visitedPlaces > 1 ? 'x' : ''} visité{visitedPlaces > 1 ? 's' : ''}
+                  </CardDescription>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => setShowVisitedPlaces(false)}
+              >
+                Retour aux continents
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-[calc(100vh-280px)]">
+              {visitedPlacesDetails.length === 0 ? (
+                <div className="text-center py-12">
+                  <MapPin className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Aucun lieu visité</h3>
+                  <p className="text-muted-foreground">
+                    Commencez à explorer pour visiter des lieux sacrés
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {visitedPlacesDetails.map((place) => (
+                    <Card
+                      key={place.id}
+                      className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                      onClick={() => navigate(`/place/${place.id}`)}
+                    >
+                      {place.imageUrl && (
+                        <div className="h-40 overflow-hidden">
+                          <img
+                            src={place.imageUrl}
+                            alt={place.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.currentTarget.src = '/placeholder.svg';
+                            }}
+                          />
+                        </div>
+                      )}
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between gap-2 mb-2">
+                          <div className="flex-1">
+                            <h4 className="font-semibold line-clamp-1">{place.name}</h4>
+                            <p className="text-sm text-muted-foreground">
+                              {place.city || place.country}
+                            </p>
+                          </div>
+                          <CheckCircle2 className="w-5 h-5 text-secondary flex-shrink-0" />
+                        </div>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">
+                          {place.description}
+                        </p>
+                        <div className="flex items-center justify-between text-sm">
+                          <span className="text-primary font-medium">
+                            {place.points} points
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {place.type}
+                          </span>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+            </ScrollArea>
+          </CardContent>
+        </Card>
+      ) : (
+        // Vue des continents
+        <Card className="border-primary/20">
         <CardHeader>
           <div className="flex items-center gap-3">
             <Globe className="w-8 h-8 text-primary" />
@@ -119,7 +208,9 @@ const CountriesByContinent = () => {
               </CardContent>
             </Card>
             
-            <Card className="bg-secondary/5 border-secondary/20">
+            <Card className="bg-secondary/5 border-secondary/20 cursor-pointer hover:shadow-lg transition-shadow"
+              onClick={() => setShowVisitedPlaces(true)}
+            >
               <CardContent className="pt-6">
                 <div className="flex items-center justify-between">
                   <div>
@@ -198,6 +289,7 @@ const CountriesByContinent = () => {
           </ScrollArea>
         </CardContent>
       </Card>
+      )}
     </div>
   );
 };
