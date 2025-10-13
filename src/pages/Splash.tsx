@@ -134,6 +134,19 @@ const Splash = () => {
         </Button>
       </div>
       
+      {/* Bouton Tutoriel en bas à droite */}
+      <div className="absolute bottom-6 right-6 z-10">
+        <Button
+          onClick={handleTutorialOpen}
+          size="lg"
+          variant="outline"
+          className="gap-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground shadow-lg"
+        >
+          <BookOpen className="w-5 h-5" />
+          Tutoriel
+        </Button>
+      </div>
+      
       {/* Clickable zones overlay - transparent areas positioned on the image */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
         {/* Empty space for logo and text - centered */}
@@ -150,16 +163,7 @@ const Splash = () => {
           />
         </div>
         
-        {/* Button zone 2 - "Tutoriel" */}
-        <div className="w-full max-w-md mb-3">
-          <button
-            onClick={handleTutorialOpen}
-            className="w-full h-12 cursor-pointer opacity-0 hover:opacity-5 transition-opacity bg-primary rounded-full"
-            aria-label="Tutoriel"
-          />
-        </div>
-        
-        {/* Button zone 3 - "Français" (Language selector) */}
+        {/* Button zone 2 - "Français" (Language selector) - plus de zone tutoriel ici */}
         <div className="mb-8">
           <button
             onClick={handleLanguageClick}
