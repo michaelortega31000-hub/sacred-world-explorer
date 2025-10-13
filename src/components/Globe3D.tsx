@@ -28,7 +28,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const { userProgress } = useApp();
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
-  const [showMonuments, setShowMonuments] = useState(true);
+  const [showMonuments, setShowMonuments] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
 
@@ -675,11 +675,9 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
       </Button>
 
       {/* Monument Filter - positioned bottom right, aligned with show monuments button */}
-      {showMonuments && (
-        <div className="absolute bottom-4 right-4">
-          <MonumentFilter onFilterChange={setFilters} />
-        </div>
-      )}
+      <div className="absolute bottom-4 right-4">
+        <MonumentFilter onFilterChange={setFilters} />
+      </div>
     </div>
   );
 };
