@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import splashHero from '@/assets/splash-hero.png';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Check, WifiOff } from 'lucide-react';
+import { Check, WifiOff, BookOpen, MapPin, Award, Users, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const languages = [
@@ -17,10 +17,35 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' },
 ];
 
+const tutorialSteps = [
+  {
+    icon: MapPin,
+    title: 'Explorez le monde sacré',
+    description: 'Découvrez des milliers de lieux sacrés à travers le monde entier. Naviguez sur le globe interactif et explorez des monuments emblématiques de toutes les religions.',
+  },
+  {
+    icon: Award,
+    title: 'Collectez des points',
+    description: 'Visitez des lieux en personne ou virtuellement pour gagner des points. Plus vous explorez, plus vous débloquez de badges et gravissez les classements.',
+  },
+  {
+    icon: Users,
+    title: 'Partagez vos découvertes',
+    description: 'Rejoignez une communauté de passionnés. Partagez vos photos, créez des voyages personnalisés et échangez avec d\'autres explorateurs.',
+  },
+  {
+    icon: BookOpen,
+    title: 'Apprenez et découvrez',
+    description: 'Chaque lieu raconte une histoire. Plongez dans la richesse culturelle et historique des monuments avec des descriptions détaillées et du contenu immersif (à venir : audio et vidéo).',
+  },
+];
+
 const Splash = () => {
   const navigate = useNavigate();
   const [showLanguages, setShowLanguages] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
+  const [showTutorial, setShowTutorial] = useState(false);
+  const [tutorialStep, setTutorialStep] = useState(0);
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
@@ -57,6 +82,30 @@ const Splash = () => {
     localStorage.setItem('selectedMode', 'offline');
     navigate('/selection');
   };
+
+  const handleTutorialOpen = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setShowTutorial(true);
+    setTutorialStep(0);
+  };
+
+  const handleTutorialNext = () => {
+    if (tutorialStep < tutorialSteps.length - 1) {
+      setTutorialStep(prev => prev + 1);
+    } else {
+      setShowTutorial(false);
+      setTutorialStep(0);
+    }
+  };
+
+  const handleTutorialPrev = () => {
+    if (tutorialStep > 0) {
+      setTutorialStep(prev => prev - 1);
+    }
+  };
+
+  const currentStep = tutorialSteps[tutorialStep];
+  const StepIcon = currentStep?.icon;
 
   return (
     <div 
@@ -100,6 +149,18 @@ const Splash = () => {
           />
         </div>
         
+        {/* Tutorial button - between start button and language selector */}
+        <div className="mb-6">
+          <Button
+            onClick={handleTutorialOpen}
+            variant="outline"
+            className="gap-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground"
+          >
+            <BookOpen className="w-4 h-4" />
+            Tutoriel
+          </Button>
+        </div>
+        
         {/* Language selector zone - positioned at bottom */}
         <div className="mb-8">
           <button
@@ -131,6 +192,81 @@ const Splash = () => {
                 )}
               </Button>
             ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tutorial Dialog */}
+      <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
+        <DialogContent className="max-w-lg p-0 overflow-hidden bg-card border-primary/20">
+          <div className="relative">
+            {/* Close button */}
+            <button
+              onClick={() => setShowTutorial(false)}
+              className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            {/* Step indicator */}
+            <div className="absolute top-4 left-4 z-10 flex gap-2">
+              {tutorialSteps.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-1 w-8 rounded-full transition-all duration-300 ${
+                    index === tutorialStep ? 'bg-primary' : 'bg-muted'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Content */}
+            <div className="p-12 pt-16 text-center min-h-[400px] flex flex-col items-center justify-center">
+              {StepIcon && (
+                <div className="mb-6 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center animate-scale-in">
+                  <StepIcon className="w-10 h-10 text-primary" strokeWidth={2} />
+                </div>
+              )}
+
+              <h3 className="text-2xl font-bold text-foreground mb-4 animate-fade-in">
+                {currentStep.title}
+              </h3>
+
+              <p className="text-lg text-muted-foreground leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
+                {currentStep.description}
+              </p>
+
+              {/* Placeholder for future video */}
+              {tutorialStep === 0 && (
+                <div className="mt-6 w-full aspect-video bg-muted/20 rounded-lg flex items-center justify-center border-2 border-dashed border-muted">
+                  <p className="text-sm text-muted-foreground">Vidéo à venir</p>
+                </div>
+              )}
+            </div>
+
+            {/* Navigation */}
+            <div className="p-6 border-t border-border flex justify-between items-center gap-4">
+              <Button
+                onClick={handleTutorialPrev}
+                variant="ghost"
+                disabled={tutorialStep === 0}
+                className="disabled:opacity-50"
+              >
+                Précédent
+              </Button>
+
+              <span className="text-sm text-muted-foreground">
+                {tutorialStep + 1} / {tutorialSteps.length}
+              </span>
+
+              <Button
+                onClick={handleTutorialNext}
+              >
+                {tutorialStep === tutorialSteps.length - 1 
+                  ? 'Terminer' 
+                  : 'Suivant'}
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
