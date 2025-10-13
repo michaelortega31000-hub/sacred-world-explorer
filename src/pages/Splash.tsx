@@ -141,7 +141,7 @@ const Splash = () => {
         </div>
         
         {/* Button zone - positioned where "Commencer l'exploration" appears */}
-        <div className="w-full max-w-md mb-8">
+        <div className="w-full max-w-md mb-6">
           <button
             onClick={handleStartExploration}
             className="w-full h-16 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-primary rounded-full"
@@ -149,23 +149,24 @@ const Splash = () => {
           />
         </div>
         
-        {/* Tutorial button - between start button and language selector */}
+        {/* Tutorial button - visible and well separated */}
         <div className="mb-6">
           <Button
             onClick={handleTutorialOpen}
+            size="lg"
             variant="outline"
-            className="gap-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground"
+            className="gap-2 px-8 py-6 text-lg border-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground shadow-lg"
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-5 h-5" />
             Tutoriel
           </Button>
         </div>
         
-        {/* Language selector zone - positioned at bottom */}
+        {/* Language selector zone - positioned at bottom with more space */}
         <div className="mb-8">
           <button
             onClick={handleLanguageClick}
-            className="w-32 h-8 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-primary rounded"
+            className="w-40 h-12 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-primary rounded-lg"
             aria-label="Choisir la langue"
           />
         </div>

@@ -83,7 +83,7 @@ const Traditions = () => {
         </div>
         
         {/* En-tête */}
-        <div className="text-center mb-12 animate-fade-in">
+        <div className="text-center mb-8 animate-fade-in">
           <h1 className="text-4xl md:text-5xl font-bold mb-4 font-playfair relative inline-block">
             <span className="relative z-10 bg-gradient-to-r from-[#F5F5F5] via-[#EAD7B5] to-[#F5F5F5] bg-clip-text text-transparent illuminated-text">
               Quelles traditions t'intéressent ?
@@ -95,6 +95,15 @@ const Traditions = () => {
           <p className="text-sm text-[#EAD7B5]/60 font-inter">
             Tu pourras changer plus tard.
           </p>
+        </div>
+
+        {/* Message de respect des coutumes */}
+        <div className="mb-8 animate-fade-in" style={{ animationDelay: '50ms' }}>
+          <div className="max-w-2xl mx-auto px-6 py-4 bg-white/5 backdrop-blur-sm border border-[#EAD7B5]/20 rounded-xl">
+            <p className="text-sm text-[#EAD7B5]/90 text-center font-inter leading-relaxed">
+              🙏 SacredWorld célèbre la diversité culturelle et spirituelle. Nous vous invitons à respecter les coutumes, traditions et lois de chaque lieu et religion que vous découvrez. Voyagez avec ouverture d'esprit et bienveillance.
+            </p>
+          </div>
         </div>
 
         {/* Bulles principales */}
