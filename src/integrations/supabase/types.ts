@@ -313,6 +313,63 @@ export type Database = {
           },
         ]
       }
+      restaurants: {
+        Row: {
+          address: string
+          city: string
+          country: string
+          created_at: string
+          created_by: string | null
+          cuisine: string
+          description: string | null
+          google_place_id: string | null
+          id: string
+          name: string
+          phone: string | null
+          rating: number | null
+          type: string[]
+          updated_at: string
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          address: string
+          city: string
+          country: string
+          created_at?: string
+          created_by?: string | null
+          cuisine: string
+          description?: string | null
+          google_place_id?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          rating?: number | null
+          type?: string[]
+          updated_at?: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          city?: string
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          cuisine?: string
+          description?: string | null
+          google_place_id?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          rating?: number | null
+          type?: string[]
+          updated_at?: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       subscription_tiers: {
         Row: {
           created_at: string

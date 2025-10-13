@@ -1,10 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Phone, Globe, Star, Utensils, ExternalLink } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { MapPin, Phone, Globe, Star, Utensils } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
+import { AddRestaurantDialog } from './AddRestaurantDialog';
 
 type RestaurantType = 'all' | 'halal' | 'kosher' | 'vegetarian' | 'vegan' | 'neutral';
 
@@ -22,68 +25,97 @@ interface Restaurant {
 }
 
 interface RestaurantsTabProps {
-  country: string;
+  country?: string;
 }
-
-// Mock data - à remplacer par une vraie base de données
-const mockRestaurants: Record<string, Restaurant[]> = {
-  France: [
-    {
-      id: 'fr-1',
-      name: 'Le Jardin de la Mosquée',
-      type: ['halal'],
-      cuisine: 'Cuisine marocaine',
-      address: '39 Rue Geoffroy-Saint-Hilaire',
-      city: 'Paris',
-      phone: '+33 1 43 31 38 20',
-      rating: 4.5,
-      website: 'https://example.com',
-      description: 'Restaurant authentique proposant une cuisine marocaine halal dans un cadre magnifique.',
-    },
-    {
-      id: 'fr-2',
-      name: 'Florence Kahn',
-      type: ['kosher'],
-      cuisine: 'Cuisine ashkénaze',
-      address: '24 Rue des Écouffes',
-      city: 'Paris',
-      phone: '+33 1 48 87 92 85',
-      rating: 4.3,
-      website: 'https://example.com',
-      description: 'Boulangerie et traiteur cachère réputé dans le Marais.',
-    },
-    {
-      id: 'fr-3',
-      name: 'Le Potager du Marais',
-      type: ['vegan', 'vegetarian'],
-      cuisine: 'Cuisine végétale',
-      address: '22 Rue Rambuteau',
-      city: 'Paris',
-      phone: '+33 1 42 74 24 66',
-      rating: 4.6,
-      website: 'https://example.com',
-      description: 'Restaurant 100% végétal et bio dans le cœur du Marais.',
-    },
-    {
-      id: 'fr-4',
-      name: 'Chez Marianne',
-      type: ['neutral', 'kosher'],
-      cuisine: 'Cuisine méditerranéenne',
-      address: '2 Rue des Hospitalières-Saint-Gervais',
-      city: 'Paris',
-      rating: 4.2,
-      description: 'Restaurant méditerranéen proposant des options cachères et traditionnelles.',
-    },
-  ],
-  // Autres pays...
-};
 
 const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
   const { t } = useTranslation();
   const [selectedType, setSelectedType] = useState<RestaurantType>('all');
-  
-  const restaurants = mockRestaurants[country] || [];
-  
+  const [selectedCountry, setSelectedCountry] = useState<string>(country || 'all');
+  const [selectedCity, setSelectedCity] = useState<string>('all');
+  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [countries, setCountries] = useState<string[]>([]);
+  const [cities, setCities] = useState<string[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchRestaurants = async () => {
+    setLoading(true);
+    try {
+      let query = supabase
+        .from('restaurants')
+        .select('*')
+        .eq('verified', true);
+
+      if (selectedCountry !== 'all') {
+        query = query.eq('country', selectedCountry);
+      }
+
+      if (selectedCity !== 'all') {
+        query = query.eq('city', selectedCity);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      setRestaurants((data || []) as Restaurant[]);
+    } catch (error) {
+      console.error('Error fetching restaurants:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCountries = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('country')
+        .eq('verified', true);
+
+      if (error) throw error;
+
+      const uniqueCountries = [...new Set(data?.map(r => r.country) || [])];
+      setCountries(uniqueCountries);
+    } catch (error) {
+      console.error('Error fetching countries:', error);
+    }
+  };
+
+  const fetchCities = async () => {
+    try {
+      let query = supabase
+        .from('restaurants')
+        .select('city')
+        .eq('verified', true);
+
+      if (selectedCountry !== 'all') {
+        query = query.eq('country', selectedCountry);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      const uniqueCities = [...new Set(data?.map(r => r.city) || [])];
+      setCities(uniqueCities);
+    } catch (error) {
+      console.error('Error fetching cities:', error);
+    }
+  };
+
+  useEffect(() => {
+    fetchCountries();
+  }, []);
+
+  useEffect(() => {
+    fetchCities();
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    fetchRestaurants();
+  }, [selectedCountry, selectedCity]);
+
   const filteredRestaurants = selectedType === 'all' 
     ? restaurants 
     : restaurants.filter(r => r.type.includes(selectedType));
@@ -112,17 +144,51 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
-          <Utensils className="w-8 h-8 text-primary" />
-          Restaurants
-        </h2>
-        <p className="text-muted-foreground">
-          Découvrez les restaurants disponibles en {t(`countries.${country}`, country)}
-        </p>
+      <div className="mb-8 flex items-center justify-between">
+        <div>
+          <h2 className="text-3xl font-bold text-foreground mb-2 flex items-center gap-2">
+            <Utensils className="w-8 h-8 text-primary" />
+            Restaurants
+          </h2>
+          <p className="text-muted-foreground">
+            Découvrez les restaurants disponibles dans le monde
+          </p>
+        </div>
+        <AddRestaurantDialog onSuccess={fetchRestaurants} />
       </div>
 
-      {/* Filters */}
+      {/* Location Filters */}
+      <div className="mb-6 flex flex-wrap gap-4">
+        <div className="flex-1 min-w-[200px]">
+          <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner un pays" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Tous les pays</SelectItem>
+              {countries.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1 min-w-[200px]">
+          <Select value={selectedCity} onValueChange={setSelectedCity}>
+            <SelectTrigger>
+              <SelectValue placeholder="Sélectionner une ville" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Toutes les villes</SelectItem>
+              {cities.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
+      {/* Type Filters */}
       <div className="mb-8 flex flex-wrap gap-2">
         {filterButtons.map((filter) => (
           <Button
@@ -151,7 +217,11 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
       </div>
 
       {/* Restaurants list */}
-      {filteredRestaurants.length === 0 ? (
+      {loading ? (
+        <div className="text-center py-12">
+          <p className="text-muted-foreground">Chargement des restaurants...</p>
+        </div>
+      ) : filteredRestaurants.length === 0 ? (
         <Card className="p-8 text-center">
           <Utensils className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-xl font-semibold text-foreground mb-2">
