@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/sacredworld-logo-new.png';
 import { Button } from '@/components/ui/button';
 import { Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
