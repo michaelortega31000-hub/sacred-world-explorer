@@ -303,9 +303,16 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
           mockPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
-            // Points turquoise pour les monuments visités
+            // Déterminer la religion du lieu pour appliquer sa couleur
+            const placeReligion = inferReligionFromPlace(place.type, place.name);
             const isVisited = userProgress.visitedPlaces.includes(place.id);
-            const markerColor = isVisited ? '#34E0A1' : '#EAD7B5'; // Turquoise si visité, beige sinon
+            
+            // Utiliser la couleur de la religion du parcours choisi
+            const religionColor = userProgress.selectedReligion 
+              ? religionColors[userProgress.selectedReligion].marker 
+              : religionColors[placeReligion].marker;
+            
+            const markerColor = isVisited ? religionColor : '#EAD7B5'; // Couleur de la religion si visité, beige sinon
             
             const popup = new mapboxgl.Popup({ 
               offset: 25, 
@@ -491,8 +498,16 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
           mockPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
+            // Déterminer la religion du lieu pour appliquer sa couleur
+            const placeReligion = inferReligionFromPlace(place.type, place.name);
             const isVisited = userProgress.visitedPlaces.includes(place.id);
-            const markerColor = isVisited ? '#34E0A1' : '#EAD7B5';
+            
+            // Utiliser la couleur de la religion du parcours choisi
+            const religionColor = userProgress.selectedReligion 
+              ? religionColors[userProgress.selectedReligion].marker 
+              : religionColors[placeReligion].marker;
+            
+            const markerColor = isVisited ? religionColor : '#EAD7B5'; // Couleur de la religion si visité, beige sinon
             
             const popup = new mapboxgl.Popup({ 
               offset: 25, 
