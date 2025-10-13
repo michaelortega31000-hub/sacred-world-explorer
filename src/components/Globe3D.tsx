@@ -85,13 +85,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange }: Globe3DProps
       maxPitch: 85,
     });
 
-    // Ajouter les contrôles de navigation
-    map.current.addControl(
-      new mapboxgl.NavigationControl({
-        visualizePitch: true,
-      }),
-      'top-right'
-    );
+    // Contrôles de navigation désactivés (utilisateur zoom directement)
 
     // Configuration de l'atmosphère et du fog immersif
     map.current.on('style.load', () => {

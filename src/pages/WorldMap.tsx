@@ -22,6 +22,7 @@ const WorldMap = () => {
   const countries = getAllCountries();
   const [searchTerm, setSearchTerm] = useState('');
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [suggestions, setSuggestions] = useState<Array<{type: 'country' | 'city', name: string, country?: string}>>([]);
   const location = useLocation();
   const params = new URLSearchParams(location.search);
   const initialTab = params.get('tab') || 'map';
@@ -39,34 +40,51 @@ const WorldMap = () => {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    // Ne pas naviguer automatiquement, seulement mettre à jour le terme de recherche
+    
+    // Autocomplétion en temps réel
+    if (value.trim().length >= 2) {
+      const searchLower = value.toLowerCase();
+      const results: Array<{type: 'country' | 'city', name: string, country?: string}> = [];
+      
+      // Chercher dans les villes
+      mockPlaces.forEach(place => {
+        if (place.city.toLowerCase().includes(searchLower)) {
+          const exists = results.find(r => r.type === 'city' && r.name === place.city);
+          if (!exists) {
+            results.push({ type: 'city', name: place.city, country: place.country });
+          }
+        }
+      });
+      
+      // Chercher dans les pays
+      countries.forEach(country => {
+        const translatedName = t(`countries.${country}`, country);
+        if (translatedName.toLowerCase().includes(searchLower) || 
+            country.toLowerCase().includes(searchLower)) {
+          results.push({ type: 'country', name: translatedName, country });
+        }
+      });
+      
+      setSuggestions(results.slice(0, 5)); // Limiter à 5 suggestions
+    } else {
+      setSuggestions([]);
+    }
+  };
+
+  const handleSuggestionClick = (suggestion: {type: 'country' | 'city', name: string, country?: string}) => {
+    if (suggestion.type === 'city' && suggestion.country) {
+      navigate(`/country/${suggestion.country}`);
+    } else if (suggestion.type === 'country' && suggestion.country) {
+      navigate(`/country/${suggestion.country}`);
+    }
+    setSearchTerm('');
+    setSuggestions([]);
+    setIsSearchExpanded(false);
   };
 
   const handleSearchSubmit = () => {
-    if (searchTerm.trim()) {
-      const searchLower = searchTerm.toLowerCase();
-      
-      // D'abord, chercher dans les villes
-      const placeByCity = mockPlaces.find(place => 
-        place.city.toLowerCase().includes(searchLower)
-      );
-      
-      if (placeByCity) {
-        // Si une ville est trouvée, aller vers le pays
-        navigate(`/country/${placeByCity.country}`);
-        return;
-      }
-      
-      // Sinon, chercher dans les noms de pays
-      const filtered = countries.filter(country => {
-        const translatedName = t(`countries.${country}`, country);
-        return translatedName.toLowerCase().includes(searchLower) || 
-               country.toLowerCase().includes(searchLower);
-      });
-      
-      if (filtered.length > 0) {
-        navigate(`/country/${filtered[0]}`);
-      }
+    if (suggestions.length > 0) {
+      handleSuggestionClick(suggestions[0]);
     }
   };
 
@@ -126,6 +144,33 @@ const WorldMap = () => {
                 {isSearchExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </Button>
             </div>
+            
+            {/* Suggestions d'autocomplétion */}
+            {isSearchExpanded && suggestions.length > 0 && (
+              <div className="mt-3 space-y-1">
+                {suggestions.map((suggestion, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="w-full text-left px-3 py-2 rounded-lg transition-all duration-200 hover:bg-[#34E0A1]/20 flex items-center gap-2"
+                    style={{ color: '#F5F5F5' }}
+                  >
+                    <span className="text-lg">
+                      {suggestion.type === 'city' ? '🏙️' : '🌍'}
+                    </span>
+                    <div className="flex-1">
+                      <div className="font-medium">{suggestion.name}</div>
+                      {suggestion.type === 'city' && suggestion.country && (
+                        <div className="text-xs" style={{ color: '#EAD7B5' }}>
+                          {t(`countries.${suggestion.country}`, suggestion.country)}
+                        </div>
+                      )}
+                    </div>
+                    <MapPin className="w-4 h-4" style={{ color: '#34E0A1' }} />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Contrôles immersifs en bas */}
