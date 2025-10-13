@@ -406,6 +406,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_progress: {
+        Row: {
+          badges: string[]
+          created_at: string
+          geolocation_enabled: boolean
+          id: string
+          language: string
+          selected_religion: string | null
+          total_points: number
+          trip_places: string[]
+          updated_at: string
+          user_id: string
+          visited_places: string[]
+        }
+        Insert: {
+          badges?: string[]
+          created_at?: string
+          geolocation_enabled?: boolean
+          id?: string
+          language?: string
+          selected_religion?: string | null
+          total_points?: number
+          trip_places?: string[]
+          updated_at?: string
+          user_id: string
+          visited_places?: string[]
+        }
+        Update: {
+          badges?: string[]
+          created_at?: string
+          geolocation_enabled?: boolean
+          id?: string
+          language?: string
+          selected_religion?: string | null
+          total_points?: number
+          trip_places?: string[]
+          updated_at?: string
+          user_id?: string
+          visited_places?: string[]
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string

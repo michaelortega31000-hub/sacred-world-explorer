@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useGeolocation, UserGeolocation } from '@/hooks/useGeolocation';
+import { supabase } from '@/integrations/supabase/client';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
@@ -69,8 +70,85 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const { position, error } = useGeolocation(userProgress.geolocationEnabled);
 
+  // Load progress from database on mount
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
+    const loadProgressFromDB = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error loading progress from DB:', error);
+        return;
+      }
+
+      if (data) {
+        const dbProgress: UserProgress = {
+          selectedReligion: data.selected_religion as Religion | null,
+          language: data.language,
+          totalPoints: data.total_points,
+          visitedPlaces: data.visited_places,
+          badges: data.badges,
+          tripPlaces: data.trip_places,
+          geolocationEnabled: data.geolocation_enabled
+        };
+        setUserProgress(dbProgress);
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProgress));
+      } else {
+        // Migrate localStorage data to DB
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          await supabase.from('user_progress').insert({
+            user_id: user.id,
+            selected_religion: parsed.selectedReligion,
+            language: parsed.language || 'fr',
+            total_points: parsed.totalPoints || 0,
+            visited_places: parsed.visitedPlaces || [],
+            badges: parsed.badges || [],
+            trip_places: parsed.tripPlaces || [],
+            geolocation_enabled: parsed.geolocationEnabled || false
+          });
+        }
+      }
+    };
+
+    loadProgressFromDB();
+  }, []);
+
+  // Sync progress to database whenever it changes
+  useEffect(() => {
+    const syncToDB = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
+        return;
+      }
+
+      await supabase
+        .from('user_progress')
+        .upsert({
+          user_id: user.id,
+          selected_religion: userProgress.selectedReligion,
+          language: userProgress.language,
+          total_points: userProgress.totalPoints,
+          visited_places: userProgress.visitedPlaces,
+          badges: userProgress.badges,
+          trip_places: userProgress.tripPlaces,
+          geolocation_enabled: userProgress.geolocationEnabled
+        }, {
+          onConflict: 'user_id'
+        });
+
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(userProgress));
+    };
+
+    syncToDB();
   }, [userProgress]);
 
   const updateReligion = (religion: Religion) => {
@@ -127,9 +205,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         tripPlaces: newTripPlaces
       };
       
-      // Sauvegarder immédiatement dans localStorage
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
-      
       return newProgress;
     });
   };
@@ -141,23 +216,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addToTrip = (placeId: string) => {
     const currentTrip = userProgress.tripPlaces || [];
     if (!currentTrip.includes(placeId)) {
-      const newProgress = {
-        ...userProgress,
+      setUserProgress(prev => ({
+        ...prev,
         tripPlaces: [...currentTrip, placeId]
-      };
-      setUserProgress(newProgress);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+      }));
     }
   };
 
   const removeFromTrip = (placeId: string) => {
-    const currentTrip = userProgress.tripPlaces || [];
-    const newProgress = {
-      ...userProgress,
-      tripPlaces: currentTrip.filter(id => id !== placeId)
-    };
-    setUserProgress(newProgress);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+    setUserProgress(prev => ({
+      ...prev,
+      tripPlaces: (prev.tripPlaces || []).filter(id => id !== placeId)
+    }));
   };
 
   const isInTrip = (placeId: string) => {
@@ -165,12 +235,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const clearTrip = () => {
-    const newProgress = {
-      ...userProgress,
+    setUserProgress(prev => ({
+      ...prev,
       tripPlaces: []
-    };
-    setUserProgress(newProgress);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(newProgress));
+    }));
   };
 
   const addPoints = (points: number) => {
