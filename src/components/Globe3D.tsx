@@ -28,7 +28,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const { userProgress } = useApp();
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
-  const [showMonuments, setShowMonuments] = useState(false);
+  const [showMonuments, setShowMonuments] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
 
