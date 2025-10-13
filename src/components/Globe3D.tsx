@@ -11,6 +11,8 @@ import { useApp } from '@/contexts/AppContext';
 import { religionColors } from '@/config/religionColors';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
 import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { toast } from 'sonner';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -23,6 +25,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
+  const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
   const navigate = useNavigate();
   const { i18n } = useTranslation();
   const { userProgress } = useApp();
@@ -31,6 +34,8 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const [showMonuments, setShowMonuments] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
+  const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
 
   // Exposer la fonction de recentrage via callback
   useEffect(() => {
@@ -544,11 +549,8 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
           filteredPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
-            // Déterminer la religion du lieu pour appliquer sa couleur
             const placeReligion = inferReligionFromPlace(place.type, place.name);
             const isVisited = userProgress.visitedPlaces.includes(place.id);
-            
-            // Utiliser la couleur de la religion du lieu (indépendant du parcours choisi)
             const markerColor = religionColors[placeReligion].marker;
             
             const popup = new mapboxgl.Popup({ 
@@ -607,25 +609,95 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
     }
   }, [showMonuments, userProgress.visitedPlaces, filters]);
 
-  const handleRecenter = () => {
-    if (map.current) {
-      map.current.flyTo({
-        center: [10, 50],
-        zoom: 1.5,
-        pitch: 0,
-        duration: 2000
-      });
-    }
-  };
+  // Afficher la position de l'utilisateur sur la carte
+  useEffect(() => {
+    if (!map.current || !map.current.loaded() || !userPosition) return;
 
-  if (showTokenInput) {
-    if (map.current) {
+    // Supprimer l'ancien marqueur de position utilisateur
+    if (userLocationMarker.current) {
+      userLocationMarker.current.remove();
+    }
+
+    // Créer un marqueur personnalisé pour la position de l'utilisateur
+    const el = document.createElement('div');
+    el.className = 'user-location-marker';
+    el.style.cssText = `
+      width: 20px;
+      height: 20px;
+      background: #2EA5FF;
+      border: 3px solid #FFFFFF;
+      border-radius: 50%;
+      box-shadow: 0 0 15px rgba(46, 165, 255, 0.6), 0 0 30px rgba(46, 165, 255, 0.3);
+      cursor: pointer;
+      animation: pulse 2s infinite;
+    `;
+
+    // Ajouter une animation de pulsation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+    `;
+    if (!document.head.querySelector('style[data-user-marker]')) {
+      style.setAttribute('data-user-marker', 'true');
+      document.head.appendChild(style);
+    }
+
+    const popup = new mapboxgl.Popup({ 
+      offset: 25,
+      maxWidth: '250px',
+      className: 'user-location-popup'
+    })
+      .setHTML(`
+        <div style="padding: 12px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 8px; border: 1px solid rgba(46, 165, 255, 0.5);">
+          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #2EA5FF;">📍 Votre position</h3>
+          <p style="margin: 0; font-size: 12px; color: #EAD7B5;">Précision: ~${Math.round(userPosition.accuracy)}m</p>
+        </div>
+      `);
+
+    userLocationMarker.current = new mapboxgl.Marker({ 
+      element: el,
+      anchor: 'center'
+    })
+      .setLngLat([userPosition.longitude, userPosition.latitude])
+      .setPopup(popup)
+      .addTo(map.current);
+
+    // Afficher un message de succès la première fois
+    toast.success('Position géolocalisée !');
+  }, [userPosition]);
+
+  const handleRecenter = () => {
+    if (!map.current) return;
+    
+    // Si on a une position géolocalisée, centrer dessus
+    if (userPosition) {
       map.current.flyTo({
-        center: [10, 50],
-        zoom: 1.5,
+        center: [userPosition.longitude, userPosition.latitude],
+        zoom: 12,
         pitch: 0,
         duration: 2000
       });
+      toast.success('Carte recentrée sur votre position');
+    } else {
+      // Sinon, demander la géolocalisation
+      setGeolocationEnabled(true);
+      
+      // Attendre un peu et vérifier si on a obtenu la position
+      setTimeout(() => {
+        if (geolocationError) {
+          toast.error(geolocationError.message);
+          // Recentrer sur l'Europe par défaut
+          map.current?.flyTo({
+            center: [10, 50],
+            zoom: 1.5,
+            pitch: 0,
+            duration: 2000
+          });
+        }
+      }, 1000);
     }
   };
 
