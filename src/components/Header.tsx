@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { ArrowLeft, LogOut, Mail, MapPin, Target } from 'lucide-react';
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/logo-icon.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';

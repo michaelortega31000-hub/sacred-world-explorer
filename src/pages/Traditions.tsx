@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Cross, Moon, Star, CircleDot, Flower2, Mountain, Compass, Church, Palette, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/logo-icon.png';
 
 type Tradition = {
   id: string;
