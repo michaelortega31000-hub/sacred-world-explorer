@@ -7,7 +7,7 @@ import { useApp, Religion } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { religionColors } from '@/config/religionColors';
-import logo from '@/assets/logo-icon.png';
+import logo from '@/assets/sacredworld-logo.png';
 // Icons for religious symbols
 import { Church, Moon, Star as StarIcon, Sparkles, Flame as FlameIcon, Users, AtSign, LogOut } from 'lucide-react';
 

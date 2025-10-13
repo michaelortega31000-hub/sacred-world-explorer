@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Globe, ArrowRight, BookOpen, MapPin, Award, X } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import logo from '@/assets/logo-icon.png';
+import logo from '@/assets/sacredworld-logo.png';
 
 const tutorialSteps = [
   {
