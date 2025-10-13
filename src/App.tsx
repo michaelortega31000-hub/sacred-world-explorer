@@ -14,6 +14,7 @@ import WorldMap from "./pages/WorldMap";
 import Country from "./pages/Country";
 import PlaceDetail from "./pages/PlaceDetail";
 import Auth from "./pages/Auth";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -34,6 +35,7 @@ const App = () => (
           <Route path="/world" element={<WorldMap />} />
           <Route path="/country/:country" element={<Country />} />
           <Route path="/place/:placeId" element={<PlaceDetail />} />
+          <Route path="/community" element={<Community />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

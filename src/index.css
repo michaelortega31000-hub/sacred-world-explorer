@@ -8,91 +8,81 @@ All colors MUST be HSL.
 
 @layer base {
   :root {
-    /* SacredWorld Design System - OR, BLEU, ROUGE */
-    --background: 210 100% 95%; /* Bleu clair */
-    --foreground: 222 47% 11%; /* Bleu très foncé */
+    /* SacredWorld Visual Identity - Deep Blue, Turquoise, Gold, Beige */
+    --background: 221 75% 15%; /* Deep blue #0E1B3F */
+    --foreground: 0 0% 96%; /* Off-white #F5F5F5 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 221 69% 18%; /* Light midnight blue #142B4F */
+    --card-foreground: 0 0% 96%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 221 69% 18%;
+    --popover-foreground: 0 0% 96%;
 
-    --primary: 45 100% 51%; /* OR éclatant #FFD700 */
-    --primary-foreground: 222 47% 11%;
+    --primary: 165 72% 54%; /* Light turquoise #34E0A1 */
+    --primary-foreground: 221 75% 15%;
 
-    --secondary: 220 70% 45%; /* BLEU royal #2563EB */
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 40 49% 81%; /* Sand beige #EAD7B5 */
+    --secondary-foreground: 221 75% 15%;
 
-    --muted: 210 100% 90%;
-    --muted-foreground: 222 20% 35%;
+    --muted: 221 65% 22%;
+    --muted-foreground: 0 0% 80%;
 
-    --accent: 0 84% 48%; /* ROUGE vif #DC2626 */
-    --accent-foreground: 0 0% 100%;
+    --accent: 165 72% 54%;
+    --accent-foreground: 221 75% 15%;
 
-    --destructive: 0 84% 48%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 96%;
 
-    --border: 39 25% 85%;
-    --input: 39 25% 85%;
-    --ring: 45 100% 51%;
+    --border: 221 60% 25%;
+    --input: 221 60% 25%;
+    --ring: 165 72% 54%;
 
     --radius: 0.75rem;
 
-    /* Custom theme colors - Palette sacrée */
-    --sacred-gold: 45 100% 51%; /* OR principal */
-    --sacred-gold-light: 48 100% 70%; /* OR clair */
-    --sacred-gold-dark: 42 95% 38%; /* OR foncé */
+    /* Sacred World Gold & Turquoise Theme */
+    --sacred-gold: 43 76% 70%;
+    --sacred-turquoise: 165 72% 54%;
+    --sacred-blue: 221 75% 15%;
+    --sacred-midnight: 221 69% 18%;
+    --sacred-beige: 40 49% 81%;
+    --sacred-white: 0 0% 96%;
     
-    --sacred-blue: 220 70% 45%; /* BLEU royal */
-    --sacred-blue-light: 217 91% 60%; /* BLEU clair */
-    --sacred-blue-dark: 222 47% 30%; /* BLEU foncé */
+    /* Gradients with gold-turquoise harmony */
+    --gradient-gold: linear-gradient(135deg, hsl(43, 76%, 70%) 0%, hsl(43, 90%, 85%) 100%);
+    --gradient-turquoise: linear-gradient(135deg, hsl(165, 72%, 54%) 0%, hsl(165, 82%, 65%) 100%);
+    --gradient-sacred: linear-gradient(135deg, hsl(43, 76%, 70%) 0%, hsl(165, 72%, 54%) 100%);
+    --gradient-royal: linear-gradient(135deg, hsl(221, 75%, 15%) 0%, hsl(221, 69%, 18%) 100%);
+    --gradient-halo: radial-gradient(circle, hsl(43, 76%, 70% / 0.3) 0%, transparent 70%);
     
-    --sacred-red: 0 84% 48%; /* ROUGE vif */
-    --sacred-red-light: 0 72% 60%; /* ROUGE clair */
-    --sacred-red-dark: 0 70% 35%; /* ROUGE foncé */
-    
-    /* Gradients thématiques */
-    --gradient-gold: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(42 95% 38%) 100%);
-    --gradient-royal: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(220 70% 45%) 50%, hsl(0 84% 48%) 100%);
-    --gradient-premium: linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%);
-    --gradient-hero: linear-gradient(135deg, hsl(220 70% 45%) 0%, hsl(0 84% 48%) 100%);
-    
-    /* Shadows avec OR */
-    --shadow-gold: 0 8px 32px -4px hsl(45 100% 51% / 0.25);
-    --shadow-premium: 0 12px 48px -8px hsl(45 100% 51% / 0.35);
-    --shadow-soft: 0 4px 24px -2px hsl(222 47% 11% / 0.12);
-    --shadow-card: 0 8px 32px -4px hsl(222 47% 11% / 0.15);
+    /* Shadows with gold halo and turquoise reflections */
+    --shadow-gold: 0 10px 40px -10px hsl(43 76% 70% / 0.5);
+    --shadow-turquoise: 0 8px 32px -8px hsl(165 72% 54% / 0.4);
+    --shadow-premium: 0 20px 60px -15px hsl(221 75% 15% / 0.5);
+    --shadow-glow: 0 0 40px hsl(43 76% 70% / 0.4);
+    --shadow-halo: 0 0 60px hsl(43 76% 70% / 0.5), 0 0 100px hsl(165 72% 54% / 0.3);
   }
 
   .dark {
-    --background: 155 50% 8%;
-    --foreground: 39 36% 93%;
-
-    --card: 155 40% 12%;
-    --card-foreground: 39 36% 93%;
-
-    --popover: 155 40% 12%;
-    --popover-foreground: 39 36% 93%;
-
-    --primary: 39 36% 93%;
-    --primary-foreground: 155 100% 11%;
-
-    --secondary: 0 63% 35%;
-    --secondary-foreground: 39 36% 93%;
-
-    --muted: 155 30% 18%;
-    --muted-foreground: 39 25% 70%;
-
-    --accent: 210 80% 35%;
-    --accent-foreground: 39 36% 93%;
-
-    --destructive: 0 63% 35%;
-    --destructive-foreground: 39 36% 93%;
-
-    --border: 155 30% 20%;
-    --input: 155 30% 20%;
-    --ring: 39 36% 93%;
+    /* Day mode - lighter, warmer tones */
+    --background: 40 30% 95%; /* Warm light background */
+    --foreground: 221 75% 15%;
+    --card: 0 0% 100%;
+    --card-foreground: 221 75% 15%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 221 75% 15%;
+    --primary: 165 72% 54%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 40 49% 81%;
+    --secondary-foreground: 221 75% 15%;
+    --muted: 40 20% 90%;
+    --muted-foreground: 221 50% 35%;
+    --accent: 165 72% 54%;
+    --accent-foreground: 221 75% 15%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 40 25% 85%;
+    --input: 40 25% 85%;
+    --ring: 165 72% 54%;
   }
 }
 
@@ -103,5 +93,91 @@ All colors MUST be HSL.
 
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', sans-serif;
   }
+}
+
+/* Sacred World Animations */
+@keyframes breathing-glow {
+  0%, 100% {
+    box-shadow: var(--shadow-glow);
+    opacity: 1;
+  }
+  50% {
+    box-shadow: var(--shadow-halo);
+    opacity: 0.9;
+  }
+}
+
+@keyframes pulse-halo {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: scale(1.1);
+    opacity: 0.7;
+  }
+}
+
+@keyframes float-up {
+  0% {
+    transform: translateY(20px);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%) translateY(-100%);
+  }
+  100% {
+    transform: translateX(100%) translateY(100%);
+  }
+}
+
+.breathing-glow {
+  animation: breathing-glow 3s ease-in-out infinite;
+}
+
+.pulse-halo {
+  animation: pulse-halo 2s ease-in-out infinite;
+}
+
+.float-up {
+  animation: float-up 0.6s ease-out;
+}
+
+.gold-halo {
+  position: relative;
+}
+
+.gold-halo::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: var(--gradient-halo);
+  border-radius: inherit;
+  z-index: -1;
+  animation: pulse-halo 3s ease-in-out infinite;
+}
+
+.turquoise-reflection {
+  position: relative;
+  overflow: hidden;
+}
+
+.turquoise-reflection::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(45deg, transparent 30%, hsl(165 72% 54% / 0.1) 50%, transparent 70%);
+  animation: shimmer 3s ease-in-out infinite;
 }
