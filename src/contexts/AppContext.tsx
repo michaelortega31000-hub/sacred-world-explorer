@@ -99,11 +99,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         newBadges.push('master');
       }
       
+      // Award special badges for visiting specific places
+      const specialPlaceBadges: Record<string, string> = {
+        'mecca-kaaba': 'mecca_badge',
+        'notre-dame': 'notre_dame_badge',
+        'vatican': 'vatican_badge',
+        'taj-mahal': 'taj_mahal_badge',
+        'western-wall': 'western_wall_badge',
+        'golden-temple': 'golden_temple_badge',
+        'angkor-wat': 'angkor_wat_badge',
+        'sagrada-familia': 'sagrada_familia_badge'
+      };
+      
+      const badgeId = specialPlaceBadges[placeId];
+      if (badgeId && !newBadges.includes(badgeId)) {
+        newBadges.push(badgeId);
+      }
+      
+      // Remove place from trip planner when visited
+      const newTripPlaces = prev.tripPlaces.filter(id => id !== placeId);
+      
       return {
         ...prev,
         visitedPlaces: [...prev.visitedPlaces, placeId],
         totalPoints: newTotalPoints,
-        badges: newBadges
+        badges: newBadges,
+        tripPlaces: newTripPlaces
       };
     });
   };

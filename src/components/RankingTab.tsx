@@ -4,7 +4,7 @@ import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Trophy, Award, Star, Lock } from 'lucide-react';
+import { Trophy, Award, Star, Lock, Church, Sparkles, Mountain, Heart } from 'lucide-react';
 
 const RankingTab = () => {
   const { t } = useTranslation();
@@ -35,19 +35,100 @@ const RankingTab = () => {
       icon: Trophy,
       pointsRequired: 1000,
       color: 'text-yellow-500'
+    },
+    // Special place badges
+    {
+      id: 'mecca_badge',
+      name: 'La Mecque',
+      description: 'Visitez la Kaaba à La Mecque',
+      icon: Sparkles,
+      pointsRequired: 0,
+      color: 'text-emerald-500'
+    },
+    {
+      id: 'notre_dame_badge',
+      name: 'Notre-Dame',
+      description: 'Visitez Notre-Dame de Paris',
+      icon: Church,
+      pointsRequired: 0,
+      color: 'text-rose-500'
+    },
+    {
+      id: 'vatican_badge',
+      name: 'Vatican',
+      description: 'Visitez la Basilique Saint-Pierre',
+      icon: Church,
+      pointsRequired: 0,
+      color: 'text-amber-500'
+    },
+    {
+      id: 'taj_mahal_badge',
+      name: 'Taj Mahal',
+      description: 'Visitez le Taj Mahal',
+      icon: Heart,
+      pointsRequired: 0,
+      color: 'text-pink-500'
+    },
+    {
+      id: 'western_wall_badge',
+      name: 'Mur des Lamentations',
+      description: 'Visitez le Mur occidental à Jérusalem',
+      icon: Mountain,
+      pointsRequired: 0,
+      color: 'text-stone-500'
+    },
+    {
+      id: 'golden_temple_badge',
+      name: 'Temple d\'Or',
+      description: 'Visitez le Temple d\'Or d\'Amritsar',
+      icon: Sparkles,
+      pointsRequired: 0,
+      color: 'text-yellow-400'
+    },
+    {
+      id: 'angkor_wat_badge',
+      name: 'Angkor Wat',
+      description: 'Visitez le temple d\'Angkor Wat',
+      icon: Mountain,
+      pointsRequired: 0,
+      color: 'text-orange-500'
+    },
+    {
+      id: 'sagrada_familia_badge',
+      name: 'Sagrada Familia',
+      description: 'Visitez la Sagrada Familia de Barcelone',
+      icon: Church,
+      pointsRequired: 0,
+      color: 'text-indigo-500'
     }
   ];
 
   const badgeIcons = {
     explorer: <Star className="w-4 h-4" />,
     pilgrim: <Award className="w-4 h-4" />,
-    master: <Trophy className="w-4 h-4" />
+    master: <Trophy className="w-4 h-4" />,
+    mecca_badge: <Sparkles className="w-4 h-4" />,
+    notre_dame_badge: <Church className="w-4 h-4" />,
+    vatican_badge: <Church className="w-4 h-4" />,
+    taj_mahal_badge: <Heart className="w-4 h-4" />,
+    western_wall_badge: <Mountain className="w-4 h-4" />,
+    golden_temple_badge: <Sparkles className="w-4 h-4" />,
+    angkor_wat_badge: <Mountain className="w-4 h-4" />,
+    sagrada_familia_badge: <Church className="w-4 h-4" />
   };
 
   const badgeNames = {
     explorer: 'Explorateur (100 pts)',
     pilgrim: 'Pèlerin (500 pts)',
-    master: 'Maître (1000 pts)'
+    master: 'Maître (1000 pts)',
+    mecca_badge: 'La Mecque',
+    notre_dame_badge: 'Notre-Dame',
+    vatican_badge: 'Vatican',
+    taj_mahal_badge: 'Taj Mahal',
+    western_wall_badge: 'Mur des Lamentations',
+    golden_temple_badge: 'Temple d\'Or',
+    angkor_wat_badge: 'Angkor Wat',
+    sagrada_familia_badge: 'Sagrada Familia'
   };
 
   return (
