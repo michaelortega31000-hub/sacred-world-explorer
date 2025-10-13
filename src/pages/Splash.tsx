@@ -106,6 +106,7 @@ const Splash = () => {
 
   const currentStep = tutorialSteps[tutorialStep];
   const StepIcon = currentStep?.icon;
+  const currentLang = languages.find(l => l.code === selectedLanguage) || languages[0];
 
   return (
     <div 
@@ -133,42 +134,39 @@ const Splash = () => {
         </Button>
       </div>
       
-      {/* Clickable zones overlay */}
+      {/* Action buttons stacked */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
-        {/* Empty space for logo and text - centered */}
-        <div className="flex-1 flex items-center justify-center w-full max-w-2xl">
-          {/* This space contains the logo and text from the image */}
-        </div>
-        
-        {/* Button zone - positioned where "Commencer l'exploration" appears */}
-        <div className="w-full max-w-md mb-6">
-          <button
+        <div className="flex-1 flex items-center justify-center w-full max-w-2xl" />
+
+        <div className="w-full max-w-md mb-10 space-y-4 z-10">
+          <Button
             onClick={handleStartExploration}
-            className="w-full h-16 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-primary rounded-full"
-            aria-label="Commencer l'exploration"
-          />
-        </div>
-        
-        {/* Tutorial button - visible and well separated */}
-        <div className="mb-6">
+            size="lg"
+            className="w-full h-14 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200"
+          >
+            {"Commencer l'exploration"}
+          </Button>
+
           <Button
             onClick={handleTutorialOpen}
             size="lg"
             variant="outline"
-            className="gap-2 px-8 py-6 text-lg border-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground shadow-lg"
+            className="w-full h-14 text-lg font-semibold rounded-full border-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground shadow-lg"
           >
-            <BookOpen className="w-5 h-5" />
+            <BookOpen className="w-5 h-5 mr-2" />
             Tutoriel
           </Button>
-        </div>
-        
-        {/* Language selector zone - positioned at bottom with more space */}
-        <div className="mb-8">
-          <button
+
+          <Button
             onClick={handleLanguageClick}
-            className="w-40 h-12 cursor-pointer opacity-0 hover:opacity-10 transition-opacity bg-primary rounded-lg"
+            size="lg"
+            variant="outline"
+            className="w-full h-14 text-lg font-semibold rounded-full border-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground"
             aria-label="Choisir la langue"
-          />
+          >
+            <span className="mr-2 text-xl">{currentLang.flag}</span>
+            {currentLang.name}
+          </Button>
         </div>
       </div>
 
