@@ -280,6 +280,24 @@ const Country = () => {
         </div>
 
         <TabsContent value="places" className="flex-1 m-0 p-6 relative">
+          {/* Back to Globe Button */}
+          <div className="absolute top-4 right-4 z-30">
+            <Button
+              onClick={() => navigate('/world')}
+              variant="outline"
+              size="sm"
+              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 shadow-lg"
+              style={{
+                background: 'rgba(20, 43, 79, 0.8)',
+                color: '#F5F5F5',
+                borderColor: 'rgba(52, 224, 161, 0.3)',
+              }}
+            >
+              <ArrowLeft className="w-4 h-4" />
+              <span className="hidden sm:inline">Retour au globe</span>
+            </Button>
+          </div>
+
           {/* Alphabet Navigator */}
           {availableLetters.length > 0 && (
             <div className="fixed right-4 top-1/2 -translate-y-1/2 z-40 bg-card border-2 border-primary/20 rounded-full shadow-lg p-2">
