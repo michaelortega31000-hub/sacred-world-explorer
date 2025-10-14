@@ -94,46 +94,32 @@ const CalendarTab = () => {
   };
 
   return (
-    <div 
-      className="min-h-screen relative overflow-hidden pb-24"
-      style={{ background: '#0E1B3F' }}
-    >
-      {/* Background globe blur */}
-      <div className="absolute inset-0 opacity-10">
-        <div 
-          className="absolute inset-0" 
-          style={{
-            background: 'radial-gradient(circle at 50% 50%, rgba(52, 224, 161, 0.2) 0%, transparent 70%)'
-          }}
-        />
-      </div>
+    <div className="min-h-screen bg-background pb-24 relative">
+      {/* Subtle glow background effect */}
+      <div 
+        className="absolute inset-0 opacity-5"
+        style={{
+          backgroundImage: 'radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.2) 0%, transparent 50%)',
+          filter: 'blur(100px)'
+        }}
+      />
 
       <div className="container mx-auto p-6 space-y-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 
-            className="text-4xl font-serif font-bold mb-2 flex items-center justify-center gap-3"
-            style={{ color: '#34E0A1' }}
-          >
+          <h1 className="text-4xl font-serif font-bold mb-2 flex items-center justify-center gap-3 text-primary">
             <Sparkles className="w-8 h-8" />
             Calendrier Spirituel Mondial
           </h1>
-          <p className="text-lg" style={{ color: '#F5F5F5' }}>
+          <p className="text-lg text-foreground opacity-90">
             Découvrez les célébrations religieuses et culturelles du monde entier
           </p>
         </div>
 
         {/* Tradition Filters */}
-        <Card 
-          className="backdrop-blur-md border-2"
-          style={{
-            background: 'rgba(234, 215, 181, 0.6)',
-            borderColor: 'rgba(52, 224, 161, 0.3)',
-            boxShadow: '0 0 20px rgba(244, 197, 66, 0.2)'
-          }}
-        >
+        <Card className="border-border bg-card shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: '#0E1B3F' }}>
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <Filter className="w-5 h-5" />
               Filtrer par tradition
             </CardTitle>
@@ -145,15 +131,10 @@ const CalendarTab = () => {
                   key={tradition}
                   onClick={() => setTraditionFilter(tradition)}
                   variant={traditionFilter === tradition ? 'default' : 'outline'}
-                  className="gap-2 transition-all"
-                  style={traditionFilter === tradition ? {
-                    background: traditionColors[tradition],
-                    color: tradition === 'other' ? '#0E1B3F' : '#FFFFFF',
-                    borderColor: traditionColors[tradition]
-                  } : {
-                    borderColor: traditionColors[tradition],
-                    color: '#0E1B3F'
-                  }}
+                  className={cn(
+                    "gap-2 transition-all",
+                    traditionFilter === tradition && "ring-2 ring-primary shadow-md bg-primary text-primary-foreground"
+                  )}
                 >
                   <span className="text-lg">{traditionLabels[tradition].icon}</span>
                   <span className="hidden sm:inline">{traditionLabels[tradition].label}</span>
@@ -165,20 +146,13 @@ const CalendarTab = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Calendrier */}
-          <Card 
-            className="backdrop-blur-md border-2"
-            style={{
-              background: 'rgba(234, 215, 181, 0.9)',
-              borderColor: 'rgba(52, 224, 161, 0.3)',
-              boxShadow: '0 0 30px rgba(52, 224, 161, 0.2)'
-            }}
-          >
+          <Card className="border-border bg-card shadow-lg">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2" style={{ color: '#0E1B3F' }}>
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <CalendarIcon className="w-5 h-5" />
                 Calendrier 2025
               </CardTitle>
-              <CardDescription style={{ color: 'rgba(14, 27, 63, 0.7)' }}>
+              <CardDescription className="text-muted-foreground">
                 Les points colorés indiquent les événements religieux
               </CardDescription>
             </CardHeader>
@@ -202,19 +176,12 @@ const CalendarTab = () => {
           </Card>
 
           {/* Événements du jour sélectionné */}
-          <Card 
-            className="backdrop-blur-md border-2"
-            style={{
-              background: 'rgba(234, 215, 181, 0.9)',
-              borderColor: 'rgba(52, 224, 161, 0.3)',
-              boxShadow: '0 0 30px rgba(52, 224, 161, 0.2)'
-            }}
-          >
+          <Card className="border-border bg-card shadow-lg">
             <CardHeader>
-              <CardTitle style={{ color: '#0E1B3F' }}>
+              <CardTitle className="text-foreground">
                 {selectedDate ? format(selectedDate, 'dd MMMM yyyy', { locale: fr }) : 'Aucune date sélectionnée'}
               </CardTitle>
-              <CardDescription style={{ color: 'rgba(14, 27, 63, 0.7)' }}>
+              <CardDescription className="text-muted-foreground">
                 {religiousEventsForSelectedDate.length + eventsForSelectedDate.length} événement{(religiousEventsForSelectedDate.length + eventsForSelectedDate.length) > 1 ? 's' : ''}
               </CardDescription>
             </CardHeader>
@@ -222,8 +189,8 @@ const CalendarTab = () => {
               <ScrollArea className="h-[400px]">
                 {religiousEventsForSelectedDate.length === 0 && eventsForSelectedDate.length === 0 ? (
                   <div className="text-center py-12">
-                    <CalendarIcon className="w-16 h-16 mx-auto mb-4" style={{ color: 'rgba(14, 27, 63, 0.3)' }} />
-                    <p style={{ color: 'rgba(14, 27, 63, 0.6)' }}>
+                    <CalendarIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-30" />
+                    <p className="text-muted-foreground">
                       Aucun événement ce jour
                     </p>
                   </div>
@@ -231,31 +198,27 @@ const CalendarTab = () => {
                   <div className="space-y-3">
                     {/* Religious Events */}
                     {religiousEventsForSelectedDate.map((event) => (
-                      <div
-                        key={event.id}
-                        onClick={() => setSelectedEvent(event)}
-                        className="p-4 rounded-lg border transition-all cursor-pointer hover:shadow-lg"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.5)',
-                          borderColor: event.color,
-                          borderWidth: '2px'
-                        }}
-                      >
-                        <div className="flex items-start gap-3">
-                          <div 
-                            className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5"
-                            style={{ 
-                              backgroundColor: event.color,
-                              boxShadow: `0 0 10px ${event.color}`
-                            }}
-                          />
-                          <div className="flex-1">
-                            <h4 className="font-semibold mb-1" style={{ color: '#0E1B3F' }}>
-                              {event.nameFr}
-                            </h4>
-                            <p className="text-sm mb-2" style={{ color: 'rgba(14, 27, 63, 0.7)' }}>
-                              {event.descriptionFr}
-                            </p>
+                        <div
+                          key={event.id}
+                          onClick={() => setSelectedEvent(event)}
+                          className="p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg hover:border-primary bg-secondary/50"
+                          style={{ borderColor: event.color }}
+                        >
+                          <div className="flex items-start gap-3">
+                            <div 
+                              className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5"
+                              style={{ 
+                                backgroundColor: event.color,
+                                boxShadow: `0 0 10px ${event.color}`
+                              }}
+                            />
+                            <div className="flex-1">
+                              <h4 className="font-semibold mb-1 text-foreground">
+                                {event.nameFr}
+                              </h4>
+                              <p className="text-sm mb-2 text-muted-foreground">
+                                {event.descriptionFr}
+                              </p>
                             <Badge 
                               className="text-xs"
                               style={{ 
@@ -274,21 +237,17 @@ const CalendarTab = () => {
                     {eventsForSelectedDate.map((event, index) => (
                       <div
                         key={`${event.placeId}-${index}`}
-                        className="p-4 rounded-lg border transition-all"
-                        style={{
-                          background: 'rgba(255, 255, 255, 0.5)',
-                          borderColor: event.type === 'visited' ? '#34E0A1' : '#F4C542',
-                          borderWidth: '2px'
-                        }}
+                        className="p-4 rounded-lg border-2 transition-all bg-secondary/50"
+                        style={{ borderColor: event.type === 'visited' ? 'hsl(var(--primary))' : 'hsl(var(--accent))' }}
                       >
                         <div className="flex items-start gap-3">
                           {event.type === 'visited' ? (
-                            <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-1" style={{ color: '#34E0A1' }} />
+                            <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-1 text-primary" />
                           ) : (
-                            <Clock className="w-5 h-5 flex-shrink-0 mt-1" style={{ color: '#F4C542' }} />
+                            <Clock className="w-5 h-5 flex-shrink-0 mt-1 text-accent" />
                           )}
                           <div className="flex-1">
-                            <h4 className="font-semibold mb-1" style={{ color: '#0E1B3F' }}>
+                            <h4 className="font-semibold mb-1 text-foreground">
                               {event.placeName}
                             </h4>
                             <Badge 
@@ -310,82 +269,58 @@ const CalendarTab = () => {
 
         {/* Statistiques */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card 
-            className="backdrop-blur-md border-2"
-            style={{
-              background: 'rgba(234, 215, 181, 0.8)',
-              borderColor: 'rgba(52, 224, 161, 0.3)'
-            }}
-          >
+          <Card className="border-border bg-card shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'rgba(14, 27, 63, 0.7)' }}>Lieux visités</p>
-                  <p className="text-3xl font-bold" style={{ color: '#34E0A1' }}>
+                  <p className="text-sm text-muted-foreground">Lieux visités</p>
+                  <p className="text-3xl font-bold text-primary">
                     {userProgress.visitedPlaces.length}
                   </p>
                 </div>
-                <CheckCircle2 className="w-8 h-8 opacity-50" style={{ color: '#34E0A1' }} />
+                <CheckCircle2 className="w-8 h-8 opacity-50 text-primary" />
               </div>
             </CardContent>
           </Card>
 
-          <Card 
-            className="backdrop-blur-md border-2"
-            style={{
-              background: 'rgba(234, 215, 181, 0.8)',
-              borderColor: 'rgba(52, 224, 161, 0.3)'
-            }}
-          >
+          <Card className="border-border bg-card shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'rgba(14, 27, 63, 0.7)' }}>Lieux planifiés</p>
-                  <p className="text-3xl font-bold" style={{ color: '#F4C542' }}>
+                  <p className="text-sm text-muted-foreground">Lieux planifiés</p>
+                  <p className="text-3xl font-bold text-accent">
                     {userProgress.tripPlaces.length}
                   </p>
                 </div>
-                <Clock className="w-8 h-8 opacity-50" style={{ color: '#F4C542' }} />
+                <Clock className="w-8 h-8 opacity-50 text-accent" />
               </div>
             </CardContent>
           </Card>
 
-          <Card 
-            className="backdrop-blur-md border-2"
-            style={{
-              background: 'rgba(234, 215, 181, 0.8)',
-              borderColor: 'rgba(52, 224, 161, 0.3)'
-            }}
-          >
+          <Card className="border-border bg-card shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'rgba(14, 27, 63, 0.7)' }}>Événements 2025</p>
-                  <p className="text-3xl font-bold" style={{ color: '#0E1B3F' }}>
+                  <p className="text-sm text-muted-foreground">Événements 2025</p>
+                  <p className="text-3xl font-bold text-foreground">
                     {filteredReligiousEvents.length}
                   </p>
                 </div>
-                <Sparkles className="w-8 h-8 opacity-50" style={{ color: '#C6A45A' }} />
+                <Sparkles className="w-8 h-8 opacity-50 text-accent" />
               </div>
             </CardContent>
           </Card>
 
-          <Card 
-            className="backdrop-blur-md border-2"
-            style={{
-              background: 'rgba(234, 215, 181, 0.8)',
-              borderColor: 'rgba(52, 224, 161, 0.3)'
-            }}
-          >
+          <Card className="border-border bg-card shadow-lg">
             <CardContent className="pt-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm" style={{ color: 'rgba(14, 27, 63, 0.7)' }}>Traditions</p>
-                  <p className="text-3xl font-bold" style={{ color: '#0E1B3F' }}>
+                  <p className="text-sm text-muted-foreground">Traditions</p>
+                  <p className="text-3xl font-bold text-foreground">
                     6
                   </p>
                 </div>
-                <Globe className="w-8 h-8 opacity-50" style={{ color: '#00C6FF' }} />
+                <Globe className="w-8 h-8 opacity-50 text-primary" />
               </div>
             </CardContent>
           </Card>
@@ -394,18 +329,11 @@ const CalendarTab = () => {
 
       {/* Event Detail Modal */}
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        <DialogContent 
-          className="max-w-2xl backdrop-blur-xl border-2"
-          style={{
-            background: 'rgba(234, 215, 181, 0.95)',
-            borderColor: selectedEvent?.color || '#34E0A1',
-            boxShadow: `0 0 40px ${selectedEvent?.color || '#34E0A1'}40`
-          }}
-        >
+        <DialogContent className="max-w-2xl border-primary bg-card">
           {selectedEvent && (
             <>
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-3 text-2xl" style={{ color: '#0E1B3F' }}>
+                <DialogTitle className="flex items-center gap-3 text-2xl text-foreground">
                   <div 
                     className="w-4 h-4 rounded-full"
                     style={{ 
@@ -423,22 +351,19 @@ const CalendarTab = () => {
                     className="mb-3"
                     style={{ 
                       backgroundColor: selectedEvent.color,
-                      color: selectedEvent.tradition === 'other' ? '#0E1B3F' : '#FFFFFF'
+                      color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
                     }}
                   >
                     {traditionLabels[selectedEvent.tradition].icon} {traditionLabels[selectedEvent.tradition].label}
                   </Badge>
                   
-                  <p className="text-lg leading-relaxed" style={{ color: '#0E1B3F' }}>
+                  <p className="text-lg leading-relaxed text-foreground">
                     {selectedEvent.descriptionFr}
                   </p>
                 </div>
 
-                <div 
-                  className="p-4 rounded-lg"
-                  style={{ background: 'rgba(255, 255, 255, 0.5)' }}
-                >
-                  <p className="flex items-center gap-2 text-sm font-medium mb-2" style={{ color: '#0E1B3F' }}>
+                <div className="p-4 rounded-lg bg-secondary/50">
+                  <p className="flex items-center gap-2 text-sm font-medium mb-2 text-foreground">
                     <CalendarIcon className="w-4 h-4" />
                     {format(selectedEvent.date, 'EEEE dd MMMM yyyy', { locale: fr })}
                   </p>
@@ -453,7 +378,7 @@ const CalendarTab = () => {
                     className="flex-1 gap-2"
                     style={{
                       background: selectedEvent.color,
-                      color: selectedEvent.tradition === 'other' ? '#0E1B3F' : '#FFFFFF'
+                      color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
                     }}
                   >
                     <Globe className="w-4 h-4" />
@@ -463,7 +388,6 @@ const CalendarTab = () => {
                   <Button
                     variant="outline"
                     onClick={() => setSelectedEvent(null)}
-                    style={{ borderColor: selectedEvent.color, color: '#0E1B3F' }}
                   >
                     <X className="w-4 h-4" />
                   </Button>

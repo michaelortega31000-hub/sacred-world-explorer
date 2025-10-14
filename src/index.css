@@ -9,33 +9,33 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* SacredWorld Visual Identity - Deep Blue, Turquoise, Gold, Beige */
-    --background: 221 75% 15%; /* Deep blue #0E1B3F */
+    --background: 215 45% 9%; /* Very dark blue #0A1628 */
     --foreground: 0 0% 96%; /* Off-white #F5F5F5 */
 
-    --card: 221 69% 18%; /* Light midnight blue #142B4F */
+    --card: 217 40% 12%; /* Very dark blue card #0F1B2D */
     --card-foreground: 0 0% 96%;
 
-    --popover: 221 69% 18%;
+    --popover: 217 40% 12%;
     --popover-foreground: 0 0% 96%;
 
-    --primary: 165 72% 54%; /* Light turquoise #34E0A1 */
-    --primary-foreground: 221 75% 15%;
+    --primary: 180 65% 55%; /* Turquoise cyan #4ECDC4 */
+    --primary-foreground: 217 40% 12%;
 
-    --secondary: 40 49% 81%; /* Sand beige #EAD7B5 */
-    --secondary-foreground: 221 75% 15%;
+    --secondary: 215 35% 18%; /* Dark blue secondary */
+    --secondary-foreground: 0 0% 96%;
 
-    --muted: 221 65% 22%;
-    --muted-foreground: 0 0% 80%;
+    --muted: 215 35% 18%;
+    --muted-foreground: 0 0% 65%;
 
-    --accent: 165 72% 54%;
-    --accent-foreground: 221 75% 15%;
+    --accent: 180 65% 55%;
+    --accent-foreground: 217 40% 12%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 96%;
 
-    --border: 221 60% 25%;
-    --input: 221 60% 25%;
-    --ring: 165 72% 54%;
+    --border: 217 40% 20%; /* Subtle dark border */
+    --input: 217 40% 20%;
+    --ring: 180 65% 55%;
 
     --radius: 0.75rem;
 
