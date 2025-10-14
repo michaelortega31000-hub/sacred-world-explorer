@@ -32,11 +32,14 @@ interface RestaurantsTabProps {
 const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
   const { t } = useTranslation();
   const [selectedType, setSelectedType] = useState<RestaurantType>('all');
+  const [selectedContinent, setSelectedContinent] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>(country || 'all');
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+  const [continents, setContinents] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
   const [cities, setCities] = useState<string[]>([]);
+  const [cityRestaurantCounts, setCityRestaurantCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   const fetchRestaurants = async () => {
@@ -46,6 +49,10 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
         .from('restaurants')
         .select('*')
         .eq('verified', true);
+
+      if (selectedContinent !== 'all') {
+        query = query.eq('continent', selectedContinent);
+      }
 
       if (selectedCountry !== 'all') {
         query = query.eq('country', selectedCountry);
@@ -67,12 +74,34 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
     }
   };
 
-  const fetchCountries = async () => {
+  const fetchContinents = async () => {
     try {
       const { data, error } = await supabase
         .from('restaurants')
+        .select('continent')
+        .eq('verified', true);
+
+      if (error) throw error;
+
+      const uniqueContinents = [...new Set(data?.map(r => r.continent).filter(Boolean) || [])];
+      setContinents(uniqueContinents);
+    } catch (error) {
+      logger.error('Error fetching continents:', error);
+    }
+  };
+
+  const fetchCountries = async () => {
+    try {
+      let query = supabase
+        .from('restaurants')
         .select('country')
         .eq('verified', true);
+
+      if (selectedContinent !== 'all') {
+        query = query.eq('continent', selectedContinent);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
 
@@ -90,6 +119,10 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
         .select('city')
         .eq('verified', true);
 
+      if (selectedContinent !== 'all') {
+        query = query.eq('continent', selectedContinent);
+      }
+
       if (selectedCountry !== 'all') {
         query = query.eq('country', selectedCountry);
       }
@@ -100,22 +133,51 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
 
       const uniqueCities = [...new Set(data?.map(r => r.city) || [])];
       setCities(uniqueCities);
+
+      // Compter les restaurants par ville
+      const counts: Record<string, number> = {};
+      for (const city of uniqueCities) {
+        let countQuery = supabase
+          .from('restaurants')
+          .select('id', { count: 'exact', head: true })
+          .eq('verified', true)
+          .eq('city', city);
+
+        if (selectedContinent !== 'all') {
+          countQuery = countQuery.eq('continent', selectedContinent);
+        }
+
+        if (selectedCountry !== 'all') {
+          countQuery = countQuery.eq('country', selectedCountry);
+        }
+
+        const { count } = await countQuery;
+        counts[city] = count || 0;
+      }
+      setCityRestaurantCounts(counts);
     } catch (error) {
       logger.error('Error fetching cities:', error);
     }
   };
 
   useEffect(() => {
-    fetchCountries();
+    fetchContinents();
   }, []);
 
   useEffect(() => {
+    setSelectedCountry('all');
+    setSelectedCity('all');
+    fetchCountries();
+  }, [selectedContinent]);
+
+  useEffect(() => {
+    setSelectedCity('all');
     fetchCities();
-  }, [selectedCountry]);
+  }, [selectedCountry, selectedContinent]);
 
   useEffect(() => {
     fetchRestaurants();
-  }, [selectedCountry, selectedCity]);
+  }, [selectedContinent, selectedCountry, selectedCity]);
 
   const filteredRestaurants = selectedType === 'all' 
     ? restaurants 
@@ -161,11 +223,25 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
       {/* Location Filters */}
       <div className="mb-6 flex flex-wrap gap-4">
         <div className="flex-1 min-w-[200px]">
+          <Select value={selectedContinent} onValueChange={setSelectedContinent}>
+            <SelectTrigger className="bg-card border-border">
+              <SelectValue placeholder="Sélectionner un continent" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border z-50">
+              <SelectItem value="all">Tous les continents</SelectItem>
+              {continents.map((c) => (
+                <SelectItem key={c} value={c}>{c}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="flex-1 min-w-[200px]">
           <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-card border-border">
               <SelectValue placeholder="Sélectionner un pays" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-border z-50">
               <SelectItem value="all">Tous les pays</SelectItem>
               {countries.map((c) => (
                 <SelectItem key={c} value={c}>{c}</SelectItem>
@@ -176,13 +252,19 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
 
         <div className="flex-1 min-w-[200px]">
           <Select value={selectedCity} onValueChange={setSelectedCity}>
-            <SelectTrigger>
+            <SelectTrigger className="bg-card border-border">
               <SelectValue placeholder="Sélectionner une ville" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="bg-card border-border z-50">
               <SelectItem value="all">Toutes les villes</SelectItem>
               {cities.map((c) => (
-                <SelectItem key={c} value={c}>{c}</SelectItem>
+                <SelectItem key={c} value={c}>
+                  {c} {cityRestaurantCounts[c] && (
+                    <span className="text-muted-foreground ml-2">
+                      ({cityRestaurantCounts[c]})
+                    </span>
+                  )}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
