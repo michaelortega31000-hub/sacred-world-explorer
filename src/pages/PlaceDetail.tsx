@@ -121,9 +121,19 @@ const PlaceDetail = () => {
   if (!place) return null;
 
   const handleCheckIn = async () => {
+    const { data: { session: currentSession } } = await supabase.auth.getSession();
+    
+    if (!currentSession?.user) {
+      toast({
+        title: "Connexion requise",
+        description: "Vous devez être connecté pour valider une visite",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setCheckingLocation(true);
     
-    // Simuler la vérification GPS
     if ('geolocation' in navigator) {
       try {
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
@@ -134,16 +144,23 @@ const PlaceDetail = () => {
           });
         });
 
-        // Calculer la distance (simplifié)
-        const distance = calculateDistance(
-          position.coords.latitude,
-          position.coords.longitude,
-          place.coordinates[1],
-          place.coordinates[0]
-        );
+        // Call server-side verification
+        const response = await supabase.functions.invoke('verify-visit', {
+          body: {
+            placeId: placeId,
+            placeCoordinates: place.coordinates,
+            placePoints: place.points,
+            userLat: position.coords.latitude,
+            userLon: position.coords.longitude
+          }
+        });
 
-        if (distance <= 500) {
-          // Dans le rayon de 500m
+        if (response.error) {
+          throw response.error;
+        }
+
+        if (response.data?.success) {
+          // Update local state
           visitPlace(placeId!, place.points);
           setIsCheckinModalOpen(false);
           setTimeout(() => {
@@ -152,21 +169,29 @@ const PlaceDetail = () => {
           
           toast({
             title: "Visite validée !",
-            description: `+${place.points} points gagnés`,
+            description: `+${response.data.points} points gagnés`,
           });
         } else {
           toast({
-            title: "Trop loin",
-            description: `Vous devez être à moins de 500m du lieu (actuellement à ${Math.round(distance)}m)`,
+            title: "Vérification échouée",
+            description: response.data?.error || "Vous êtes trop loin du lieu",
             variant: "destructive"
           });
         }
-      } catch (error) {
-        toast({
-          title: "Erreur GPS",
-          description: "Impossible d'accéder à votre position. Utilisez la photo comme preuve.",
-          variant: "destructive"
-        });
+      } catch (error: any) {
+        if (error?.message?.includes('Rate limit exceeded')) {
+          toast({
+            title: "Limite atteinte",
+            description: "Maximum 10 vérifications par jour. Réessayez demain.",
+            variant: "destructive"
+          });
+        } else {
+          toast({
+            title: "Erreur GPS",
+            description: "Impossible d'accéder à votre position. Utilisez la photo comme preuve.",
+            variant: "destructive"
+          });
+        }
       }
     } else {
       toast({

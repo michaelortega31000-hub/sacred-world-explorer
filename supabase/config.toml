@@ -1,1 +1,4 @@
 project_id = "uekqjlaguhzotiuqskvb"
+
+[functions.verify-visit]
+verify_jwt = true
