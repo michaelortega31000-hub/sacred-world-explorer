@@ -1,26 +1,33 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, MapPin, Star, Globe, Camera, User } from 'lucide-react';
+import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { logger } from '@/lib/logger';
+import LocationsTab from '@/components/LocationsTab';
 
 const Profile = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { userProgress } = useApp();
   const { checkRateLimit } = useRateLimit();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  
+  // Check if we should open the journal tab
+  const params = new URLSearchParams(location.search);
+  const initialTab = params.get('section') || 'profile';
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -195,15 +202,25 @@ const Profile = () => {
       <Header />
 
       <main className="relative z-10 max-w-4xl mx-auto px-4 py-8 pb-24">
-        <div 
-          className="bg-sacred-beige/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl"
-          style={{
-            boxShadow: '0 0 40px rgba(52, 224, 161, 0.2), 0 0 80px rgba(244, 197, 66, 0.1)'
-          }}
-        >
-          <h1 className="text-3xl font-serif text-sacred-blue mb-8 text-center">
-            Mon Profil
-          </h1>
+        <Tabs defaultValue={initialTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="profile" className="gap-2">
+              <User className="w-4 h-4" />
+              Mon Profil
+            </TabsTrigger>
+            <TabsTrigger value="journal" className="gap-2">
+              <BookOpen className="w-4 h-4" />
+              Mon Journal
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="profile">
+            <div 
+              className="bg-sacred-beige/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl"
+              style={{
+                boxShadow: '0 0 40px rgba(52, 224, 161, 0.2), 0 0 80px rgba(244, 197, 66, 0.1)'
+              }}
+            >
 
           {/* Avatar Section */}
           <div className="flex flex-col items-center mb-8">
@@ -324,6 +341,12 @@ const Profile = () => {
             )}
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="journal">
+            <LocationsTab />
+          </TabsContent>
+        </Tabs>
       </main>
 
       <BottomNavigation />
