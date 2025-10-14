@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -28,6 +28,7 @@ import { getImageUrl } from '@/lib/imageHelper';
 const Country = () => {
   const { country } = useParams<{ country: string }>();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t } = useTranslation();
   const { visitPlace, isPlaceVisited, userProgress, addToTrip, removeFromTrip, isInTrip } = useApp();
   const { toast: toastHook } = useToast();
@@ -38,6 +39,9 @@ const Country = () => {
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const cityRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  
+  // Get active tab from URL or default to 'places'
+  const activeTab = searchParams.get('tab') || 'places';
   
   const places = country ? getPlacesByCountry(country) : [];
   const allCountries = getAllCountries().sort((a, b) => {
@@ -257,7 +261,7 @@ const Country = () => {
         </div>
       </Header>
 
-      <Tabs defaultValue="places" className="flex-1 flex flex-col">
+      <Tabs value={activeTab} onValueChange={(value) => navigate(`/country/${country}?tab=${value}`)} className="flex-1 flex flex-col">
         <div className="border-b border-border bg-card">
           <div className="max-w-7xl mx-auto">
             <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
