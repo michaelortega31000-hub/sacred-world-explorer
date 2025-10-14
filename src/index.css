@@ -97,6 +97,20 @@ All colors MUST be HSL.
   }
 }
 
+/* Calendar religious event dots */
+.rdp-day.relative::after {
+  content: '';
+  position: absolute;
+  bottom: 2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: #C6A45A;
+  box-shadow: 0 0 4px #C6A45A;
+}
+
 /* Sacred World Animations */
 @keyframes breathing-glow {
   0%, 100% {
