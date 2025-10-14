@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { z } from 'zod';
+import { useRateLimit } from '@/hooks/useRateLimit';
 
 // Validation schema with HTML sanitization
 const noHtmlRegex = /<[^>]*>/g;
@@ -44,6 +45,7 @@ interface Message {
 const MessagesTab = () => {
   const { t } = useTranslation();
   const { session } = useApp();
+  const { checkRateLimit } = useRateLimit();
   const [friends, setFriends] = useState<Friend[]>([]);
   const [selectedFriend, setSelectedFriend] = useState<Friend | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -121,6 +123,18 @@ const MessagesTab = () => {
 
   const sendMessage = async () => {
     if (!selectedFriend || !session?.user) return;
+
+    // Check rate limit: 100 messages per day
+    const { allowed } = await checkRateLimit(session.user.id, {
+      action: 'send_message',
+      limit: 100,
+      windowMinutes: 1440 // 24 hours
+    });
+
+    if (!allowed) {
+      toast.error('Limite atteinte : 100 messages maximum par jour');
+      return;
+    }
 
     // Validate input
     const validation = messageSchema.safeParse({

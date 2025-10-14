@@ -11,6 +11,8 @@ import { Plus, X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
+import { useRateLimit } from '@/hooks/useRateLimit';
+import { logger } from '@/lib/logger';
 
 // Validation schema with HTML sanitization
 const noHtmlRegex = /<[^>]*>/g;
@@ -157,7 +159,7 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
       setSelectedTypes([]);
       onSuccess?.();
     } catch (error) {
-      console.error('Error adding restaurant:', error);
+      logger.error('Error adding restaurant:', error);
       toast.error('Erreur lors de l\'ajout du restaurant');
     } finally {
       setLoading(false);

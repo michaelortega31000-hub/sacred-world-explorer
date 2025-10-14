@@ -8,6 +8,7 @@ import { MapPin, Phone, Globe, Star, Utensils } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { AddRestaurantDialog } from './AddRestaurantDialog';
+import { logger } from '@/lib/logger';
 
 type RestaurantType = 'all' | 'halal' | 'kosher' | 'vegetarian' | 'vegan' | 'neutral';
 
@@ -60,7 +61,7 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
 
       setRestaurants((data || []) as Restaurant[]);
     } catch (error) {
-      console.error('Error fetching restaurants:', error);
+      logger.error('Error fetching restaurants:', error);
     } finally {
       setLoading(false);
     }
@@ -78,7 +79,7 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
       const uniqueCountries = [...new Set(data?.map(r => r.country) || [])];
       setCountries(uniqueCountries);
     } catch (error) {
-      console.error('Error fetching countries:', error);
+      logger.error('Error fetching countries:', error);
     }
   };
 
@@ -100,7 +101,7 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
       const uniqueCities = [...new Set(data?.map(r => r.city) || [])];
       setCities(uniqueCities);
     } catch (error) {
-      console.error('Error fetching cities:', error);
+      logger.error('Error fetching cities:', error);
     }
   };
 

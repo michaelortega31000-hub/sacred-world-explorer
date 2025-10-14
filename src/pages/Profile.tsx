@@ -10,11 +10,14 @@ import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Trophy, MapPin, Star, Globe, Camera, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useRateLimit } from '@/hooks/useRateLimit';
+import { logger } from '@/lib/logger';
 
 const Profile = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { userProgress } = useApp();
+  const { checkRateLimit } = useRateLimit();
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -41,18 +44,18 @@ const Profile = () => {
         .maybeSingle();
 
       if (error) {
-        console.error('Error fetching avatar:', error);
+        logger.error('Error fetching avatar:', error);
         return;
       }
       
       if (data?.avatar_url) {
-        console.log('Avatar URL found:', data.avatar_url);
+        logger.log('Avatar URL found:', data.avatar_url);
         setAvatarUrl(data.avatar_url);
       } else {
-        console.log('No avatar URL found for user');
+        logger.log('No avatar URL found for user');
       }
     } catch (error) {
-      console.error('Error fetching avatar:', error);
+      logger.error('Error fetching avatar:', error);
     }
   };
 
@@ -78,6 +81,24 @@ const Profile = () => {
       
       if (!event.target.files || event.target.files.length === 0) {
         return;
+      }
+
+      // Check rate limit: 5 avatar uploads per day
+      if (userId) {
+        const { allowed } = await checkRateLimit(userId, {
+          action: 'avatar_upload',
+          limit: 5,
+          windowMinutes: 1440 // 24 hours
+        });
+
+        if (!allowed) {
+          toast({
+            variant: 'destructive',
+            title: 'Limite atteinte',
+            description: 'Vous avez atteint la limite de 5 changements de photo par jour',
+          });
+          return;
+        }
       }
 
       const file = event.target.files[0];
@@ -147,7 +168,7 @@ const Profile = () => {
         description: 'Votre photo de profil a été mise à jour avec succès',
       });
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      logger.error('Error uploading avatar:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible de mettre à jour la photo de profil',

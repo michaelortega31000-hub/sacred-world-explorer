@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Switch } from '@/components/ui/switch';
+import { useRateLimit } from '@/hooks/useRateLimit';
 
 interface Memory {
   id: string;
@@ -29,6 +30,7 @@ interface Memory {
 const LocationsTab = () => {
   const { userProgress } = useApp();
   const { toast } = useToast();
+  const { checkRateLimit } = useRateLimit();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
@@ -110,6 +112,22 @@ const LocationsTab = () => {
   };
 
   const uploadPhotos = async (userId: string): Promise<string[]> => {
+    // Check rate limit: 20 photos per day
+    const { allowed } = await checkRateLimit(userId, {
+      action: 'photo_upload',
+      limit: 20,
+      windowMinutes: 1440 // 24 hours
+    });
+
+    if (!allowed) {
+      toast({
+        title: 'Limite atteinte',
+        description: 'Vous avez atteint la limite de 20 photos par jour',
+        variant: 'destructive',
+      });
+      throw new Error('Rate limit exceeded');
+    }
+
     const uploadedPaths: string[] = [];
 
     for (const file of selectedFiles) {

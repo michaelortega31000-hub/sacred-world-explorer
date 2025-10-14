@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Search, UserPlus, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useRateLimit } from '@/hooks/useRateLimit';
 
 interface Profile {
   id: string;
@@ -25,6 +26,7 @@ interface Friendship {
 const FriendsTab = () => {
   const { t } = useTranslation();
   const { session } = useApp();
+  const { checkRateLimit } = useRateLimit();
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<Profile[]>([]);
   const [friends, setFriends] = useState<Friendship[]>([]);
@@ -121,6 +123,18 @@ const FriendsTab = () => {
 
   const sendFriendRequest = async (friendId: string) => {
     if (!session?.user) return;
+
+    // Check rate limit: 20 friend requests per day
+    const { allowed } = await checkRateLimit(session.user.id, {
+      action: 'friend_request',
+      limit: 20,
+      windowMinutes: 1440 // 24 hours
+    });
+
+    if (!allowed) {
+      toast.error('Limite atteinte : 20 demandes maximum par jour');
+      return;
+    }
 
     const { data: existing } = await supabase
       .from('friendships')

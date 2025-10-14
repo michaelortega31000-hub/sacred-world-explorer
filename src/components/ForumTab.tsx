@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { z } from 'zod';
+import { useRateLimit } from '@/hooks/useRateLimit';
 
 // Validation schemas with HTML sanitization
 const noHtmlRegex = /<[^>]*>/g;
@@ -70,6 +71,7 @@ interface Post {
 const ForumTab = () => {
   const { t } = useTranslation();
   const { session } = useApp();
+  const { checkRateLimit } = useRateLimit();
   const [topics, setTopics] = useState<Topic[]>([]);
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
@@ -163,6 +165,18 @@ const ForumTab = () => {
       return;
     }
 
+    // Check rate limit: 10 topics per day
+    const { allowed } = await checkRateLimit(session.user.id, {
+      action: 'forum_topic',
+      limit: 10,
+      windowMinutes: 1440 // 24 hours
+    });
+
+    if (!allowed) {
+      toast.error('Limite atteinte : 10 sujets maximum par jour');
+      return;
+    }
+
     // Validate input
     const validation = topicSchema.safeParse({
       title: newTopicTitle,
@@ -197,6 +211,18 @@ const ForumTab = () => {
   const createPost = async () => {
     if (!session?.user || !selectedTopic) {
       toast.error('Vous devez être connecté');
+      return;
+    }
+
+    // Check rate limit: 50 posts per day
+    const { allowed } = await checkRateLimit(session.user.id, {
+      action: 'forum_post',
+      limit: 50,
+      windowMinutes: 1440 // 24 hours
+    });
+
+    if (!allowed) {
+      toast.error('Limite atteinte : 50 messages maximum par jour');
       return;
     }
 

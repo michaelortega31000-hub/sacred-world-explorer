@@ -13,6 +13,7 @@ import { inferReligionFromPlace } from '@/lib/religionHelper';
 import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { toast } from 'sonner';
+import { logger } from '@/lib/logger';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -80,7 +81,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
     if (!mapContainer.current || !mapboxToken || showTokenInput) return;
 
     mapboxgl.accessToken = mapboxToken;
-    console.log('Globe3D init with token', !!mapboxToken, 'container size', mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
+    logger.log('Globe3D init with token', !!mapboxToken, 'container size', mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
     
     // Initialiser la carte en mode globe - style immersif sombre
     map.current = new mapboxgl.Map({
@@ -447,7 +448,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
         // Récupérer le nom en anglais qui est la clé standard
         const countryName = features[0].properties?.name_en || features[0].properties?.name;
         if (countryName) {
-          console.log('Country clicked:', countryName);
+          logger.log('Country clicked:', countryName);
           navigate(`/country/${countryName}`);
         }
       }

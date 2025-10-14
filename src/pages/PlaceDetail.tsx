@@ -30,6 +30,7 @@ import { getImageUrl } from '@/lib/imageHelper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
+import { logger } from '@/lib/logger';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -256,7 +257,7 @@ const PlaceDetail = () => {
         });
       }
     } catch (error) {
-      console.error('Erreur de partage:', error);
+      logger.error('Erreur de partage:', error);
     }
   };
 

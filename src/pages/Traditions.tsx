@@ -5,6 +5,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Cross, Moon, Star, CircleDot, Flower2, Mountain, Compass, Church, Palette, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/sacredworld-logo.png';
+import { logger } from '@/lib/logger';
 
 type Tradition = {
   id: string;
@@ -47,7 +48,7 @@ const Traditions = () => {
 
   const handleContinue = () => {
     // TODO: Sauvegarder les préférences dans le contexte ou Supabase
-    console.log({ main: selectedMain, interests: selectedInterests });
+    logger.log({ main: selectedMain, interests: selectedInterests });
     navigate('/world');
   };
 

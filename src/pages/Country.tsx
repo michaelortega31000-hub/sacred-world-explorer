@@ -18,6 +18,7 @@ import TripPlannerTab from '@/components/TripPlannerTab';
 import RestaurantsTab from '@/components/RestaurantsTab';
 import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
 import Header from '@/components/Header';
+import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
@@ -210,7 +211,7 @@ const Country = () => {
         });
       }
     } catch (error) {
-      console.error('Erreur de partage:', error);
+      logger.error('Erreur de partage:', error);
     }
   };
 
