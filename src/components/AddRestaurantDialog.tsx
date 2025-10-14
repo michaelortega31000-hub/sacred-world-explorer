@@ -53,6 +53,10 @@ const restaurantSchema = z.object({
     .refine(val => !noHtmlRegex.test(val), {
       message: 'Les balises HTML ne sont pas autorisées'
     }),
+  continent: z.string()
+    .trim()
+    .min(1, 'Le continent est requis')
+    .max(50, 'Le continent ne peut pas dépasser 50 caractères'),
   phone: z.string().trim().regex(/^[+]?[0-9\s\-()]*$/, 'Format de téléphone invalide').max(20, 'Le téléphone ne peut pas dépasser 20 caractères').optional().or(z.literal('')),
   website: z.string().trim().url('URL invalide').max(500, 'L\'URL ne peut pas dépasser 500 caractères').optional().or(z.literal('')),
   description: z.string()
@@ -86,6 +90,7 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
     address: '',
     city: '',
     country: '',
+    continent: '',
     phone: '',
     website: '',
     description: '',
@@ -135,6 +140,7 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
           address: validation.data.address,
           city: validation.data.city,
           country: validation.data.country,
+          continent: validation.data.continent,
           phone: validation.data.phone || null,
           website: validation.data.website || null,
           description: validation.data.description || null,
@@ -152,6 +158,7 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
         address: '',
         city: '',
         country: '',
+        continent: '',
         phone: '',
         website: '',
         description: '',
@@ -225,6 +232,26 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
+              <Label htmlFor="continent">Continent *</Label>
+              <Select
+                value={formData.continent}
+                onValueChange={(value) => setFormData({ ...formData, continent: value })}
+              >
+                <SelectTrigger className="bg-card border-border">
+                  <SelectValue placeholder="Sélectionner" />
+                </SelectTrigger>
+                <SelectContent className="bg-card border-border z-50">
+                  <SelectItem value="Africa">Afrique</SelectItem>
+                  <SelectItem value="Asia">Asie</SelectItem>
+                  <SelectItem value="Europe">Europe</SelectItem>
+                  <SelectItem value="North America">Amérique du Nord</SelectItem>
+                  <SelectItem value="South America">Amérique du Sud</SelectItem>
+                  <SelectItem value="Oceania">Océanie</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
               <Label htmlFor="country">Pays *</Label>
               <Input
                 id="country"
@@ -233,16 +260,16 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
                 required
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="city">Ville *</Label>
-              <Input
-                id="city"
-                value={formData.city}
-                onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                required
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="city">Ville *</Label>
+            <Input
+              id="city"
+              value={formData.city}
+              onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+              required
+            />
           </div>
 
           <div className="space-y-2">
