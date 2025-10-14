@@ -14,14 +14,34 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { z } from 'zod';
 
-// Validation schemas
+// Validation schemas with HTML sanitization
+const noHtmlRegex = /<[^>]*>/g;
+
 const topicSchema = z.object({
-  title: z.string().trim().min(1, 'Le titre est requis').max(200, 'Le titre ne peut pas dépasser 200 caractères'),
-  description: z.string().trim().min(1, 'La description est requise').max(2000, 'La description ne peut pas dépasser 2000 caractères'),
+  title: z.string()
+    .trim()
+    .min(1, 'Le titre est requis')
+    .max(200, 'Le titre ne peut pas dépasser 200 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
+  description: z.string()
+    .trim()
+    .min(1, 'La description est requise')
+    .max(2000, 'La description ne peut pas dépasser 2000 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
 });
 
 const postSchema = z.object({
-  content: z.string().trim().min(1, 'Le message est requis').max(5000, 'Le message ne peut pas dépasser 5000 caractères'),
+  content: z.string()
+    .trim()
+    .min(1, 'Le message est requis')
+    .max(5000, 'Le message ne peut pas dépasser 5000 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
 });
 
 interface Topic {

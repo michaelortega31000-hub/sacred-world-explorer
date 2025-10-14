@@ -12,16 +12,55 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-// Validation schema
+// Validation schema with HTML sanitization
+const noHtmlRegex = /<[^>]*>/g;
+
 const restaurantSchema = z.object({
-  name: z.string().trim().min(1, 'Le nom est requis').max(200, 'Le nom ne peut pas dépasser 200 caractères'),
-  cuisine: z.string().trim().min(1, 'Le type de cuisine est requis').max(100, 'Le type de cuisine ne peut pas dépasser 100 caractères'),
-  address: z.string().trim().min(1, 'L\'adresse est requise').max(300, 'L\'adresse ne peut pas dépasser 300 caractères'),
-  city: z.string().trim().min(1, 'La ville est requise').max(100, 'La ville ne peut pas dépasser 100 caractères'),
-  country: z.string().trim().min(1, 'Le pays est requis').max(100, 'Le pays ne peut pas dépasser 100 caractères'),
+  name: z.string()
+    .trim()
+    .min(1, 'Le nom est requis')
+    .max(200, 'Le nom ne peut pas dépasser 200 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
+  cuisine: z.string()
+    .trim()
+    .min(1, 'Le type de cuisine est requis')
+    .max(100, 'Le type de cuisine ne peut pas dépasser 100 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
+  address: z.string()
+    .trim()
+    .min(1, 'L\'adresse est requise')
+    .max(300, 'L\'adresse ne peut pas dépasser 300 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
+  city: z.string()
+    .trim()
+    .min(1, 'La ville est requise')
+    .max(100, 'La ville ne peut pas dépasser 100 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
+  country: z.string()
+    .trim()
+    .min(1, 'Le pays est requis')
+    .max(100, 'Le pays ne peut pas dépasser 100 caractères')
+    .refine(val => !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
   phone: z.string().trim().regex(/^[+]?[0-9\s\-()]*$/, 'Format de téléphone invalide').max(20, 'Le téléphone ne peut pas dépasser 20 caractères').optional().or(z.literal('')),
   website: z.string().trim().url('URL invalide').max(500, 'L\'URL ne peut pas dépasser 500 caractères').optional().or(z.literal('')),
-  description: z.string().trim().max(2000, 'La description ne peut pas dépasser 2000 caractères').optional().or(z.literal('')),
+  description: z.string()
+    .trim()
+    .max(2000, 'La description ne peut pas dépasser 2000 caractères')
+    .refine(val => val === '' || !noHtmlRegex.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    })
+    .optional()
+    .or(z.literal('')),
 });
 
 type RestaurantType = 'halal' | 'kosher' | 'vegetarian' | 'vegan' | 'neutral';
