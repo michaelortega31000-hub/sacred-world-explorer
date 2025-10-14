@@ -12,6 +12,7 @@ import LocationsTab from '@/components/LocationsTab';
 import RankingsTab from '@/components/RankingsTab';
 import SocialTab from '@/components/SocialTab';
 import CountriesByContinent from '@/components/CountriesByContinent';
+import CalendarTab from '@/components/CalendarTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -215,6 +216,10 @@ const WorldMap = () => {
 
         <TabsContent value="social" className="flex-1 m-0">
           <SocialTab defaultTab={(params.get('sub') as 'friends' | 'messages' | 'forum') || 'friends'} />
+        </TabsContent>
+
+        <TabsContent value="calendar" className="flex-1 m-0">
+          <CalendarTab />
         </TabsContent>
       </Tabs>
 

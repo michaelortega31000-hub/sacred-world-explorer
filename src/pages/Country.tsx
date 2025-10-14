@@ -366,6 +366,23 @@ const Country = () => {
                                   onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
                                   className="w-full h-full object-cover"
                                 />
+                                {/* Restaurant button - top left */}
+                                <div className="absolute top-2 left-2">
+                                  <Button
+                                    size="sm"
+                                    variant="secondary"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      // Navigate to restaurants tab with this place's location
+                                      navigate(`/country/${country}?tab=restaurants`);
+                                    }}
+                                    className="opacity-90 group-hover:opacity-100 transition-opacity"
+                                    title="Voir les restaurants à proximité"
+                                  >
+                                    <Utensils className="w-4 h-4" />
+                                  </Button>
+                                </div>
+                                {/* Add to trip button - top right */}
                                 <div className="absolute top-2 right-2">
                                   <Button
                                     size="sm"
