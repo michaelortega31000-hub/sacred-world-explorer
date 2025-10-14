@@ -112,6 +112,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         return;
       }
 
+      // Get current localStorage data to merge intelligently
+      const stored = localStorage.getItem(STORAGE_KEY);
+      const localProgress = stored ? JSON.parse(stored) : null;
+
       if (data) {
         const dbProgress: UserProgress = {
           selectedReligion: data.selected_religion as Religion | null,
@@ -124,25 +128,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           plannedRouteStartCity: data.planned_route_start_city || '',
           showPlannedRoute: data.show_planned_route || false
         };
-        setUserProgress(dbProgress);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProgress));
+
+        // Merge localStorage trip data if it exists and is more recent
+        if (localProgress && localProgress.tripPlaces && localProgress.tripPlaces.length > 0) {
+          // Preserve local trip planning data if DB data is empty or different
+          const mergedProgress = {
+            ...dbProgress,
+            tripPlaces: localProgress.tripPlaces,
+            plannedRouteStartCity: localProgress.plannedRouteStartCity || dbProgress.plannedRouteStartCity,
+            showPlannedRoute: localProgress.showPlannedRoute ?? dbProgress.showPlannedRoute
+          };
+          setUserProgress(mergedProgress);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedProgress));
+          
+          // Sync merged data back to DB
+          await supabase
+            .from('user_progress')
+            .update({
+              trip_places: mergedProgress.tripPlaces,
+              planned_route_start_city: mergedProgress.plannedRouteStartCity,
+              show_planned_route: mergedProgress.showPlannedRoute
+            })
+            .eq('user_id', session.user.id);
+        } else {
+          setUserProgress(dbProgress);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProgress));
+        }
       } else {
         // Migrate localStorage data to DB
-        const stored = localStorage.getItem(STORAGE_KEY);
-        if (stored) {
-          const parsed = JSON.parse(stored);
-          await supabase.from('user_progress').insert({
+        if (localProgress) {
+          const insertData = {
             user_id: session.user.id,
-            selected_religion: parsed.selectedReligion,
-            language: parsed.language || 'fr',
-            total_points: parsed.totalPoints || 0,
-            visited_places: parsed.visitedPlaces || [],
-            badges: parsed.badges || [],
-            trip_places: parsed.tripPlaces || [],
-            geolocation_enabled: parsed.geolocationEnabled || false,
-            planned_route_start_city: parsed.plannedRouteStartCity || '',
-            show_planned_route: parsed.showPlannedRoute || false
-          });
+            selected_religion: localProgress.selectedReligion,
+            language: localProgress.language || 'fr',
+            total_points: localProgress.totalPoints || 0,
+            visited_places: localProgress.visitedPlaces || [],
+            badges: localProgress.badges || [],
+            trip_places: localProgress.tripPlaces || [],
+            geolocation_enabled: localProgress.geolocationEnabled || false,
+            planned_route_start_city: localProgress.plannedRouteStartCity || '',
+            show_planned_route: localProgress.showPlannedRoute || false
+          };
+          await supabase.from('user_progress').insert(insertData);
+          setUserProgress(localProgress);
         }
       }
     };
