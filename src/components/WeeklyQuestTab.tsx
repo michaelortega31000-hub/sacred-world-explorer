@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -8,10 +8,11 @@ import { Target, Clock, Gift, CheckCircle2 } from 'lucide-react';
 import DailyQuiz from './DailyQuiz';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
+import { mockPlaces } from '@/data/placesData';
 
 const WeeklyQuestTab = () => {
   const { t } = useTranslation();
-  const { addPoints } = useApp();
+  const { addPoints, userProgress } = useApp();
   const [claimedQuests, setClaimedQuests] = useState<number[]>(() => {
     const stored = localStorage.getItem('claimedQuests');
     return stored ? JSON.parse(stored) : [];
@@ -40,12 +41,55 @@ const WeeklyQuestTab = () => {
     return daysUntilMonday;
   };
 
+  // Fonction pour déterminer le continent d'un pays
+  const getContinent = (country: string): string => {
+    const europeCountries = ['France', 'Italy', 'Spain', 'Germany', 'United Kingdom', 'Portugal', 'Greece', 'Belgium', 'Netherlands', 'Austria', 'Poland', 'Czech Republic', 'Hungary', 'Romania', 'Sweden', 'Norway', 'Denmark', 'Finland', 'Ireland', 'Switzerland', 'Croatia', 'Serbia', 'Bulgaria', 'Slovakia', 'Lithuania', 'Latvia', 'Estonia', 'Slovenia', 'Cyprus', 'Malta', 'Luxembourg', 'Iceland', 'Albania', 'North Macedonia', 'Bosnia', 'Montenegro', 'Moldova', 'Ukraine', 'Belarus', 'Russia'];
+    const asiaCountries = ['China', 'Japan', 'India', 'Thailand', 'Indonesia', 'Vietnam', 'Cambodia', 'Myanmar', 'Laos', 'Malaysia', 'Singapore', 'Philippines', 'South Korea', 'Nepal', 'Sri Lanka', 'Bangladesh', 'Pakistan', 'Mongolia', 'Tibet', 'Bhutan'];
+    const africaCountries = ['Egypt', 'Morocco', 'Tunisia', 'Algeria', 'South Africa', 'Kenya', 'Ethiopia', 'Tanzania', 'Uganda', 'Ghana', 'Nigeria', 'Senegal', 'Mali', 'Niger', 'Chad', 'Sudan', 'Libya', 'Eritrea'];
+    const americaCountries = ['United States', 'USA', 'Canada', 'Mexico', 'Brazil', 'Argentina', 'Peru', 'Chile', 'Colombia', 'Venezuela', 'Ecuador', 'Bolivia', 'Paraguay', 'Uruguay', 'Guatemala', 'Honduras', 'Nicaragua', 'Costa Rica', 'Panama', 'Cuba', 'Dominican Republic', 'Haiti', 'Jamaica'];
+    const middleEastCountries = ['Israel', 'Palestine', 'Jordan', 'Lebanon', 'Syria', 'Iraq', 'Iran', 'Saudi Arabia', 'Yemen', 'Oman', 'UAE', 'Kuwait', 'Qatar', 'Bahrain', 'Turkey'];
+    const oceaniaCountries = ['Australia', 'New Zealand', 'Fiji', 'Papua New Guinea'];
+
+    if (europeCountries.includes(country)) return 'Europe';
+    if (asiaCountries.includes(country)) return 'Asia';
+    if (africaCountries.includes(country)) return 'Africa';
+    if (americaCountries.includes(country)) return 'America';
+    if (middleEastCountries.includes(country)) return 'Middle East';
+    if (oceaniaCountries.includes(country)) return 'Oceania';
+    return 'Other';
+  };
+
+  // Calcul de la progression des quêtes basée sur les lieux visités
+  const questProgress = useMemo(() => {
+    const visitedPlacesDetails = mockPlaces.filter(place => 
+      userProgress.visitedPlaces.includes(place.id)
+    );
+
+    const europeCount = visitedPlacesDetails.filter(p => getContinent(p.country) === 'Europe').length;
+    const asiaCount = visitedPlacesDetails.filter(p => getContinent(p.country) === 'Asia').length;
+    const africaCount = visitedPlacesDetails.filter(p => getContinent(p.country) === 'Africa').length;
+    const americaCount = visitedPlacesDetails.filter(p => getContinent(p.country) === 'America').length;
+
+    // Pour le collectionneur mondial, compter les continents uniques visités
+    const continentsVisited = new Set(
+      visitedPlacesDetails.map(p => getContinent(p.country))
+    ).size;
+
+    return {
+      europe: europeCount,
+      asia: asiaCount,
+      africa: africaCount,
+      america: americaCount,
+      continents: continentsVisited
+    };
+  }, [userProgress.visitedPlaces]);
+
   const weeklyQuests = [
     {
       id: 1,
       title: 'Explorateur Européen',
       description: 'Visitez 5 lieux sacrés en Europe',
-      progress: 2,
+      progress: questProgress.europe,
       goal: 5,
       reward: 250,
       icon: '🏰'
@@ -54,7 +98,7 @@ const WeeklyQuestTab = () => {
       id: 2,
       title: 'Pèlerin Asiatique',
       description: 'Découvrez 3 temples en Asie',
-      progress: 0,
+      progress: questProgress.asia,
       goal: 3,
       reward: 200,
       icon: '⛩️'
@@ -63,7 +107,7 @@ const WeeklyQuestTab = () => {
       id: 3,
       title: 'Voyageur Africain',
       description: 'Explorez 4 sites sacrés en Afrique',
-      progress: 1,
+      progress: questProgress.africa,
       goal: 4,
       reward: 300,
       icon: '🌍'
@@ -72,7 +116,7 @@ const WeeklyQuestTab = () => {
       id: 4,
       title: 'Découvreur Américain',
       description: 'Visitez 3 lieux sacrés en Amérique',
-      progress: 0,
+      progress: questProgress.america,
       goal: 3,
       reward: 180,
       icon: '🗽'
@@ -81,7 +125,7 @@ const WeeklyQuestTab = () => {
       id: 5,
       title: 'Collectionneur Mondial',
       description: 'Visitez au moins 1 lieu sur chaque continent',
-      progress: 3,
+      progress: questProgress.continents,
       goal: 6,
       reward: 400,
       icon: '🌐'
