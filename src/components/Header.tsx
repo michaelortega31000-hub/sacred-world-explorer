@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, LogOut, Mail, MapPin, Target } from 'lucide-react';
+import { ArrowLeft, LogOut, Mail, MapPin, Target, Award, Trophy } from 'lucide-react';
 import logo from '@/assets/logo-glow.png';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -69,7 +69,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
         {isTextOnlyPage ? (
           // Header compact pour les pages Globe/Planifier/Journal/Classements
           <div className="flex items-center justify-between gap-4">
-            {/* Gauche : Logo + Géolocalisation */}
+            {/* Gauche : Logo + Géolocalisation + Points + Badges */}
             <div className="flex items-center gap-3">
               <img 
                 src={logo} 
@@ -83,6 +83,22 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                   onCheckedChange={handleGeolocationToggle}
                   aria-label="Activer la géolocalisation"
                 />
+              </div>
+              
+              {/* Points obtenus */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-full">
+                <Trophy className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">
+                  {userProgress.totalPoints.toLocaleString()}
+                </span>
+              </div>
+              
+              {/* Badges obtenus */}
+              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-full">
+                <Award className="w-4 h-4 text-primary" />
+                <span className="text-sm font-medium text-foreground">
+                  {userProgress.badges.length}
+                </span>
               </div>
             </div>
             
