@@ -2729,9 +2729,342 @@ export const mockPlaces: Place[] = [
     description: 'Le Temple de Marbre (Wat Benchamabophit Dusitvanaram), construit en 1899 sous le roi Rama V, est un chef-d\'œuvre du style thaï-européen. Entièrement revêtu de marbre blanc italien de Carrare importé, il fusionne architecture traditionnelle siamoise et influences néoclassiques. Galerie abritant 52 images de Bouddha représentant différents styles asiatiques. Cour paisible avec étang et jardins. Temple royal encore utilisé pour cérémonies royales et ordinations monastiques. Représente la modernisation du Siam sous Rama V et dialogue entre traditions bouddhistes et modernité occidentale. Joyau architectural de Bangkok.',
     points: 70,
     coordinates: [100.5155, 13.7658],
-    imageUrl: '/src/assets/places/golden-temple.jpg'
+    imageUrl: '/src/assets/places/wat-benchamabophit.jpg'
+  },
+  {
+    id: 'tha-5',
+    name: 'Wat Rong Khun (Temple Blanc)',
+    country: 'Thailand',
+    city: 'Chiang Rai',
+    type: 'Temple',
+    description: 'Temple bouddhiste contemporain unique au monde, conçu par l\'artiste Chalermchai Kositpipat depuis 1997. Architecture entièrement blanche symbolisant la pureté du Bouddha, ornée de miroirs représentant la sagesse illuminant l\'univers. Fusionnant art traditionnel thaï et éléments modernes, le temple présente des sculptures fantastiques mêlant iconographie bouddhiste et références pop culture. Le pont symbolise le passage du cycle des renaissances au Nirvana. Œuvre d\'art vivante toujours en construction, il attire visiteurs du monde entier par son esthétique unique et sa vision contemporaine du bouddhisme.',
+    points: 85,
+    coordinates: [99.7628, 19.8245],
+    imageUrl: '/src/assets/places/wat-rong-khun.jpg'
+  },
+  {
+    id: 'tha-6',
+    name: 'Wat Phra That Doi Suthep',
+    country: 'Thailand',
+    city: 'Chiang Mai',
+    type: 'Temple',
+    description: 'Temple sacré perché à 1676m sur la montagne Doi Suthep, fondé en 1383. Accessible par 309 marches ornées de nâgas, il abrite une relique de Bouddha. Son chedi doré de 24 mètres brillant au soleil est symbole de Chiang Mai. Vue panoramique spectaculaire sur la ville et la campagne. Haut lieu de pèlerinage bouddhiste où résonnent prières et cloches. Légende raconte qu\'un éléphant blanc transportant la relique choisit le lieu en s\'y arrêtant. Architecture Lanna raffinée avec statues dorées, fresques murales et sanctuaires. Centre spirituel majeur du nord de la Thaïlande.',
+    points: 90,
+    coordinates: [98.9218, 18.8047],
+    imageUrl: '/src/assets/places/wat-phra-that-doi-suthep.jpg'
+  },
+  {
+    id: 'tha-7',
+    name: 'Wat Mahathat (Ayutthaya)',
+    country: 'Thailand',
+    city: 'Ayutthaya',
+    type: 'Site archéologique',
+    description: 'Temple historique fondé en 1374, ancienne capitale du royaume d\'Ayutthaya (1351-1767). Célèbre mondialement pour sa tête de Bouddha enchevêtrée dans les racines d\'un banian, image emblématique représentant union nature-spiritualité. Le site comprend vestiges de prangs khmer, chedis effondrés et statues décapitées, témoins du sac birman de 1767. Autrefois abritait relique de Bouddha et était centre religieux du royaume. Patrimoine UNESCO, symbole de la richesse culturelle siamoise et fragilité des civilisations. Lieu contemplatif où histoire et nature dialoguent.',
+    points: 75,
+    coordinates: [100.5676, 14.3583],
+    imageUrl: '/src/assets/places/wat-mahathat-ayutthaya.jpg'
+  },
+  {
+    id: 'tha-8',
+    name: 'Sanctuaire de la Vérité (Pattaya)',
+    country: 'Thailand',
+    city: 'Pattaya',
+    type: 'Temple',
+    description: 'Temple entièrement en bois de teck massif, commencé en 1981 par Lek Viriyaphant, toujours en construction. Œuvre architecturale monumentale de 105m de haut, sans un seul clou, sculptée à la main avec minutie. Chaque centimètre carré est orné de sculptures représentant philosophies hindoue, bouddhiste, chinoise et thaïe. Quatre ailes symbolisent cosmologies asiatiques. Situé face à la mer, il fusionne art, spiritualité et philosophie, célébrant l\'artisanat traditionnel et sagesse ancestrale. Vision unique mêlant temple et musée d\'art sculptural vivant, incarnant quête de vérité universelle.',
+    points: 80,
+    coordinates: [100.8876, 12.9634],
+    imageUrl: '/src/assets/places/sanctuary-of-truth.jpg'
+  },
+  {
+    id: 'tha-9',
+    name: 'Wat Phra Singh',
+    country: 'Thailand',
+    city: 'Chiang Mai',
+    type: 'Temple',
+    description: 'Temple royal construit en 1345 sous le roi Phayu, joyau de l\'architecture Lanna du nord thaïlandais. Abrite la vénérée statue du Bouddha Phra Singh, apportée de Ceylan au XIIIe siècle. Viharn Lai Kham présente fresques murales anciennes exceptionnelles illustrant vie quotidienne et légendes locales. Chedi doré et bibliothèque scripturale Ho Trai sur piliers ornés. Centre d\'ordinations monastiques et d\'enseignements bouddhistes. Temple toujours très actif, point focal des cérémonies du Songkran (Nouvel An thaï). Symbole de l\'héritage culturel et spirituel de Chiang Mai.',
+    points: 70,
+    coordinates: [98.9856, 18.7879],
+    imageUrl: '/src/assets/places/wat-phra-singh.jpg'
+  },
+  {
+    id: 'tha-10',
+    name: 'Wat Suthat et la Grande Balançoire',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple royal',
+    description: 'Temple royal de premier rang construit entre 1807-1847 sous trois règnes successifs. Architecture imposante avec viharn de 42m, l\'un des plus grands de Thaïlande, abritant Bouddha Phra Si Sakayamuni en bronze de 8m (XIIIe siècle). Fresques murales Rattanakosin retraçant vies antérieures du Bouddha. Devant le temple se dresse Sao Ching Cha, la Grande Balançoire rouge de 21m, utilisée autrefois pour cérémonies brahmaniques acrobatiques. 28 pagodes chinoises dans la cour. Fusion unique d\'influences bouddhistes et hindoues, symbole du syncrétisme religieux thaïlandais.',
+    points: 65,
+    coordinates: [100.5012, 13.7509],
+    imageUrl: '/src/assets/places/wat-suthat.jpg'
+  },
+  {
+    id: 'tha-11',
+    name: 'Wat Ratchanatdaram (Loha Prasat)',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple',
+    description: 'Temple unique abritant le Loha Prasat (Palais de Métal), seule structure multi-étagée en métal au monde inspirée d\'un monastère sri-lankais disparu. Construit en 1846 sous le roi Rama III, il présente 37 flèches métalliques symbolisant 37 vertus menant à l\'illumination. Architecture pyramidale à 5 étages avec 1536 portes et fenêtres. Méditation au sommet offre vue panoramique sur Bangkok ancien. Représente quête spirituelle ascendante du bouddhisme Theravada. Monument architectural rare fusionnant symbolisme religieux et prouesse technique, témoignage de l\'innovation architecturale siamoise.',
+    points: 70,
+    coordinates: [100.5039, 13.7546],
+    imageUrl: '/src/assets/places/wat-ratchanatdaram.jpg'
+  },
+  {
+    id: 'tha-12',
+    name: 'Wat Chedi Luang',
+    country: 'Thailand',
+    city: 'Chiang Mai',
+    type: 'Temple',
+    description: 'Temple majestueux fondé en 1391, célèbre pour son chedi massif partiellement détruit par tremblement de terre en 1545. Originellement haut de 82m (style Lanna-khmer), il abrita le Bouddha d\'Émeraude de 1468 à 1552. Base carrée de 54m ornée de sculptures d\'éléphants gardiens (nagas). Restaurations modernes respectent état ruiné romantique. Pilier de la ville (Inthakin) censé protéger Chiang Mai se trouve dans petit bâtiment adjacent. Temple actif avec moines bouddhistes proposant discussions dharma. Symbole de l\'ancienne puissance du royaume Lanna et de la résilience spirituelle.',
+    points: 75,
+    coordinates: [98.9876, 18.7869],
+    imageUrl: '/src/assets/places/wat-chedi-luang.jpg'
+  },
+  {
+    id: 'tha-13',
+    name: 'Grand Bouddha de Phuket',
+    country: 'Thailand',
+    city: 'Phuket',
+    type: 'Monument',
+    description: 'Statue colossale du Bouddha Maravija en marbre blanc de Birmanie, haute de 45m, inaugurée en 2014 après 10 ans de construction. Perchée au sommet de la colline Nakkerd à 400m d\'altitude, elle domine toute l\'île de Phuket. Vue panoramique à 360° sur la baie de Chalong, Kata, Karon et mer d\'Andaman. Symbole de paix, respect et pureté. Financée par dons, reflète dévotion bouddhiste thaïlandaise. Accessible par route sinueuse, c\'est lieu de méditation serein et site touristique majeur. Son éclat blanc visible de loin guide marins et habitants.',
+    points: 70,
+    coordinates: [98.3081, 7.8406],
+    imageUrl: '/src/assets/places/big-buddha-phuket.jpg'
+  },
+  {
+    id: 'tha-14',
+    name: 'Wat Traimit (Temple du Bouddha d\'Or)',
+    country: 'Thailand',
+    city: 'Bangkok',
+    type: 'Temple',
+    description: 'Temple abritant le plus grand Bouddha en or massif au monde : 5,5 tonnes d\'or pur, 3m de haut, datant du XIIIe siècle (période Sukhothai). Statue découverte par hasard en 1955 sous gangue de plâtre qui cachait l\'or des invasions birmanes. Style Sukhothai classique représentant Bouddha en méditation. Valeur inestimable artistique et monétaire. Musée relate histoire fascinante de la statue et communauté chinoise de Bangkok. Situé dans Chinatown, le temple attire pèlerins et visiteurs émerveillés. Symbole de richesse culturelle cachée et préservation miraculeuse du patrimoine thaïlandais.',
+    points: 85,
+    coordinates: [100.5146, 13.7404],
+    imageUrl: '/src/assets/places/wat-phra-kaew.jpg'
+  },
+
+  // ========== UNITED STATES ==========
+  {
+    id: 'usa-1',
+    name: 'Cathédrale Nationale de Washington',
+    country: 'United States',
+    city: 'Washington D.C.',
+    type: 'Cathédrale',
+    description: 'Sixième plus grande cathédrale au monde, chef-d\'œuvre néo-gothique construit de 1907 à 1990 (83 ans). Architecture inspirée des cathédrales européennes médiévales avec arcs-boutants, gargouilles et vitraux spectaculaires. Tours jumelles s\'élèvent à 91m. Abrite tombeaux de Woodrow Wilson et Helen Keller. Lieu de funérailles nationales (Eisenhower, Reagan). Vitrail spatial contient fragment de roche lunaire Apollo 11. 231 vitraux, carillons de 53 cloches. Symbole de foi nationale américaine, accueillant toutes confessions. Centre spirituel, culturel et architectural majeur des États-Unis.',
+    points: 80,
+    coordinates: [-77.0707, 38.9308],
+    imageUrl: '/src/assets/places/washington-national-cathedral.jpg'
+  },
+  {
+    id: 'usa-2',
+    name: 'Mission San Juan Capistrano',
+    country: 'United States',
+    city: 'San Juan Capistrano',
+    type: 'Mission',
+    description: 'Mission espagnole fondée en 1776 par père Junípero Serra, joyau des 21 missions californiennes. Surnommée "Joyau des Missions", célèbre pour retour annuel miraculeux des hirondelles le 19 mars (jour Saint-Joseph). Grande Église de pierre détruite par séisme 1812, ruines romantiques préservées. Serra Chapel (1782), plus ancien bâtiment californien toujours en usage. Jardins luxuriants avec fontaines coloniales. Musée relate évangélisation, culture des Indiens Acjachemen et ère espagnole. Symbole du patrimoine hispanique californien, fusion d\'architecture coloniale espagnole et histoire amérindienne.',
+    points: 75,
+    coordinates: [-117.6620, 33.5017],
+    imageUrl: '/src/assets/places/mission-san-juan-capistrano.jpg'
+  },
+  {
+    id: 'usa-3',
+    name: 'Trinity Church Boston',
+    country: 'United States',
+    city: 'Boston',
+    type: 'Église',
+    description: 'Église épiscopale chef-d\'œuvre du style néo-roman richardsonien, conçue par H.H. Richardson (1872-1877). Architecture en grès rose avec tour centrale massive, arches romanes et fresques de John La Farge. Située sur Copley Square face à la bibliothèque publique. Lieu culte et concert réputé pour acoustique exceptionnelle. Inscrite National Historic Landmark. Témoigne du renouveau architectural américain fin XIXe. Intérieur somptueux avec vitraux Tiffany et boiseries sculptées. Symbole de la tradition protestante bostonienne et excellence architecturale américaine.',
+    points: 70,
+    coordinates: [-71.0768, 42.3495],
+    imageUrl: '/src/assets/places/trinity-church-boston.jpg'
+  },
+  {
+    id: 'usa-4',
+    name: 'Cathédrale Saint-Louis de La Nouvelle-Orléans',
+    country: 'United States',
+    city: 'New Orleans',
+    type: 'Cathédrale',
+    description: 'Plus ancienne cathédrale catholique en usage continu aux États-Unis, fondée en 1720, reconstruite en 1794 après incendie. Architecture créole espagnole avec trois flèches blanches iconiques dominant Jackson Square dans le Vieux Carré français. Cloches historiques rythmant vie du quartier. Fresques intérieures et vitraux remarquables. Lieu de messes, mariages et concerts. Témoin de l\'histoire louisianaise : colonies française et espagnole, vente de la Louisiane 1803. Cathédrale-basilique mineure, symbole de foi catholique francophone et patrimoine créole unique en Amérique.',
+    points: 85,
+    coordinates: [-90.0631, 29.9579],
+    imageUrl: '/src/assets/places/st-louis-cathedral-nola.jpg'
+  },
+  {
+    id: 'usa-5',
+    name: 'Temple Byodo-In (Hawaii)',
+    country: 'United States',
+    city: 'Kaneohe',
+    type: 'Temple bouddhiste',
+    description: 'Réplique exacte du temple Byodo-In de Kyoto (Japon, 1053), construite en 1968 pour centenaire immigration japonaise à Hawaii. Temple bouddhiste non-pratiquant, lieu méditation et paix. Architecture Heian en bois rouge laqué sans clous, toiture incurvée traditionnelle. Niché dans vallée luxuriante Ko\'olau avec cascades et étangs à carpes koï. Cloche sacrée de 3 tonnes apporte bonne fortune. Bouddha Amida doré de 5m recouvert feuilles d\'or. Jardin zen japonais authentique. Symbole de l\'héritage nippo-américain et harmonie culturelle hawaiienne. Sérénité absolue en cadre tropical.',
+    points: 75,
+    coordinates: [-157.8395, 21.3974],
+    imageUrl: '/src/assets/places/byodo-in-temple-hawaii.jpg'
+  },
+  {
+    id: 'usa-6',
+    name: 'Lotus Temple de Washington D.C.',
+    country: 'United States',
+    city: 'Washington D.C.',
+    type: 'Temple Bahá\'í',
+    description: 'Maison d\'adoration bahá\'íe ouverte en 2020, architecture moderne inspirée des pétales de lotus. Structure élégante en marbre blanc et verre incarnant unité, paix et inclusion. Conçue par Ehrlich Architects, elle allie spiritualité et design contemporain. Temple accueille toutes religions pour prière et méditation silencieuse. Pas de rituels ni sermons, seulement contemplation et musique sacrée. Jardins paysagers environnants favorisent introspection. Symbole de la foi bahá\'íe en l\'unité de l\'humanité et du dialogue interreligieux. Nouvelle icône architecturale spirituelle de la capitale américaine.',
+    points: 70,
+    coordinates: [-77.0369, 38.9072],
+    imageUrl: '/src/assets/places/lotus-temple-dc.jpg'
+  },
+  {
+    id: 'usa-7',
+    name: 'Cathédrale Saint-Paul de Saint Paul (Minnesota)',
+    country: 'United States',
+    city: 'Saint Paul',
+    type: 'Cathédrale',
+    description: 'Cathédrale catholique majestueuse de style Beaux-Arts et Renaissance française, construite 1906-1915. Dôme en cuivre vert de 56m de diamètre, l\'un des plus grands au monde, domine colline de Saint Paul. Architecte Emmanuel Masqueray s\'inspira Saint-Pierre Rome et Invalides Paris. Intérieur grandiose avec chapelles latérales, autels marbre et vitraux. Orgue monumental, acoustique exceptionnelle. Siège archiépiscopal du Minnesota. Lieu cérémonies religieuses et concerts. Monument historique national. Symbole de foi catholique et excellence architecturale du Midwest américain.',
+    points: 75,
+    coordinates: [-93.1070, 44.9466],
+    imageUrl: '/src/assets/places/cathedral-st-paul-mn.jpg'
+  },
+  {
+    id: 'usa-8',
+    name: 'Synagogue Touro (Newport)',
+    country: 'United States',
+    city: 'Newport',
+    type: 'Synagogue',
+    description: 'Plus ancienne synagogue des États-Unis toujours en activité, construite en 1763. Architecture géorgienne coloniale conçue par Peter Harrison. Communauté juive séfarade portugaise fuyant Inquisition. Lettre George Washington 1790 affirmant liberté religieuse américaine : "gouvernement ne donnant sanctification au fanatisme ni assistance à la persécution". Site historique national. Intérieur sobre avec bimah centrale, galerie femmes, chandelier colonial. Témoigne tolérance religieuse Rhode Island fondé par Roger Williams. Symbole liberté culte, patrimoine juif américain et racines de pluralisme religieux US.',
+    points: 80,
+    coordinates: [-71.3126, 41.4901],
+    imageUrl: '/src/assets/places/touro-synagogue.jpg'
+  },
+  {
+    id: 'usa-9',
+    name: 'Christ Cathedral (Garden Grove)',
+    country: 'United States',
+    city: 'Garden Grove',
+    type: 'Cathédrale',
+    description: 'Anciennement Crystal Cathedral, merveille architecturale moderne en verre et acier par Philip Johnson (1980). Structure géométrique de 10 660 panneaux de verre reflétant ciel et lumière divine. Capacité 2 736 places. Orgue Hazel Wright de 16 000 tuyaux. Rachetée par diocèse catholique 2012, rénovée et consacrée 2019. Architecture postmoderne audacieuse symbolisant transparence spirituelle. Siège cathédrale catholique d\'Orange County. Lieu culte, concerts et événements. Icône architecturale californienne fusionnant modernité et sacré. Témoignage créativité religieuse américaine.',
+    points: 75,
+    coordinates: [-117.9118, 33.7621],
+    imageUrl: '/src/assets/places/crystal-cathedral.jpg'
+  },
+  {
+    id: 'usa-10',
+    name: 'Cathédrale San Fernando (San Antonio)',
+    country: 'United States',
+    city: 'San Antonio',
+    type: 'Cathédrale',
+    description: 'Plus ancienne cathédrale catholique active au Texas, fondée en 1731 par colons canariens. Architecture baroque coloniale espagnole avec façade ornée et dôme gothique ajouté 1868. Située Plaza de Armas, cœur historique de San Antonio. Abrite cercueil défenseurs d\'Alamo (1836), symbole identité texane. Restaurations préservent fresques murales et retable doré. Cathédrale-basilique mineure, siège archidiocèse. Spectacle son et lumière nocturne projeté sur façade relate histoire. Fusion patrimoine hispanique, foi catholique et mémoire texane. Monument national historique ancré dans âme multiculturelle de San Antonio.',
+    points: 70,
+    coordinates: [-98.4874, 29.4252],
+    imageUrl: '/src/assets/places/san-fernando-cathedral.jpg'
+  },
+
+  // ========== SOUTH AMERICA ==========
+  {
+    id: 'sam-1',
+    name: 'Cathédrale Métropolitaine de Buenos Aires',
+    country: 'Argentina',
+    city: 'Buenos Aires',
+    type: 'Cathédrale',
+    description: 'Cathédrale catholique principale d\'Argentine face à Plaza de Mayo, construite entre 1752-1852. Façade néoclassique avec 12 colonnes corinthiennes représentant les apôtres, fronton sculpté. Intérieur baroque richement décoré avec fresques, autels dorés et mausolée du général San Martín, héros de l\'indépendance. Orgue Walcker monumental. Siège archevêché Buenos Aires, ancienne paroisse pape François (1998-2013). Lieu cérémonies nationales et religieuses majeures. Symbole foi catholique argentine, histoire coloniale espagnole et identité nationale. Monument historique national au cœur politique de l\'Argentine.',
+    points: 75,
+    coordinates: [-58.3731, -34.6076],
+    imageUrl: '/src/assets/places/catedral-metropolitana-ba.jpg'
+  },
+  {
+    id: 'sam-2',
+    name: 'Santuario de Las Lajas',
+    country: 'Colombia',
+    city: 'Ipiales',
+    type: 'Basilique',
+    description: 'Basilique néo-gothique spectaculaire construite 1916-1949 dans gorge de rivière Guáitara, enjambant canyon de 100m par pont de pierre. Architecture miraculeuse défiant gravité et ingénierie. Bâtie sur lieu apparition Vierge Marie 1754 à Indienne muette et son enfant paralysé, tous deux guéris. Image miraculeuse de la Vierge imprégnée dans roche naturelle, non peinte, objet vénération. Pèlerinage marial majeur Amérique latine. Tours blanches s\'élançant vers ciel, vitraux colorés illuminant intérieur mystique. Symbole foi populaire colombienne et fusion nature-divin. Merveille architecturale et spirituelle mondiale.',
+    points: 95,
+    coordinates: [-77.5954, 0.8128],
+    imageUrl: '/src/assets/places/santuario-las-lajas-colombia.jpg'
+  },
+  {
+    id: 'sam-3',
+    name: 'Cathédrale de Sel de Zipaquirá',
+    country: 'Colombia',
+    city: 'Zipaquirá',
+    type: 'Cathédrale souterraine',
+    description: 'Cathédrale catholique souterraine unique sculptée dans mine de sel à 180m profondeur, inaugurée 1995. Chef-d\'œuvre architectural et ingénierie dans tunnels salins. Chemin de croix avec 14 stations sculptées dans sel gemme. Nef centrale illuminée lumière bleue mystique, croix monumentale de 16m. Capacité 8400 personnes. Sel rose, blanc et gris crée atmosphère surnaturelle. Ancienne cathédrale (1954) abandonnée pour raisons sécurité. Merveille moderne combinant foi, art et géologie. Première merveille de Colombie. Lieu pèlerinage, mariages et concerts acoustique exceptionnelle. Expérience spirituelle et esthétique incomparable.',
+    points: 90,
+    coordinates: [-74.0047, 5.0181],
+    imageUrl: '/src/assets/places/catedral-sal-zipaquira-colombia.jpg'
+  },
+  {
+    id: 'sam-4',
+    name: 'Couvent Saint-François de Lima',
+    country: 'Peru',
+    city: 'Lima',
+    type: 'Monastère',
+    description: 'Complexe monastique franciscain baroque monumental construit à partir 1546, l\'un des plus grands au monde. Architecture coloniale espagnole jaune et blanche emblématique. Bibliothèque contenant 25 000 volumes anciens, certains antérieurs conquête. Cloîtres majestueux ornés d\'azulejos sévillans. Catacombes macabres abritant ossements 70 000 personnes, réseau souterrains reliait églises Lima. Musée art religieux colonial. Chœur mauresque en bois de cèdre sculpté. Patrimoine UNESCO. Symbole évangélisation franciscaine, baroque colonial et richesse culturelle vice-royauté du Pérou. Monument historique vivant de Lima.',
+    points: 80,
+    coordinates: [-77.0287, -12.0437],
+    imageUrl: '/src/assets/places/convento-san-francisco-lima.jpg'
+  },
+  {
+    id: 'sam-5',
+    name: 'Église San Francisco de Quito',
+    country: 'Ecuador',
+    city: 'Quito',
+    type: 'Église',
+    description: 'Église et couvent baroque colonial construit 1535-1680, première grande œuvre religieuse Quito. Intérieur entièrement recouvert feuilles d\'or (école quiténienne), éblouissant plafond mudéjar maure en bois sculpté. Façade baroque avec colonnes salomoniques. Musée art religieux dans couvent. Catacombes souterraines. Atrium avec fontaine coloniale. École d\'art religieux forma artistes métis fusionnant catholicisme et traditions indigènes. Patrimoine UNESCO (vieille ville Quito). Joyau baroque andin, symbole richesse artistique et spirituelle de l\'Équateur colonial. Centre culturel majeur capitale.',
+    points: 85,
+    coordinates: [-78.5161, -0.2186],
+    imageUrl: '/src/assets/places/iglesia-san-francisco-quito.jpg'
+  },
+  {
+    id: 'sam-6',
+    name: 'Basilique du Voto Nacional (Quito)',
+    country: 'Ecuador',
+    city: 'Quito',
+    type: 'Basilique',
+    description: 'Plus grande basilique néo-gothique des Amériques, construction débutée 1887, officiellement inachevée (légende locale : fin entrainerait apocalypse Équateur). Inspirée Notre-Dame Paris avec gargouilles uniques représentant faune équatorienne : iguanes, tortues, pumas, condors. Tours culminent 115m, accessibles par escaliers vertigineux offrant vue panoramique Quito. Architecture imposante pierre grise, vitraux spectaculaires, nef monumentale. Symbole consécration Équateur au Sacré-Cœur. Monument national historique. Fusion gothique européen et identité équatorienne. Œuvre architecturale ambitieuse témoignant foi et fierté nationale.',
+    points: 80,
+    coordinates: [-78.5070, -0.2148],
+    imageUrl: '/src/assets/places/basilica-voto-nacional.jpg'
+  },
+  {
+    id: 'sam-7',
+    name: 'Basilique de Luján',
+    country: 'Argentina',
+    city: 'Luján',
+    type: 'Basilique',
+    description: 'Basilique néo-gothique monumentale construite 1887-1935, plus grand sanctuaire marial d\'Argentine. Tours jumelles s\'élevant 106m en pierre rose. Lieu pèlerinage national attirant 6 millions visiteurs/an. Statue miraculeuse Vierge de Luján (1630), patronne Argentine, Uruguay et Paraguay. Légende : chariot transportant statue resta immobilisé miraculeusement, indiquant volonté divine. Pèlerinage annuel à pied depuis Buenos Aires (68km) rassemble millions fidèles. Architecture française flamboyante, vitraux colorés, crypte. Patrimoine historique argentin. Symbole dévotion mariale, unité nationale et foi populaire latino-américaine.',
+    points: 85,
+    coordinates: [-59.1207, -34.5704],
+    imageUrl: '/src/assets/places/basilica-lujan-argentina.jpg'
+  },
+  {
+    id: 'sam-8',
+    name: 'Couvent Santo Domingo (Cusco)',
+    country: 'Peru',
+    city: 'Cusco',
+    type: 'Couvent',
+    description: 'Église et couvent dominicain baroque construit directement sur fondations Qorikancha, Temple du Soleil inca le plus sacré. Murs incas en pierre parfaitement ajustée visibles sous architecture coloniale, symbolisant conquête espagnole sur empire inca. Autrefois recouvert 4 000 plaques d\'or massif pillées conquistadors. Fusion architecture inca et baroque colonial unique. Témoigne syncrétisme religieux forcé et résistance culturelle andine. Patrimoine UNESCO. Musée expose momies, textiles et céramiques incas. Lieu historique majeur où dialoguent deux civilisations et spiritualités. Cœur symbolique Cusco, ancienne capitale inca.',
+    points: 90,
+    coordinates: [-71.9675, -13.5186],
+    imageUrl: '/src/assets/places/santo-domingo-cusco.jpg'
+  },
+  {
+    id: 'sam-9',
+    name: 'Église de la Compagnie de Jésus (Cusco)',
+    country: 'Peru',
+    city: 'Cusco',
+    type: 'Église jésuite',
+    description: 'Église baroque jésuite construite 1571-1668 sur palais inca Huayna Capac, Plaza de Armas. Façade baroque ornée pierre volcanique sculptée, l\'une des plus belles Amérique latine. Intérieur richement décoré feuilles d\'or, autels churrigueresques, retables dorés spectaculaires. Coupole et transept ajoutés après séisme 1650. Rivalisa splendeur avec cathédrale, provoquant jalousie Vatican. École cusquénienne peinture coloniale : toiles fusionnant art européen et symboles andins. Patrimoine UNESCO. Chef-d\'œuvre baroque andin incarnant richesse artistique et complexité culturelle vice-royauté péruvienne. Joyau architectural de Cusco.',
+    points: 80,
+    coordinates: [-71.9675, -13.5165],
+    imageUrl: '/src/assets/places/compania-jesus-cusco.jpg'
+  },
+  {
+    id: 'sam-10',
+    name: 'Monastère Santa Catalina (Arequipa)',
+    country: 'Peru',
+    city: 'Arequipa',
+    type: 'Monastère',
+    description: 'Citadelle monastère dominicain fondé 1579, ville dans la ville de 20 000m². Ruelles colorées orange, bleu cobalt et blanc créant atmosphère méditerranéenne unique. Cloîtres, cellules moniales, cuisines, lavoirs préservés intacts. Isolement total monde extérieur pendant 400 ans, ouvert public 1970. Religieuses cloîtrées issues familles nobles espagnoles vivaient luxe relatif. Architecture coloniale mêlant styles espagnol, mauresque et baroque. Fresques, mobilier d\'époque, jardin floral. Sillar (pierre volcanique blanche) typique Arequipa. Patrimoine UNESCO. Musée vivant vie monastique coloniale. Témoignage unique histoire religieuse et sociale Pérou.',
+    points: 85,
+    coordinates: [-71.5369, -16.3960],
+    imageUrl: '/src/assets/places/santa-catalina-arequipa.jpg'
   }
-  // ... keep existing code for all other Thai places
 ];
 
 export const getPlacesByCountry = (country: string): Place[] => {
