@@ -87,18 +87,32 @@ const PlaceDetail = () => {
       if (error) throw error;
       
       // Flatten the media_urls arrays
-      const photos = data?.flatMap(memory => 
-        (memory.media_urls || []).map(url => ({
-          url,
-          title: memory.title,
-          created_at: memory.created_at,
-          is_own: user?.id === memory.user_id
-        }))
-      ) || [];
+      // Generate signed URLs for photos
+      const photosWithUrls = await Promise.all(
+        (data || []).flatMap(memory => 
+          (memory.media_urls || []).map(async (path) => {
+            const { data: signedUrlData } = await supabase.storage
+              .from('memory-photos')
+              .createSignedUrl(path, 3600); // 1 hour expiry
+            
+            return {
+              url: signedUrlData?.signedUrl || '',
+              title: memory.title,
+              created_at: memory.created_at,
+              is_own: user?.id === memory.user_id
+            };
+          })
+        )
+      );
       
-      setCommunityPhotos(photos);
+      setCommunityPhotos(photosWithUrls.filter(p => p.url));
     } catch (error) {
-      console.error('Error fetching community photos:', error);
+      // Error handling without exposing details
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les photos',
+        variant: 'destructive',
+      });
     } finally {
       setLoadingPhotos(false);
     }

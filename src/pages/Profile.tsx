@@ -56,6 +56,22 @@ const Profile = () => {
     }
   };
 
+  const validateFileSignature = async (file: File): Promise<boolean> => {
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      
+      // Check magic numbers for allowed image types
+      const isValidJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+      const isValidPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+      const isValidWebP = bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+      
+      return isValidJPEG || isValidPNG || isValidWebP;
+    } catch {
+      return false;
+    }
+  };
+
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
@@ -88,6 +104,17 @@ const Profile = () => {
         return;
       }
       
+      // Validate file signature (magic numbers)
+      const isValidFile = await validateFileSignature(file);
+      if (!isValidFile) {
+        toast({
+          variant: 'destructive',
+          title: 'Fichier invalide',
+          description: "Ce fichier n'est pas une image valide",
+        });
+        return;
+      }
+      
       const fileExt = file.name.split('.').pop();
       const filePath = `${userId}/avatar.${fileExt}`;
 
@@ -103,8 +130,6 @@ const Profile = () => {
         .from('avatars')
         .getPublicUrl(filePath);
 
-      console.log('Public URL generated:', publicUrl);
-
       // Update profile with avatar URL
       const { error: updateError } = await supabase
         .from('profiles')
@@ -112,11 +137,9 @@ const Profile = () => {
         .eq('id', userId);
 
       if (updateError) {
-        console.error('Error updating profile:', updateError);
         throw updateError;
       }
 
-      console.log('Avatar URL updated in profile');
       setAvatarUrl(publicUrl);
       
       toast({

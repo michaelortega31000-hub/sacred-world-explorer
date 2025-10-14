@@ -41,10 +41,39 @@ const LocationsTab = () => {
   const [uploadingPhotos, setUploadingPhotos] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [memoryPhotosWithUrls, setMemoryPhotosWithUrls] = useState<Record<string, string[]>>({});
 
   useEffect(() => {
     fetchMemories();
   }, []);
+
+  const validateFileSignature = async (file: File): Promise<boolean> => {
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      
+      // Check magic numbers for allowed image types
+      const isValidJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
+      const isValidPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
+      const isValidWebP = bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+      
+      return isValidJPEG || isValidPNG || isValidWebP;
+    } catch {
+      return false;
+    }
+  };
+
+  const generateSignedUrls = async (paths: string[]): Promise<string[]> => {
+    const signedUrls = await Promise.all(
+      paths.map(async (path) => {
+        const { data } = await supabase.storage
+          .from('memory-photos')
+          .createSignedUrl(path, 3600); // 1 hour expiry
+        return data?.signedUrl || '';
+      })
+    );
+    return signedUrls.filter(url => url);
+  };
 
   const fetchMemories = async () => {
     try {
@@ -60,21 +89,33 @@ const LocationsTab = () => {
 
       if (error) throw error;
       setMemories(data || []);
+      
+      // Generate signed URLs for all memory photos
+      const urlsMap: Record<string, string[]> = {};
+      for (const memory of data || []) {
+        if (memory.media_urls && memory.media_urls.length > 0) {
+          urlsMap[memory.id] = await generateSignedUrls(memory.media_urls);
+        }
+      }
+      setMemoryPhotosWithUrls(urlsMap);
     } catch (error) {
-      console.error('Error fetching memories:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de charger les souvenirs',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const uploadPhotos = async (userId: string): Promise<string[]> => {
-    const uploadedUrls: string[] = [];
+    const uploadedPaths: string[] = [];
 
     for (const file of selectedFiles) {
       // Validate file size (10MB limit)
       const MAX_SIZE = 10 * 1024 * 1024; // 10MB
       if (file.size > MAX_SIZE) {
-        console.error(`File ${file.name} exceeds 10MB limit`);
         toast({
           variant: 'destructive',
           title: 'Fichier trop volumineux',
@@ -86,7 +127,6 @@ const LocationsTab = () => {
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
       if (!allowedTypes.includes(file.type)) {
-        console.error(`File ${file.name} has invalid type: ${file.type}`);
         toast({
           variant: 'destructive',
           title: 'Type de fichier non autorisé',
@@ -95,26 +135,32 @@ const LocationsTab = () => {
         continue;
       }
       
+      // Validate file signature (magic numbers)
+      const isValidFile = await validateFileSignature(file);
+      if (!isValidFile) {
+        toast({
+          variant: 'destructive',
+          title: 'Fichier invalide',
+          description: `${file.name} n'est pas une image valide`,
+        });
+        continue;
+      }
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/${Date.now()}_${Math.random()}.${fileExt}`;
 
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('memory-photos')
         .upload(fileName, file);
 
       if (uploadError) {
-        console.error('Error uploading photo:', uploadError);
         continue;
       }
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('memory-photos')
-        .getPublicUrl(fileName);
-
-      uploadedUrls.push(publicUrl);
+      uploadedPaths.push(fileName);
     }
 
-    return uploadedUrls;
+    return uploadedPaths;
   };
 
   const addMemory = async () => {
@@ -133,9 +179,9 @@ const LocationsTab = () => {
       const user = session?.user;
       if (!user || !selectedPlace) return;
 
-      let photoUrls: string[] = [];
+      let photoPaths: string[] = [];
       if (selectedFiles.length > 0) {
-        photoUrls = await uploadPhotos(user.id);
+        photoPaths = await uploadPhotos(user.id);
       }
 
       const { error } = await supabase
@@ -146,7 +192,7 @@ const LocationsTab = () => {
           title: newMemory.title || null,
           content: newMemory.content || null,
           memory_type: selectedFiles.length > 0 ? 'photo' : 'text',
-          media_urls: photoUrls.length > 0 ? photoUrls : null,
+          media_urls: photoPaths.length > 0 ? photoPaths : null,
           is_public: newMemory.isPublic
         });
 
@@ -162,7 +208,6 @@ const LocationsTab = () => {
       setSelectedPlace(null);
       fetchMemories();
     } catch (error) {
-      console.error('Error adding memory:', error);
       toast({
         title: 'Erreur',
         description: 'Impossible d\'ajouter la mémoire',
@@ -427,9 +472,9 @@ const LocationsTab = () => {
                                 {memory.content}
                               </p>
                             )}
-                            {memory.media_urls && memory.media_urls.length > 0 && (
+                            {memory.media_urls && memory.media_urls.length > 0 && memoryPhotosWithUrls[memory.id] && (
                               <div className="grid grid-cols-2 gap-2 mt-3">
-                                {memory.media_urls.map((url, idx) => (
+                                {memoryPhotosWithUrls[memory.id].map((url, idx) => (
                                   <img
                                     key={idx}
                                     src={url}
