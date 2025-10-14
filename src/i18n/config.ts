@@ -109,6 +109,10 @@ const resources = {
         yourPoints: 'Vos points',
         position: 'Position',
         badges: 'Badges'
+      },
+      calendar: {
+        button: 'Calendrier',
+        tooltip: 'Ouvrir le calendrier'
       }
     }
   },
@@ -219,6 +223,10 @@ const resources = {
         yourPoints: 'Your Points',
         position: 'Position',
         badges: 'Badges'
+      },
+      calendar: {
+        button: 'Calendar',
+        tooltip: 'Open the calendar'
       }
     }
   },
@@ -329,6 +337,10 @@ const resources = {
         yourPoints: 'Tus Puntos',
         position: 'Posición',
         badges: 'Insignias'
+      },
+      calendar: {
+        button: 'Calendario',
+        tooltip: 'Abrir el calendario'
       }
     }
   },
@@ -439,6 +451,10 @@ const resources = {
         yourPoints: 'I Tuoi Punti',
         position: 'Posizione',
         badges: 'Badge'
+      },
+      calendar: {
+        button: 'Calendario',
+        tooltip: 'Aprire il calendario'
       }
     }
   },
@@ -549,6 +565,10 @@ const resources = {
         yourPoints: 'Deine Punkte',
         position: 'Position',
         badges: 'Abzeichen'
+      },
+      calendar: {
+        button: 'Kalender',
+        tooltip: 'Kalender öffnen'
       }
     }
   },
@@ -659,6 +679,10 @@ const resources = {
         yourPoints: 'Seus Pontos',
         position: 'Posição',
         badges: 'Distintivos'
+      },
+      calendar: {
+        button: 'Calendário',
+        tooltip: 'Abrir o calendário'
       }
     }
   },
@@ -769,6 +793,10 @@ const resources = {
         yourPoints: 'نقاطك',
         position: 'الموقع',
         badges: 'الشارات'
+      },
+      calendar: {
+        button: 'التقويم',
+        tooltip: 'فتح التقويم'
       }
     }
   }

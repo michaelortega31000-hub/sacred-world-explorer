@@ -5,7 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MapPin } from 'lucide-react';
+import { MapPin, Calendar } from 'lucide-react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
 import { religionColors } from '@/config/religionColors';
@@ -28,7 +29,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const markers = useRef<mapboxgl.Marker[]>([]);
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { userProgress } = useApp();
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
@@ -746,6 +747,32 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
         <MapPin className="w-4 h-4" />
         <span className="hidden sm:inline">{showMonuments ? 'Masquer' : 'Afficher'}</span>
       </Button>
+
+      {/* Calendar button - positioned bottom left */}
+      <div className="absolute bottom-4 left-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => navigate('/world?tab=locations')}
+                className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]"
+                style={{
+                  background: 'rgba(20, 43, 79, 0.8)',
+                  color: '#F5F5F5',
+                  borderColor: 'rgba(52, 224, 161, 0.3)',
+                  boxShadow: '0 0 10px rgba(244, 197, 66, 0.2)'
+                }}
+              >
+                <Calendar className="w-5 h-5" />
+                <span className="hidden sm:inline">{t('calendar.button')}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('calendar.tooltip')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
 
       {/* Monument Filter - positioned bottom right, aligned with show monuments button */}
       <div className="absolute bottom-4 right-4">

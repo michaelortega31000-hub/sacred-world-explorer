@@ -7,6 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MapPin, Image as ImageIcon, Text, Plus, Calendar, Trash2, X } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { getPlaceById } from '@/data/placesData';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +34,8 @@ const LocationsTab = () => {
   const { userProgress } = useApp();
   const { toast } = useToast();
   const { checkRateLimit } = useRateLimit();
+  const { t } = useTranslation();
+  const navigate = useNavigate();
   const [memories, setMemories] = useState<Memory[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
@@ -287,7 +292,36 @@ const LocationsTab = () => {
   }
 
   return (
-    <div className="container mx-auto p-6 space-y-6 pb-24">
+    <div className="container mx-auto p-6 space-y-6 pb-24 relative">
+      {/* Calendar button - fixed bottom left */}
+      <div className="fixed bottom-24 left-4 z-40">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => {
+                  // Already on locations tab, could scroll to top or show a message
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]"
+                style={{
+                  background: 'rgba(20, 43, 79, 0.8)',
+                  color: '#F5F5F5',
+                  borderColor: 'rgba(52, 224, 161, 0.3)',
+                  boxShadow: '0 0 10px rgba(244, 197, 66, 0.2)'
+                }}
+              >
+                <Calendar className="w-5 h-5" />
+                <span className="hidden sm:inline">{t('calendar.button')}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('calendar.tooltip')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
       <div className="text-center mb-8">
         <h1 
           className="text-4xl font-serif font-bold mb-2"
