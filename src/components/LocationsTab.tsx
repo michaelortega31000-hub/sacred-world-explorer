@@ -15,6 +15,18 @@ import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { Switch } from '@/components/ui/switch';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { z } from 'zod';
+
+const memorySchema = z.object({
+  title: z.string()
+    .max(200, 'Le titre doit faire moins de 200 caractères')
+    .refine(val => !/<[^>]*>/g.test(val), 'Les balises HTML ne sont pas autorisées')
+    .optional(),
+  content: z.string()
+    .max(5000, 'Le contenu doit faire moins de 5000 caractères')
+    .refine(val => !/<[^>]*>/g.test(val), 'Les balises HTML ne sont pas autorisées')
+    .optional()
+});
 
 interface Memory {
   id: string;
@@ -189,6 +201,23 @@ const LocationsTab = () => {
         variant: 'destructive'
       });
       return;
+    }
+
+    // Validate memory content
+    try {
+      memorySchema.parse({
+        title: newMemory.title || undefined,
+        content: newMemory.content || undefined
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: 'Erreur de validation',
+          description: error.errors[0].message,
+          variant: 'destructive'
+        });
+        return;
+      }
     }
 
     try {
