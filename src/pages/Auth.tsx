@@ -57,23 +57,6 @@ const Auth = () => {
       const validatedData = signupSchema.parse(formData);
       setLoading(true);
 
-      // Rate limiting for signup (max 3 signups per hour per IP)
-      // Note: This is basic client-side rate limiting. Server-side rate limiting
-      // should be enabled in Supabase Auth settings for production use.
-      const signupAttempts = localStorage.getItem('signup_attempts');
-      const attempts = signupAttempts ? JSON.parse(signupAttempts) : { count: 0, timestamp: Date.now() };
-      
-      const oneHour = 60 * 60 * 1000;
-      if (Date.now() - attempts.timestamp < oneHour && attempts.count >= 3) {
-        toast({
-          title: 'Trop de tentatives',
-          description: 'Veuillez attendre une heure avant de créer un nouveau compte.',
-          variant: 'destructive'
-        });
-        setLoading(false);
-        return;
-      }
-
       const redirectUrl = `${window.location.origin}/selection`;
       
       const { error } = await supabase.auth.signUp({
@@ -99,12 +82,6 @@ const Auth = () => {
         }
         return;
       }
-
-      // Update signup attempts
-      localStorage.setItem('signup_attempts', JSON.stringify({
-        count: Date.now() - attempts.timestamp < oneHour ? attempts.count + 1 : 1,
-        timestamp: Date.now()
-      }));
 
       toast({
         title: 'Compte créé !',
@@ -142,34 +119,12 @@ const Auth = () => {
       });
       setLoading(true);
 
-      // Basic rate limiting for login attempts (max 5 per 15 minutes per IP)
-      const loginAttempts = localStorage.getItem('login_attempts');
-      const attempts = loginAttempts ? JSON.parse(loginAttempts) : { count: 0, timestamp: Date.now(), failed: 0 };
-      
-      const fifteenMinutes = 15 * 60 * 1000;
-      if (Date.now() - attempts.timestamp < fifteenMinutes && attempts.failed >= 5) {
-        toast({
-          title: 'Trop de tentatives',
-          description: 'Veuillez attendre 15 minutes avant de réessayer.',
-          variant: 'destructive'
-        });
-        setLoading(false);
-        return;
-      }
-
       const { error } = await supabase.auth.signInWithPassword({
         email: validatedData.email,
         password: validatedData.password
       });
 
       if (error) {
-        // Update failed login attempts
-        localStorage.setItem('login_attempts', JSON.stringify({
-          count: Date.now() - attempts.timestamp < fifteenMinutes ? attempts.count + 1 : 1,
-          timestamp: Date.now(),
-          failed: Date.now() - attempts.timestamp < fifteenMinutes ? attempts.failed + 1 : 1
-        }));
-
         if (error.message.includes('Invalid login credentials')) {
           toast({
             title: 'Erreur',
@@ -181,9 +136,6 @@ const Auth = () => {
         }
         return;
       }
-
-      // Clear failed attempts on success
-      localStorage.setItem('login_attempts', JSON.stringify({ count: 0, timestamp: Date.now(), failed: 0 }));
 
       navigate('/mode-selection');
     } catch (error) {
