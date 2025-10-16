@@ -213,41 +213,45 @@ const Auth = () => {
             />
           </div>
           <CardDescription className="text-base text-muted-foreground">
-            {isLogin 
-              ? 'Connectez-vous pour continuer votre voyage' 
-              : 'Rejoignez la communauté SacredWorld'}
+            {showForgotPassword
+              ? 'Réinitialiser votre mot de passe'
+              : isLogin 
+                ? 'Connectez-vous pour continuer votre voyage' 
+                : 'Rejoignez la communauté SacredWorld'}
           </CardDescription>
         </CardHeader>
         <CardContent>
           {showForgotPassword ? (
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-email">Email</Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="votre@email.com"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
+            <>
+              <form onSubmit={handleForgotPassword} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    placeholder="votre@email.com"
+                    value={resetEmail}
+                    onChange={(e) => setResetEmail(e.target.value)}
+                    required
+                    disabled={loading}
+                  />
+                </div>
 
-              <Button
-                type="submit"
-                className="w-full bg-primary text-primary-foreground hover:scale-105 transition-transform shadow-turquoise"
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Envoi en cours...
-                  </>
-                ) : (
-                  'Envoyer le lien de réinitialisation'
-                )}
-              </Button>
+                <Button
+                  type="submit"
+                  className="w-full bg-primary text-primary-foreground hover:scale-105 transition-transform shadow-turquoise"
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Envoi en cours...
+                    </>
+                  ) : (
+                    'Envoyer le lien de réinitialisation'
+                  )}
+                </Button>
+              </form>
 
               <div className="mt-4 text-center">
                 <button
@@ -262,96 +266,96 @@ const Auth = () => {
                   Retour à la connexion
                 </button>
               </div>
-            </form>
+            </>
           ) : (
-            <form onSubmit={isLogin ? handleLogin : handleSignUp} className="space-y-4">
-            {!isLogin && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Nom d'utilisateur</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  placeholder="Choisissez un nom d'utilisateur"
-                  value={formData.username}
-                  onChange={(e) => setFormData({ ...formData, username: e.target.value })}
-                  required={!isLogin}
+            <>
+              <form onSubmit={isLogin ? handleLogin : handleSignUp} className="space-y-4">
+                {!isLogin && (
+                  <div className="space-y-2">
+                    <Label htmlFor="username">Nom d'utilisateur</Label>
+                    <Input
+                      id="username"
+                      type="text"
+                      placeholder="Choisissez un nom d'utilisateur"
+                      value={formData.username}
+                      onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                      required={!isLogin}
+                      disabled={loading}
+                    />
+                  </div>
+                )}
+                
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="votre@email.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="password">Mot de passe</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    placeholder="••••••••"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    required
+                    disabled={loading}
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  className="w-full bg-primary text-primary-foreground hover:scale-105 transition-transform shadow-turquoise"
                   disabled={loading}
-                />
-              </div>
-            )}
-            
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="votre@email.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                required
-                disabled={loading}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="password">Mot de passe</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                required
-                disabled={loading}
-              />
-            </div>
+                >
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Chargement...
+                    </>
+                  ) : (
+                    isLogin ? 'Se connecter' : 'Créer mon compte'
+                  )}
+                </Button>
+              </form>
 
-            <Button
-              type="submit"
-              className="w-full bg-primary text-primary-foreground hover:scale-105 transition-transform shadow-turquoise"
-              disabled={loading}
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Chargement...
-                </>
-              ) : (
-                isLogin ? 'Se connecter' : 'Créer mon compte'
+              {isLogin && (
+                <div className="mt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={() => setShowForgotPassword(true)}
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    disabled={loading}
+                  >
+                    Mot de passe oublié ?
+                  </button>
+                </div>
               )}
-            </Button>
 
-            {isLogin && (
-              <div className="mt-3 text-center">
+              <div className="mt-4 text-center">
                 <button
                   type="button"
-                  onClick={() => setShowForgotPassword(true)}
+                  onClick={() => {
+                    setIsLogin(!isLogin);
+                    setFormData({ username: '', email: '', password: '' });
+                  }}
                   className="text-sm text-muted-foreground hover:text-primary transition-colors"
                   disabled={loading}
                 >
-                  Mot de passe oublié ?
+                  {isLogin 
+                    ? "Pas encore de compte ? S'inscrire" 
+                    : 'Déjà un compte ? Se connecter'}
                 </button>
               </div>
-            )}
-          </form>
-          )}
-
-          {!showForgotPassword && (
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setFormData({ username: '', email: '', password: '' });
-                }}
-                className="text-sm text-muted-foreground hover:text-primary transition-colors"
-                disabled={loading}
-              >
-                {isLogin 
-                  ? "Pas encore de compte ? S'inscrire" 
-                  : 'Déjà un compte ? Se connecter'}
-              </button>
-            </div>
+            </>
           )}
         </CardContent>
       </Card>
