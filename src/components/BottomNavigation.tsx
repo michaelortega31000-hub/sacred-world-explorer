@@ -8,9 +8,9 @@ const BottomNavigation = () => {
   const navItems = [
     { icon: Globe, label: 'Explorer', path: '/world?tab=map' },
     { icon: MapPin, label: 'Lieux', path: '/world?tab=locations' },
-    { icon: Trophy, label: 'Classement', path: '/world?tab=rankings' },
-    { icon: Calendar, label: 'Calendrier', path: '/world?tab=calendar' },
     { icon: User, label: 'Profil', path: '/profile' },
+    { icon: Calendar, label: 'Calendrier', path: '/world?tab=calendar' },
+    { icon: Trophy, label: 'Classement', path: '/world?tab=rankings' },
   ];
 
   const isActive = (path: string) => {
