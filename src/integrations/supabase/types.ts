@@ -447,6 +447,7 @@ export type Database = {
           id: string
           language: string
           planned_route_start_city: string
+          saved_restaurants: string[]
           selected_religion: string | null
           show_planned_route: boolean
           total_points: number
@@ -462,6 +463,7 @@ export type Database = {
           id?: string
           language?: string
           planned_route_start_city?: string
+          saved_restaurants?: string[]
           selected_religion?: string | null
           show_planned_route?: boolean
           total_points?: number
@@ -477,6 +479,7 @@ export type Database = {
           id?: string
           language?: string
           planned_route_start_city?: string
+          saved_restaurants?: string[]
           selected_religion?: string | null
           show_planned_route?: boolean
           total_points?: number

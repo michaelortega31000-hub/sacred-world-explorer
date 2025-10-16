@@ -26,6 +26,7 @@ export interface UserProgress {
   visitedPlaces: string[];
   badges: string[];
   tripPlaces: string[];
+  savedRestaurants: string[];
   geolocationEnabled: boolean;
   plannedRouteStartCity: string;
   showPlannedRoute: boolean;
@@ -42,6 +43,8 @@ interface AppContextType {
   removeFromTrip: (placeId: string) => void;
   isInTrip: (placeId: string) => boolean;
   clearTrip: () => void;
+  saveRestaurant: (restaurantId: string) => void;
+  unsaveRestaurant: (restaurantId: string) => void;
   addPoints: (points: number) => void;
   toggleGeolocation: () => void;
   updatePlannedRoute: (startCity: string, showRoute: boolean) => void;
@@ -68,10 +71,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       selectedReligion: null,
       language: 'fr',
       totalPoints: 0,
-      visitedPlaces: [],
-      badges: [],
-      tripPlaces: [],
-      geolocationEnabled: false,
+        visitedPlaces: [],
+        badges: [],
+        tripPlaces: [],
+        savedRestaurants: [],
+        geolocationEnabled: false,
       plannedRouteStartCity: '',
       showPlannedRoute: false
     };
@@ -124,6 +128,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           visitedPlaces: data.visited_places,
           badges: data.badges,
           tripPlaces: data.trip_places,
+          savedRestaurants: data.saved_restaurants || [],
           geolocationEnabled: data.geolocation_enabled,
           plannedRouteStartCity: data.planned_route_start_city || '',
           showPlannedRoute: data.show_planned_route || false
@@ -165,6 +170,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             visited_places: localProgress.visitedPlaces || [],
             badges: localProgress.badges || [],
             trip_places: localProgress.tripPlaces || [],
+            saved_restaurants: localProgress.savedRestaurants || [],
             geolocation_enabled: localProgress.geolocationEnabled || false,
             planned_route_start_city: localProgress.plannedRouteStartCity || '',
             show_planned_route: localProgress.showPlannedRoute || false
@@ -193,10 +199,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           selected_religion: userProgress.selectedReligion,
           language: userProgress.language,
           total_points: userProgress.totalPoints,
-          visited_places: userProgress.visitedPlaces,
-          badges: userProgress.badges,
-          trip_places: userProgress.tripPlaces,
-          geolocation_enabled: userProgress.geolocationEnabled,
+        visited_places: userProgress.visitedPlaces,
+        badges: userProgress.badges,
+        trip_places: userProgress.tripPlaces,
+        saved_restaurants: userProgress.savedRestaurants,
+        geolocation_enabled: userProgress.geolocationEnabled,
           planned_route_start_city: userProgress.plannedRouteStartCity,
           show_planned_route: userProgress.showPlannedRoute
         }, {
@@ -338,6 +345,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const saveRestaurant = (restaurantId: string) => {
+    setUserProgress(prev => {
+      if (prev.savedRestaurants.includes(restaurantId)) return prev;
+      return {
+        ...prev,
+        savedRestaurants: [...prev.savedRestaurants, restaurantId]
+      };
+    });
+  };
+
+  const unsaveRestaurant = (restaurantId: string) => {
+    setUserProgress(prev => ({
+      ...prev,
+      savedRestaurants: prev.savedRestaurants.filter(id => id !== restaurantId)
+    }));
+  };
+
   return (
     <AppContext.Provider value={{ 
       userProgress,
@@ -350,6 +374,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       removeFromTrip,
       isInTrip,
       clearTrip,
+      saveRestaurant,
+      unsaveRestaurant,
       addPoints,
       toggleGeolocation,
       updatePlannedRoute,

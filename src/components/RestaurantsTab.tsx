@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { MapPin, Phone, Globe, Star, Utensils } from 'lucide-react';
+import { MapPin, Phone, Globe, Star, Utensils, Bookmark } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 import { AddRestaurantDialog } from './AddRestaurantDialog';
 import { logger } from '@/lib/logger';
+import { useApp } from '@/contexts/AppContext';
+import { useToast } from '@/hooks/use-toast';
 
 type RestaurantType = 'all' | 'halal' | 'kosher' | 'vegetarian' | 'vegan' | 'neutral';
 
@@ -31,6 +33,8 @@ interface RestaurantsTabProps {
 
 const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
   const { t } = useTranslation();
+  const { userProgress, saveRestaurant, unsaveRestaurant } = useApp();
+  const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<RestaurantType>('all');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>(country || 'all');
@@ -204,6 +208,24 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
     return colors[type];
   };
 
+  const handleSaveRestaurant = (restaurantId: string, restaurantName: string) => {
+    const isSaved = userProgress.savedRestaurants.includes(restaurantId);
+    
+    if (isSaved) {
+      unsaveRestaurant(restaurantId);
+      toast({
+        title: 'Restaurant retiré',
+        description: `${restaurantName} a été retiré de vos favoris`,
+      });
+    } else {
+      saveRestaurant(restaurantId);
+      toast({
+        title: 'Restaurant sauvegardé',
+        description: `${restaurantName} a été ajouté à vos favoris`,
+      });
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto">
       {/* Header */}
@@ -360,7 +382,16 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="gap-2">
+              <CardFooter className="gap-2 flex-wrap">
+                <Button
+                  variant={userProgress.savedRestaurants.includes(restaurant.id) ? "default" : "outline"}
+                  size="sm"
+                  className="gap-2"
+                  onClick={() => handleSaveRestaurant(restaurant.id, restaurant.name)}
+                >
+                  <Bookmark className={cn("w-4 h-4", userProgress.savedRestaurants.includes(restaurant.id) && "fill-current")} />
+                  {userProgress.savedRestaurants.includes(restaurant.id) ? 'Sauvegardé' : 'Sauvegarder'}
+                </Button>
                 {restaurant.website && (
                   <Button
                     variant="outline"
@@ -373,7 +404,7 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
                   </Button>
                 )}
                 <Button
-                  variant="default"
+                  variant="outline"
                   size="sm"
                   className="flex-1 gap-2"
                   onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address + ', ' + restaurant.city)}`, '_blank')}
