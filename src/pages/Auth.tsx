@@ -328,11 +328,11 @@ const Auth = () => {
               </form>
 
               {isLogin && (
-                <div className="mt-4 text-center">
+                <div className="mt-3 text-center">
                   <button
                     type="button"
                     onClick={() => setShowForgotPassword(true)}
-                    className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                    className="text-sm text-muted-foreground hover:text-primary transition-colors underline"
                     disabled={loading}
                   >
                     Mot de passe oublié ?
@@ -340,7 +340,7 @@ const Auth = () => {
                 </div>
               )}
 
-              <div className="mt-4 text-center">
+              <div className="mt-6 text-center pt-4 border-t border-border/50">
                 <button
                   type="button"
                   onClick={() => {
