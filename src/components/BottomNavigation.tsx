@@ -1,16 +1,16 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Globe, MapPin, Trophy, Map } from 'lucide-react';
+import { User, Globe, MapPin, Trophy, Calendar, Target } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
-    { icon: Globe, label: 'Globe', path: '/world?tab=map' },
-    { icon: Map, label: 'Lieux', path: '/world?tab=countries' },
-    { icon: MapPin, label: 'Planifier', path: '/world?tab=trip' },
+    { icon: Globe, label: 'Explorer', path: '/world?tab=map' },
+    { icon: Target, label: 'Quêtes', path: '/world?tab=quest' },
+    { icon: MapPin, label: 'Lieux', path: '/world?tab=locations' },
+    { icon: Calendar, label: 'Calendrier', path: '/world?tab=calendar' },
     { icon: User, label: 'Profil', path: '/profile' },
-    { icon: Trophy, label: 'Classements', path: '/world?tab=rankings' },
   ];
 
   const isActive = (path: string) => {

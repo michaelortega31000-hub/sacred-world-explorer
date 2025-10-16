@@ -544,6 +544,45 @@ export type Database = {
         }
         Relationships: []
       }
+      visit_history: {
+        Row: {
+          audio_played: boolean
+          badge_id: string | null
+          created_at: string
+          gps_location: Json | null
+          id: string
+          offline_synced: boolean
+          place_id: string
+          points_earned: number
+          user_id: string
+          visit_timestamp: string
+        }
+        Insert: {
+          audio_played?: boolean
+          badge_id?: string | null
+          created_at?: string
+          gps_location?: Json | null
+          id?: string
+          offline_synced?: boolean
+          place_id: string
+          points_earned?: number
+          user_id: string
+          visit_timestamp?: string
+        }
+        Update: {
+          audio_played?: boolean
+          badge_id?: string | null
+          created_at?: string
+          gps_location?: Json | null
+          id?: string
+          offline_synced?: boolean
+          place_id?: string
+          points_earned?: number
+          user_id?: string
+          visit_timestamp?: string
+        }
+        Relationships: []
+      }
       vr_content: {
         Row: {
           content_type: string

@@ -16,6 +16,7 @@ import CalendarTab from '@/components/CalendarTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
+import NearMeFeature from '@/components/NearMeFeature';
 
 const WorldMap = () => {
   const navigate = useNavigate();
@@ -107,17 +108,19 @@ const WorldMap = () => {
             tripPlaces={userProgress.tripPlaces}
           />
 
-          {/* Barre de recherche overlay - côté gauche */}
-          <div 
-            className={`absolute top-4 left-4 rounded-xl backdrop-blur-md border-2 transition-all duration-300 z-50 ${
-              isSearchExpanded ? 'w-96 p-4' : 'w-auto px-3 py-2'
-            }`} 
-            style={{ 
-              background: 'rgba(20, 43, 79, 0.85)',
-              borderColor: 'rgba(52, 224, 161, 0.4)',
-              boxShadow: '0 0 20px rgba(244, 197, 66, 0.2)'
-            }}
-          >
+          {/* Barre de recherche et boutons overlay - côté gauche */}
+          <div className="absolute top-4 left-4 z-50 space-y-3">
+            {/* Barre de recherche */}
+            <div 
+              className={`rounded-xl backdrop-blur-md border-2 transition-all duration-300 ${
+                isSearchExpanded ? 'w-96 p-4' : 'w-auto px-3 py-2'
+              }`} 
+              style={{ 
+                background: 'rgba(20, 43, 79, 0.85)',
+                borderColor: 'rgba(52, 224, 161, 0.4)',
+                boxShadow: '0 0 20px rgba(244, 197, 66, 0.2)'
+              }}
+            >
             <div className="flex items-center gap-2">
               {isSearchExpanded && (
                 <span className="text-lg">🌍</span>
@@ -171,10 +174,28 @@ const WorldMap = () => {
                     </div>
                     <MapPin className="w-4 h-4" style={{ color: '#34E0A1' }} />
                   </button>
-                ))}
-              </div>
-            )}
-          </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Quick action buttons */}
+        <div className="flex gap-2">
+          <Button
+            onClick={() => navigate('/world?tab=calendar')}
+            className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
+            style={{
+              background: 'rgba(20, 43, 79, 0.85)',
+              color: '#F5F5F5',
+              borderColor: 'rgba(52, 224, 161, 0.3)',
+              boxShadow: '0 0 15px rgba(244, 197, 66, 0.2)'
+            }}
+          >
+            <Calendar className="w-5 h-5 group-hover:text-[#34E0A1] transition-colors" />
+            <span className="hidden sm:inline">Calendrier</span>
+          </Button>
+        </div>
+      </div>
 
           {/* Contrôles immersifs en bas */}
           <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-50">
@@ -199,7 +220,10 @@ const WorldMap = () => {
         </TabsContent>
 
         <TabsContent value="locations" className="flex-1 m-0">
-          <LocationsTab />
+          <div className="container mx-auto p-6 space-y-6">
+            <NearMeFeature />
+            <LocationsTab />
+          </div>
         </TabsContent>
 
         <TabsContent value="rankings" className="flex-1 m-0">

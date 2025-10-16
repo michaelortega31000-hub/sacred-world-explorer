@@ -16,6 +16,7 @@ import { fr } from 'date-fns/locale';
 import { Switch } from '@/components/ui/switch';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { z } from 'zod';
+import MyVisitsTab from './MyVisitsTab';
 
 const memorySchema = z.object({
   title: z.string()
@@ -315,6 +316,8 @@ const LocationsTab = () => {
     );
   }
 
+  const [activeSubTab, setActiveSubTab] = useState<'all' | 'visits'>('all');
+
   return (
     <div className="container mx-auto p-6 space-y-6 pb-8">
       <div className="text-center mb-8">
@@ -328,6 +331,31 @@ const LocationsTab = () => {
           {visitedPlaces.length} lieu{visitedPlaces.length > 1 ? 'x' : ''} visité{visitedPlaces.length > 1 ? 's' : ''}
         </p>
       </div>
+
+      {/* Sub-tabs */}
+      <div className="flex gap-2 justify-center mb-6">
+        <Button
+          variant={activeSubTab === 'all' ? 'default' : 'outline'}
+          onClick={() => setActiveSubTab('all')}
+          className="gap-2"
+        >
+          <MapPin className="w-4 h-4" />
+          Tous les lieux
+        </Button>
+        <Button
+          variant={activeSubTab === 'visits' ? 'default' : 'outline'}
+          onClick={() => setActiveSubTab('visits')}
+          className="gap-2"
+        >
+          <Calendar className="w-4 h-4" />
+          Mes visites
+        </Button>
+      </div>
+
+      {activeSubTab === 'visits' ? (
+        <MyVisitsTab />
+      ) : (
+        <>
 
       {visitedPlaces.length === 0 ? (
         <Card className="border-2" style={{ borderColor: '#34E0A1' }}>
@@ -573,6 +601,8 @@ const LocationsTab = () => {
             onClick={(e) => e.stopPropagation()}
           />
         </div>
+      )}
+        </>
       )}
     </div>
   );
