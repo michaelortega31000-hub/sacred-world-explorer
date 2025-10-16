@@ -262,6 +262,51 @@ export type Database = {
           },
         ]
       }
+      places: {
+        Row: {
+          city: string
+          coordinates: Json
+          country: string
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          name: string
+          points_value: number
+          religion: string | null
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          city: string
+          coordinates: Json
+          country: string
+          created_at?: string
+          description?: string | null
+          id: string
+          image_url?: string | null
+          name: string
+          points_value?: number
+          religion?: string | null
+          type: string
+          updated_at?: string
+        }
+        Update: {
+          city?: string
+          coordinates?: Json
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          name?: string
+          points_value?: number
+          religion?: string | null
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null

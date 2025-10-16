@@ -9,7 +9,6 @@ const corsHeaders = {
 interface VerifyVisitRequest {
   placeId: string;
   placeCoordinates: [number, number];
-  placePoints: number;
   userLat: number;
   userLon: number;
 }
@@ -62,7 +61,7 @@ serve(async (req) => {
     }
 
     const body: VerifyVisitRequest = await req.json();
-    const { placeId, placeCoordinates, placePoints, userLat, userLon } = body;
+    const { placeId, placeCoordinates, userLat, userLon } = body;
 
     // Validate input
     if (!placeId || !placeCoordinates || !userLat || !userLon) {
@@ -71,6 +70,34 @@ serve(async (req) => {
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
+    // Validate placeId format (alphanumeric and hyphens only, max 100 chars)
+    const placeIdPattern = /^[a-z0-9-]+$/;
+    if (!placeIdPattern.test(placeId) || placeId.length > 100) {
+      console.log(`Invalid placeId format: ${placeId}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid place identifier format' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Fetch place data from database (server-side source of truth)
+    const { data: placeData, error: placeError } = await supabaseClient
+      .from('places')
+      .select('id, name, points_value, coordinates')
+      .eq('id', placeId)
+      .maybeSingle();
+
+    if (placeError || !placeData) {
+      console.log(`Place not found in database: ${placeId}`);
+      return new Response(
+        JSON.stringify({ error: 'Invalid place ID. Place not found in database.' }),
+        { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Use server-side point value (not client-provided)
+    const placePoints = placeData.points_value;
 
     // Check rate limit (10 verifications per day)
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);

@@ -107,7 +107,6 @@ const NearMeFeature = () => {
         body: {
           placeId,
           placeCoordinates: place.coordinates,
-          placePoints: 50,
           userLat: position.latitude,
           userLon: position.longitude,
         },
