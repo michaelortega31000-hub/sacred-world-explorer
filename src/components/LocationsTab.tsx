@@ -17,6 +17,7 @@ import { Switch } from '@/components/ui/switch';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { z } from 'zod';
 import MyVisitsTab from './MyVisitsTab';
+import NearMeFeature from './NearMeFeature';
 
 const memorySchema = z.object({
   title: z.string()
@@ -330,6 +331,9 @@ const LocationsTab = () => {
           {visitedPlaces.length} lieu{visitedPlaces.length > 1 ? 'x' : ''} visité{visitedPlaces.length > 1 ? 's' : ''}
         </p>
       </div>
+
+      {/* Near Me Feature */}
+      <NearMeFeature />
 
       {/* Sub-tabs */}
       <div className="flex gap-2 justify-center mb-6">

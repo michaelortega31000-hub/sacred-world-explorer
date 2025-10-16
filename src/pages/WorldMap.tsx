@@ -16,7 +16,6 @@ import CalendarTab from '@/components/CalendarTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
-import NearMeFeature from '@/components/NearMeFeature';
 
 const WorldMap = () => {
   const navigate = useNavigate();
@@ -220,10 +219,7 @@ const WorldMap = () => {
         </TabsContent>
 
         <TabsContent value="locations" className="flex-1 m-0">
-          <div className="container mx-auto p-6 space-y-6">
-            <NearMeFeature />
-            <LocationsTab />
-          </div>
+          <LocationsTab />
         </TabsContent>
 
         <TabsContent value="rankings" className="flex-1 m-0">

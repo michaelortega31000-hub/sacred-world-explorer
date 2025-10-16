@@ -7,8 +7,8 @@ const BottomNavigation = () => {
 
   const navItems = [
     { icon: Globe, label: 'Explorer', path: '/world?tab=map' },
-    { icon: Target, label: 'Quêtes', path: '/world?tab=quest' },
     { icon: MapPin, label: 'Lieux', path: '/world?tab=locations' },
+    { icon: Trophy, label: 'Classement', path: '/world?tab=rankings' },
     { icon: Calendar, label: 'Calendrier', path: '/world?tab=calendar' },
     { icon: User, label: 'Profil', path: '/profile' },
   ];
