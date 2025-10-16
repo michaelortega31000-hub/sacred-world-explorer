@@ -26,6 +26,8 @@ const Auth = () => {
   const { toast } = useToast();
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [showForgotPassword, setShowForgotPassword] = useState(false);
+  const [resetEmail, setResetEmail] = useState('');
   const [formData, setFormData] = useState({
     username: '',
     email: '',
@@ -157,6 +159,45 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!resetEmail || !z.string().email().safeParse(resetEmail).success) {
+      toast({
+        title: 'Erreur',
+        description: 'Veuillez entrer un email valide.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
+        redirectTo: `${window.location.origin}/auth`
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Email envoyé !',
+        description: 'Vérifiez votre boîte email pour réinitialiser votre mot de passe.',
+      });
+      
+      setShowForgotPassword(false);
+      setResetEmail('');
+    } catch (error) {
+      toast({
+        title: 'Erreur',
+        description: 'Une erreur est survenue lors de l\'envoi de l\'email.',
+        variant: 'destructive'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
       {/* Overlay gradient turquoise subtil */}
@@ -178,7 +219,52 @@ const Auth = () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={isLogin ? handleLogin : handleSignUp} className="space-y-4">
+          {showForgotPassword ? (
+            <form onSubmit={handleForgotPassword} className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="reset-email">Email</Label>
+                <Input
+                  id="reset-email"
+                  type="email"
+                  placeholder="votre@email.com"
+                  value={resetEmail}
+                  onChange={(e) => setResetEmail(e.target.value)}
+                  required
+                  disabled={loading}
+                />
+              </div>
+
+              <Button
+                type="submit"
+                className="w-full bg-primary text-primary-foreground hover:scale-105 transition-transform shadow-turquoise"
+                disabled={loading}
+              >
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  'Envoyer le lien de réinitialisation'
+                )}
+              </Button>
+
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowForgotPassword(false);
+                    setResetEmail('');
+                  }}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  disabled={loading}
+                >
+                  Retour à la connexion
+                </button>
+              </div>
+            </form>
+          ) : (
+            <form onSubmit={isLogin ? handleLogin : handleSignUp} className="space-y-4">
             {!isLogin && (
               <div className="space-y-2">
                 <Label htmlFor="username">Nom d'utilisateur</Label>
@@ -234,23 +320,39 @@ const Auth = () => {
                 isLogin ? 'Se connecter' : 'Créer mon compte'
               )}
             </Button>
-          </form>
 
-          <div className="mt-4 text-center">
-            <button
-              type="button"
-              onClick={() => {
-                setIsLogin(!isLogin);
-                setFormData({ username: '', email: '', password: '' });
-              }}
-              className="text-sm text-muted-foreground hover:text-primary transition-colors"
-              disabled={loading}
-            >
-              {isLogin 
-                ? "Pas encore de compte ? S'inscrire" 
-                : 'Déjà un compte ? Se connecter'}
-            </button>
-          </div>
+            {isLogin && (
+              <div className="mt-3 text-center">
+                <button
+                  type="button"
+                  onClick={() => setShowForgotPassword(true)}
+                  className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                  disabled={loading}
+                >
+                  Mot de passe oublié ?
+                </button>
+              </div>
+            )}
+          </form>
+          )}
+
+          {!showForgotPassword && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  setIsLogin(!isLogin);
+                  setFormData({ username: '', email: '', password: '' });
+                }}
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                disabled={loading}
+              >
+                {isLogin 
+                  ? "Pas encore de compte ? S'inscrire" 
+                  : 'Déjà un compte ? Se connecter'}
+              </button>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
