@@ -177,23 +177,6 @@ const WorldMap = () => {
             </div>
           )}
         </div>
-
-        {/* Quick action buttons */}
-        <div className="flex gap-2">
-          <Button
-            onClick={() => navigate('/world?tab=calendar')}
-            className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
-            style={{
-              background: 'rgba(20, 43, 79, 0.85)',
-              color: '#F5F5F5',
-              borderColor: 'rgba(52, 224, 161, 0.3)',
-              boxShadow: '0 0 15px rgba(244, 197, 66, 0.2)'
-            }}
-          >
-            <Calendar className="w-5 h-5 group-hover:text-[#34E0A1] transition-colors" />
-            <span className="hidden sm:inline">Calendrier</span>
-          </Button>
-        </div>
       </div>
 
           {/* Contrôles immersifs en bas */}
