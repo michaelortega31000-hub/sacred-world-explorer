@@ -9,6 +9,14 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Search, UserPlus, UserCheck, UserX, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { z } from 'zod';
+
+// Validation schema for friend requests
+const friendRequestSchema = z.object({
+  friendId: z.string()
+    .uuid('ID utilisateur invalide')
+    .refine((val) => val.length > 0, { message: 'ID requis' })
+});
 
 interface Profile {
   id: string;
@@ -124,6 +132,31 @@ const FriendsTab = () => {
   const sendFriendRequest = async (friendId: string) => {
     if (!session?.user) return;
 
+    // Validate friend ID format
+    const validation = friendRequestSchema.safeParse({ friendId });
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+
+    // Prevent self-friending
+    if (friendId === session.user.id) {
+      toast.error('Vous ne pouvez pas vous ajouter vous-même');
+      return;
+    }
+
+    // Verify target user exists
+    const { data: targetUser } = await supabase
+      .from('public_profiles_store')
+      .select('id')
+      .eq('id', friendId)
+      .maybeSingle();
+
+    if (!targetUser) {
+      toast.error('Utilisateur introuvable');
+      return;
+    }
+
     // Check rate limit: 20 friend requests per day
     const { allowed } = await checkRateLimit(session.user.id, {
       action: 'friend_request',
@@ -136,11 +169,12 @@ const FriendsTab = () => {
       return;
     }
 
+    // Check for existing friendship
     const { data: existing } = await supabase
       .from('friendships')
       .select('id')
       .or(`and(user_id.eq.${session.user.id},friend_id.eq.${friendId}),and(user_id.eq.${friendId},friend_id.eq.${session.user.id})`)
-      .single();
+      .maybeSingle();
 
     if (existing) {
       toast.error('Demande déjà envoyée ou ami déjà ajouté');

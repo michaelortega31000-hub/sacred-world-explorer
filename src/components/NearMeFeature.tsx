@@ -92,41 +92,40 @@ const NearMeFeature = () => {
   };
 
   const handleCheckIn = async (placeId: string, distance: number) => {
-    const CHECK_IN_RADIUS = 500; // 500 meters
-
-    if (distance > CHECK_IN_RADIUS) {
-      toast({
-        title: userProgress.language === 'fr' ? 'Trop loin' : 'Too far',
-        description: userProgress.language === 'fr'
-          ? `Vous devez être à moins de ${CHECK_IN_RADIUS}m du lieu pour vérifier votre visite`
-          : `You must be within ${CHECK_IN_RADIUS}m to check in`,
-        variant: 'destructive',
-      });
-      return;
-    }
+    if (!position) return;
 
     setChecking(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
-      if (!user) throw new Error('Not authenticated');
+      if (!session?.user) throw new Error('Not authenticated');
 
-      // Record visit in history
-      const { error } = await supabase.from('visit_history').insert({
-        user_id: user.id,
-        place_id: placeId,
-        points_earned: 50,
-        gps_location: { latitude: position?.latitude, longitude: position?.longitude },
-        offline_synced: navigator.onLine,
+      const place = getPlaceById(placeId);
+      if (!place) throw new Error('Place not found');
+
+      // Use secure verify-visit edge function instead of direct insert
+      const { data, error } = await supabase.functions.invoke('verify-visit', {
+        body: {
+          placeId,
+          placeCoordinates: place.coordinates,
+          placePoints: 50,
+          userLat: position.latitude,
+          userLon: position.longitude,
+        },
       });
 
       if (error) throw error;
 
-      toast({
-        title: userProgress.language === 'fr' ? 'Visite vérifiée !' : 'Visit verified!',
-        description: userProgress.language === 'fr' ? '+50 points gagnés' : '+50 points earned',
-      });
-    } catch (error) {
+      if (data?.success) {
+        toast({
+          title: userProgress.language === 'fr' ? 'Visite vérifiée !' : 'Visit verified!',
+          description: userProgress.language === 'fr' 
+            ? `+${data.pointsAwarded} points gagnés` 
+            : `+${data.pointsAwarded} points earned`,
+        });
+      } else {
+        throw new Error(data?.error || 'Verification failed');
+      }
+    } catch (error: any) {
       // Queue for offline sync if no network
       if (!navigator.onLine) {
         toast({
@@ -136,11 +135,12 @@ const NearMeFeature = () => {
             : 'Visit will be synced when you\'re online',
         });
       } else {
+        const message = error?.message || 'Unable to verify visit';
         toast({
           title: userProgress.language === 'fr' ? 'Erreur' : 'Error',
           description: userProgress.language === 'fr'
-            ? 'Impossible de vérifier la visite'
-            : 'Unable to verify visit',
+            ? message.includes('distance') ? 'Vous êtes trop loin du lieu' : 'Impossible de vérifier la visite'
+            : message,
           variant: 'destructive',
         });
       }
