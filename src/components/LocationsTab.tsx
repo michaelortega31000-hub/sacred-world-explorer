@@ -57,6 +57,7 @@ const LocationsTab = () => {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [memoryPhotosWithUrls, setMemoryPhotosWithUrls] = useState<Record<string, string[]>>({});
+  const [activeSubTab, setActiveSubTab] = useState<'all' | 'visits'>('all');
 
   useEffect(() => {
     fetchMemories();
@@ -315,8 +316,6 @@ const LocationsTab = () => {
       </div>
     );
   }
-
-  const [activeSubTab, setActiveSubTab] = useState<'all' | 'visits'>('all');
 
   return (
     <div className="container mx-auto p-6 space-y-6 pb-8">
