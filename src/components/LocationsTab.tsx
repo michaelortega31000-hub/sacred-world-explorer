@@ -1,611 +1,168 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
-import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Image as ImageIcon, Text, Plus, Calendar, Trash2, X } from 'lucide-react';
+import { MapPin, Search } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { mockPlaces, getAllCountries } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
-import { getPlaceById } from '@/data/placesData';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { format } from 'date-fns';
-import { fr } from 'date-fns/locale';
-import { Switch } from '@/components/ui/switch';
-import { useRateLimit } from '@/hooks/useRateLimit';
-import { z } from 'zod';
-import MyVisitsTab from './MyVisitsTab';
 import NearMeFeature from './NearMeFeature';
-
-const memorySchema = z.object({
-  title: z.string()
-    .max(200, 'Le titre doit faire moins de 200 caractères')
-    .refine(val => !/<[^>]*>/g.test(val), 'Les balises HTML ne sont pas autorisées')
-    .optional(),
-  content: z.string()
-    .max(5000, 'Le contenu doit faire moins de 5000 caractères')
-    .refine(val => !/<[^>]*>/g.test(val), 'Les balises HTML ne sont pas autorisées')
-    .optional()
-});
-
-interface Memory {
-  id: string;
-  place_id: string;
-  title: string | null;
-  content: string | null;
-  media_urls: string[] | null;
-  memory_type: string;
-  created_at: string;
-  is_public: boolean;
-}
+import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const LocationsTab = () => {
+  const navigate = useNavigate();
   const { userProgress } = useApp();
-  const { toast } = useToast();
-  const { checkRateLimit } = useRateLimit();
-  const [memories, setMemories] = useState<Memory[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [selectedPlace, setSelectedPlace] = useState<string | null>(null);
-  const [newMemory, setNewMemory] = useState({
-    title: '',
-    content: '',
-    type: 'text' as 'text' | 'photo',
-    isPublic: false
-  });
-  const [uploadingPhotos, setUploadingPhotos] = useState(false);
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
-  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [memoryPhotosWithUrls, setMemoryPhotosWithUrls] = useState<Record<string, string[]>>({});
-  const [activeSubTab, setActiveSubTab] = useState<'all' | 'visits'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<string>('all');
 
-  useEffect(() => {
-    fetchMemories();
-  }, []);
+  const countries = useMemo(() => getAllCountries(), []);
 
-  const validateFileSignature = async (file: File): Promise<boolean> => {
-    try {
-      const buffer = await file.arrayBuffer();
-      const bytes = new Uint8Array(buffer);
-      
-      // Check magic numbers for allowed image types
-      const isValidJPEG = bytes[0] === 0xFF && bytes[1] === 0xD8 && bytes[2] === 0xFF;
-      const isValidPNG = bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4E && bytes[3] === 0x47;
-      const isValidWebP = bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
-      
-      return isValidJPEG || isValidPNG || isValidWebP;
-    } catch {
-      return false;
-    }
-  };
+  // Filter places based on selections and search
+  const filteredPlaces = useMemo(() => {
+    let filtered = mockPlaces;
 
-  const generateSignedUrls = async (paths: string[]): Promise<string[]> => {
-    const signedUrls = await Promise.all(
-      paths.map(async (path) => {
-        const { data } = await supabase.storage
-          .from('memory-photos')
-          .createSignedUrl(path, 3600); // 1 hour expiry
-        return data?.signedUrl || '';
-      })
-    );
-    return signedUrls.filter(url => url);
-  };
-
-  const fetchMemories = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('memories')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      setMemories(data || []);
-      
-      // Generate signed URLs for all memory photos
-      const urlsMap: Record<string, string[]> = {};
-      for (const memory of data || []) {
-        if (memory.media_urls && memory.media_urls.length > 0) {
-          urlsMap[memory.id] = await generateSignedUrls(memory.media_urls);
-        }
-      }
-      setMemoryPhotosWithUrls(urlsMap);
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de charger les souvenirs',
-        variant: 'destructive',
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const uploadPhotos = async (userId: string): Promise<string[]> => {
-    // Check rate limit: 20 photos per day
-    const { allowed } = await checkRateLimit(userId, {
-      action: 'photo_upload',
-      limit: 20,
-      windowMinutes: 1440 // 24 hours
-    });
-
-    if (!allowed) {
-      toast({
-        title: 'Limite atteinte',
-        description: 'Vous avez atteint la limite de 20 photos par jour',
-        variant: 'destructive',
-      });
-      throw new Error('Rate limit exceeded');
+    if (selectedCountry !== 'all') {
+      filtered = filtered.filter(p => p.country === selectedCountry);
     }
 
-    const uploadedPaths: string[] = [];
-
-    for (const file of selectedFiles) {
-      // Validate file size (10MB limit)
-      const MAX_SIZE = 10 * 1024 * 1024; // 10MB
-      if (file.size > MAX_SIZE) {
-        toast({
-          variant: 'destructive',
-          title: 'Fichier trop volumineux',
-          description: `${file.name} dépasse la limite de 10 Mo`,
-        });
-        continue;
-      }
-      
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-      if (!allowedTypes.includes(file.type)) {
-        toast({
-          variant: 'destructive',
-          title: 'Type de fichier non autorisé',
-          description: `${file.name} doit être une image JPG, PNG ou WebP`,
-        });
-        continue;
-      }
-      
-      // Validate file signature (magic numbers)
-      const isValidFile = await validateFileSignature(file);
-      if (!isValidFile) {
-        toast({
-          variant: 'destructive',
-          title: 'Fichier invalide',
-          description: `${file.name} n'est pas une image valide`,
-        });
-        continue;
-      }
-      
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${userId}/${Date.now()}_${Math.random()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('memory-photos')
-        .upload(fileName, file);
-
-      if (uploadError) {
-        continue;
-      }
-
-      uploadedPaths.push(fileName);
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(p =>
+        p.name.toLowerCase().includes(query) ||
+        p.city?.toLowerCase().includes(query) ||
+        p.country.toLowerCase().includes(query)
+      );
     }
 
-    return uploadedPaths;
+    return filtered.sort((a, b) => a.name.localeCompare(b.name));
+  }, [selectedCountry, searchQuery]);
+
+  const isPlaceVisited = (placeId: string) => {
+    return userProgress.visitedPlaces.includes(placeId);
   };
-
-  const addMemory = async () => {
-    if (!newMemory.content && !newMemory.title && selectedFiles.length === 0) {
-      toast({
-        title: 'Erreur',
-        description: 'Veuillez ajouter un titre, un contenu ou des photos',
-        variant: 'destructive'
-      });
-      return;
-    }
-
-    // Validate memory content
-    try {
-      memorySchema.parse({
-        title: newMemory.title || undefined,
-        content: newMemory.content || undefined
-      });
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        toast({
-          title: 'Erreur de validation',
-          description: error.errors[0].message,
-          variant: 'destructive'
-        });
-        return;
-      }
-    }
-
-    try {
-      setUploadingPhotos(true);
-      const { data: { session } } = await supabase.auth.getSession();
-      const user = session?.user;
-      if (!user || !selectedPlace) return;
-
-      let photoPaths: string[] = [];
-      if (selectedFiles.length > 0) {
-        photoPaths = await uploadPhotos(user.id);
-      }
-
-      const { error } = await supabase
-        .from('memories')
-        .insert({
-          user_id: user.id,
-          place_id: selectedPlace,
-          title: newMemory.title || null,
-          content: newMemory.content || null,
-          memory_type: selectedFiles.length > 0 ? 'photo' : 'text',
-          media_urls: photoPaths.length > 0 ? photoPaths : null,
-          is_public: newMemory.isPublic
-        });
-
-      if (error) throw error;
-
-      toast({
-        title: 'Mémoire ajoutée',
-        description: 'Votre souvenir a été enregistré avec succès'
-      });
-
-      setNewMemory({ title: '', content: '', type: 'text', isPublic: false });
-      setSelectedFiles([]);
-      setSelectedPlace(null);
-      fetchMemories();
-    } catch (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible d\'ajouter la mémoire',
-        variant: 'destructive'
-      });
-    } finally {
-      setUploadingPhotos(false);
-    }
-  };
-
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = Array.from(e.target.files || []);
-    setSelectedFiles(prev => [...prev, ...files]);
-  };
-
-  const removeFile = (index: number) => {
-    setSelectedFiles(prev => prev.filter((_, i) => i !== index));
-  };
-
-  const deleteMemory = async (memoryId: string) => {
-    try {
-      const { error } = await supabase
-        .from('memories')
-        .delete()
-        .eq('id', memoryId);
-
-      if (error) throw error;
-
-      toast({
-        title: 'Mémoire supprimée',
-        description: 'Le souvenir a été supprimé'
-      });
-
-      fetchMemories();
-    } catch (error) {
-      console.error('Error deleting memory:', error);
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de supprimer la mémoire',
-        variant: 'destructive'
-      });
-    }
-  };
-
-  const visitedPlaces = userProgress.visitedPlaces
-    .map(placeId => getPlaceById(placeId))
-    .filter(place => place !== null);
-
-  const getPlaceMemories = (placeId: string) => {
-    return memories.filter(m => m.place_id === placeId);
-  };
-
-  if (loading) {
-    return (
-      <div className="container mx-auto p-6 flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Chargement...</p>
-      </div>
-    );
-  }
 
   return (
-    <div className="container mx-auto p-6 space-y-6 pb-8">
+    <div className="container mx-auto p-6 space-y-6 pb-24">
       <div className="text-center mb-8">
         <h1 
           className="text-4xl font-serif font-bold mb-2"
           style={{ color: '#34E0A1' }}
         >
-          Mon Journal de Voyage
+          Lieux Sacrés du Monde
         </h1>
         <p className="text-muted-foreground text-lg">
-          {visitedPlaces.length} lieu{visitedPlaces.length > 1 ? 'x' : ''} visité{visitedPlaces.length > 1 ? 's' : ''}
+          Découvrez {mockPlaces.length} lieux sacrés à travers le monde
         </p>
       </div>
 
       {/* Near Me Feature */}
       <NearMeFeature />
 
-      {/* Sub-tabs */}
-      <div className="flex gap-2 justify-center mb-6">
-        <Button
-          variant={activeSubTab === 'all' ? 'default' : 'outline'}
-          onClick={() => setActiveSubTab('all')}
-          className="gap-2"
-        >
-          <MapPin className="w-4 h-4" />
-          Tous les lieux
-        </Button>
-        <Button
-          variant={activeSubTab === 'visits' ? 'default' : 'outline'}
-          onClick={() => setActiveSubTab('visits')}
-          className="gap-2"
-        >
-          <Calendar className="w-4 h-4" />
-          Mes visites
-        </Button>
+      {/* Search Bar */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+        <Input
+          placeholder="Rechercher par nom, ville ou pays..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-10"
+        />
       </div>
 
-      {activeSubTab === 'visits' ? (
-        <MyVisitsTab />
-      ) : (
-        <>
+      {/* Country Filter */}
+      <div className="space-y-2">
+        <label className="text-sm font-medium">Filtrer par pays</label>
+        <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+          <SelectTrigger>
+            <SelectValue placeholder="Sélectionner un pays" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Tous les pays</SelectItem>
+            {countries.map(country => (
+              <SelectItem key={country} value={country}>
+                {country}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-      {visitedPlaces.length === 0 ? (
+      {/* Results Count */}
+      <div className="text-sm text-muted-foreground">
+        {filteredPlaces.length} lieu{filteredPlaces.length > 1 ? 'x' : ''} trouvé{filteredPlaces.length > 1 ? 's' : ''}
+      </div>
+
+      {/* Places Grid */}
+      {filteredPlaces.length === 0 ? (
         <Card className="border-2" style={{ borderColor: '#34E0A1' }}>
           <CardContent className="py-12 text-center">
             <MapPin className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
             <p className="text-xl text-muted-foreground mb-2">
-              Aucun lieu visité pour le moment
+              Aucun lieu trouvé
             </p>
             <p className="text-muted-foreground">
-              Commencez votre voyage spirituel en visitant des lieux sacrés
+              Essayez de modifier vos critères de recherche
             </p>
           </CardContent>
         </Card>
       ) : (
         <ScrollArea className="h-[600px]">
-          <div className="space-y-6 pr-4">
-            {visitedPlaces.map((place) => {
-              if (!place) return null;
-              const placeMemories = getPlaceMemories(place.id);
-
-              return (
-                <Card 
-                  key={place.id}
-                  className="overflow-hidden"
-                  style={{
-                    background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
-                    border: '1px solid rgba(52, 224, 161, 0.2)'
-                  }}
-                >
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <CardTitle className="flex items-center gap-2 text-foreground mb-2">
-                          <MapPin className="w-5 h-5 text-primary" />
-                          {place.name}
-                        </CardTitle>
-                        <CardDescription className="text-muted-foreground">
-                          {place.city}, {place.country}
-                        </CardDescription>
-                      </div>
-                        <Dialog open={selectedPlace === place.id} onOpenChange={(open) => {
-                        if (!open) {
-                          setSelectedPlace(null);
-                          setNewMemory({ title: '', content: '', type: 'text', isPublic: false });
-                        }
-                      }}>
-                        <DialogTrigger asChild>
-                          <Button
-                            size="sm"
-                            onClick={() => setSelectedPlace(place.id)}
-                            className="bg-primary hover:bg-primary/90"
-                            style={{
-                              boxShadow: '0 0 15px rgba(52, 224, 161, 0.3)'
-                            }}
-                          >
-                            <Plus className="w-4 h-4 mr-2" />
-                            Ajouter un souvenir
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="bg-sacred-beige max-w-2xl max-h-[90vh] overflow-y-auto">
-                          <DialogHeader>
-                            <DialogTitle className="text-sacred-blue">
-                              Nouveau souvenir - {place.name}
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="space-y-4">
-                            <div>
-                              <Label htmlFor="memory-title" className="text-sacred-blue">Titre</Label>
-                              <Input
-                                id="memory-title"
-                                value={newMemory.title}
-                                onChange={(e) => setNewMemory({ ...newMemory, title: e.target.value })}
-                                placeholder="Titre de votre souvenir..."
-                                className="mt-2 bg-white/50"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="memory-content" className="text-sacred-blue">Contenu</Label>
-                              <Textarea
-                                id="memory-content"
-                                value={newMemory.content}
-                                onChange={(e) => setNewMemory({ ...newMemory, content: e.target.value })}
-                                placeholder="Décrivez votre souvenir, vos émotions..."
-                                rows={5}
-                                className="mt-2 bg-white/50"
-                              />
-                            </div>
-                            <div>
-                              <Label htmlFor="memory-photos" className="text-sacred-blue">Photos</Label>
-                              <Input
-                                id="memory-photos"
-                                type="file"
-                                accept="image/*"
-                                multiple
-                                onChange={handleFileSelect}
-                                className="mt-2 bg-white/50"
-                              />
-                              {selectedFiles.length > 0 && (
-                                <div className="mt-3 grid grid-cols-3 gap-2">
-                                  {selectedFiles.map((file, index) => (
-                                    <div key={index} className="relative group">
-                                      <img
-                                        src={URL.createObjectURL(file)}
-                                        alt={`Preview ${index + 1}`}
-                                        className="w-full h-24 object-cover rounded"
-                                      />
-                                      <Button
-                                        type="button"
-                                        variant="destructive"
-                                        size="sm"
-                                        onClick={() => removeFile(index)}
-                                        className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity p-1 h-6 w-6"
-                                      >
-                                        <Trash2 className="w-3 h-3" />
-                                      </Button>
-                                    </div>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <Label htmlFor="memory-public" className="text-sacred-blue">
-                                  Partager avec la communauté
-                                </Label>
-                                <p className="text-xs text-muted-foreground mt-1">
-                                  Rendez votre souvenir visible par tous les utilisateurs
-                                </p>
-                              </div>
-                              <Switch
-                                id="memory-public"
-                                checked={newMemory.isPublic}
-                                onCheckedChange={(checked) => setNewMemory({ ...newMemory, isPublic: checked })}
-                              />
-                            </div>
-                            <Button
-                              onClick={addMemory}
-                              disabled={uploadingPhotos}
-                              className="w-full bg-primary hover:bg-primary/90"
-                            >
-                              {uploadingPhotos ? 'Upload en cours...' : 'Enregistrer'}
-                            </Button>
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
+            {filteredPlaces.map((place) => (
+              <Card 
+                key={place.id}
+                className="overflow-hidden cursor-pointer transition-all hover:scale-105"
+                style={{
+                  background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
+                  border: '1px solid rgba(52, 224, 161, 0.2)'
+                }}
+                onClick={() => navigate(`/place/${place.id}`)}
+              >
+                <div className="relative h-48 overflow-hidden">
+                  <img
+                    src={place.imageUrl}
+                    alt={place.name}
+                    className="w-full h-full object-cover"
+                  />
+                  {isPlaceVisited(place.id) && (
+                    <Badge 
+                      className="absolute top-2 right-2 bg-primary text-primary-foreground"
+                      style={{
+                        boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)'
+                      }}
+                    >
+                      Visité
+                    </Badge>
+                  )}
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-foreground line-clamp-1">
+                    {place.name}
+                  </CardTitle>
+                  <CardDescription className="text-muted-foreground">
+                    <div className="flex items-center gap-1">
+                      <MapPin className="w-4 h-4" />
+                      {place.city}, {place.country}
                     </div>
-                  </CardHeader>
-
-                  {placeMemories.length > 0 && (
-                    <CardContent>
-                      <div className="space-y-3">
-                        {placeMemories.map((memory) => (
-                          <div
-                            key={memory.id}
-                            className="p-4 rounded-lg"
-                            style={{
-                              background: 'rgba(234, 215, 181, 0.1)',
-                              border: '1px solid rgba(52, 224, 161, 0.1)'
-                            }}
-                          >
-                            <div className="flex items-start justify-between gap-4 mb-2">
-                              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                {memory.memory_type === 'photo' ? (
-                                  <ImageIcon className="w-4 h-4" />
-                                ) : (
-                                  <Text className="w-4 h-4" />
-                                )}
-                                <Calendar className="w-4 h-4" />
-                                <span>
-                                  {format(new Date(memory.created_at), 'dd MMMM yyyy', { locale: fr })}
-                                </span>
-                              </div>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => deleteMemory(memory.id)}
-                                className="text-red-400 hover:text-red-300 hover:bg-red-400/10"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </Button>
-                            </div>
-                            {memory.title && (
-                              <h4 className="font-semibold text-foreground mb-2">
-                                {memory.title}
-                              </h4>
-                            )}
-                            {memory.content && (
-                              <p className="text-muted-foreground whitespace-pre-wrap mb-3">
-                                {memory.content}
-                              </p>
-                            )}
-                            {memory.media_urls && memory.media_urls.length > 0 && memoryPhotosWithUrls[memory.id] && (
-                              <div className="grid grid-cols-2 gap-2 mt-3">
-                                {memoryPhotosWithUrls[memory.id].map((url, idx) => (
-                                  <img
-                                    key={idx}
-                                    src={url}
-                                    alt={`Souvenir ${idx + 1}`}
-                                    className="w-full h-32 object-cover rounded cursor-pointer hover:opacity-90 transition-opacity"
-                                    onClick={() => setFullscreenImage(url)}
-                                  />
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </CardContent>
-                  )}
-
-                  {placeMemories.length === 0 && (
-                    <CardContent>
-                      <p className="text-muted-foreground text-sm italic text-center py-2">
-                        Aucun souvenir enregistré pour ce lieu
-                      </p>
-                    </CardContent>
-                  )}
-                </Card>
-              );
-            })}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground line-clamp-2">
+                    {place.description}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </ScrollArea>
-      )}
-      
-      {/* Lightbox pour affichage photo en plein écran */}
-      {fullscreenImage && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4 animate-fade-in"
-          onClick={() => setFullscreenImage(null)}
-        >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="absolute top-4 right-4 text-white hover:bg-white/20 z-10"
-            onClick={() => setFullscreenImage(null)}
-          >
-            <X className="w-6 h-6" />
-          </Button>
-          <img
-            src={fullscreenImage}
-            alt="Souvenir en plein écran"
-            className="max-w-full max-h-full object-contain"
-            onClick={(e) => e.stopPropagation()}
-          />
-        </div>
-      )}
-        </>
       )}
     </div>
   );
