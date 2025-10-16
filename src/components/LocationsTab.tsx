@@ -81,10 +81,10 @@ const LocationsTab = () => {
       <div className="space-y-2">
         <label className="text-sm font-medium">Filtrer par pays</label>
         <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-          <SelectTrigger>
+          <SelectTrigger className="w-full">
             <SelectValue placeholder="Sélectionner un pays" />
           </SelectTrigger>
-          <SelectContent>
+          <SelectContent className="max-h-[300px] overflow-y-auto z-50 bg-background">
             <SelectItem value="all">Tous les pays</SelectItem>
             {countries.map(country => (
               <SelectItem key={country} value={country}>
