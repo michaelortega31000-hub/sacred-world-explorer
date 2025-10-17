@@ -151,6 +151,11 @@ const TripPlannerTab = () => {
 
   const totalPoints = tripPlaces.reduce((sum, place) => sum + place.points, 0);
 
+  // Get unique cities from trip places
+  const tripCities = useMemo(() => {
+    return new Set(tripPlaces.map(place => place.city));
+  }, [tripPlaces]);
+
   // Fetch saved restaurants
   useEffect(() => {
     const fetchRestaurants = async () => {
@@ -171,6 +176,21 @@ const TripPlannerTab = () => {
 
     fetchRestaurants();
   }, [userProgress.savedRestaurants]);
+
+  // Filter restaurants by trip cities
+  const filteredRestaurants = useMemo(() => {
+    if (tripPlaces.length === 0) return [];
+    return savedRestaurants.filter(restaurant => tripCities.has(restaurant.city));
+  }, [savedRestaurants, tripCities, tripPlaces]);
+
+  // Group restaurants by city
+  const restaurantsByCity = useMemo(() => {
+    return filteredRestaurants.reduce((acc, restaurant) => {
+      if (!acc[restaurant.city]) acc[restaurant.city] = [];
+      acc[restaurant.city].push(restaurant);
+      return acc;
+    }, {} as Record<string, SavedRestaurant[]>);
+  }, [filteredRestaurants]);
 
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
@@ -412,93 +432,103 @@ const TripPlannerTab = () => {
                   ))}
               </div>
 
-              {/* Saved Restaurants Section */}
-              {savedRestaurants.length > 0 && (
-                <div className="space-y-4">
+              {/* Saved Restaurants Section - Grouped by City */}
+              {filteredRestaurants.length > 0 && (
+                <div className="space-y-6">
                   <div className="flex items-center gap-2">
                     <Utensils className="w-5 h-5 text-primary" />
-                    <h3 className="text-xl font-bold">Restaurants sauvegardés</h3>
-                    <Badge variant="secondary">{savedRestaurants.length}</Badge>
+                    <h3 className="text-xl font-bold">Restaurants sauvegardés dans votre itinéraire</h3>
+                    <Badge variant="secondary">{filteredRestaurants.length}</Badge>
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {savedRestaurants.map((restaurant) => (
-                      <Card key={restaurant.id} className="overflow-hidden hover:shadow-lg transition-all">
-                        <CardHeader>
-                          <div className="flex items-start justify-between gap-2 mb-3">
-                            <CardTitle className="flex-1 text-lg">{restaurant.name}</CardTitle>
-                            <div className="flex items-center gap-1 text-yellow-500">
-                              <Star className="w-4 h-4 fill-current" />
-                              <span className="text-sm font-semibold">{restaurant.rating}</span>
-                            </div>
-                          </div>
-                          <CardDescription className="flex items-center gap-1">
-                            <Utensils className="w-3 h-3" />
-                            {restaurant.cuisine}
-                          </CardDescription>
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {restaurant.type.map((type) => (
-                              <Badge 
-                                key={type} 
-                                variant="outline" 
-                                className={cn('text-xs', getTypeColor(type))}
-                              >
-                                {type}
-                              </Badge>
-                            ))}
-                          </div>
-                        </CardHeader>
-                        <CardContent className="space-y-3">
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {restaurant.description}
-                          </p>
-                          <div className="flex items-start gap-2 text-sm">
-                            <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
-                            <div>
-                              <div className="font-medium">{restaurant.address}</div>
-                              <div className="text-muted-foreground">{restaurant.city}, {restaurant.country}</div>
-                            </div>
-                          </div>
-                          {restaurant.phone && (
-                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                              <Phone className="w-4 h-4" />
-                              {restaurant.phone}
-                            </div>
-                          )}
-                          <div className="flex gap-2 pt-2">
-                            {restaurant.website && (
+                  
+                  {Object.entries(restaurantsByCity).map(([city, restaurants]) => (
+                    <div key={city} className="space-y-3">
+                      <h4 className="text-lg font-semibold text-foreground flex items-center gap-2">
+                        <MapPin className="w-4 h-4 text-primary" />
+                        {city}
+                        <Badge variant="outline">{restaurants.length}</Badge>
+                      </h4>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {restaurants.map((restaurant) => (
+                          <Card key={restaurant.id} className="overflow-hidden hover:shadow-lg transition-all">
+                            <CardHeader>
+                              <div className="flex items-start justify-between gap-2 mb-3">
+                                <CardTitle className="flex-1 text-lg">{restaurant.name}</CardTitle>
+                                <div className="flex items-center gap-1 text-yellow-500">
+                                  <Star className="w-4 h-4 fill-current" />
+                                  <span className="text-sm font-semibold">{restaurant.rating}</span>
+                                </div>
+                              </div>
+                              <CardDescription className="flex items-center gap-1">
+                                <Utensils className="w-3 h-3" />
+                                {restaurant.cuisine}
+                              </CardDescription>
+                              <div className="flex flex-wrap gap-1 mt-2">
+                                {restaurant.type.map((type) => (
+                                  <Badge 
+                                    key={type} 
+                                    variant="outline" 
+                                    className={cn('text-xs', getTypeColor(type))}
+                                  >
+                                    {type}
+                                  </Badge>
+                                ))}
+                              </div>
+                            </CardHeader>
+                            <CardContent className="space-y-3">
+                              <p className="text-sm text-muted-foreground line-clamp-2">
+                                {restaurant.description}
+                              </p>
+                              <div className="flex items-start gap-2 text-sm">
+                                <MapPin className="w-4 h-4 text-primary mt-0.5 flex-shrink-0" />
+                                <div>
+                                  <div className="font-medium">{restaurant.address}</div>
+                                  <div className="text-muted-foreground">{restaurant.city}, {restaurant.country}</div>
+                                </div>
+                              </div>
+                              {restaurant.phone && (
+                                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                                  <Phone className="w-4 h-4" />
+                                  {restaurant.phone}
+                                </div>
+                              )}
+                              <div className="flex gap-2 pt-2">
+                                {restaurant.website && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="flex-1 gap-2"
+                                    onClick={() => window.open(restaurant.website, '_blank')}
+                                  >
+                                    <Globe className="w-4 h-4" />
+                                    Site
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1 gap-2"
+                                  onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address + ', ' + restaurant.city)}`, '_blank')}
+                                >
+                                  <MapPin className="w-4 h-4" />
+                                  Itinéraire
+                                </Button>
+                              </div>
                               <Button
-                                variant="outline"
+                                variant="ghost"
                                 size="sm"
-                                className="flex-1 gap-2"
-                                onClick={() => window.open(restaurant.website, '_blank')}
+                                onClick={() => unsaveRestaurant(restaurant.id)}
+                                className="w-full"
                               >
-                                <Globe className="w-4 h-4" />
-                                Site
+                                <Trash2 className="w-3 h-3 mr-2" />
+                                Retirer
                               </Button>
-                            )}
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="flex-1 gap-2"
-                              onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address + ', ' + restaurant.city)}`, '_blank')}
-                            >
-                              <MapPin className="w-4 h-4" />
-                              Itinéraire
-                            </Button>
-                          </div>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => unsaveRestaurant(restaurant.id)}
-                            className="w-full"
-                          >
-                            <Trash2 className="w-3 h-3 mr-2" />
-                            Retirer
-                          </Button>
-                        </CardContent>
-                      </Card>
-                    ))}
-                  </div>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
                 </div>
               )}
 
