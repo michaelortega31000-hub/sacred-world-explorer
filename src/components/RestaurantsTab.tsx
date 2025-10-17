@@ -169,21 +169,55 @@ const RestaurantsTab = ({ country, city }: RestaurantsTabProps) => {
     fetchContinents();
   }, []);
 
-  // Sync with city prop when provided
+  // Initialize filters based on city prop
   useEffect(() => {
-    if (city && city !== selectedCity) {
-      setSelectedCity(city);
-    }
+    const initializeFilters = async () => {
+      if (city && city !== 'all') {
+        try {
+          // Find a restaurant in this city to get the country and continent
+          const { data, error } = await supabase
+            .from('restaurants')
+            .select('country, continent')
+            .eq('verified', true)
+            .eq('city', city)
+            .limit(1)
+            .maybeSingle();
+
+          if (!error && data) {
+            // Set continent first
+            if (data.continent && data.continent !== selectedContinent) {
+              setSelectedContinent(data.continent);
+            }
+            // Set country
+            if (data.country && data.country !== selectedCountry) {
+              setSelectedCountry(data.country);
+            }
+            // Set city
+            if (city !== selectedCity) {
+              setSelectedCity(city);
+            }
+          }
+        } catch (error) {
+          logger.error('Error initializing filters from city:', error);
+        }
+      }
+    };
+
+    initializeFilters();
   }, [city]);
 
   useEffect(() => {
-    setSelectedCountry('all');
-    setSelectedCity('all');
+    if (selectedContinent === 'all') {
+      setSelectedCountry('all');
+      setSelectedCity('all');
+    }
     fetchCountries();
   }, [selectedContinent]);
 
   useEffect(() => {
-    setSelectedCity('all');
+    if (selectedCountry === 'all') {
+      setSelectedCity('all');
+    }
     fetchCities();
   }, [selectedCountry, selectedContinent]);
 
