@@ -377,8 +377,8 @@ const Country = () => {
                                     variant="secondary"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      // Navigate to restaurants tab with this place's location
-                                      navigate(`/country/${country}?tab=restaurants`);
+                                      // Navigate to restaurants tab with this place's city
+                                      navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city || '')}`);
                                     }}
                                     className="opacity-90 group-hover:opacity-100 transition-opacity"
                                     title="Voir les restaurants à proximité"
@@ -502,7 +502,7 @@ const Country = () => {
         </TabsContent>
 
         <TabsContent value="restaurants" className="flex-1 m-0 p-6">
-          <RestaurantsTab country={country || ''} />
+          <RestaurantsTab country={country || ''} city={searchParams.get('city') || undefined} />
         </TabsContent>
       </Tabs>
 

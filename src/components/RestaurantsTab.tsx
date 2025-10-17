@@ -29,16 +29,17 @@ interface Restaurant {
 
 interface RestaurantsTabProps {
   country?: string;
+  city?: string;
 }
 
-const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
+const RestaurantsTab = ({ country, city }: RestaurantsTabProps) => {
   const { t } = useTranslation();
   const { userProgress, saveRestaurant, unsaveRestaurant } = useApp();
   const { toast } = useToast();
   const [selectedType, setSelectedType] = useState<RestaurantType>('all');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>(country || 'all');
-  const [selectedCity, setSelectedCity] = useState<string>('all');
+  const [selectedCity, setSelectedCity] = useState<string>(city || 'all');
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [continents, setContinents] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
@@ -167,6 +168,13 @@ const RestaurantsTab = ({ country }: RestaurantsTabProps) => {
   useEffect(() => {
     fetchContinents();
   }, []);
+
+  // Sync with city prop when provided
+  useEffect(() => {
+    if (city && city !== selectedCity) {
+      setSelectedCity(city);
+    }
+  }, [city]);
 
   useEffect(() => {
     setSelectedCountry('all');
