@@ -3,9 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { mockPlaces, getAllCountries } from '@/data/placesData';
+import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
 import NearMeFeature from './NearMeFeature';
 import { Badge } from '@/components/ui/badge';
@@ -22,10 +22,32 @@ const LocationsTab = () => {
   const navigate = useNavigate();
   const { userProgress } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedContinent, setSelectedContinent] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
+  const [selectedCity, setSelectedCity] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
 
-  const countries = useMemo(() => getAllCountries(), []);
+  const continents = useMemo(() => getAllContinents(), []);
+  const countries = useMemo(() => {
+    if (selectedContinent === 'all') return [];
+    return getCountriesByContinent(selectedContinent);
+  }, [selectedContinent]);
+  const cities = useMemo(() => {
+    if (selectedCountry === 'all') return [];
+    return getCitiesByCountry(selectedCountry);
+  }, [selectedCountry]);
+
+  // Reset dependent filters when parent filter changes
+  const handleContinentChange = (continent: string) => {
+    setSelectedContinent(continent);
+    setSelectedCountry('all');
+    setSelectedCity('all');
+  };
+
+  const handleCountryChange = (country: string) => {
+    setSelectedCountry(country);
+    setSelectedCity('all');
+  };
 
   // Get planned places
   const plannedPlaces = useMemo(() => {
@@ -36,8 +58,16 @@ const LocationsTab = () => {
   const filteredPlaces = useMemo(() => {
     let filtered = activeTab === 'planned' ? plannedPlaces : mockPlaces;
 
+    if (selectedContinent !== 'all') {
+      filtered = filtered.filter(p => getContinent(p.country) === selectedContinent);
+    }
+
     if (selectedCountry !== 'all') {
       filtered = filtered.filter(p => p.country === selectedCountry);
+    }
+
+    if (selectedCity !== 'all') {
+      filtered = filtered.filter(p => p.city === selectedCity);
     }
 
     if (searchQuery) {
@@ -50,7 +80,7 @@ const LocationsTab = () => {
     }
 
     return filtered.sort((a, b) => a.name.localeCompare(b.name));
-  }, [selectedCountry, searchQuery, activeTab, plannedPlaces]);
+  }, [selectedContinent, selectedCountry, selectedCity, searchQuery, activeTab, plannedPlaces]);
 
   const isPlaceVisited = (placeId: string) => {
     return userProgress.visitedPlaces.includes(placeId);
@@ -88,7 +118,6 @@ const LocationsTab = () => {
 
         <TabsContent value="all" className="space-y-6 mt-6">
           {/* Search and filters for all places */}
-
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
             <Input
@@ -99,21 +128,75 @@ const LocationsTab = () => {
             />
           </div>
 
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Filtrer par pays</label>
-            <Select value={selectedCountry} onValueChange={setSelectedCountry}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sélectionner un pays" />
-              </SelectTrigger>
-              <SelectContent className="max-h-[300px] overflow-y-auto z-50 bg-background">
-                <SelectItem value="all">Tous les pays</SelectItem>
-                {countries.map(country => (
-                  <SelectItem key={country} value={country}>
-                    {country}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Cascade Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <Globe2 className="w-4 h-4" />
+                Continent
+              </label>
+              <Select value={selectedContinent} onValueChange={handleContinentChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Sélectionner un continent" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] overflow-y-auto z-50 bg-background">
+                  <SelectItem value="all">Tous les continents</SelectItem>
+                  {continents.map(continent => (
+                    <SelectItem key={continent} value={continent}>
+                      {continent}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Pays
+              </label>
+              <Select 
+                value={selectedCountry} 
+                onValueChange={handleCountryChange}
+                disabled={selectedContinent === 'all'}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Sélectionner un pays" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] overflow-y-auto z-50 bg-background">
+                  <SelectItem value="all">Tous les pays</SelectItem>
+                  {countries.map(country => (
+                    <SelectItem key={country} value={country}>
+                      {country}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                Ville
+              </label>
+              <Select 
+                value={selectedCity} 
+                onValueChange={setSelectedCity}
+                disabled={selectedCountry === 'all'}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Sélectionner une ville" />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px] overflow-y-auto z-50 bg-background">
+                  <SelectItem value="all">Toutes les villes</SelectItem>
+                  {cities.map(city => (
+                    <SelectItem key={city} value={city}>
+                      {city}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="text-sm text-muted-foreground">

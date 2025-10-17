@@ -3082,3 +3082,75 @@ export const getPlaceById = (id: string): Place | undefined => {
 export const getAllCountries = (): string[] => {
   return Array.from(new Set(mockPlaces.map(place => place.country))).sort();
 };
+
+// Country to Continent mapping
+const countryToContinentMap: Record<string, string> = {
+  // Europe
+  'France': 'Europe', 'Spain': 'Europe', 'Italy': 'Europe', 'Vatican': 'Europe',
+  'United Kingdom': 'Europe', 'Germany': 'Europe', 'Austria': 'Europe', 'Czech Republic': 'Europe',
+  'Poland': 'Europe', 'Portugal': 'Europe', 'Belgium': 'Europe', 'Netherlands': 'Europe',
+  'Switzerland': 'Europe', 'Greece': 'Europe', 'Russia': 'Europe', 'Ukraine': 'Europe',
+  'Romania': 'Europe', 'Bulgaria': 'Europe', 'Serbia': 'Europe', 'Croatia': 'Europe',
+  'Slovenia': 'Europe', 'Hungary': 'Europe', 'Slovakia': 'Europe', 'Lithuania': 'Europe',
+  'Latvia': 'Europe', 'Estonia': 'Europe', 'Finland': 'Europe', 'Sweden': 'Europe',
+  'Norway': 'Europe', 'Denmark': 'Europe', 'Iceland': 'Europe', 'Ireland': 'Europe',
+  'Luxembourg': 'Europe', 'Cyprus': 'Europe', 'Malta': 'Europe', 'Albania': 'Europe',
+  'North Macedonia': 'Europe', 'Bosnia and Herzegovina': 'Europe', 'Montenegro': 'Europe',
+  
+  // Asia
+  'Turkey': 'Asia', 'Israel': 'Asia', 'Palestine': 'Asia', 'Jordan': 'Asia',
+  'Lebanon': 'Asia', 'Syria': 'Asia', 'Saudi Arabia': 'Asia', 'UAE': 'Asia',
+  'Oman': 'Asia', 'Yemen': 'Asia', 'Iraq': 'Asia', 'Iran': 'Asia',
+  'India': 'Asia', 'Nepal': 'Asia', 'Bhutan': 'Asia', 'Sri Lanka': 'Asia',
+  'Myanmar': 'Asia', 'Thailand': 'Asia', 'Cambodia': 'Asia', 'Laos': 'Asia',
+  'Vietnam': 'Asia', 'China': 'Asia', 'Japan': 'Asia', 'South Korea': 'Asia',
+  'North Korea': 'Asia', 'Mongolia': 'Asia', 'Kazakhstan': 'Asia', 'Uzbekistan': 'Asia',
+  'Turkmenistan': 'Asia', 'Kyrgyzstan': 'Asia', 'Tajikistan': 'Asia', 'Afghanistan': 'Asia',
+  'Pakistan': 'Asia', 'Bangladesh': 'Asia', 'Malaysia': 'Asia', 'Singapore': 'Asia',
+  'Indonesia': 'Asia', 'Philippines': 'Asia', 'Brunei': 'Asia', 'Tibet': 'Asia',
+  
+  // Africa
+  'Egypt': 'Africa', 'Morocco': 'Africa', 'Algeria': 'Africa', 'Tunisia': 'Africa',
+  'Libya': 'Africa', 'Sudan': 'Africa', 'South Sudan': 'Africa', 'Ethiopia': 'Africa',
+  'Eritrea': 'Africa', 'Somalia': 'Africa', 'Kenya': 'Africa', 'Tanzania': 'Africa',
+  'Uganda': 'Africa', 'Rwanda': 'Africa', 'Burundi': 'Africa', 'South Africa': 'Africa',
+  'Nigeria': 'Africa', 'Ghana': 'Africa', 'Senegal': 'Africa', 'Mali': 'Africa',
+  
+  // North America
+  'United States': 'North America', 'USA': 'North America', 'Canada': 'North America',
+  'Mexico': 'North America', 'Guatemala': 'North America', 'Belize': 'North America',
+  'Honduras': 'North America', 'El Salvador': 'North America', 'Nicaragua': 'North America',
+  'Costa Rica': 'North America', 'Panama': 'North America',
+  
+  // South America
+  'Brazil': 'South America', 'Argentina': 'South America', 'Chile': 'South America',
+  'Peru': 'South America', 'Colombia': 'South America', 'Venezuela': 'South America',
+  'Ecuador': 'South America', 'Bolivia': 'South America', 'Paraguay': 'South America',
+  'Uruguay': 'South America', 'Guyana': 'South America', 'Suriname': 'South America',
+  
+  // Oceania
+  'Australia': 'Oceania', 'New Zealand': 'Oceania', 'Fiji': 'Oceania', 'Papua New Guinea': 'Oceania',
+};
+
+export const getContinent = (country: string): string => {
+  return countryToContinentMap[country] || 'Other';
+};
+
+export const getAllContinents = (): string[] => {
+  const continents = new Set(mockPlaces.map(place => getContinent(place.country)));
+  return Array.from(continents).sort();
+};
+
+export const getCountriesByContinent = (continent: string): string[] => {
+  const countries = mockPlaces
+    .filter(place => getContinent(place.country) === continent)
+    .map(place => place.country);
+  return Array.from(new Set(countries)).sort();
+};
+
+export const getCitiesByCountry = (country: string): string[] => {
+  const cities = mockPlaces
+    .filter(place => place.country === country && place.city)
+    .map(place => place.city!);
+  return Array.from(new Set(cities)).sort();
+};
