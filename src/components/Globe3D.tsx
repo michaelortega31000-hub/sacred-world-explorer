@@ -28,6 +28,8 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
+  const recenterOnPosition = useRef(false);
+  const hasCenteredOnUser = useRef(false);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { userProgress } = useApp();
@@ -671,6 +673,23 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
     toast.success('Position géolocalisée !');
   }, [userPosition]);
 
+  // Recentrer automatiquement dès que la position est disponible si demandé
+  useEffect(() => {
+    if (!map.current || !userPosition) return;
+
+    if (recenterOnPosition.current || (!hasCenteredOnUser.current && geolocationEnabled)) {
+      map.current.flyTo({
+        center: [userPosition.longitude, userPosition.latitude],
+        zoom: 15,
+        pitch: 45,
+        duration: 2000
+      });
+      toast.success('Carte recentrée sur votre position');
+      hasCenteredOnUser.current = true;
+      recenterOnPosition.current = false;
+    }
+  }, [userPosition, geolocationEnabled]);
+
   const handleRecenter = () => {
     if (!map.current) return;
     
@@ -684,10 +703,11 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
       });
       toast.success('Carte recentrée sur votre position');
     } else {
-      // Sinon, demander la géolocalisation
+      // Sinon, activer la géolocalisation et recentrer dès que la position arrive
       setGeolocationEnabled(true);
+      recenterOnPosition.current = true;
       
-      // Attendre un peu et vérifier si on a obtenu la position
+      // Attendre un peu et vérifier si une erreur survient, sinon le recentrage se fera à l'arrivée de la position
       setTimeout(() => {
         if (geolocationError) {
           toast.error(geolocationError.message);
@@ -698,8 +718,9 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
             pitch: 0,
             duration: 2000
           });
+          recenterOnPosition.current = false;
         }
-      }, 1000);
+      }, 1500);
     }
   };
 
