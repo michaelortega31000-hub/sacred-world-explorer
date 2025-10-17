@@ -678,8 +678,8 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
     if (userPosition) {
       map.current.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
-        zoom: 12,
-        pitch: 0,
+        zoom: 15,
+        pitch: 45,
         duration: 2000
       });
       toast.success('Carte recentrée sur votre position');
