@@ -45,15 +45,15 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
   const pendingFlyTo = useRef<Array<{ lat: number; lng: number; zoom: number }>>([]);
 
   // Fonction pour voler vers des coordonnées spécifiques
-  const handleFlyTo = (lat: number, lng: number, zoom: number = 12) => {
+  const handleFlyTo = (lat: number, lng: number, zoom: number = 15) => {
     if (map.current && isStyleReadyRef.current) {
       setIsPaused(true);
       map.current.flyTo({
         center: [lng, lat],
         zoom: zoom,
-        pitch: 45,
+        pitch: 0,
         bearing: 0,
-        duration: 2000,
+        duration: 2200,
         essential: true
       });
     } else {
