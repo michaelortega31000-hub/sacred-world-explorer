@@ -1,16 +1,23 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces } from '@/data/placesData';
+
+// Types pour Web Speech API
+interface SpeechRecognitionEvent extends Event {
+  results: SpeechRecognitionResultList;
+}
+
+interface SpeechRecognitionErrorEvent extends Event {
+  error: string;
+}
 
 const VoiceCommand = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const mediaRecorder = useRef<MediaRecorder | null>(null);
-  const audioChunks = useRef<Blob[]>([]);
+  const recognition = useRef<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -41,33 +48,64 @@ const VoiceCommand = () => {
     return place;
   };
 
-  const handleTranscription = async (audioBlob: Blob) => {
+  // Initialiser Web Speech API
+  useEffect(() => {
+    if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      recognition.current = new SpeechRecognition();
+      recognition.current!.continuous = false;
+      recognition.current!.lang = 'fr-FR';
+      recognition.current!.interimResults = false;
+      recognition.current!.maxAlternatives = 1;
+
+      recognition.current!.onstart = () => {
+        setIsRecording(true);
+        toast({
+          title: "🎤 Enregistrement",
+          description: "Dites 'amène-moi' suivi du lieu",
+        });
+      };
+
+      recognition.current!.onresult = (event: SpeechRecognitionEvent) => {
+        const transcript = event.results[0][0].transcript.toLowerCase();
+        console.log('Transcription:', transcript);
+        handleTranscription(transcript);
+      };
+
+      recognition.current!.onerror = (event: SpeechRecognitionErrorEvent) => {
+        console.error('Erreur reconnaissance vocale:', event.error);
+        setIsRecording(false);
+        setIsProcessing(false);
+        
+        let errorMessage = "Erreur de reconnaissance vocale";
+        if (event.error === 'no-speech') {
+          errorMessage = "Aucune parole détectée";
+        } else if (event.error === 'not-allowed') {
+          errorMessage = "Permission microphone refusée";
+        }
+        
+        toast({
+          title: "Erreur",
+          description: errorMessage,
+          variant: "destructive",
+        });
+      };
+
+      recognition.current!.onend = () => {
+        setIsRecording(false);
+      };
+    }
+
+    return () => {
+      if (recognition.current) {
+        recognition.current.stop();
+      }
+    };
+  }, []);
+
+  const handleTranscription = (transcription: string) => {
     try {
       setIsProcessing(true);
-      toast({
-        title: "Analyse en cours...",
-        description: "Je traite votre commande vocale",
-      });
-
-      // Convertir en base64
-      const reader = new FileReader();
-      reader.readAsDataURL(audioBlob);
-      
-      await new Promise((resolve) => {
-        reader.onloadend = resolve;
-      });
-
-      const base64Audio = (reader.result as string).split(',')[1];
-
-      // Appeler l'edge function
-      const { data, error } = await supabase.functions.invoke('transcribe-audio', {
-        body: { audio: base64Audio }
-      });
-
-      if (error) throw error;
-
-      const transcription = data.text.toLowerCase();
-      console.log('Transcription:', transcription);
 
       // Parser la commande "amène-moi" ou "emmène-moi"
       const commandRegex = /(?:am[èe]ne[- ]moi|emm[èe]ne[- ]moi)\s+(?:à|a|au|aux)?\s*(.+)/i;
@@ -114,7 +152,7 @@ const VoiceCommand = () => {
         });
       }
     } catch (error) {
-      console.error('Erreur transcription:', error);
+      console.error('Erreur traitement:', error);
       toast({
         title: "Erreur",
         description: "Impossible de traiter la commande vocale",
@@ -125,55 +163,31 @@ const VoiceCommand = () => {
     }
   };
 
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      mediaRecorder.current = new MediaRecorder(stream, {
-        mimeType: 'audio/webm'
-      });
-      audioChunks.current = [];
-
-      mediaRecorder.current.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunks.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.current.onstop = () => {
-        const audioBlob = new Blob(audioChunks.current, { type: 'audio/webm' });
-        handleTranscription(audioBlob);
-        stream.getTracks().forEach(track => track.stop());
-      };
-
-      mediaRecorder.current.start();
-      setIsRecording(true);
-
+  const startRecording = () => {
+    if (!recognition.current) {
       toast({
-        title: "🎤 Enregistrement",
-        description: "Dites 'amène-moi' suivi du lieu",
+        title: "Non supporté",
+        description: "Votre navigateur ne supporte pas la reconnaissance vocale",
+        variant: "destructive",
       });
+      return;
+    }
 
-      // Auto-stop après 5 secondes
-      setTimeout(() => {
-        if (mediaRecorder.current?.state === 'recording') {
-          stopRecording();
-        }
-      }, 5000);
-
+    try {
+      recognition.current.start();
     } catch (error) {
-      console.error('Erreur microphone:', error);
+      console.error('Erreur démarrage:', error);
       toast({
         title: "Erreur",
-        description: "Impossible d'accéder au microphone",
+        description: "Impossible de démarrer la reconnaissance vocale",
         variant: "destructive",
       });
     }
   };
 
   const stopRecording = () => {
-    if (mediaRecorder.current && mediaRecorder.current.state === 'recording') {
-      mediaRecorder.current.stop();
-      setIsRecording(false);
+    if (recognition.current) {
+      recognition.current.stop();
     }
   };
 
