@@ -32,22 +32,15 @@ const VoiceCommand = () => {
       .trim();
   };
 
-  const findPlace = (locationName: string) => {
+  const findCityOrPlace = (locationName: string) => {
     const normalized = normalizeText(locationName);
     
-    // Recherche exacte d'abord par nom
+    // PRIORITÉ 1: Recherche exacte par ville (pour les capitales/villes)
     let place = mockPlaces.find(p => 
-      normalizeText(p.name) === normalized
+      p.city && normalizeText(p.city) === normalized
     );
 
-    // Si pas trouvé, recherche par ville (pour les capitales/villes)
-    if (!place) {
-      place = mockPlaces.find(p => 
-        p.city && normalizeText(p.city) === normalized
-      );
-    }
-
-    // Si toujours pas trouvé, recherche partielle par ville
+    // PRIORITÉ 2: Recherche partielle par ville
     if (!place) {
       place = mockPlaces.find(p => 
         p.city && (normalizeText(p.city).includes(normalized) || 
@@ -55,7 +48,14 @@ const VoiceCommand = () => {
       );
     }
 
-    // En dernier recours, recherche partielle par nom
+    // PRIORITÉ 3: Recherche exacte par nom de lieu
+    if (!place) {
+      place = mockPlaces.find(p => 
+        normalizeText(p.name) === normalized
+      );
+    }
+
+    // PRIORITÉ 4: Recherche partielle par nom
     if (!place) {
       place = mockPlaces.find(p => 
         normalizeText(p.name).includes(normalized) || 
@@ -133,25 +133,16 @@ const VoiceCommand = () => {
         const locationName = match[1].trim();
         console.log('Lieu recherché:', locationName);
         
-        const place = findPlace(locationName);
+        const place = findCityOrPlace(locationName);
 
         if (place) {
-          // Si on est sur la page WorldMap, zoomer sur le lieu au lieu de naviguer
-          if (location.pathname === '/' || location.pathname === '/worldmap') {
-            const [lng, lat] = place.coordinates;
-            flyToLocation(lat, lng, 12);
-            toast({
-              title: "Destination trouvée !",
-              description: `Zoom sur ${place.city || place.name}`,
-            });
-          } else {
-            // Sinon, naviguer vers la page du lieu
-            toast({
-              title: "Destination trouvée !",
-              description: `Navigation vers ${place.name}`,
-            });
-            navigate(`/place/${place.id}`);
-          }
+          // Toujours zoomer sur la ville/lieu sans naviguer
+          const [lng, lat] = place.coordinates;
+          flyToLocation(lat, lng, 12);
+          toast({
+            title: "🎯 Destination trouvée !",
+            description: `Zoom sur ${place.city || place.name}`,
+          });
         } else {
           // Suggestions de lieux similaires
           const suggestions = mockPlaces
