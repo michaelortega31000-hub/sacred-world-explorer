@@ -138,7 +138,15 @@ const VoiceCommand = () => {
         if (place) {
           // Toujours zoomer sur la ville/lieu sans naviguer
           const [lng, lat] = place.coordinates;
-          flyToLocation(lat, lng, 12);
+          // Aller sur la page du globe si nécessaire, puis zoomer
+          if (location.pathname !== '/world') {
+            navigate('/world');
+            setTimeout(() => {
+              flyToLocation(lat, lng, 12);
+            }, 300);
+          } else {
+            flyToLocation(lat, lng, 12);
+          }
           toast({
             title: "🎯 Destination trouvée !",
             description: `Zoom sur ${place.city || place.name}`,
