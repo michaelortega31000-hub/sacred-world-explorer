@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { Mic, MicOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { mockPlaces } from '@/data/placesData';
+import { useApp } from '@/contexts/AppContext';
 
 // Types pour Web Speech API
 interface SpeechRecognitionEvent extends Event {
@@ -20,6 +21,8 @@ const VoiceCommand = () => {
   const recognition = useRef<any>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
+  const { flyToLocation } = useApp();
 
   const normalizeText = (text: string) => {
     return text
@@ -32,12 +35,27 @@ const VoiceCommand = () => {
   const findPlace = (locationName: string) => {
     const normalized = normalizeText(locationName);
     
-    // Recherche exacte d'abord
+    // Recherche exacte d'abord par nom
     let place = mockPlaces.find(p => 
       normalizeText(p.name) === normalized
     );
 
-    // Si pas trouvé, recherche partielle
+    // Si pas trouvé, recherche par ville (pour les capitales/villes)
+    if (!place) {
+      place = mockPlaces.find(p => 
+        p.city && normalizeText(p.city) === normalized
+      );
+    }
+
+    // Si toujours pas trouvé, recherche partielle par ville
+    if (!place) {
+      place = mockPlaces.find(p => 
+        p.city && (normalizeText(p.city).includes(normalized) || 
+        normalized.includes(normalizeText(p.city)))
+      );
+    }
+
+    // En dernier recours, recherche partielle par nom
     if (!place) {
       place = mockPlaces.find(p => 
         normalizeText(p.name).includes(normalized) || 
@@ -118,11 +136,22 @@ const VoiceCommand = () => {
         const place = findPlace(locationName);
 
         if (place) {
-          toast({
-            title: "Destination trouvée !",
-            description: `Navigation vers ${place.name}`,
-          });
-          navigate(`/place/${place.id}`);
+          // Si on est sur la page WorldMap, zoomer sur le lieu au lieu de naviguer
+          if (location.pathname === '/' || location.pathname === '/worldmap') {
+            const [lng, lat] = place.coordinates;
+            flyToLocation(lat, lng, 12);
+            toast({
+              title: "Destination trouvée !",
+              description: `Zoom sur ${place.city || place.name}`,
+            });
+          } else {
+            // Sinon, naviguer vers la page du lieu
+            toast({
+              title: "Destination trouvée !",
+              description: `Navigation vers ${place.name}`,
+            });
+            navigate(`/place/${place.id}`);
+          }
         } else {
           // Suggestions de lieux similaires
           const suggestions = mockPlaces

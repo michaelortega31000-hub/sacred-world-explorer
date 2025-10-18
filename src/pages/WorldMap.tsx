@@ -31,6 +31,7 @@ const WorldMap = () => {
   const [activeTab, setActiveTab] = useState(initialTab);
   const [isPaused, setIsPaused] = useState(false);
   const recenterFunction = useRef<() => void>(() => {});
+  const { setFlyToFunction } = useApp();
 
   // Mettre à jour l'onglet actif quand l'URL change
   useEffect(() => {
@@ -103,6 +104,7 @@ const WorldMap = () => {
           {/* Globe 3D immersif */}
           <Globe3D 
             onRecenterRef={(fn) => { recenterFunction.current = fn; }}
+            onFlyToRef={setFlyToFunction}
             onPausedChange={setIsPaused}
             tripPlaces={userProgress.tripPlaces}
           />

@@ -19,11 +19,12 @@ import { logger } from '@/lib/logger';
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
   onRecenterRef?: (fn: () => void) => void;
+  onFlyToRef?: (fn: (lat: number, lng: number, zoom?: number) => void) => void;
   onPausedChange?: (paused: boolean) => void;
   tripPlaces?: string[];
 }
 
-const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [] }: Globe3DProps) => {
+const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tripPlaces = [] }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
@@ -41,12 +42,34 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onPausedChange, tripPlaces = [
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
 
+  // Fonction pour voler vers des coordonnées spécifiques
+  const handleFlyTo = (lat: number, lng: number, zoom: number = 12) => {
+    if (map.current) {
+      setIsPaused(true);
+      map.current.flyTo({
+        center: [lng, lat],
+        zoom: zoom,
+        pitch: 45,
+        bearing: 0,
+        duration: 2000,
+        essential: true
+      });
+    }
+  };
+
   // Exposer la fonction de recentrage via callback
   useEffect(() => {
     if (onRecenterRef && map.current) {
       onRecenterRef(() => handleRecenter());
     }
   }, [onRecenterRef]);
+
+  // Exposer la fonction flyTo via callback
+  useEffect(() => {
+    if (onFlyToRef && map.current) {
+      onFlyToRef((lat, lng, zoom) => handleFlyTo(lat, lng, zoom));
+    }
+  }, [onFlyToRef]);
 
   useEffect(() => {
     if (onPausedChange) {

@@ -50,6 +50,8 @@ interface AppContextType {
   updatePlannedRoute: (startCity: string, showRoute: boolean) => void;
   userLocation: UserGeolocation | null;
   geolocationError: string | null;
+  flyToLocation: (lat: number, lng: number, zoom?: number) => void;
+  setFlyToFunction: (fn: (lat: number, lng: number, zoom?: number) => void) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -58,6 +60,7 @@ const STORAGE_KEY = 'sacredworld_progress';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
+  const [flyToFn, setFlyToFn] = useState<((lat: number, lng: number, zoom?: number) => void) | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
@@ -362,8 +365,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const flyToLocation = (lat: number, lng: number, zoom: number = 12) => {
+    if (flyToFn) {
+      flyToFn(lat, lng, zoom);
+    }
+  };
+
+  const setFlyToFunction = (fn: (lat: number, lng: number, zoom?: number) => void) => {
+    setFlyToFn(() => fn);
+  };
+
   return (
-    <AppContext.Provider value={{ 
+    <AppContext.Provider value={{
       userProgress,
       session,
       updateReligion, 
@@ -380,7 +393,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       toggleGeolocation,
       updatePlannedRoute,
       userLocation: position,
-      geolocationError: error?.message || null
+      geolocationError: error?.message || null,
+      flyToLocation,
+      setFlyToFunction
     }}>
       {children}
     </AppContext.Provider>
