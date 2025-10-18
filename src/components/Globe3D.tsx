@@ -58,18 +58,18 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
   };
 
   // Exposer la fonction de recentrage via callback
-  useEffect(() => {
-    if (onRecenterRef && map.current) {
-      onRecenterRef(() => handleRecenter());
-    }
-  }, [onRecenterRef]);
+useEffect(() => {
+  if (onRecenterRef) {
+    onRecenterRef(() => handleRecenter());
+  }
+}, [onRecenterRef]);
 
   // Exposer la fonction flyTo via callback
-  useEffect(() => {
-    if (onFlyToRef && map.current) {
-      onFlyToRef((lat, lng, zoom) => handleFlyTo(lat, lng, zoom));
-    }
-  }, [onFlyToRef]);
+useEffect(() => {
+  if (onFlyToRef) {
+    onFlyToRef((lat, lng, zoom) => handleFlyTo(lat, lng, zoom));
+  }
+}, [onFlyToRef]);
 
   useEffect(() => {
     if (onPausedChange) {
