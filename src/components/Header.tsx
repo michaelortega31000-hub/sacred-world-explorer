@@ -8,6 +8,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
+import VoiceCommand from '@/components/VoiceCommand';
 
 interface HeaderProps {
   showBack?: boolean;
@@ -122,8 +123,10 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
               </div>
             </div>
             
-            {/* Droite : Quête + Messages + Déconnexion */}
+            {/* Droite : Commande vocale + Quête + Messages + Déconnexion */}
             <div className="flex items-center gap-2">
+              <VoiceCommand />
+              
               <Button
                 variant="ghost"
                 size="sm"
@@ -206,6 +209,8 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                     aria-label="Activer la géolocalisation"
                   />
                 </div>
+                
+                <VoiceCommand />
                 
                 <Button
                   variant="ghost"
