@@ -41,10 +41,12 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
   const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
+  const isStyleReadyRef = useRef(false);
+  const pendingFlyTo = useRef<Array<{ lat: number; lng: number; zoom: number }>>([]);
 
   // Fonction pour voler vers des coordonnées spécifiques
   const handleFlyTo = (lat: number, lng: number, zoom: number = 12) => {
-    if (map.current) {
+    if (map.current && isStyleReadyRef.current) {
       setIsPaused(true);
       map.current.flyTo({
         center: [lng, lat],
@@ -54,6 +56,9 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
         duration: 2000,
         essential: true
       });
+    } else {
+      // Carte pas prête: on met en file d'attente
+      pendingFlyTo.current.push({ lat, lng, zoom });
     }
   };
 
@@ -125,6 +130,8 @@ useEffect(() => {
     // Configuration de l'atmosphère et du fog immersif
     map.current.on('style.load', () => {
       if (!map.current) return;
+      // Le style est prêt
+      isStyleReadyRef.current = true;
       
       // Fond spatial immersif (espace sombre conservé)
       map.current.setFog({
@@ -240,6 +247,13 @@ useEffect(() => {
       
       // Dessiner l'itinéraire du voyage
       drawTripRoute();
+
+      // Exécuter les zooms en attente (si déclenchés avant que la carte soit prête)
+      if (pendingFlyTo.current.length > 0) {
+        const last = pendingFlyTo.current[pendingFlyTo.current.length - 1];
+        pendingFlyTo.current = [];
+        handleFlyTo(last.lat, last.lng, last.zoom);
+      }
     });
 
     // Fonction pour dessiner l'itinéraire du voyage
