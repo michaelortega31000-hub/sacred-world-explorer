@@ -69,15 +69,15 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
       <div className="max-w-7xl mx-auto">
         {isTextOnlyPage ? (
           // Header compact pour les pages Globe/Planifier/Journal/Classements
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Gauche : Logo + Géolocalisation + Points + Badges */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 sm:gap-3">
               <img 
                 src={logo} 
                 alt="SacredWorld Logo" 
-                className="h-10 w-10 object-contain"
+                className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
               />
-              <div className="flex items-center gap-2">
+              <div className="hidden sm:flex items-center gap-2">
                 <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
                 <Switch
                   checked={userProgress.geolocationEnabled}
@@ -87,15 +87,15 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
               </div>
               
               {/* Points obtenus */}
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-full">
-                <Trophy className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">
+              <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
+                <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">
                   {userProgress.totalPoints.toLocaleString()}
                 </span>
               </div>
               
               {/* Badges obtenus */}
-              <div className="flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-full">
+              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-full">
                 <Award className="w-4 h-4 text-primary" />
                 <span className="text-sm font-medium text-foreground">
                   {userProgress.badges.length}
@@ -103,8 +103,8 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
               </div>
             </div>
             
-            {/* Centre : Sacred World avec halo doré */}
-            <div className="absolute left-1/2 transform -translate-x-1/2">
+            {/* Centre : Sacred World masqué sur mobile */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 hidden sm:block">
               <div className="relative">
                 {/* Halo doré derrière le texte */}
                 <div 
@@ -115,7 +115,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                   }}
                 />
                 <h1 
-                  className="font-serif text-foreground tracking-wide cursor-pointer text-3xl relative z-10"
+                  className="font-serif text-foreground tracking-wide cursor-pointer text-2xl sm:text-3xl relative z-10"
                   onClick={() => navigate('/')}
                 >
                   Sacred World
@@ -124,14 +124,14 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
             </div>
             
             {/* Droite : Commande vocale + Quête + Messages + Déconnexion */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <VoiceCommand />
               
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => navigate('/world?tab=quest')}
-                className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                className="hidden sm:flex gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
               >
                 <Target className="w-4 h-4" />
                 Quête
@@ -142,15 +142,15 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                   variant="ghost"
                   size="sm"
                   onClick={handleMessagesClick}
-                  className="p-2 text-foreground hover:bg-primary/10"
+                  className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10"
                   aria-label="Messages"
                   title="Messages"
                 >
-                  <Mail className="w-5 h-5" />
+                  <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
                 {unreadCount > 0 && (
                   <Badge 
-                    className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center p-1 bg-primary text-primary-foreground text-xs"
+                    className="absolute -top-1 -right-1 h-4 min-w-[16px] sm:h-5 sm:min-w-[20px] flex items-center justify-center p-0.5 sm:p-1 bg-primary text-primary-foreground text-[10px] sm:text-xs"
                   >
                     {unreadCount > 99 ? '99+' : unreadCount}
                   </Badge>
@@ -161,10 +161,10 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                 variant="ghost"
                 size="sm"
                 onClick={handleLogout}
-                className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
+                className="gap-1 sm:gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10 text-xs sm:text-sm"
               >
-                <LogOut className="w-4 h-4" />
-                Déconnexion
+                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Déconnexion</span>
               </Button>
             </div>
           </div>

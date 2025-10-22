@@ -94,7 +94,7 @@ const WorldMap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col pb-20">
       <Header>
-        <div className="text-sm text-muted-foreground">
+        <div className="text-sm text-muted-foreground hidden sm:block">
           <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
         </div>
       </Header>
@@ -110,12 +110,12 @@ const WorldMap = () => {
           />
 
           {/* Barre de recherche et boutons overlay - côté gauche */}
-          <div className="absolute top-4 left-4 z-50 space-y-3">
+          <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50 space-y-3">
             {/* Barre de recherche */}
             <div 
               className={`rounded-xl backdrop-blur-md border-2 transition-all duration-300 ${
-                isSearchExpanded ? 'w-96 p-4' : 'w-auto px-3 py-2'
-              }`} 
+                isSearchExpanded ? 'w-[calc(100vw-2rem)] sm:w-96 p-3 sm:p-4' : 'w-auto px-2 sm:px-3 py-2'
+              }`}
               style={{ 
                 background: 'rgba(20, 43, 79, 0.85)',
                 borderColor: 'rgba(52, 224, 161, 0.4)',
@@ -182,10 +182,10 @@ const WorldMap = () => {
       </div>
 
           {/* Contrôles immersifs en bas */}
-          <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-3 z-50">
+          <div className="absolute bottom-4 sm:bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2 sm:gap-3 z-50">
             <Button
               onClick={() => recenterFunction.current()}
-              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group"
+              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 group text-xs sm:text-sm"
               style={{
                 background: 'rgba(20, 43, 79, 0.85)',
                 color: '#F5F5F5',

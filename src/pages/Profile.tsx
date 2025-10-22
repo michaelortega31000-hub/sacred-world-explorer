@@ -201,9 +201,9 @@ const Profile = () => {
 
       <Header />
 
-      <main className="relative z-10 max-w-4xl mx-auto px-4 py-8 pb-24">
+      <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
             <TabsTrigger value="profile" className="gap-2">
               <User className="w-4 h-4" />
               Mon Profil
@@ -216,16 +216,16 @@ const Profile = () => {
 
           <TabsContent value="profile">
             <div 
-              className="bg-sacred-beige/90 backdrop-blur-sm rounded-2xl p-8 shadow-2xl"
+              className="bg-sacred-beige/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl"
               style={{
                 boxShadow: '0 0 40px rgba(52, 224, 161, 0.2), 0 0 80px rgba(244, 197, 66, 0.1)'
               }}
             >
 
           {/* Avatar Section */}
-          <div className="flex flex-col items-center mb-8">
+          <div className="flex flex-col items-center mb-6 sm:mb-8">
             <div className="relative group">
-              <Avatar className="w-32 h-32 border-4 border-primary/20">
+              <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-primary/20">
                 <AvatarImage src={avatarUrl || undefined} alt="Photo de profil" />
                 <AvatarFallback className="bg-primary/10 text-primary text-4xl">
                   <User className="w-16 h-16" />
@@ -251,9 +251,9 @@ const Profile = () => {
             )}
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {/* Points totaux */}
-            <Card className="p-6 bg-white/50 border-primary/20">
+            <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-primary/10 rounded-full">
                   <Trophy className="w-8 h-8 text-primary" />
@@ -266,7 +266,7 @@ const Profile = () => {
             </Card>
 
             {/* Lieux visités */}
-            <Card className="p-6 bg-white/50 border-primary/20">
+            <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-primary/10 rounded-full">
                   <MapPin className="w-8 h-8 text-primary" />
@@ -280,7 +280,7 @@ const Profile = () => {
 
             {/* Religion sélectionnée */}
             {userProgress.selectedReligion && (
-              <Card className="p-6 bg-white/50 border-primary/20">
+              <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
                 <div className="flex items-center gap-4">
                   <div className="p-3 bg-primary/10 rounded-full">
                     <Star className="w-8 h-8 text-primary" />
@@ -296,7 +296,7 @@ const Profile = () => {
             )}
 
             {/* Langue */}
-            <Card className="p-6 bg-white/50 border-primary/20">
+            <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
               <div className="flex items-center gap-4">
                 <div className="p-3 bg-primary/10 rounded-full">
                   <Globe className="w-8 h-8 text-primary" />
@@ -312,7 +312,7 @@ const Profile = () => {
 
             {/* Badges */}
             {userProgress.badges.length > 0 && (
-              <Card className="p-6 bg-white/50 border-primary/20">
+              <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
                 <h2 className="text-lg font-semibold text-sacred-blue mb-4">Mes Badges</h2>
                 <div className="flex flex-wrap gap-2">
                   {userProgress.badges.map((badge) => (
@@ -332,7 +332,7 @@ const Profile = () => {
 
             {/* Voyage planifié */}
             {userProgress.tripPlaces.length > 0 && (
-              <Card className="p-6 bg-white/50 border-primary/20">
+              <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
                 <h2 className="text-lg font-semibold text-sacred-blue mb-2">Voyage en cours</h2>
                 <p className="text-muted-foreground">
                   {userProgress.tripPlaces.length} lieu{userProgress.tripPlaces.length > 1 ? 'x' : ''} planifié{userProgress.tripPlaces.length > 1 ? 's' : ''}

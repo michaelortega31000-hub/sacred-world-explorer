@@ -45,9 +45,9 @@ const Community = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-24">
         <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground font-cinzel">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-cinzel">
             {t("community.title", "Community")}
           </h1>
           <p className="text-muted-foreground">
@@ -55,14 +55,14 @@ const Community = () => {
           </p>
         </div>
 
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
           <Tabs value={activeFilter} onValueChange={setActiveFilter} className="flex-1">
-            <TabsList className="grid grid-cols-5 w-full bg-card/50 backdrop-blur-sm">
-              <TabsTrigger value="all" className="text-xs">All</TabsTrigger>
-              <TabsTrigger value="wishes" className="text-xs">Wishes</TabsTrigger>
-              <TabsTrigger value="photos" className="text-xs">Photos</TabsTrigger>
-              <TabsTrigger value="quotes" className="text-xs">Quotes</TabsTrigger>
-              <TabsTrigger value="memories" className="text-xs">Memories</TabsTrigger>
+            <TabsList className="grid grid-cols-5 w-full bg-card/50 backdrop-blur-sm h-9 sm:h-10">
+              <TabsTrigger value="all" className="text-[10px] sm:text-xs px-1">All</TabsTrigger>
+              <TabsTrigger value="wishes" className="text-[10px] sm:text-xs px-1">Wish</TabsTrigger>
+              <TabsTrigger value="photos" className="text-[10px] sm:text-xs px-1">Photo</TabsTrigger>
+              <TabsTrigger value="quotes" className="text-[10px] sm:text-xs px-1">Quote</TabsTrigger>
+              <TabsTrigger value="memories" className="text-[10px] sm:text-xs px-1">Memo</TabsTrigger>
             </TabsList>
           </Tabs>
 
