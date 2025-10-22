@@ -611,7 +611,7 @@ useEffect(() => {
             })
               .setHTML(`
                 <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
-                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px;" onerror="this.src='/placeholder.svg';" />` : ''}
+                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />` : ''}
                   <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
                   <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
                   <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${place.description.substring(0, 150)}...</p>
@@ -621,6 +621,17 @@ useEffect(() => {
                   </div>
                 </div>
               `);
+
+            // Ajouter l'event listener pour la navigation au clic sur l'image
+            popup.on('open', () => {
+              const img = document.querySelector(`[data-place-id="${place.id}"]`) as HTMLImageElement;
+              if (img) {
+                img.addEventListener('click', (e) => {
+                  e.stopPropagation();
+                  navigate(`/place/${place.id}`);
+                });
+              }
+            });
 
             const el = document.createElement('div');
             el.className = 'sacred-marker';
