@@ -70,14 +70,9 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
         {isTextOnlyPage ? (
           // Header compact pour les pages Globe/Planifier/Journal/Classements
           <div className="flex items-center justify-between gap-2 sm:gap-4">
-            {/* Gauche : Logo + Géolocalisation + Points + Badges */}
+            {/* Gauche : Géolocalisation + Points + Badges */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-              <img 
-                src={logo} 
-                alt="SacredWorld Logo" 
-                className="h-8 w-8 sm:h-10 sm:w-10 object-contain"
-              />
-              <div className="hidden sm:flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
                 <Switch
                   checked={userProgress.geolocationEnabled}
@@ -103,24 +98,14 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
               </div>
             </div>
             
-            {/* Centre : Sacred World masqué sur mobile */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 hidden sm:block">
-              <div className="relative">
-                {/* Halo doré derrière le texte */}
-                <div 
-                  className="absolute inset-0 blur-2xl opacity-60"
-                  style={{
-                    background: 'radial-gradient(circle, hsl(43, 76%, 70%) 0%, transparent 70%)',
-                    transform: 'scale(1.5)',
-                  }}
-                />
-                <h1 
-                  className="font-serif text-foreground tracking-wide cursor-pointer text-2xl sm:text-3xl relative z-10"
-                  onClick={() => navigate('/')}
-                >
-                  Sacred World
-                </h1>
-              </div>
+            {/* Centre : Logo */}
+            <div className="absolute left-1/2 transform -translate-x-1/2">
+              <img 
+                src={logo} 
+                alt="SacredWorld Logo" 
+                className="h-8 w-8 sm:h-10 sm:w-10 object-contain cursor-pointer"
+                onClick={() => navigate('/')}
+              />
             </div>
             
             {/* Droite : Commande vocale + Quête + Messages + Déconnexion */}
