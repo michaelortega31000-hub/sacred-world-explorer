@@ -390,10 +390,10 @@ useEffect(() => {
             })
               .setHTML(`
                 <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
-                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />` : ''}
+                  <img src="${resolvedImageUrl || '/placeholder.svg'}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
                   <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
                   <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
-                  <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${place.description.substring(0, 150)}...</p>
+                  <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${(place.description || '').substring(0, 150)}...</p>
                   <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${place.points} points</span>
                     ${isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
@@ -403,9 +403,11 @@ useEffect(() => {
 
             // Ajouter l'event listener pour la navigation au clic sur l'image
             popup.on('open', () => {
-              const img = document.querySelector(`[data-place-id="${place.id}"]`) as HTMLImageElement;
+              const container = popup.getElement();
+              const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
               if (img) {
-                img.addEventListener('click', () => {
+                img.addEventListener('click', (e) => {
+                  e.stopPropagation();
                   navigate(`/place/${place.id}`);
                 });
               }
@@ -431,6 +433,10 @@ useEffect(() => {
             
             el.addEventListener('mouseleave', () => {
               el.style.transform = 'scale(1)';
+            });
+
+            el.addEventListener('click', (ev) => {
+              ev.stopPropagation();
             });
 
             const marker = new mapboxgl.Marker({ 
@@ -482,6 +488,12 @@ useEffect(() => {
     // Click sur un pays - amélioration de la zone cliquable
     map.current.on('click', (e) => {
       if (!map.current) return;
+      
+      // Ignorer les clics sur un popup ou un marqueur
+      const target = (e.originalEvent && (e.originalEvent as any).target) as HTMLElement | null;
+      if (target && (target.closest('.mapboxgl-popup') || target.closest('.sacred-marker'))) {
+        return;
+      }
       
       // Augmenter la zone de détection en utilisant un buffer de 20 pixels autour du clic
       const bbox: [mapboxgl.PointLike, mapboxgl.PointLike] = [
@@ -611,10 +623,10 @@ useEffect(() => {
             })
               .setHTML(`
                 <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
-                  ${resolvedImageUrl ? `<img src="${resolvedImageUrl}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />` : ''}
+                  <img src="${resolvedImageUrl || '/placeholder.svg'}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
                   <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
                   <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
-                  <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${place.description.substring(0, 150)}...</p>
+                  <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${(place.description || '').substring(0, 150)}...</p>
                   <div style="display: flex; justify-content: space-between; align-items: center;">
                     <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${place.points} points</span>
                     ${isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
@@ -624,7 +636,8 @@ useEffect(() => {
 
             // Ajouter l'event listener pour la navigation au clic sur l'image
             popup.on('open', () => {
-              const img = document.querySelector(`[data-place-id="${place.id}"]`) as HTMLImageElement;
+              const container = popup.getElement();
+              const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
               if (img) {
                 img.addEventListener('click', (e) => {
                   e.stopPropagation();
@@ -652,6 +665,10 @@ useEffect(() => {
             
             el.addEventListener('mouseleave', () => {
               el.style.transform = 'scale(1)';
+            });
+
+            el.addEventListener('click', (ev) => {
+              ev.stopPropagation();
             });
 
             const marker = new mapboxgl.Marker({ 
