@@ -40,6 +40,7 @@ const RestaurantsTab = ({ country, city }: RestaurantsTabProps) => {
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>(country || 'all');
   const [selectedCity, setSelectedCity] = useState<string>(city || 'all');
+  const [isInitializing, setIsInitializing] = useState(false);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [continents, setContinents] = useState<string[]>([]);
   const [countries, setCountries] = useState<string[]>([]);
@@ -173,6 +174,7 @@ const RestaurantsTab = ({ country, city }: RestaurantsTabProps) => {
   useEffect(() => {
     const initializeFilters = async () => {
       if (city && city !== 'all') {
+        setIsInitializing(true);
         try {
           // Find a restaurant in this city to get the country and continent
           const { data, error } = await supabase
@@ -185,20 +187,20 @@ const RestaurantsTab = ({ country, city }: RestaurantsTabProps) => {
 
           if (!error && data) {
             // Set continent first
-            if (data.continent && data.continent !== selectedContinent) {
+            if (data.continent) {
               setSelectedContinent(data.continent);
             }
             // Set country
-            if (data.country && data.country !== selectedCountry) {
+            if (data.country) {
               setSelectedCountry(data.country);
             }
             // Set city
-            if (city !== selectedCity) {
-              setSelectedCity(city);
-            }
+            setSelectedCity(city);
           }
         } catch (error) {
           logger.error('Error initializing filters from city:', error);
+        } finally {
+          setIsInitializing(false);
         }
       }
     };
@@ -207,19 +209,21 @@ const RestaurantsTab = ({ country, city }: RestaurantsTabProps) => {
   }, [city]);
 
   useEffect(() => {
-    if (selectedContinent === 'all') {
+    // Don't reset if we're initializing from city prop
+    if (!isInitializing && selectedContinent === 'all') {
       setSelectedCountry('all');
       setSelectedCity('all');
     }
     fetchCountries();
-  }, [selectedContinent]);
+  }, [selectedContinent, isInitializing]);
 
   useEffect(() => {
-    if (selectedCountry === 'all') {
+    // Don't reset if we're initializing from city prop
+    if (!isInitializing && selectedCountry === 'all') {
       setSelectedCity('all');
     }
     fetchCities();
-  }, [selectedCountry, selectedContinent]);
+  }, [selectedCountry, selectedContinent, isInitializing]);
 
   useEffect(() => {
     fetchRestaurants();
