@@ -9,6 +9,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import logo from '@/assets/sacredworld-logo.png';
 import { z } from 'zod';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const signupSchema = z.object({
   username: z.string().min(3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères'),
@@ -33,12 +34,24 @@ const Auth = () => {
     email: '',
     password: ''
   });
+  const [rememberMe, setRememberMe] = useState(true);
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        navigate('/mode-selection');
+        // Vérifier si c'était une session temporaire (non persistante)
+        const isTemporarySession = !sessionStorage.getItem('temp_session');
+        if (isTemporarySession && !sessionStorage.getItem('temp_session')) {
+          // Si il n'y a pas de flag de session temporaire, c'est une session persistante
+          navigate('/mode-selection');
+        } else if (sessionStorage.getItem('temp_session')) {
+          // Si le flag existe, la session est valide pour cette session de navigateur
+          navigate('/mode-selection');
+        } else {
+          // Sinon, déconnecter (session expirée après fermeture du navigateur)
+          supabase.auth.signOut();
+        }
       }
     });
 
@@ -137,6 +150,15 @@ const Auth = () => {
           throw error;
         }
         return;
+      }
+
+      // Gérer la persistance de session
+      if (!rememberMe) {
+        // Marquer comme session temporaire
+        sessionStorage.setItem('temp_session', 'true');
+      } else {
+        // S'assurer qu'il n'y a pas de flag de session temporaire
+        sessionStorage.removeItem('temp_session');
       }
 
       navigate('/mode-selection');
@@ -310,6 +332,23 @@ const Auth = () => {
                     disabled={loading}
                   />
                 </div>
+
+                {isLogin && (
+                  <div className="flex items-center space-x-2">
+                    <Checkbox 
+                      id="remember" 
+                      checked={rememberMe}
+                      onCheckedChange={(checked) => setRememberMe(checked as boolean)}
+                      disabled={loading}
+                    />
+                    <Label 
+                      htmlFor="remember" 
+                      className="text-sm font-normal cursor-pointer"
+                    >
+                      Se souvenir de moi
+                    </Label>
+                  </div>
+                )}
 
                 <Button
                   type="submit"
