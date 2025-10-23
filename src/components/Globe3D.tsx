@@ -435,10 +435,6 @@ useEffect(() => {
               el.style.transform = 'scale(1)';
             });
 
-            el.addEventListener('click', (ev) => {
-              ev.stopPropagation();
-            });
-
             const marker = new mapboxgl.Marker({ 
               element: el,
               anchor: 'center',
@@ -448,6 +444,16 @@ useEffect(() => {
               .setLngLat([place.coordinates[0], place.coordinates[1]])
               .setPopup(popup)
               .addTo(map.current!);
+            
+            // Ouvrir le popup au clic ou au tap sur mobile
+            el.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              marker.togglePopup();
+            });
+            el.addEventListener('touchend', (ev) => {
+              ev.stopPropagation();
+              marker.togglePopup();
+            }, { passive: true });
             
             markers.current.push(marker);
           });
@@ -667,10 +673,6 @@ useEffect(() => {
               el.style.transform = 'scale(1)';
             });
 
-            el.addEventListener('click', (ev) => {
-              ev.stopPropagation();
-            });
-
             const marker = new mapboxgl.Marker({ 
               element: el,
               anchor: 'center',
@@ -680,6 +682,16 @@ useEffect(() => {
               .setLngLat([place.coordinates[0], place.coordinates[1]])
               .setPopup(popup)
               .addTo(map.current!);
+            
+            // Ouvrir le popup au clic ou au tap sur mobile
+            el.addEventListener('click', (ev) => {
+              ev.stopPropagation();
+              marker.togglePopup();
+            });
+            el.addEventListener('touchend', (ev) => {
+              ev.stopPropagation();
+              marker.togglePopup();
+            }, { passive: true });
             
             markers.current.push(marker);
           });
