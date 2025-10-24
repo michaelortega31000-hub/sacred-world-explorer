@@ -1,4 +1,5 @@
 import { useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -22,6 +23,7 @@ import {
 const LocationsTab = () => {
   const navigate = useNavigate();
   const { userProgress } = useApp();
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
@@ -149,7 +151,7 @@ const LocationsTab = () => {
                   <SelectItem value="all">Tous les continents</SelectItem>
                   {continents.map(continent => (
                     <SelectItem key={continent} value={continent}>
-                      {continent}
+                      {t(`continents.${continent}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -173,7 +175,7 @@ const LocationsTab = () => {
                   <SelectItem value="all">Tous les pays</SelectItem>
                   {countries.map(country => (
                     <SelectItem key={country} value={country}>
-                      {country}
+                      {t(`countries.${country}`)}
                     </SelectItem>
                   ))}
                 </SelectContent>

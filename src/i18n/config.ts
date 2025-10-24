@@ -56,6 +56,15 @@ const resources = {
         back: 'Retour',
         searchPlaceholder: 'Rechercher un pays...'
       },
+      continents: {
+        "Europe": "Europe",
+        "Asia": "Asie",
+        "Africa": "Afrique",
+        "North America": "Amérique du Nord",
+        "South America": "Amérique du Sud",
+        "Oceania": "Océanie",
+        "Other": "Autre"
+      },
       countries: {
         "France": "France",
         "Italy": "Italie",
@@ -169,6 +178,15 @@ const resources = {
         subtitle: 'Select a country to discover',
         back: 'Back',
         searchPlaceholder: 'Search for a country...'
+      },
+      continents: {
+        "Europe": "Europe",
+        "Asia": "Asia",
+        "Africa": "Africa",
+        "North America": "North America",
+        "South America": "South America",
+        "Oceania": "Oceania",
+        "Other": "Other"
       },
       countries: {
         "France": "France",
@@ -284,6 +302,15 @@ const resources = {
         back: 'Volver',
         searchPlaceholder: 'Buscar un país...'
       },
+      continents: {
+        "Europe": "Europa",
+        "Asia": "Asia",
+        "Africa": "África",
+        "North America": "América del Norte",
+        "South America": "América del Sur",
+        "Oceania": "Oceanía",
+        "Other": "Otro"
+      },
       countries: {
         "France": "Francia",
         "Italy": "Italia",
@@ -398,6 +425,15 @@ const resources = {
         back: 'Indietro',
         searchPlaceholder: 'Cerca un paese...'
       },
+      continents: {
+        "Europe": "Europa",
+        "Asia": "Asia",
+        "Africa": "Africa",
+        "North America": "Nord America",
+        "South America": "Sud America",
+        "Oceania": "Oceania",
+        "Other": "Altro"
+      },
       countries: {
         "France": "Francia",
         "Italy": "Italia",
@@ -511,6 +547,15 @@ const resources = {
         subtitle: 'Wähle ein Land zum Entdecken',
         back: 'Zurück',
         searchPlaceholder: 'Land suchen...'
+      },
+      continents: {
+        "Europe": "Europa",
+        "Asia": "Asien",
+        "Africa": "Afrika",
+        "North America": "Nordamerika",
+        "South America": "Südamerika",
+        "Oceania": "Ozeanien",
+        "Other": "Andere"
       },
       countries: {
         "France": "Frankreich",
