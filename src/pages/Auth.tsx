@@ -14,7 +14,12 @@ import { Checkbox } from '@/components/ui/checkbox';
 const signupSchema = z.object({
   username: z.string().min(3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères'),
   email: z.string().email('Email invalide'),
-  password: z.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères')
+  password: z.string()
+    .min(12, 'Le mot de passe doit contenir au moins 12 caractères')
+    .regex(/[A-Z]/, 'Le mot de passe doit contenir au moins une majuscule')
+    .regex(/[a-z]/, 'Le mot de passe doit contenir au moins une minuscule')
+    .regex(/[0-9]/, 'Le mot de passe doit contenir au moins un chiffre')
+    .regex(/[^A-Za-z0-9]/, 'Le mot de passe doit contenir au moins un caractère spécial')
 });
 
 const loginSchema = z.object({
@@ -321,11 +326,18 @@ const Auth = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Mot de passe</Label>
+                  <Label htmlFor="password">
+                    Mot de passe
+                    {!isLogin && (
+                      <span className="text-xs text-muted-foreground ml-2">
+                        (12+ caractères, majuscule, minuscule, chiffre, caractère spécial)
+                      </span>
+                    )}
+                  </Label>
                   <Input
                     id="password"
                     type="password"
-                    placeholder="••••••••"
+                    placeholder={isLogin ? "••••••••" : "Mot de passe sécurisé"}
                     value={formData.password}
                     onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                     required
