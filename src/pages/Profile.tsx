@@ -69,6 +69,11 @@ const Profile = () => {
 
   const validateFileSignature = async (file: File): Promise<boolean> => {
     try {
+      // Skip validation for HEIC/HEIF files as they're valid iOS formats
+      if (file.type === 'image/heic' || file.type === 'image/heif') {
+        return true;
+      }
+
       const buffer = await file.arrayBuffer();
       const bytes = new Uint8Array(buffer);
       
@@ -111,24 +116,24 @@ const Profile = () => {
 
       const file = event.target.files[0];
       
-      // Validate file size (2MB limit)
-      const MAX_SIZE = 2 * 1024 * 1024; // 2MB
+      // Validate file size (5MB limit for HEIC support)
+      const MAX_SIZE = 5 * 1024 * 1024; // 5MB
       if (file.size > MAX_SIZE) {
         toast({
           variant: 'destructive',
           title: 'Fichier trop volumineux',
-          description: 'La photo de profil doit faire moins de 2 Mo',
+          description: 'La photo de profil doit faire moins de 5 Mo',
         });
         return;
       }
       
-      // Validate file type
-      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+      // Validate file type (including HEIC/HEIF for iOS devices)
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
       if (!allowedTypes.includes(file.type)) {
         toast({
           variant: 'destructive',
           title: 'Type de fichier non autorisé',
-          description: 'Veuillez utiliser une image JPG, PNG ou WebP',
+          description: 'Veuillez utiliser une image JPG, PNG, WebP ou HEIC',
         });
         return;
       }
@@ -244,7 +249,7 @@ const Profile = () => {
                 <input
                   id="avatar-upload"
                   type="file"
-                  accept="image/*"
+                  accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
                   onChange={handleAvatarUpload}
                   disabled={uploading}
                   className="hidden"
