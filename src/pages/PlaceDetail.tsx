@@ -21,7 +21,8 @@ import {
   Sparkles,
   Info,
   Users,
-  Utensils
+  Utensils,
+  ImagePlus
 } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -32,6 +33,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { logger } from '@/lib/logger';
+import { AddMemoryDialog } from '@/components/AddMemoryDialog';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -48,6 +50,7 @@ const PlaceDetail = () => {
   const [loadingPhotos, setLoadingPhotos] = useState(true);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [hasRestaurants, setHasRestaurants] = useState(false);
+  const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
 
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
@@ -509,10 +512,24 @@ const PlaceDetail = () => {
           {/* Photos de la communauté */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Users className="w-5 h-5" />
-                Photos des visiteurs
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Photos des visiteurs
+                </CardTitle>
+                <Button
+                  onClick={() => setIsAddMemoryOpen(true)}
+                  size="sm"
+                  className="gap-2"
+                  style={{
+                    background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                    color: 'black'
+                  }}
+                >
+                  <ImagePlus className="w-4 h-4" />
+                  Ajouter
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               {loadingPhotos ? (
@@ -711,6 +728,15 @@ const PlaceDetail = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Add Memory Dialog */}
+      <AddMemoryDialog
+        open={isAddMemoryOpen}
+        onOpenChange={setIsAddMemoryOpen}
+        placeId={placeId!}
+        placeName={place.name}
+        onSuccess={fetchCommunityPhotos}
+      />
 
       <style>{`
         @keyframes bounce {

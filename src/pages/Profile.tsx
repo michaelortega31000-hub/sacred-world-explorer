@@ -9,11 +9,12 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen } from 'lucide-react';
+import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, Image } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { logger } from '@/lib/logger';
 import LocationsTab from '@/components/LocationsTab';
+import MemoriesTab from '@/components/MemoriesTab';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -203,14 +204,18 @@ const Profile = () => {
 
       <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
         <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 mb-4 sm:mb-6">
+          <TabsList className="grid w-full grid-cols-3 mb-4 sm:mb-6">
             <TabsTrigger value="profile" className="gap-2">
               <User className="w-4 h-4" />
-              Mon Profil
+              Profil
+            </TabsTrigger>
+            <TabsTrigger value="memories" className="gap-2">
+              <Image className="w-4 h-4" />
+              Souvenirs
             </TabsTrigger>
             <TabsTrigger value="journal" className="gap-2">
               <BookOpen className="w-4 h-4" />
-              Mon Journal
+              Journal
             </TabsTrigger>
           </TabsList>
 
@@ -341,6 +346,10 @@ const Profile = () => {
             )}
           </div>
         </div>
+          </TabsContent>
+
+          <TabsContent value="memories">
+            <MemoriesTab />
           </TabsContent>
 
           <TabsContent value="journal">
