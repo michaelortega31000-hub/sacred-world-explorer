@@ -94,7 +94,7 @@ export const ReligionAnimation = () => {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden" style={{ perspective: '1000px' }}>
       {Array.from({ length: config.count }).map((_, index) => {
         const delay = index * 0.3;
         const topPosition = 20 + (index * 15);
@@ -106,13 +106,19 @@ export const ReligionAnimation = () => {
             style={{
               top: `${topPosition}%`,
               animationDelay: `${delay}s`,
-              opacity: 0.9
+              opacity: 0.95,
+              mixBlendMode: 'screen',
+              filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.5))',
+              transformStyle: 'preserve-3d'
             }}
           >
             <img 
               src={config.image} 
               alt="spiritual animation" 
-              className="w-full h-full object-contain drop-shadow-2xl"
+              className="w-full h-full object-contain"
+              style={{
+                filter: 'brightness(1.2) contrast(1.1)'
+              }}
             />
           </div>
         );
