@@ -16,6 +16,7 @@ import PlaceDetail from "./pages/PlaceDetail";
 import Auth from "./pages/Auth";
 import Community from "./pages/Community";
 import Profile from "./pages/Profile";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -38,6 +39,7 @@ const App = () => (
           <Route path="/place/:placeId" element={<PlaceDetail />} />
           <Route path="/community" element={<Community />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/settings" element={<Settings />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

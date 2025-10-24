@@ -114,12 +114,16 @@ useEffect(() => {
     mapboxgl.accessToken = mapboxToken;
     logger.log('Globe3D init with token', !!mapboxToken, 'container size', mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
     
+    // Détecter si on est sur mobile
+    const isMobile = window.innerWidth < 768;
+    
     // Initialiser la carte en mode globe - style immersif sombre
+    // Sur mobile, zoom plus éloigné pour voir plus d'espace
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
       projection: { name: 'globe' },
-      zoom: 1.5,
+      zoom: isMobile ? 0.8 : 1.5, // Plus loin sur mobile (0.8 vs 1.5)
       center: [10, 50], // Centré sur l'Europe
       pitch: 0,
       maxPitch: 85,
