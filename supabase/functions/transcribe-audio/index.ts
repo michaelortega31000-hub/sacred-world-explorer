@@ -1,5 +1,6 @@
 import "https://deno.land/x/xhr@0.1.0/mod.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.39.3';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -41,6 +42,53 @@ serve(async (req) => {
   }
 
   try {
+    // Authenticate the user
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseClient = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+      { global: { headers: { Authorization: authHeader } } }
+    );
+
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+
+    if (authError || !user) {
+      console.error('Authentication error:', authError);
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Check rate limit: 20 transcriptions per day
+    const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const { data: rateLimitData, error: rateLimitError } = await supabaseClient
+      .from('rate_limits')
+      .select('count')
+      .eq('user_id', user.id)
+      .eq('action', 'transcribe_audio')
+      .gte('window_start', windowStart.toISOString())
+      .maybeSingle();
+
+    if (rateLimitError) {
+      console.error('Rate limit check error:', rateLimitError);
+    }
+
+    const currentCount = rateLimitData?.count || 0;
+    if (currentCount >= 20) {
+      return new Response(
+        JSON.stringify({ error: 'Rate limit exceeded. Maximum 20 transcriptions per day.' }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const { audio } = await req.json();
     
     if (!audio) {
@@ -77,6 +125,18 @@ serve(async (req) => {
 
     const result = await response.json();
     console.log('Transcription result:', result.text);
+
+    // Update rate limit
+    await supabaseClient
+      .from('rate_limits')
+      .upsert({
+        user_id: user.id,
+        action: 'transcribe_audio',
+        count: currentCount + 1,
+        window_start: rateLimitData?.window_start || new Date().toISOString(),
+      }, {
+        onConflict: 'user_id,action'
+      });
 
     return new Response(
       JSON.stringify({ text: result.text }),
