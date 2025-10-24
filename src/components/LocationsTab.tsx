@@ -10,6 +10,7 @@ import { useApp } from '@/contexts/AppContext';
 import NearMeFeature from './NearMeFeature';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { getImageUrl } from '@/lib/imageHelper';
 import {
   Select,
   SelectContent,
@@ -249,9 +250,10 @@ const LocationsTab = () => {
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img
-                        src={place.imageUrl}
+                        src={getImageUrl(place.imageUrl)}
                         alt={place.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                       {isPlaceVisited(place.id) && (
                         <Badge 
@@ -344,9 +346,10 @@ const LocationsTab = () => {
                   >
                     <div className="relative h-48 overflow-hidden">
                       <img
-                        src={place.imageUrl}
+                        src={getImageUrl(place.imageUrl)}
                         alt={place.name}
                         className="w-full h-full object-cover"
+                        loading="lazy"
                       />
                       {isPlaceVisited(place.id) && (
                         <Badge 
