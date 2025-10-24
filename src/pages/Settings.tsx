@@ -40,8 +40,15 @@ const Settings = () => {
 
     if (savedNotifications) setNotifications(savedNotifications === 'true');
     if (savedSound) setSoundEffects(savedSound === 'true');
-    if (savedDarkMode) setDarkMode(savedDarkMode === 'true');
-    if (savedColorTheme) setColorTheme(savedColorTheme);
+    if (savedDarkMode) {
+      const isDark = savedDarkMode === 'true';
+      setDarkMode(isDark);
+      document.documentElement.classList.toggle('dark', isDark);
+    }
+    if (savedColorTheme) {
+      setColorTheme(savedColorTheme);
+      document.documentElement.setAttribute('data-theme', savedColorTheme);
+    }
   }, [navigate]);
 
   const handleLanguageChange = (lang: string) => {
