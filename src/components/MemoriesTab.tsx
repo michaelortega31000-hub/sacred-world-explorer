@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { 
   Camera, 
@@ -195,8 +194,7 @@ const MemoriesTab = () => {
   }
 
   return (
-    <ScrollArea className="h-[600px]">
-      <div className="space-y-4 pr-4">
+    <div className="space-y-4 pb-24 sm:pb-8 max-h-[calc(100vh-280px)] overflow-y-auto">
         {memories.map((memory) => {
           const place = getPlaceById(memory.place_id);
           const urls = photoUrls[memory.id] || [];
@@ -343,8 +341,7 @@ const MemoriesTab = () => {
             </Card>
           );
         })}
-      </div>
-    </ScrollArea>
+    </div>
   );
 };
 
