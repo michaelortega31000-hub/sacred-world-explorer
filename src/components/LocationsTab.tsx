@@ -275,7 +275,7 @@ const LocationsTab = () => {
                       <CardDescription className="text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {place.city}, {place.country}
+                          {place.city}, {t(`countries.${place.country}`, { defaultValue: place.country })}
                         </div>
                       </CardDescription>
                     </CardHeader>
@@ -371,7 +371,7 @@ const LocationsTab = () => {
                       <CardDescription className="text-muted-foreground">
                         <div className="flex items-center gap-1">
                           <MapPin className="w-4 h-4" />
-                          {place.city}, {place.country}
+                          {place.city}, {t(`countries.${place.country}`, { defaultValue: place.country })}
                         </div>
                       </CardDescription>
                     </CardHeader>
