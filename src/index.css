@@ -595,3 +595,28 @@ All colors MUST be HSL.
 .animate-spirit-glow {
   animation: spirit-glow 2.5s ease-in-out forwards;
 }
+
+/* 3D orbit animation for angels */
+@keyframes angel-orbit {
+  0% {
+    transform: rotate(0deg) translate3d(var(--orbit-radius), 0, 120px) rotate(-0deg);
+  }
+  25% {
+    transform: rotate(90deg) translate3d(var(--orbit-radius), 0, 40px) rotate(-90deg);
+  }
+  50% {
+    transform: rotate(180deg) translate3d(var(--orbit-radius), 0, -100px) rotate(-180deg);
+  }
+  75% {
+    transform: rotate(270deg) translate3d(var(--orbit-radius), 0, 40px) rotate(-270deg);
+  }
+  100% {
+    transform: rotate(360deg) translate3d(var(--orbit-radius), 0, 120px) rotate(-360deg);
+  }
+}
+
+.animate-angel-orbit {
+  animation: angel-orbit 7s linear forwards;
+  will-change: transform;
+  transform-style: preserve-3d;
+}

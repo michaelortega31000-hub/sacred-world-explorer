@@ -22,7 +22,7 @@ const getReligionAnimation = (religion: Religion | null): ReligionAnimationConfi
         image: angelImg,
         count: 4,
         size: 'w-32 h-32',
-        animationClass: 'animate-angel-fly'
+        animationClass: 'animate-angel-orbit'
       };
     case 'islam':
       return {
@@ -102,25 +102,34 @@ export const ReligionAnimation = () => {
         return (
           <div
             key={index}
-            className={`absolute ${config.size} ${config.animationClass}`}
+            className="absolute"
             style={{
-              top: `${topPosition}%`,
-              animationDelay: `${delay}s`,
-              opacity: 0.95,
-              mixBlendMode: 'screen',
-              filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.5))',
-              transformStyle: 'preserve-3d'
+              left: '50%',
+              top: '50%',
+              transform: 'translate(-50%, -50%)',
             }}
           >
-            <img 
-              src={config.image} 
-              alt="spiritual animation" 
-              className="w-full h-full object-contain"
+            <div
+              className={`${config.size} ${config.animationClass}`}
               style={{
-                filter: 'brightness(1.3) contrast(1.2) drop-shadow(0 0 30px rgba(255, 215, 0, 0.8))',
+                ['--orbit-radius' as any]: `${28 + index * 6}vh`,
+                animationDelay: `${delay}s`,
+                opacity: 0.95,
+                mixBlendMode: 'screen',
+                filter: 'drop-shadow(0 0 20px rgba(255, 255, 255, 0.5))',
                 transformStyle: 'preserve-3d'
               }}
-            />
+            >
+              <img 
+                src={config.image} 
+                alt=""
+                className="w-full h-full object-contain"
+                style={{
+                  filter: 'brightness(1.3) contrast(1.2) drop-shadow(0 0 30px rgba(255, 215, 0, 0.8))',
+                  transformStyle: 'preserve-3d'
+                }}
+              />
+            </div>
           </div>
         );
       })}
