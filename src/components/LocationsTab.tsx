@@ -151,7 +151,7 @@ const LocationsTab = () => {
                   <SelectItem value="all">Tous les continents</SelectItem>
                   {continents.map(continent => (
                     <SelectItem key={continent} value={continent}>
-                      {t(`continents.${continent}`)}
+                      {t(`continents.${continent}`, { defaultValue: continent })}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -175,7 +175,7 @@ const LocationsTab = () => {
                   <SelectItem value="all">Tous les pays</SelectItem>
                   {countries.map(country => (
                     <SelectItem key={country} value={country}>
-                      {t(`countries.${country}`)}
+                      {t(`countries.${country}`, { defaultValue: country })}
                     </SelectItem>
                   ))}
                 </SelectContent>
