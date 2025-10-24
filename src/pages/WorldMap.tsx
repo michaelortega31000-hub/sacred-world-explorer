@@ -16,6 +16,7 @@ import CalendarTab from '@/components/CalendarTab';
 import Globe3D from '@/components/Globe3D';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
+import { ReligionAnimation } from '@/components/ReligionAnimation';
 
 const WorldMap = () => {
   const navigate = useNavigate();
@@ -93,6 +94,7 @@ const WorldMap = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col pb-20">
+      <ReligionAnimation />
       <Header>
         <div className="text-sm text-muted-foreground hidden sm:block">
           <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}

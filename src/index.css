@@ -320,3 +320,172 @@ All colors MUST be HSL.
 .mystic-card:hover .sacred-geometry {
   opacity: 0.1;
 }
+
+/* Religion Animation Keyframes */
+@keyframes angel-fly {
+  0% {
+    transform: translateX(-100%) translateY(20px) rotate(-10deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120vw) translateY(-30px) rotate(10deg);
+    opacity: 0;
+  }
+}
+
+@keyframes crescent-float {
+  0% {
+    transform: translateX(120%) translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 0.9;
+  }
+  80% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(-20%) translateY(-20px) rotate(-360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes star-rotate {
+  0% {
+    transform: translateX(-100%) scale(0.5) rotate(0deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120vw) scale(1) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+@keyframes lotus-float {
+  0% {
+    transform: translateY(100vh) translateX(-10%) scale(0.8) rotate(-5deg);
+    opacity: 0;
+  }
+  20% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateY(30vh) translateX(5%) scale(1) rotate(0deg);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20vh) translateX(10%) scale(0.9) rotate(5deg);
+    opacity: 0;
+  }
+}
+
+@keyframes om-pulse {
+  0% {
+    transform: translateX(-100%) scale(0.5);
+    opacity: 0;
+    filter: brightness(1);
+  }
+  20% {
+    opacity: 1;
+  }
+  50% {
+    transform: translateX(50%) scale(1.2);
+    filter: brightness(1.5);
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(120vw) scale(0.8);
+    opacity: 0;
+    filter: brightness(1);
+  }
+}
+
+@keyframes stars-twinkle {
+  0% {
+    transform: translateX(120%) translateY(0) scale(0);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+    transform: translateX(100%) translateY(-5%) scale(1);
+  }
+  50% {
+    transform: translateX(50%) translateY(-10%) scale(1.3);
+    filter: brightness(1.5);
+  }
+  90% {
+    opacity: 1;
+    transform: translateX(0%) translateY(-5%) scale(1);
+  }
+  100% {
+    transform: translateX(-20%) translateY(0) scale(0);
+    opacity: 0;
+  }
+}
+
+@keyframes spirit-glow {
+  0% {
+    transform: translateY(100vh) scale(0.5);
+    opacity: 0;
+    filter: brightness(1) blur(0px);
+  }
+  20% {
+    opacity: 0.8;
+  }
+  50% {
+    transform: translateY(40vh) scale(1.2);
+    filter: brightness(2) blur(2px);
+  }
+  80% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translateY(-20vh) scale(0.8);
+    opacity: 0;
+    filter: brightness(1) blur(0px);
+  }
+}
+
+.animate-angel-fly {
+  animation: angel-fly 2.5s ease-in-out forwards;
+}
+
+.animate-crescent-float {
+  animation: crescent-float 2.5s ease-in-out forwards;
+}
+
+.animate-star-rotate {
+  animation: star-rotate 2.5s ease-in-out forwards;
+}
+
+.animate-lotus-float {
+  animation: lotus-float 2.5s ease-in-out forwards;
+}
+
+.animate-om-pulse {
+  animation: om-pulse 2.5s ease-in-out forwards;
+}
+
+.animate-stars-twinkle {
+  animation: stars-twinkle 2.5s ease-in-out forwards;
+}
+
+.animate-spirit-glow {
+  animation: spirit-glow 2.5s ease-in-out forwards;
+}
