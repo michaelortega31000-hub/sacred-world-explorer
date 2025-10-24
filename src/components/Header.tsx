@@ -2,10 +2,8 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, LogOut, Mail, MapPin, Target, Award, Trophy } from 'lucide-react';
+import { ArrowLeft, Mail, MapPin, Target, Award, Trophy } from 'lucide-react';
 import logo from '@/assets/logo-glow.png';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
 import VoiceCommand from '@/components/VoiceCommand';
@@ -21,9 +19,8 @@ interface HeaderProps {
 const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children, transparent = false }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { toast } = useToast();
   const { unreadCount, markAsRead } = useUnreadMessages();
-  const { userProgress, toggleGeolocation, userLocation, geolocationError } = useApp();
+  const { userProgress, toggleGeolocation, userLocation } = useApp();
 
   // Pages où on affiche uniquement le texte "Sacred World" sans logo
   const isTextOnlyPage = location.pathname === '/world' || 
@@ -31,18 +28,6 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                          location.pathname.startsWith('/country') ||
                          location.pathname.startsWith('/place');
 
-  const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      toast({
-        title: 'Erreur',
-        description: 'Impossible de se déconnecter',
-        variant: 'destructive'
-      });
-    } else {
-      navigate('/');
-    }
-  };
 
   const handleMessagesClick = () => {
     markAsRead();
@@ -50,17 +35,6 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
   };
 
   const handleGeolocationToggle = () => {
-    if (!userProgress.geolocationEnabled) {
-      toast({
-        title: 'Mode Géolocalisation',
-        description: 'La géolocalisation est maintenant activée pour l\'expérience VR/AR',
-      });
-    } else {
-      toast({
-        title: 'Mode Géolocalisation',
-        description: 'La géolocalisation a été désactivée',
-      });
-    }
     toggleGeolocation();
   };
 
@@ -108,7 +82,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
               />
             </div>
             
-            {/* Droite : Commande vocale + Quête + Messages + Déconnexion */}
+            {/* Droite : Commande vocale + Quête + Messages */}
             <div className="flex items-center gap-1 sm:gap-2">
               <VoiceCommand />
               
@@ -141,16 +115,6 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                   </Badge>
                 )}
               </div>
-              
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLogout}
-                className="gap-1 sm:gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10 text-xs sm:text-sm"
-              >
-                <LogOut className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Déconnexion</span>
-              </Button>
             </div>
           </div>
         ) : (
@@ -227,16 +191,6 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
                   )}
                 </div>
                 {children}
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLogout}
-                  className="gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10"
-                >
-                  <LogOut className="w-4 h-4" />
-                  Déconnexion
-                </Button>
               </div>
             </div>
           </>
