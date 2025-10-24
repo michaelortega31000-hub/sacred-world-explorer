@@ -54,6 +54,11 @@ const LocationsTab = () => {
     return mockPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
   }, [userProgress.tripPlaces]);
 
+  // Check if filters are applied
+  const hasFilters = useMemo(() => {
+    return selectedContinent !== 'all' || selectedCountry !== 'all' || selectedCity !== 'all';
+  }, [selectedContinent, selectedCountry, selectedCity]);
+
   // Filter places based on selections and search
   const filteredPlaces = useMemo(() => {
     let filtered = activeTab === 'planned' ? plannedPlaces : mockPlaces;
@@ -199,11 +204,25 @@ const LocationsTab = () => {
             </div>
           </div>
 
-          <div className="text-sm text-muted-foreground">
-            {filteredPlaces.length} lieu{filteredPlaces.length > 1 ? 'x' : ''} trouvé{filteredPlaces.length > 1 ? 's' : ''}
-          </div>
+          {!hasFilters ? (
+            <Card className="border-2" style={{ borderColor: '#34E0A1' }}>
+              <CardContent className="py-12 text-center">
+                <Globe2 className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-xl text-muted-foreground mb-2">
+                  Sélectionnez un continent pour commencer
+                </p>
+                <p className="text-muted-foreground">
+                  Utilisez les filtres ci-dessus pour afficher les lieux sacrés
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            <>
+              <div className="text-sm text-muted-foreground">
+                {filteredPlaces.length} lieu{filteredPlaces.length > 1 ? 'x' : ''} trouvé{filteredPlaces.length > 1 ? 's' : ''}
+              </div>
 
-          {filteredPlaces.length === 0 ? (
+              {filteredPlaces.length === 0 ? (
             <Card className="border-2" style={{ borderColor: '#34E0A1' }}>
               <CardContent className="py-12 text-center">
                 <MapPin className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -265,6 +284,8 @@ const LocationsTab = () => {
                 ))}
               </div>
             </ScrollArea>
+          )}
+            </>
           )}
         </TabsContent>
 
