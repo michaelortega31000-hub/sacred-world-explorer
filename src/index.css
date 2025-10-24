@@ -392,20 +392,32 @@ All colors MUST be HSL.
 /* Religion Animation Keyframes */
 @keyframes angel-fly {
   0% {
-    transform: translateX(-100%) translateY(20px) rotate(-10deg) translateZ(0);
+    transform: translateX(-20vw) translateY(0) translateZ(0) rotateY(0deg) rotateZ(0deg) scale(0.6);
     opacity: 0;
     filter: brightness(1) blur(5px);
   }
-  20% {
+  5% {
     opacity: 1;
-    filter: brightness(1.3) blur(0px);
+    filter: brightness(1.4) blur(0px);
   }
-  80% {
+  25% {
+    transform: translateX(25vw) translateY(-15vh) translateZ(100px) rotateY(180deg) rotateZ(15deg) scale(1.1);
+    filter: brightness(1.4) blur(0px);
+  }
+  50% {
+    transform: translateX(50vw) translateY(0vh) translateZ(150px) rotateY(360deg) rotateZ(0deg) scale(1.2);
+    filter: brightness(1.5) blur(0px);
+  }
+  75% {
+    transform: translateX(75vw) translateY(-15vh) translateZ(100px) rotateY(540deg) rotateZ(-15deg) scale(1.1);
+    filter: brightness(1.4) blur(0px);
+  }
+  95% {
     opacity: 1;
-    filter: brightness(1.3) blur(0px);
+    filter: brightness(1.4) blur(0px);
   }
   100% {
-    transform: translateX(120vw) translateY(-30px) rotate(10deg) translateZ(50px);
+    transform: translateX(120vw) translateY(-30vh) translateZ(0) rotateY(720deg) rotateZ(-30deg) scale(0.6);
     opacity: 0;
     filter: brightness(1) blur(5px);
   }
@@ -556,7 +568,8 @@ All colors MUST be HSL.
 }
 
 .animate-angel-fly {
-  animation: angel-fly 2.5s ease-in-out forwards;
+  animation: angel-fly 7s ease-in-out forwards;
+  transform-style: preserve-3d;
 }
 
 .animate-crescent-float {

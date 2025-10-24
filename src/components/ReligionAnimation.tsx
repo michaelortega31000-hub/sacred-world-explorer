@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useApp, Religion } from '@/contexts/AppContext';
-import angelImg from '@/assets/animations/angel.png';
+import angelImg from '@/assets/animations/angel-3d.png';
 import crescentImg from '@/assets/animations/crescent.png';
 import starDavidImg from '@/assets/animations/star-david.png';
 import lotusImg from '@/assets/animations/lotus.png';
@@ -20,8 +20,8 @@ const getReligionAnimation = (religion: Religion | null): ReligionAnimationConfi
     case 'christianity':
       return {
         image: angelImg,
-        count: 3,
-        size: 'w-24 h-24',
+        count: 4,
+        size: 'w-32 h-32',
         animationClass: 'animate-angel-fly'
       };
     case 'islam':
@@ -80,10 +80,10 @@ export const ReligionAnimation = () => {
       setIsVisible(true);
     }, 3000);
 
-    // Masquer l'animation après 2.5 secondes d'affichage
+    // Masquer l'animation après 7 secondes d'affichage
     const hideTimer = setTimeout(() => {
       setIsVisible(false);
-    }, 5500);
+    }, 10000);
 
     return () => {
       clearTimeout(showTimer);
@@ -117,7 +117,8 @@ export const ReligionAnimation = () => {
               alt="spiritual animation" 
               className="w-full h-full object-contain"
               style={{
-                filter: 'brightness(1.2) contrast(1.1)'
+                filter: 'brightness(1.3) contrast(1.2) drop-shadow(0 0 30px rgba(255, 215, 0, 0.8))',
+                transformStyle: 'preserve-3d'
               }}
             />
           </div>
