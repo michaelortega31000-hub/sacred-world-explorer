@@ -23,7 +23,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
   const { userProgress, toggleGeolocation, userLocation } = useApp();
 
   // Pages où on affiche uniquement le texte "Sacred World" sans logo
-  const isTextOnlyPage = location.pathname === '/world' || 
+  const isTextOnlyPage = location.pathname === '/explore' || 
                          location.pathname === '/profile' ||
                          location.pathname.startsWith('/country') ||
                          location.pathname.startsWith('/place');
@@ -31,7 +31,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
 
   const handleMessagesClick = () => {
     markAsRead();
-    navigate('/world?tab=social&sub=messages');
+    navigate('/journal');
   };
 
   const handleGeolocationToggle = () => {

@@ -49,7 +49,7 @@ const Auth = () => {
         const isTemporarySession = !sessionStorage.getItem('temp_session');
         if (isTemporarySession && !sessionStorage.getItem('temp_session')) {
           // Si il n'y a pas de flag de session temporaire, c'est une session persistante
-          navigate('/mode-selection');
+          navigate('/welcome');
         } else if (sessionStorage.getItem('temp_session')) {
           // Si le flag existe, la session est valide pour cette session de navigateur
           navigate('/mode-selection');
@@ -63,7 +63,7 @@ const Auth = () => {
     // Écouter les changements d'auth
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (session) {
-        navigate('/mode-selection');
+        navigate('/welcome');
       }
     });
 
@@ -77,7 +77,7 @@ const Auth = () => {
       const validatedData = signupSchema.parse(formData);
       setLoading(true);
 
-      const redirectUrl = `${window.location.origin}/selection`;
+      const redirectUrl = `${window.location.origin}/welcome`;
       
       const { error } = await supabase.auth.signUp({
         email: validatedData.email,
@@ -166,7 +166,7 @@ const Auth = () => {
         sessionStorage.removeItem('temp_session');
       }
 
-      navigate('/mode-selection');
+      navigate('/welcome');
     } catch (error) {
       if (error instanceof z.ZodError) {
         toast({

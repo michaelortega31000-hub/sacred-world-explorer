@@ -372,7 +372,7 @@ const CalendarTab = () => {
                 <div className="flex gap-3">
                   <Button
                     onClick={() => {
-                      navigate('/world?tab=map');
+                      navigate('/explore');
                       setSelectedEvent(null);
                     }}
                     className="flex-1 gap-2"

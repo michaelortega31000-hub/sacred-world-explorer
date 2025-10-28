@@ -866,7 +866,7 @@ useEffect(() => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
-                onClick={() => navigate('/world?tab=calendar')}
+                onClick={() => navigate('/traditions')}
                 className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]"
                 style={{
                   background: 'rgba(20, 43, 79, 0.8)',
