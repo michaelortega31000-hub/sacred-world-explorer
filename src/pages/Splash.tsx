@@ -51,12 +51,7 @@ const Splash = () => {
     // Vérifier si l'utilisateur est déjà connecté
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session) {
-        const hasMode = localStorage.getItem('selectedMode');
-        if (hasMode) {
-          navigate('/selection');
-        } else {
-          navigate('/mode-selection');
-        }
+        navigate('/welcome');
       }
     });
   }, [navigate]);
