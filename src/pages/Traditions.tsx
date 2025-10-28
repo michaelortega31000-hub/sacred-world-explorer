@@ -49,7 +49,7 @@ const Traditions = () => {
   const handleContinue = () => {
     // TODO: Sauvegarder les préférences dans le contexte ou Supabase
     logger.log({ main: selectedMain, interests: selectedInterests });
-    navigate('/world');
+    navigate('/explore');
   };
 
   return (
