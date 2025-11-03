@@ -31,7 +31,7 @@ const Header = ({ showBack = false, backTo = '/', backLabel = 'Retour', children
 
   const handleMessagesClick = () => {
     markAsRead();
-    navigate('/journal');
+    navigate('/journal?tab=social&sub=messages');
   };
 
   const handleGeolocationToggle = () => {
