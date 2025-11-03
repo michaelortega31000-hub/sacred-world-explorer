@@ -766,16 +766,15 @@ useEffect(() => {
 
   // Recentrer automatiquement dès que la position est disponible si demandé
   useEffect(() => {
-    if (!map.current || !userPosition) return;
+    if (!map.current || !userPosition || !isStyleReadyRef.current) return;
 
     if (recenterOnPosition.current || (!hasCenteredOnUser.current && geolocationEnabled)) {
       map.current.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
-        zoom: 15,
-        pitch: 45,
+        zoom: 16,
+        pitch: 60,
         duration: 2000
       });
-      toast.success('Carte recentrée sur votre position');
       hasCenteredOnUser.current = true;
       recenterOnPosition.current = false;
     }
@@ -784,34 +783,27 @@ useEffect(() => {
   const handleRecenter = () => {
     if (!map.current) return;
     
+    // Activer la géolocalisation si pas déjà active
+    if (!geolocationEnabled) {
+      setGeolocationEnabled(true);
+      recenterOnPosition.current = true;
+      toast.success('Géolocalisation activée');
+      return;
+    }
+    
     // Si on a une position géolocalisée, centrer dessus
     if (userPosition) {
       map.current.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
-        zoom: 15,
-        pitch: 45,
+        zoom: 16,
+        pitch: 60,
         duration: 2000
       });
       toast.success('Carte recentrée sur votre position');
     } else {
-      // Sinon, activer la géolocalisation et recentrer dès que la position arrive
-      setGeolocationEnabled(true);
+      // Redemander la position
       recenterOnPosition.current = true;
-      
-      // Attendre un peu et vérifier si une erreur survient, sinon le recentrage se fera à l'arrivée de la position
-      setTimeout(() => {
-        if (geolocationError) {
-          toast.error(geolocationError.message);
-          // Recentrer sur l'Europe par défaut
-          map.current?.flyTo({
-            center: [10, 50],
-            zoom: 1.5,
-            pitch: 0,
-            duration: 2000
-          });
-          recenterOnPosition.current = false;
-        }
-      }, 1500);
+      toast.info('Obtention de votre position...');
     }
   };
 
