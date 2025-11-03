@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar } from 'lucide-react';
+import { MapPin, Calendar, Locate } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
@@ -843,6 +843,33 @@ useEffect(() => {
         }}
       />
       
+      {/* Geolocation button - positioned top left */}
+      <div className="absolute top-4 left-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={handleRecenter}
+                className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]"
+                style={{
+                  background: geolocationEnabled 
+                    ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' 
+                    : 'rgba(20, 43, 79, 0.8)',
+                  color: geolocationEnabled ? '#0E1B3F' : '#F5F5F5',
+                  borderColor: geolocationEnabled ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
+                  boxShadow: geolocationEnabled ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 10px rgba(244, 197, 66, 0.2)'
+                }}
+              >
+                <Locate className="w-5 h-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('map.geolocation')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
       {/* Toggle monuments button */}
       <Button
         onClick={() => setShowMonuments(!showMonuments)}
