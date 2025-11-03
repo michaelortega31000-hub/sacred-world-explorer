@@ -8,10 +8,6 @@ const BottomNavigation = () => {
     label: 'Explorer',
     path: '/explore'
   }, {
-    icon: Calendar,
-    label: 'Traditions',
-    path: '/traditions'
-  }, {
     icon: BookHeart,
     label: 'Journal',
     path: '/journal'
@@ -41,7 +37,7 @@ const BottomNavigation = () => {
     boxShadow: '0 -4px 20px rgba(52, 224, 161, 0.1)'
   }}>
       <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="grid grid-cols-5 gap-1">
+        <div className="grid grid-cols-4 gap-1">
           {navItems.map(item => {
           const Icon = item.icon;
           const active = isActive(item.path);
