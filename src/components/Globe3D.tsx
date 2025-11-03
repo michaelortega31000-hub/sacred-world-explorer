@@ -864,6 +864,32 @@ useEffect(() => {
         </TooltipProvider>
       </div>
 
+      {/* Calendar button - positioned bottom left */}
+      <div className="absolute bottom-4 left-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={() => navigate('/calendar')}
+                className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]"
+                style={{
+                  background: 'rgba(20, 43, 79, 0.8)',
+                  color: '#F5F5F5',
+                  borderColor: 'rgba(52, 224, 161, 0.3)',
+                  boxShadow: '0 0 10px rgba(244, 197, 66, 0.2)'
+                }}
+              >
+                <Calendar className="w-5 h-5" />
+                <span className="hidden sm:inline">{t('calendar.button')}</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('calendar.tooltip')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      </div>
+
       {/* Monument Filter - positioned top right */}
       <div className="absolute top-4 right-4">
         <MonumentFilter onFilterChange={setFilters} />

@@ -10,6 +10,7 @@ import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
 import Explore from "./pages/Explore";
 import Traditions from "./pages/Traditions";
+import Calendar from "./pages/Calendar";
 import Journal from "./pages/Journal";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
@@ -31,6 +32,7 @@ const App = () => (
           <Route path="/auth" element={<Auth />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/traditions" element={<Traditions />} />
+          <Route path="/calendar" element={<Calendar />} />
           <Route path="/journal" element={<Journal />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
