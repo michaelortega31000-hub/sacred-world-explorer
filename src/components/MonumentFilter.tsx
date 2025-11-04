@@ -104,9 +104,9 @@ const MonumentFilter = ({ onFilterChange }: MonumentFilterProps) => {
       {/* Filter Panel */}
       {isOpen && (
         <div
-          className="absolute bottom-full right-0 mb-2 w-80 max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-fade-in"
+          className="fixed bottom-24 right-4 w-80 max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-fade-in z-50"
           style={{
-            background: 'rgba(20, 43, 79, 0.95)',
+            background: 'rgba(20, 43, 79, 0.98)',
             borderColor: 'rgba(52, 224, 161, 0.3)',
             boxShadow: '0 0 30px rgba(52, 224, 161, 0.2)',
           }}
