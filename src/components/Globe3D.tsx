@@ -117,15 +117,16 @@ useEffect(() => {
     // Détecter si on est sur mobile
     const isMobile = window.innerWidth < 768;
     
-    // Initialiser la carte en mode globe - style immersif sombre
-    // Sur mobile, zoom plus éloigné pour voir plus d'espace
+    // Initialiser la carte en mode globe - vue 3D immersive
+    // Vue plus proche et en perspective pour une meilleure immersion
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
       projection: { name: 'globe' },
-      zoom: isMobile ? 0.8 : 1.5, // Plus loin sur mobile (0.8 vs 1.5)
-      center: [10, 50], // Centré sur l'Europe
-      pitch: 0,
+      zoom: isMobile ? 1.8 : 2.2, // Vue plus rapprochée pour voir les lieux
+      center: [10, 45], // Centré sur l'Europe avec meilleure perspective
+      pitch: isMobile ? 45 : 55, // Angle 3D immersif
+      bearing: -15, // Légère rotation pour dynamisme
       maxPitch: 85,
     });
 
