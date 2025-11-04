@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import splashHero from '@/assets/splash-hero.png';
+import logo from '@/assets/sacredworld-logo.png';
 import { z } from 'zod';
 import { Checkbox } from '@/components/ui/checkbox';
 
@@ -234,7 +234,7 @@ const Auth = () => {
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
             <img 
-              src={splashHero} 
+              src={logo} 
               alt="SacredWorld Logo" 
               className="w-32 h-32 object-contain gold-halo breathing-glow"
             />
