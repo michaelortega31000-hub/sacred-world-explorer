@@ -8,20 +8,15 @@ import LocationsTab from '@/components/LocationsTab';
 import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
-
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
-
-  return (
-    <div className="min-h-screen bg-background pb-20">
+  return <div className="min-h-screen bg-background pb-20">
       <Header />
       
       <div className="container mx-auto px-4 py-6">
         <div className="space-y-6">
           <div className="space-y-2">
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Explorer
-            </h1>
+            
             <p className="text-lg text-muted-foreground">
               Découvrez les lieux sacrés du monde entier
             </p>
@@ -70,8 +65,6 @@ const Explore = () => {
       </div>
 
       <BottomNavigation />
-    </div>
-  );
+    </div>;
 };
-
 export default Explore;
