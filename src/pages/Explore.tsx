@@ -17,9 +17,7 @@ const Explore = () => {
         <div className="space-y-6">
           <div className="space-y-2">
             
-            <p className="text-lg text-muted-foreground">
-              Découvrez les lieux sacrés du monde entier
-            </p>
+            
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
