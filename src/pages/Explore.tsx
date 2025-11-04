@@ -13,7 +13,7 @@ const Explore = () => {
   return <div className="min-h-screen bg-background pb-20">
       <Header />
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-2">
         <div className="space-y-6">
           <div className="space-y-2">
             
@@ -21,7 +21,7 @@ const Explore = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 mb-6">
+            <TabsList className="grid w-full grid-cols-4 mb-3">
               <TabsTrigger value="map" className="gap-2">
                 <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">Carte 3D</span>
