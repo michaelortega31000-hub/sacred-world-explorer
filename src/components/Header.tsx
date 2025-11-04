@@ -50,7 +50,7 @@ const Header = ({
             {/* Gauche : Géolocalisation + Points + Badges */}
             <div className="flex items-center gap-1.5 sm:gap-3">
               <div className="flex items-center gap-2">
-                <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
+                
                 <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
               </div>
               
