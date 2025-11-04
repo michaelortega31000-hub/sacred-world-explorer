@@ -14,24 +14,22 @@ import { fr } from 'date-fns/locale';
 import { religiousEvents2025, getEventsByDate, getEventsByTradition, getAllEventDates, ReligiousEvent } from '@/data/religiousEvents';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
-
 interface VisitEvent {
   date: Date;
   placeId: string;
   placeName: string;
   type: 'visited' | 'planned';
 }
-
 type TraditionFilter = 'all' | 'christianity' | 'islam' | 'judaism' | 'hinduism' | 'buddhism' | 'other';
-
 const CalendarTab = () => {
-  const { userProgress } = useApp();
+  const {
+    userProgress
+  } = useApp();
   const navigate = useNavigate();
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
   const [events, setEvents] = useState<VisitEvent[]>([]);
   const [traditionFilter, setTraditionFilter] = useState<TraditionFilter>('all');
   const [selectedEvent, setSelectedEvent] = useState<ReligiousEvent | null>(null);
-
   useEffect(() => {
     // Créer des événements à partir des lieux visités et planifiés
     const visitedEvents: VisitEvent[] = userProgress.visitedPlaces.map(placeId => {
@@ -43,7 +41,6 @@ const CalendarTab = () => {
         type: 'visited' as const
       };
     });
-
     const plannedEvents: VisitEvent[] = userProgress.tripPlaces.map(placeId => {
       const place = getPlaceById(placeId);
       return {
@@ -53,27 +50,13 @@ const CalendarTab = () => {
         type: 'planned' as const
       };
     });
-
     setEvents([...visitedEvents, ...plannedEvents]);
   }, [userProgress.visitedPlaces, userProgress.tripPlaces]);
-
-  const filteredReligiousEvents = traditionFilter === 'all' 
-    ? religiousEvents2025 
-    : getEventsByTradition(traditionFilter);
-
-  const eventsForSelectedDate = selectedDate
-    ? events.filter(event => isSameDay(event.date, selectedDate))
-    : [];
-
-  const religiousEventsForSelectedDate = selectedDate
-    ? getEventsByDate(selectedDate).filter(event => 
-        traditionFilter === 'all' || event.tradition === traditionFilter
-      )
-    : [];
-
+  const filteredReligiousEvents = traditionFilter === 'all' ? religiousEvents2025 : getEventsByTradition(traditionFilter);
+  const eventsForSelectedDate = selectedDate ? events.filter(event => isSameDay(event.date, selectedDate)) : [];
+  const religiousEventsForSelectedDate = selectedDate ? getEventsByDate(selectedDate).filter(event => traditionFilter === 'all' || event.tradition === traditionFilter) : [];
   const daysWithPersonalEvents = events.map(event => event.date);
   const daysWithReligiousEvents = filteredReligiousEvents.map(event => event.date);
-
   const traditionColors: Record<string, string> = {
     christianity: '#C6A45A',
     islam: '#00C6FF',
@@ -82,27 +65,45 @@ const CalendarTab = () => {
     buddhism: '#50C878',
     other: '#FFFFFF'
   };
-
-  const traditionLabels: Record<TraditionFilter, { icon: string; label: string }> = {
-    all: { icon: '🌕', label: 'Toutes traditions' },
-    christianity: { icon: '✝️', label: 'Chrétiennes' },
-    islam: { icon: '☪️', label: 'Musulmanes' },
-    judaism: { icon: '✡️', label: 'Juives' },
-    hinduism: { icon: '🕉️', label: 'Hindoues' },
-    buddhism: { icon: '☸️', label: 'Bouddhistes' },
-    other: { icon: '🕊️', label: 'Autres' }
+  const traditionLabels: Record<TraditionFilter, {
+    icon: string;
+    label: string;
+  }> = {
+    all: {
+      icon: '🌕',
+      label: 'Toutes traditions'
+    },
+    christianity: {
+      icon: '✝️',
+      label: 'Chrétiennes'
+    },
+    islam: {
+      icon: '☪️',
+      label: 'Musulmanes'
+    },
+    judaism: {
+      icon: '✡️',
+      label: 'Juives'
+    },
+    hinduism: {
+      icon: '🕉️',
+      label: 'Hindoues'
+    },
+    buddhism: {
+      icon: '☸️',
+      label: 'Bouddhistes'
+    },
+    other: {
+      icon: '🕊️',
+      label: 'Autres'
+    }
   };
-
-  return (
-    <div className="min-h-screen bg-background pb-24 relative">
+  return <div className="min-h-screen bg-background pb-24 relative">
       {/* Subtle glow background effect */}
-      <div 
-        className="absolute inset-0 opacity-5"
-        style={{
-          backgroundImage: 'radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.2) 0%, transparent 50%)',
-          filter: 'blur(100px)'
-        }}
-      />
+      <div className="absolute inset-0 opacity-5" style={{
+      backgroundImage: 'radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.2) 0%, transparent 50%)',
+      filter: 'blur(100px)'
+    }} />
 
       <div className="container mx-auto p-6 space-y-6 relative z-10">
         {/* Header */}
@@ -111,9 +112,7 @@ const CalendarTab = () => {
             <Sparkles className="w-8 h-8" />
             Calendrier Spirituel Mondial
           </h1>
-          <p className="text-lg text-foreground opacity-90">
-            Découvrez les célébrations religieuses et culturelles du monde entier
-          </p>
+          
         </div>
 
         {/* Tradition Filters */}
@@ -126,20 +125,10 @@ const CalendarTab = () => {
           </CardHeader>
           <CardContent>
             <div className="flex flex-wrap gap-2">
-              {(Object.keys(traditionLabels) as TraditionFilter[]).map((tradition) => (
-                <Button
-                  key={tradition}
-                  onClick={() => setTraditionFilter(tradition)}
-                  variant={traditionFilter === tradition ? 'default' : 'outline'}
-                  className={cn(
-                    "gap-2 transition-all",
-                    traditionFilter === tradition && "ring-2 ring-primary shadow-md bg-primary text-primary-foreground"
-                  )}
-                >
+              {(Object.keys(traditionLabels) as TraditionFilter[]).map(tradition => <Button key={tradition} onClick={() => setTraditionFilter(tradition)} variant={traditionFilter === tradition ? 'default' : 'outline'} className={cn("gap-2 transition-all", traditionFilter === tradition && "ring-2 ring-primary shadow-md bg-primary text-primary-foreground")}>
                   <span className="text-lg">{traditionLabels[tradition].icon}</span>
                   <span className="hidden sm:inline">{traditionLabels[tradition].label}</span>
-                </Button>
-              ))}
+                </Button>)}
             </div>
           </CardContent>
         </Card>
@@ -157,21 +146,13 @@ const CalendarTab = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={setSelectedDate}
-                locale={fr}
-                className={cn("rounded-md border pointer-events-auto")}
-                modifiers={{
-                  hasPersonalEvent: daysWithPersonalEvents,
-                  hasReligiousEvent: daysWithReligiousEvents
-                }}
-                modifiersClassNames={{
-                  hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
-                  hasReligiousEvent: 'relative'
-                }}
-              />
+              <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={fr} className={cn("rounded-md border pointer-events-auto")} modifiers={{
+              hasPersonalEvent: daysWithPersonalEvents,
+              hasReligiousEvent: daysWithReligiousEvents
+            }} modifiersClassNames={{
+              hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
+              hasReligiousEvent: 'relative'
+            }} />
             </CardContent>
           </Card>
 
@@ -179,39 +160,31 @@ const CalendarTab = () => {
           <Card className="border-border bg-card shadow-lg">
             <CardHeader>
               <CardTitle className="text-foreground">
-                {selectedDate ? format(selectedDate, 'dd MMMM yyyy', { locale: fr }) : 'Aucune date sélectionnée'}
+                {selectedDate ? format(selectedDate, 'dd MMMM yyyy', {
+                locale: fr
+              }) : 'Aucune date sélectionnée'}
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                {religiousEventsForSelectedDate.length + eventsForSelectedDate.length} événement{(religiousEventsForSelectedDate.length + eventsForSelectedDate.length) > 1 ? 's' : ''}
+                {religiousEventsForSelectedDate.length + eventsForSelectedDate.length} événement{religiousEventsForSelectedDate.length + eventsForSelectedDate.length > 1 ? 's' : ''}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <ScrollArea className="h-[400px]">
-                {religiousEventsForSelectedDate.length === 0 && eventsForSelectedDate.length === 0 ? (
-                  <div className="text-center py-12">
+                {religiousEventsForSelectedDate.length === 0 && eventsForSelectedDate.length === 0 ? <div className="text-center py-12">
                     <CalendarIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-30" />
                     <p className="text-muted-foreground">
                       Aucun événement ce jour
                     </p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
+                  </div> : <div className="space-y-3">
                     {/* Religious Events */}
-                    {religiousEventsForSelectedDate.map((event) => (
-                        <div
-                          key={event.id}
-                          onClick={() => setSelectedEvent(event)}
-                          className="p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg hover:border-primary bg-secondary/50"
-                          style={{ borderColor: event.color }}
-                        >
+                    {religiousEventsForSelectedDate.map(event => <div key={event.id} onClick={() => setSelectedEvent(event)} className="p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg hover:border-primary bg-secondary/50" style={{
+                  borderColor: event.color
+                }}>
                           <div className="flex items-start gap-3">
-                            <div 
-                              className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5"
-                              style={{ 
-                                backgroundColor: event.color,
-                                boxShadow: `0 0 10px ${event.color}`
-                              }}
-                            />
+                            <div className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5" style={{
+                      backgroundColor: event.color,
+                      boxShadow: `0 0 10px ${event.color}`
+                    }} />
                             <div className="flex-1">
                               <h4 className="font-semibold mb-1 text-foreground">
                                 {event.nameFr}
@@ -219,49 +192,33 @@ const CalendarTab = () => {
                               <p className="text-sm mb-2 text-muted-foreground">
                                 {event.descriptionFr}
                               </p>
-                            <Badge 
-                              className="text-xs"
-                              style={{ 
-                                backgroundColor: event.color,
-                                color: event.tradition === 'other' ? '#0E1B3F' : '#FFFFFF'
-                              }}
-                            >
+                            <Badge className="text-xs" style={{
+                        backgroundColor: event.color,
+                        color: event.tradition === 'other' ? '#0E1B3F' : '#FFFFFF'
+                      }}>
                               {traditionLabels[event.tradition].icon} {traditionLabels[event.tradition].label}
                             </Badge>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      </div>)}
 
                     {/* Personal Events */}
-                    {eventsForSelectedDate.map((event, index) => (
-                      <div
-                        key={`${event.placeId}-${index}`}
-                        className="p-4 rounded-lg border-2 transition-all bg-secondary/50"
-                        style={{ borderColor: event.type === 'visited' ? 'hsl(var(--primary))' : 'hsl(var(--accent))' }}
-                      >
+                    {eventsForSelectedDate.map((event, index) => <div key={`${event.placeId}-${index}`} className="p-4 rounded-lg border-2 transition-all bg-secondary/50" style={{
+                  borderColor: event.type === 'visited' ? 'hsl(var(--primary))' : 'hsl(var(--accent))'
+                }}>
                         <div className="flex items-start gap-3">
-                          {event.type === 'visited' ? (
-                            <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-1 text-primary" />
-                          ) : (
-                            <Clock className="w-5 h-5 flex-shrink-0 mt-1 text-accent" />
-                          )}
+                          {event.type === 'visited' ? <CheckCircle2 className="w-5 h-5 flex-shrink-0 mt-1 text-primary" /> : <Clock className="w-5 h-5 flex-shrink-0 mt-1 text-accent" />}
                           <div className="flex-1">
                             <h4 className="font-semibold mb-1 text-foreground">
                               {event.placeName}
                             </h4>
-                            <Badge 
-                              variant={event.type === 'visited' ? 'default' : 'secondary'}
-                              className="text-xs"
-                            >
+                            <Badge variant={event.type === 'visited' ? 'default' : 'secondary'} className="text-xs">
                               {event.type === 'visited' ? 'Visité' : 'Planifié'}
                             </Badge>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                      </div>)}
+                  </div>}
               </ScrollArea>
             </CardContent>
           </Card>
@@ -330,30 +287,23 @@ const CalendarTab = () => {
       {/* Event Detail Modal */}
       <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
         <DialogContent className="max-w-2xl border-primary bg-card">
-          {selectedEvent && (
-            <>
+          {selectedEvent && <>
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-3 text-2xl text-foreground">
-                  <div 
-                    className="w-4 h-4 rounded-full"
-                    style={{ 
-                      backgroundColor: selectedEvent.color,
-                      boxShadow: `0 0 15px ${selectedEvent.color}`
-                    }}
-                  />
+                  <div className="w-4 h-4 rounded-full" style={{
+                backgroundColor: selectedEvent.color,
+                boxShadow: `0 0 15px ${selectedEvent.color}`
+              }} />
                   {selectedEvent.nameFr}
                 </DialogTitle>
               </DialogHeader>
               
               <div className="space-y-4">
                 <div>
-                  <Badge 
-                    className="mb-3"
-                    style={{ 
-                      backgroundColor: selectedEvent.color,
-                      color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
-                    }}
-                  >
+                  <Badge className="mb-3" style={{
+                backgroundColor: selectedEvent.color,
+                color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
+              }}>
                     {traditionLabels[selectedEvent.tradition].icon} {traditionLabels[selectedEvent.tradition].label}
                   </Badge>
                   
@@ -365,40 +315,32 @@ const CalendarTab = () => {
                 <div className="p-4 rounded-lg bg-secondary/50">
                   <p className="flex items-center gap-2 text-sm font-medium mb-2 text-foreground">
                     <CalendarIcon className="w-4 h-4" />
-                    {format(selectedEvent.date, 'EEEE dd MMMM yyyy', { locale: fr })}
+                    {format(selectedEvent.date, 'EEEE dd MMMM yyyy', {
+                  locale: fr
+                })}
                   </p>
                 </div>
 
                 <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      navigate('/explore');
-                      setSelectedEvent(null);
-                    }}
-                    className="flex-1 gap-2"
-                    style={{
-                      background: selectedEvent.color,
-                      color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
-                    }}
-                  >
+                  <Button onClick={() => {
+                navigate('/explore');
+                setSelectedEvent(null);
+              }} className="flex-1 gap-2" style={{
+                background: selectedEvent.color,
+                color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
+              }}>
                     <Globe className="w-4 h-4" />
                     Voir sur la carte
                   </Button>
                   
-                  <Button
-                    variant="outline"
-                    onClick={() => setSelectedEvent(null)}
-                  >
+                  <Button variant="outline" onClick={() => setSelectedEvent(null)}>
                     <X className="w-4 h-4" />
                   </Button>
                 </div>
               </div>
-            </>
-          )}
+            </>}
         </DialogContent>
       </Dialog>
-    </div>
-  );
+    </div>;
 };
-
 export default CalendarTab;
