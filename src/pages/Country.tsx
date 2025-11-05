@@ -26,7 +26,7 @@ import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/imageHelper';
 
 const Country = () => {
-  const { country } = useParams<{ country: string }>();
+  const { countryName: country } = useParams<{ countryName: string }>();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { t } = useTranslation();
