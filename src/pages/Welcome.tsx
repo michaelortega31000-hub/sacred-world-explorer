@@ -42,11 +42,11 @@ const Welcome = () => {
         {/* Boutons à droite : Tutoriel et Sélecteur de langue */}
         <div className="flex items-center gap-4">
           <Button
-            variant="ghost"
-            size="sm"
-            className="gap-2 text-muted-foreground hover:text-foreground"
+            variant="outline"
+            size="default"
+            className="gap-3 font-medium"
           >
-            <BookOpen className="w-4 h-4" />
+            <BookOpen className="w-5 h-5" />
             {t('welcome.tutorial')}
           </Button>
           <LanguageSelector />
