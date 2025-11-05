@@ -1,38 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Switch } from '@/components/ui/switch';
-import { Globe, ArrowRight, BookOpen, MapPin, Award, X, Navigation, Mic } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import { useToast } from '@/components/ui/use-toast';
 import logo from '@/assets/sacredworld-logo-new.png';
 import logoGlow from '@/assets/logo-glow.png';
-const tutorialSteps = [{
-  icon: MapPin,
-  titleKey: 'welcome.tutorial.step1.title',
-  descKey: 'welcome.tutorial.step1.desc'
-}, {
-  icon: BookOpen,
-  titleKey: 'welcome.tutorial.step2.title',
-  descKey: 'welcome.tutorial.step2.desc'
-}, {
-  icon: Award,
-  titleKey: 'welcome.tutorial.step3.title',
-  descKey: 'welcome.tutorial.step3.desc'
-}];
 const Welcome = () => {
-  const {
-    t,
-    i18n
-  } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { toast } = useToast();
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
-  const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
   useEffect(() => {
     // Auto-détection de la langue si pas déjà définie
     const savedLanguage = localStorage.getItem('language');
@@ -47,74 +23,6 @@ const Welcome = () => {
   const handleStart = () => {
     navigate('/traditions');
   };
-  const handleTutorialOpen = () => {
-    setShowTutorial(true);
-    setTutorialStep(0);
-  };
-  const handleTutorialNext = () => {
-    if (tutorialStep < tutorialSteps.length - 1) {
-      setTutorialStep(prev => prev + 1);
-    } else {
-      setShowTutorial(false);
-      setTutorialStep(0);
-    }
-  };
-  const handleTutorialPrev = () => {
-    if (tutorialStep > 0) {
-      setTutorialStep(prev => prev - 1);
-    }
-  };
-
-  const handleGeolocationToggle = async (checked: boolean) => {
-    if (checked) {
-      try {
-        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
-          navigator.geolocation.getCurrentPosition(resolve, reject);
-        });
-        setGeolocationEnabled(true);
-        localStorage.setItem('geolocationEnabled', 'true');
-        toast({
-          title: t('welcome.permissions.geolocation.success'),
-          description: t('welcome.permissions.geolocation.successDesc'),
-        });
-      } catch (error) {
-        toast({
-          title: t('welcome.permissions.geolocation.error'),
-          description: t('welcome.permissions.geolocation.errorDesc'),
-          variant: 'destructive',
-        });
-      }
-    } else {
-      setGeolocationEnabled(false);
-      localStorage.setItem('geolocationEnabled', 'false');
-    }
-  };
-
-  const handleMicrophoneToggle = async (checked: boolean) => {
-    if (checked) {
-      try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        setMicrophoneEnabled(true);
-        localStorage.setItem('microphoneEnabled', 'true');
-        toast({
-          title: t('welcome.permissions.microphone.success'),
-          description: t('welcome.permissions.microphone.successDesc'),
-        });
-      } catch (error) {
-        toast({
-          title: t('welcome.permissions.microphone.error'),
-          description: t('welcome.permissions.microphone.errorDesc'),
-          variant: 'destructive',
-        });
-      }
-    } else {
-      setMicrophoneEnabled(false);
-      localStorage.setItem('microphoneEnabled', 'false');
-    }
-  };
-
-  const currentStep = tutorialSteps[tutorialStep];
-  const StepIcon = currentStep?.icon;
   return <div className="min-h-screen flex flex-col bg-background relative">
       {/* Overlay gradient turquoise subtil */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
@@ -164,144 +72,22 @@ const Welcome = () => {
             </p>
           </div>
 
-          {/* Permissions */}
-          <div className="mb-12 max-w-md mx-auto space-y-4 animate-fade-in" style={{
+          {/* CTA Bouton */}
+          <div className="flex justify-center items-center animate-fade-in" style={{
           animationDelay: '200ms'
         }}>
-            <div className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 space-y-4">
-              <h3 className="text-lg font-semibold text-foreground mb-4">
-                {t('welcome.permissions.title')}
-              </h3>
-              
-              {/* Géolocalisation */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-background/50 hover:bg-background/70 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Navigation className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {t('welcome.permissions.geolocation.title')}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('welcome.permissions.geolocation.desc')}
-                    </p>
-                  </div>
-                </div>
-                <Switch 
-                  checked={geolocationEnabled}
-                  onCheckedChange={handleGeolocationToggle}
-                />
-              </div>
-
-              {/* Microphone */}
-              <div className="flex items-center justify-between p-4 rounded-xl bg-background/50 hover:bg-background/70 transition-colors">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Mic className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-foreground">
-                      {t('welcome.permissions.microphone.title')}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {t('welcome.permissions.microphone.desc')}
-                    </p>
-                  </div>
-                </div>
-                <Switch 
-                  checked={microphoneEnabled}
-                  onCheckedChange={handleMicrophoneToggle}
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* CTAs */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{
-          animationDelay: '300ms'
-        }}>
-            <Button onClick={handleStart} size="lg" className="w-full sm:w-auto px-8 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 font-poppins">
+            <Button 
+              onClick={handleStart} 
+              size="lg" 
+              className="px-12 py-8 text-xl font-bold rounded-full shadow-2xl hover:shadow-primary/50 hover:scale-110 transition-all duration-300 font-poppins bg-gradient-to-r from-primary to-primary/80"
+            >
               {t('welcome.cta.start')}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-
-            <Button onClick={handleTutorialOpen} variant="outline" size="lg" className="w-full sm:w-auto px-8 py-6 text-lg font-semibold rounded-full hover:bg-muted transition-all duration-200 font-poppins">
-              <BookOpen className="mr-2 w-5 h-5" />
-              {t('welcome.cta.tutorial')}
+              <ArrowRight className="ml-3 w-6 h-6" />
             </Button>
           </div>
-
-          {/* Accessibilité note */}
-          <p className="mt-8 text-sm text-muted-foreground animate-fade-in" style={{
-          animationDelay: '400ms'
-        }}>
-            {t('welcome.accessibility')}
-          </p>
         </div>
       </div>
 
-      {/* Tutorial Dialog */}
-      <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden">
-          <div className="relative">
-            {/* Close button */}
-            <button onClick={() => setShowTutorial(false)} className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors">
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Step indicator */}
-            <div className="absolute top-4 left-4 z-10 flex gap-2">
-              {tutorialSteps.map((_, index) => <div key={index} className={`h-1 w-8 rounded-full transition-all duration-300 ${index === tutorialStep ? 'bg-primary' : 'bg-muted'}`} />)}
-            </div>
-
-            {/* Content */}
-            <div className="p-12 pt-16 text-center min-h-[400px] flex flex-col items-center justify-center">
-              {StepIcon && <div className="mb-6 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center animate-scale-in">
-                  <StepIcon className="w-10 h-10 text-primary" strokeWidth={2} />
-                </div>}
-
-              <h3 className="text-2xl font-bold text-foreground mb-4 animate-fade-in">
-                {t(currentStep.titleKey)}
-              </h3>
-
-              <p className="text-lg text-muted-foreground leading-relaxed animate-fade-in" style={{
-              animationDelay: '100ms'
-            }}>
-                {t(currentStep.descKey)}
-              </p>
-            </div>
-
-            {/* Navigation */}
-            <div className="p-6 border-t flex justify-between items-center gap-4">
-              <Button onClick={handleTutorialPrev} variant="ghost" disabled={tutorialStep === 0} className="disabled:opacity-50">
-                {t('welcome.tutorial.prev')}
-              </Button>
-
-              <span className="text-sm text-muted-foreground">
-                {tutorialStep + 1} / {tutorialSteps.length}
-              </span>
-
-              <Button onClick={handleTutorialNext}>
-                {tutorialStep === tutorialSteps.length - 1 ? t('welcome.tutorial.finish') : t('welcome.tutorial.next')}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <style>{`
-        @keyframes logoEntry {
-          0% {
-            opacity: 0;
-            transform: scale(1.05);
-          }
-          100% {
-            opacity: 1;
-            transform: scale(1);
-          }
-        }
-      `}</style>
     </div>;
 };
 export default Welcome;
