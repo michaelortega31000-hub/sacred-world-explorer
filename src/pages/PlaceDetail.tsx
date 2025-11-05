@@ -64,6 +64,7 @@ const PlaceDetail = () => {
     badgeType: '',
     tier: 'bronze'
   });
+  const [isARMode, setIsARMode] = useState(false);
 
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
@@ -352,6 +353,19 @@ const PlaceDetail = () => {
               )}
             </Carousel>
 
+            {/* AR Toggle - top left */}
+            <div className="absolute top-4 left-4 z-10">
+              <Button
+                size="lg"
+                variant={isARMode ? "default" : "outline"}
+                className="gap-2 shadow-lg"
+                onClick={() => setIsARMode(!isARMode)}
+              >
+                <Camera className="w-5 h-5" />
+                {isARMode ? "AR activé" : "Activer AR"}
+              </Button>
+            </div>
+
             {/* Restaurant icon - top right */}
             {hasRestaurants && place.city && (
               <div className="absolute top-4 right-4 z-10">
@@ -370,15 +384,17 @@ const PlaceDetail = () => {
               </div>
             )}
 
-            {/* Religious Symbol - top center */}
-            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-              <ReligiousSymbol 
-                religion={place.religion}
-                unlocked={isPlaceVisited(placeId!)}
-                size="md"
-                intensity={isPlaceVisited(placeId!) ? 90 : 30}
-              />
-            </div>
+            {/* Religious Symbol - top center (visible only in AR mode) */}
+            {isARMode && (
+              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+                <ReligiousSymbol 
+                  religion={place.religion}
+                  unlocked={isPlaceVisited(placeId!)}
+                  size="md"
+                  intensity={isPlaceVisited(placeId!) ? 90 : 30}
+                />
+              </div>
+            )}
 
             {/* Indicateur de position */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
