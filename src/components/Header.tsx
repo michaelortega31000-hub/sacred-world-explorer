@@ -2,10 +2,12 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Mail, MapPin, Target, Award, Trophy } from 'lucide-react';
+import { ArrowLeft, Mail, MapPin, Target, Award, Trophy, Cross, Moon, Star, Flower2, Flame, Atom, Globe, Users } from 'lucide-react';
 import logo from '@/assets/logo-glow.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
+import { Religion } from '@/contexts/AppContext';
+import { religionColors } from '@/config/religionColors';
 import VoiceCommand from '@/components/VoiceCommand';
 interface HeaderProps {
   showBack?: boolean;
@@ -42,15 +44,55 @@ const Header = ({
   const handleGeolocationToggle = () => {
     toggleGeolocation();
   };
+
+  const getReligionIcon = (religion: Religion | null) => {
+    const iconClass = "w-4 h-4 sm:w-5 sm:h-5";
+    switch (religion) {
+      case 'christianity':
+        return <Cross className={iconClass} />;
+      case 'islam':
+        return <Moon className={iconClass} />;
+      case 'judaism':
+        return <Star className={iconClass} />;
+      case 'buddhism':
+        return <Flower2 className={iconClass} />;
+      case 'hinduism':
+        return <Flame className={iconClass} />;
+      case 'astronomy':
+        return <Atom className={iconClass} />;
+      case 'traditional':
+        return <Globe className={iconClass} />;
+      case 'atheism':
+        return <Users className={iconClass} />;
+      default:
+        return null;
+    }
+  };
+
+  const religionColor = userProgress.selectedReligion 
+    ? religionColors[userProgress.selectedReligion]
+    : null;
+
   return <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
         {isTextOnlyPage ?
       // Header compact pour les pages Globe/Planifier/Journal/Classements
       <div className="flex items-center justify-between gap-2 sm:gap-4">
-            {/* Gauche : Géolocalisation + Points + Badges */}
+            {/* Gauche : Religion + Géolocalisation + Points + Badges */}
             <div className="flex items-center gap-1.5 sm:gap-3">
+              {/* Indicateur de religion */}
+              {userProgress.selectedReligion && religionColor && (
+                <div 
+                  className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full`}
+                  title={userProgress.selectedReligion}
+                >
+                  <div className={religionColor.text}>
+                    {getReligionIcon(userProgress.selectedReligion)}
+                  </div>
+                </div>
+              )}
+              
               <div className="flex items-center gap-2">
-                
                 <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
               </div>
               
