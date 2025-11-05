@@ -484,6 +484,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_badges: {
+        Row: {
+          badge_type: string
+          id: string
+          place_id: string | null
+          religion: string | null
+          tier: string | null
+          unlocked_at: string | null
+          user_id: string
+        }
+        Insert: {
+          badge_type: string
+          id?: string
+          place_id?: string | null
+          religion?: string | null
+          tier?: string | null
+          unlocked_at?: string | null
+          user_id: string
+        }
+        Update: {
+          badge_type?: string
+          id?: string
+          place_id?: string | null
+          religion?: string | null
+          tier?: string | null
+          unlocked_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           badges: string[]

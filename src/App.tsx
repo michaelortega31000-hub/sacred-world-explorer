@@ -16,6 +16,7 @@ import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Country from "./pages/Country";
 import PlaceDetail from "./pages/PlaceDetail";
+import Badges from "./pages/Badges";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -36,6 +37,7 @@ const App = () => (
           <Route path="/journal" element={<Journal />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
+          <Route path="/badges" element={<Badges />} />
           <Route path="/country/:countryName" element={<Country />} />
           <Route path="/place/:placeId" element={<PlaceDetail />} />
 

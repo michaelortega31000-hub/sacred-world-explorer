@@ -34,6 +34,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { logger } from '@/lib/logger';
 import { AddMemoryDialog } from '@/components/AddMemoryDialog';
+import ReligiousSymbol from '@/components/ReligiousSymbol';
+import BadgeUnlock from '@/components/BadgeUnlock';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -51,6 +53,17 @@ const PlaceDetail = () => {
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
   const [hasRestaurants, setHasRestaurants] = useState(false);
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
+  const [badgeUnlockData, setBadgeUnlockData] = useState<{
+    isOpen: boolean;
+    badgeType: string;
+    religion?: string;
+    tier: 'bronze' | 'silver' | 'gold' | 'platinum' | 'diamond';
+    placeName?: string;
+  }>({
+    isOpen: false,
+    badgeType: '',
+    tier: 'bronze'
+  });
 
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
@@ -356,6 +369,16 @@ const PlaceDetail = () => {
                 </Button>
               </div>
             )}
+
+            {/* Religious Symbol - top center */}
+            <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
+              <ReligiousSymbol 
+                religion={place.religion}
+                unlocked={isPlaceVisited(placeId!)}
+                size="md"
+                intensity={isPlaceVisited(placeId!) ? 90 : 30}
+              />
+            </div>
 
             {/* Indicateur de position */}
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
@@ -736,6 +759,16 @@ const PlaceDetail = () => {
         placeId={placeId!}
         placeName={place.name}
         onSuccess={fetchCommunityPhotos}
+      />
+
+      {/* Badge Unlock Animation */}
+      <BadgeUnlock
+        isOpen={badgeUnlockData.isOpen}
+        onClose={() => setBadgeUnlockData({ ...badgeUnlockData, isOpen: false })}
+        badgeType={badgeUnlockData.badgeType}
+        religion={badgeUnlockData.religion}
+        tier={badgeUnlockData.tier}
+        placeName={badgeUnlockData.placeName}
       />
 
       <style>{`
