@@ -658,6 +658,48 @@ export type Database = {
         }
         Relationships: []
       }
+      visit_photos: {
+        Row: {
+          ai_analysis: string | null
+          ai_confidence: number | null
+          created_at: string | null
+          geolocation: Json | null
+          id: string
+          identified_elements: string[] | null
+          is_public: boolean | null
+          photo_url: string
+          place_id: string
+          user_id: string
+          validated_at: string | null
+        }
+        Insert: {
+          ai_analysis?: string | null
+          ai_confidence?: number | null
+          created_at?: string | null
+          geolocation?: Json | null
+          id?: string
+          identified_elements?: string[] | null
+          is_public?: boolean | null
+          photo_url: string
+          place_id: string
+          user_id: string
+          validated_at?: string | null
+        }
+        Update: {
+          ai_analysis?: string | null
+          ai_confidence?: number | null
+          created_at?: string | null
+          geolocation?: Json | null
+          id?: string
+          identified_elements?: string[] | null
+          is_public?: boolean | null
+          photo_url?: string
+          place_id?: string
+          user_id?: string
+          validated_at?: string | null
+        }
+        Relationships: []
+      }
       vr_content: {
         Row: {
           content_type: string

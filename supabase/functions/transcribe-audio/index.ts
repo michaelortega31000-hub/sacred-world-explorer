@@ -133,7 +133,7 @@ serve(async (req) => {
         user_id: user.id,
         action: 'transcribe_audio',
         count: currentCount + 1,
-        window_start: rateLimitData?.window_start || new Date().toISOString(),
+        window_start: new Date().toISOString(),
       }, {
         onConflict: 'user_id,action'
       });

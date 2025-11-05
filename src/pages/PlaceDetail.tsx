@@ -36,6 +36,9 @@ import { logger } from '@/lib/logger';
 import { AddMemoryDialog } from '@/components/AddMemoryDialog';
 import ReligiousSymbol from '@/components/ReligiousSymbol';
 import BadgeUnlock from '@/components/BadgeUnlock';
+import { PhotoCapture } from '@/components/PhotoCapture';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import { toast as sonnerToast } from 'sonner';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -65,6 +68,9 @@ const PlaceDetail = () => {
     tier: 'bronze'
   });
   const [isARMode, setIsARMode] = useState(false);
+  const [isPhotoVerificationOpen, setIsPhotoVerificationOpen] = useState(false);
+  
+  const { position } = useGeolocation(true);
 
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
@@ -473,18 +479,42 @@ const PlaceDetail = () => {
           <div className="grid md:grid-cols-2 gap-4">
             {/* Vérifier ma visite - caché si déjà visité */}
             {!isPlaceVisited(placeId!) && (
-              <Button
-                onClick={() => setIsCheckinModalOpen(true)}
-                size="lg"
-                className="w-full gap-2 text-lg py-6"
-                style={{
-                  background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
-                  color: 'black'
-                }}
-              >
-                <CheckCircle2 className="w-5 h-5" />
-                Vérifier ma visite
-              </Button>
+              <div className="space-y-3 md:col-span-2">
+                <div className="grid md:grid-cols-2 gap-3">
+                  <Button
+                    onClick={() => setIsCheckinModalOpen(true)}
+                    variant="outline"
+                    size="lg"
+                    className="gap-2 text-lg py-6"
+                  >
+                    <MapPin className="w-5 h-5" />
+                    Validation rapide
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      if (!position) {
+                        sonnerToast.error('Activez la géolocalisation pour utiliser cette fonction');
+                        return;
+                      }
+                      setIsPhotoVerificationOpen(true);
+                    }}
+                    disabled={!position}
+                    size="lg"
+                    className="gap-2 text-lg py-6"
+                    style={{
+                      background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                      color: 'black'
+                    }}
+                  >
+                    <Camera className="w-5 h-5" />
+                    Vérifier avec photo
+                  </Button>
+                </div>
+                <p className="text-xs text-center text-muted-foreground">
+                  💡 La validation photo utilise l'IA pour plus de sécurité
+                </p>
+              </div>
             )}
 
             {isPlaceVisited(placeId!) && (
@@ -786,6 +816,31 @@ const PlaceDetail = () => {
         tier={badgeUnlockData.tier}
         placeName={badgeUnlockData.placeName}
       />
+
+      {/* Photo Verification */}
+      {position && (
+        <PhotoCapture
+          isOpen={isPhotoVerificationOpen}
+          onClose={() => setIsPhotoVerificationOpen(false)}
+          placeId={placeId!}
+          placeName={place?.name || ''}
+          userLat={position.latitude}
+          userLon={position.longitude}
+          onSuccess={async ({ pointsEarned }) => {
+            // Show badge unlock animation
+            setBadgeUnlockData({
+              isOpen: true,
+              religion: place?.religion || '',
+              badgeType: 'visit',
+              tier: 'gold',
+              placeName: place?.name
+            });
+
+            // Refresh the page data
+            window.location.reload();
+          }}
+        />
+      )}
 
       <style>{`
         @keyframes bounce {
