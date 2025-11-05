@@ -6,7 +6,7 @@ import { Palette, Building2, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/sacredworld-logo.png';
 import { logger } from '@/lib/logger';
-import angelIcon from '@/assets/animations/angel.png';
+import crossBubbleIcon from '@/assets/animations/cross-bubble.png';
 import crescentIcon from '@/assets/animations/crescent.png';
 import starDavidIcon from '@/assets/animations/star-david.png';
 import omIcon from '@/assets/animations/om.png';
@@ -23,7 +23,7 @@ type Tradition = {
 const traditions: Tradition[] = [{
   id: 'christianity',
   name: 'Christianisme',
-  image: angelIcon,
+  image: crossBubbleIcon,
   color: 'hsl(220 70% 50%)'
 }, {
   id: 'islam',
