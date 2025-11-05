@@ -47,7 +47,7 @@ const Welcome = () => {
             className="gap-3 font-medium"
           >
             <BookOpen className="w-5 h-5" />
-            {t('welcome.tutorial')}
+            Tutoriel
           </Button>
           <LanguageSelector />
         </div>
