@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, WifiOff, BookOpen } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import logo from '@/assets/sacredworld-logo-new.png';
 import logoGlow from '@/assets/logo-glow.png';
@@ -27,9 +27,30 @@ const Welcome = () => {
       {/* Overlay gradient turquoise subtil */}
       <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
       
-      {/* Sélecteur de langue en haut à droite */}
-      <header className="w-full p-4 flex justify-end relative z-10">
-        <LanguageSelector />
+      {/* Header avec boutons Hors ligne (gauche), Tutoriel (droite) et Sélecteur de langue (droite) */}
+      <header className="w-full p-4 flex justify-between items-center relative z-10">
+        {/* Bouton Hors ligne - en haut à gauche */}
+        <Button
+          variant="ghost"
+          size="sm"
+          className="gap-2 text-muted-foreground hover:text-foreground"
+        >
+          <WifiOff className="w-4 h-4" />
+          {t('welcome.offline')}
+        </Button>
+
+        {/* Boutons à droite : Tutoriel et Sélecteur de langue */}
+        <div className="flex items-center gap-4">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-2 text-muted-foreground hover:text-foreground"
+          >
+            <BookOpen className="w-4 h-4" />
+            {t('welcome.tutorial')}
+          </Button>
+          <LanguageSelector />
+        </div>
       </header>
 
       {/* Contenu principal */}
