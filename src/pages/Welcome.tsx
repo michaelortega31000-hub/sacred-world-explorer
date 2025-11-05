@@ -6,6 +6,7 @@ import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Globe, ArrowRight, BookOpen, MapPin, Award, X } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import logo from '@/assets/sacredworld-logo.png';
+import logoGlow from '@/assets/logo-glow.png';
 const tutorialSteps = [{
   icon: MapPin,
   titleKey: 'welcome.tutorial.step1.title',
@@ -73,8 +74,22 @@ const Welcome = () => {
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 relative z-10">
         <div className="max-w-2xl w-full text-center">
           {/* Logo */}
-          <div className="mb-12 flex justify-center animate-fade-in">
-            
+          <div className="mb-12 flex justify-center animate-fade-in relative">
+            <div className="relative">
+              {/* Glow background */}
+              <img 
+                src={logoGlow} 
+                alt="" 
+                className="absolute inset-0 w-full h-full object-contain opacity-60 blur-sm scale-110"
+                aria-hidden="true"
+              />
+              {/* Main logo */}
+              <img 
+                src={logo} 
+                alt="SacredWorld Logo" 
+                className="relative z-10 w-64 h-auto"
+              />
+            </div>
           </div>
 
           {/* Promesse (2 phrases) */}
