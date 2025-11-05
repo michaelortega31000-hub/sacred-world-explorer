@@ -178,7 +178,8 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
       <DialogTrigger asChild>
         <Button className="gap-2">
           <Plus className="w-4 h-4" />
-          Ajouter un restaurant
+          <span className="hidden sm:inline">Ajouter un restaurant</span>
+          <span className="sm:hidden">Ajouter</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
