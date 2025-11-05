@@ -185,49 +185,7 @@ useEffect(() => {
         } as any);
       }
 
-      // Couche de remplissage pour le hover
-      if (!map.current.getLayer('country-boundaries-fill')) {
-        map.current.addLayer({
-          id: 'country-boundaries-fill',
-          type: 'fill',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          paint: {
-            'fill-color': '#34E0A1', // Turquoise
-            'fill-opacity': [
-              'case',
-              ['boolean', ['feature-state', 'hover'], false],
-              0.3,
-              0
-            ]
-          }
-        });
-      }
-
-      // Contour pour feedback visuel en or
-      if (!map.current.getLayer('country-boundaries-outline')) {
-        map.current.addLayer({
-          id: 'country-boundaries-outline',
-          type: 'line',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          paint: {
-            'line-color': '#F4C542', // Gold
-            'line-width': [
-              'case',
-              ['boolean', ['feature-state', 'hover'], false],
-              2.5,
-              0
-            ],
-            'line-opacity': [
-              'case',
-              ['boolean', ['feature-state', 'hover'], false],
-              0.8,
-              0
-            ]
-          }
-        });
-      }
+      // Effets hover désactivés
 
       // Configurer la langue des labels selon la langue sélectionnée
       const langCode = i18n.language || 'fr';
@@ -527,55 +485,22 @@ useEffect(() => {
       }
     });
 
-    // Curseur pointer sur les pays et effet hover doré - amélioration de la zone détectable
-    let hoveredCountryId: string | number | null = null;
-    
+    // Curseur pointer sur les pays
     map.current.on('mousemove', (e) => {
       if (!map.current) return;
       
-      // Augmenter la zone de détection avec un buffer
       const bbox: [mapboxgl.PointLike, mapboxgl.PointLike] = [
         [e.point.x - 20, e.point.y - 20],
         [e.point.x + 20, e.point.y + 20]
       ];
       
-      // Récupérer les features de la couche pays pour l'effet hover
-      const countryFeatures = map.current.queryRenderedFeatures(bbox, {
-        layers: ['country-boundaries-fill']
+      const countryFeatures = map.current.queryRenderedFeatures(e.point, {
+        layers: map.current.getStyle().layers
+          ?.filter(layer => layer.id.includes('admin') || layer.id.includes('country'))
+          .map(layer => layer.id) || []
       });
-
-      // Réinitialiser le hover précédent
-      if (hoveredCountryId !== null) {
-        map.current.setFeatureState(
-          { source: 'country-boundaries', sourceLayer: 'country_boundaries', id: hoveredCountryId },
-          { hover: false }
-        );
-      }
-
-      // Activer le hover sur le nouveau pays
-      if (countryFeatures && countryFeatures.length > 0) {
-        hoveredCountryId = countryFeatures[0].id;
-        if (hoveredCountryId !== undefined) {
-          map.current.setFeatureState(
-            { source: 'country-boundaries', sourceLayer: 'country_boundaries', id: hoveredCountryId },
-            { hover: true }
-          );
-        }
-      } else {
-        hoveredCountryId = null;
-      }
       
       map.current.getCanvas().style.cursor = countryFeatures && countryFeatures.length > 0 ? 'pointer' : '';
-    });
-
-    // Réinitialiser le hover quand la souris quitte la carte
-    map.current.on('mouseleave', () => {
-      if (!map.current || hoveredCountryId === null) return;
-      map.current.setFeatureState(
-        { source: 'country-boundaries', sourceLayer: 'country_boundaries', id: hoveredCountryId },
-        { hover: false }
-      );
-      hoveredCountryId = null;
     });
 
     // Nettoyage
