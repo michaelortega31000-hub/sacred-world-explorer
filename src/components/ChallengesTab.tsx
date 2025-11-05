@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, Trophy, MapPin, Compass, CheckCircle, Clock, Sparkles } from 'lucide-react';
+import { Target, Trophy, MapPin, Compass, CheckCircle, Clock } from 'lucide-react';
 import { toast } from 'sonner';
 import { mockPlaces as placesData } from '@/data/placesData';
 
@@ -26,6 +26,14 @@ const ChallengesTab = () => {
     toast.success(`Bravo ! +${reward} points gagnés !`, {
       icon: '🎉',
     });
+  };
+
+  const getDaysUntilMidnight = () => {
+    const now = new Date();
+    const midnight = new Date(now);
+    midnight.setHours(24, 0, 0, 0);
+    const hoursLeft = Math.floor((midnight.getTime() - now.getTime()) / (1000 * 60 * 60));
+    return hoursLeft;
   };
 
   const getDaysUntilMonday = () => {
@@ -73,6 +81,27 @@ const ChallengesTab = () => {
     };
   }, [userProgress.visitedPlaces]);
 
+  const dailyQuests = [
+    {
+      id: 'daily-1',
+      title: 'Première Visite',
+      description: 'Visitez 1 lieu sacré aujourd\'hui',
+      progress: questProgress.total > 0 ? 1 : 0,
+      goal: 1,
+      reward: 50,
+      icon: MapPin,
+    },
+    {
+      id: 'daily-2',
+      title: 'Explorateur Quotidien',
+      description: 'Découvrez 3 nouveaux lieux',
+      progress: Math.min(questProgress.total, 3),
+      goal: 3,
+      reward: 100,
+      icon: Compass,
+    },
+  ];
+
   const weeklyQuests = [
     {
       id: 'continents',
@@ -110,44 +139,88 @@ const ChallengesTab = () => {
     }));
   }, []);
 
-  const culturalItineraries = [
-    {
-      id: 'christian-europe',
-      title: 'Route des Cathédrales',
-      description: 'Parcourez les plus belles cathédrales d\'Europe',
-      places: 12,
-      points: 1200,
-      duration: '2 semaines',
-      difficulty: 'Moyen',
-    },
-    {
-      id: 'buddhist-asia',
-      title: 'Temples d\'Asie',
-      description: 'Explorez les temples bouddhistes emblématiques',
-      places: 8,
-      points: 800,
-      duration: '10 jours',
-      difficulty: 'Facile',
-    },
-    {
-      id: 'islamic-middle-east',
-      title: 'Merveilles Islamiques',
-      description: 'Découvrez l\'architecture islamique',
-      places: 10,
-      points: 1000,
-      duration: '12 jours',
-      difficulty: 'Avancé',
-    },
-  ];
-
   return (
     <div className="space-y-6">
-      <Tabs defaultValue="weekly" className="w-full">
+      <Tabs defaultValue="daily" className="w-full">
         <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="weekly">Hebdomadaires</TabsTrigger>
-          <TabsTrigger value="itineraries">Itinéraires</TabsTrigger>
+          <TabsTrigger value="daily">Journalière</TabsTrigger>
+          <TabsTrigger value="weekly">Hebdomadaire</TabsTrigger>
           <TabsTrigger value="nearby">À proximité</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="daily" className="space-y-6">
+          <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-primary" />
+                  <CardTitle>Quêtes Journalières</CardTitle>
+                </div>
+                <Badge variant="outline">
+                  Réinitialisation dans {getDaysUntilMidnight()}h
+                </Badge>
+              </div>
+              <CardDescription>
+                Complétez ces défis quotidiens pour gagner des points bonus
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <div className="grid gap-4">
+            {dailyQuests.map((quest) => {
+              const Icon = quest.icon;
+              const isCompleted = quest.progress >= quest.goal;
+              const isClaimed = claimedQuests.includes(quest.id);
+              const progressPercent = Math.min((quest.progress / quest.goal) * 100, 100);
+
+              return (
+                <Card key={quest.id} className="overflow-hidden">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <Icon className="w-6 h-6 text-primary" />
+                        </div>
+                        <div className="space-y-1">
+                          <CardTitle className="text-xl">{quest.title}</CardTitle>
+                          <CardDescription>{quest.description}</CardDescription>
+                        </div>
+                      </div>
+                      {isCompleted && (
+                        <CheckCircle className="w-6 h-6 text-green-500" />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Progression: {quest.progress} / {quest.goal}
+                        </span>
+                        <span className="font-medium">{Math.round(progressPercent)}%</span>
+                      </div>
+                      <Progress value={progressPercent} className="h-2" />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-accent" />
+                        <span className="font-semibold text-accent">+{quest.reward} points</span>
+                      </div>
+                      <Button
+                        disabled={!isCompleted || isClaimed}
+                        onClick={() => handleClaimReward(quest.id, quest.reward)}
+                        variant={isCompleted && !isClaimed ? 'default' : 'outline'}
+                      >
+                        {isClaimed ? 'Réclamé' : isCompleted ? 'Réclamer' : 'En cours'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
 
         <TabsContent value="weekly" className="space-y-6">
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
@@ -221,47 +294,6 @@ const ChallengesTab = () => {
               );
             })}
           </div>
-        </TabsContent>
-
-        <TabsContent value="itineraries" className="space-y-4">
-          {culturalItineraries.map((itinerary) => (
-            <Card key={itinerary.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-2">
-                    <CardTitle className="text-xl">{itinerary.title}</CardTitle>
-                    <CardDescription>{itinerary.description}</CardDescription>
-                  </div>
-                  <Sparkles className="w-6 h-6 text-accent" />
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-3 gap-4 text-sm">
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground">Lieux</p>
-                    <p className="font-semibold">{itinerary.places} sites</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground">Durée</p>
-                    <p className="font-semibold">{itinerary.duration}</p>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-muted-foreground">Difficulté</p>
-                    <p className="font-semibold">{itinerary.difficulty}</p>
-                  </div>
-                </div>
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-accent" />
-                    <span className="font-semibold text-accent">+{itinerary.points} points</span>
-                  </div>
-                  <Button variant="outline">
-                    Voir l'itinéraire
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
         </TabsContent>
 
         <TabsContent value="nearby" className="space-y-4">
