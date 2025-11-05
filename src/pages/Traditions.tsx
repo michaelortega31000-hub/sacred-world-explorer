@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Building2, Moon, Star, CircleDot, Flower2, Mountain, Compass, Church, Palette, Award, BookOpen } from 'lucide-react';
+import { Church, Sparkles, Star, Flame, Flower2, Globe, Lightbulb, Palette, Building2, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/sacredworld-logo.png';
 import { logger } from '@/lib/logger';
@@ -20,7 +20,7 @@ const traditions: Tradition[] = [{
 }, {
   id: 'islam',
   name: 'Islam',
-  icon: Moon,
+  icon: Sparkles,
   color: 'hsl(142 76% 36%)'
 }, {
   id: 'judaism',
@@ -30,7 +30,7 @@ const traditions: Tradition[] = [{
 }, {
   id: 'hinduism',
   name: 'Hindouisme',
-  icon: CircleDot,
+  icon: Flame,
   color: 'hsl(24 95% 53%)'
 }, {
   id: 'buddhism',
@@ -40,12 +40,12 @@ const traditions: Tradition[] = [{
 }, {
   id: 'other',
   name: 'Autres traditions',
-  icon: Mountain,
+  icon: Globe,
   color: 'hsl(173 58% 39%)'
 }, {
   id: 'curious',
   name: 'Curieux / Athée',
-  icon: Compass,
+  icon: Lightbulb,
   color: 'hsl(215 20% 45%)'
 }];
 const interests = [{
