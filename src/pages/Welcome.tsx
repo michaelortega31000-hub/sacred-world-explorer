@@ -31,11 +31,11 @@ const Welcome = () => {
       <header className="w-full p-4 flex justify-between items-center relative z-10">
         {/* Bouton Hors ligne - en haut à gauche */}
         <Button
-          variant="ghost"
-          size="sm"
-          className="gap-2 text-muted-foreground hover:text-foreground"
+          variant="outline"
+          size="default"
+          className="gap-3 font-medium"
         >
-          <WifiOff className="w-4 h-4" />
+          <WifiOff className="w-5 h-5" />
           {t('welcome.offline')}
         </Button>
 
