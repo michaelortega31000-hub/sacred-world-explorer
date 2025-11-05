@@ -2,50 +2,58 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Church, Moon, Star, CircleDot, Flower2, Globe, Compass, Palette, Building2, Award, BookOpen } from 'lucide-react';
+import { Palette, Building2, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/sacredworld-logo.png';
 import { logger } from '@/lib/logger';
+import angelIcon from '@/assets/animations/angel.png';
+import crescentIcon from '@/assets/animations/crescent.png';
+import starDavidIcon from '@/assets/animations/star-david.png';
+import omIcon from '@/assets/animations/om.png';
+import lotusIcon from '@/assets/animations/lotus.png';
+import spiritIcon from '@/assets/animations/spirit.png';
+import starsIcon from '@/assets/animations/stars.png';
 type Tradition = {
   id: string;
   name: string;
-  icon: React.ElementType;
+  icon?: React.ElementType;
+  image?: string;
   color: string;
 };
 const traditions: Tradition[] = [{
   id: 'christianity',
   name: 'Christianisme',
-  icon: Church,
+  image: angelIcon,
   color: 'hsl(220 70% 50%)'
 }, {
   id: 'islam',
   name: 'Islam',
-  icon: Moon,
+  image: crescentIcon,
   color: 'hsl(142 76% 36%)'
 }, {
   id: 'judaism',
   name: 'Judaïsme',
-  icon: Star,
+  image: starDavidIcon,
   color: 'hsl(262 83% 58%)'
 }, {
   id: 'hinduism',
   name: 'Hindouisme',
-  icon: CircleDot,
+  image: omIcon,
   color: 'hsl(24 95% 53%)'
 }, {
   id: 'buddhism',
   name: 'Bouddhisme',
-  icon: Flower2,
+  image: lotusIcon,
   color: 'hsl(45 93% 47%)'
 }, {
   id: 'other',
   name: 'Autres traditions',
-  icon: Globe,
+  image: spiritIcon,
   color: 'hsl(173 58% 39%)'
 }, {
   id: 'curious',
   name: 'Curieux / Athée',
-  icon: Compass,
+  image: starsIcon,
   color: 'hsl(215 20% 45%)'
 }];
 const interests = [{
@@ -151,7 +159,6 @@ const Traditions = () => {
         <div className="mb-10">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 mb-8">
             {traditions.map((tradition, index) => {
-            const Icon = tradition.icon;
             const isSelected = selectedMain === tradition.id;
             return <button key={tradition.id} onClick={() => handleMainSelect(tradition.id)} className={cn("flex flex-col items-center gap-4 p-5 rounded-3xl transition-all duration-300 group relative overflow-hidden", "animate-fade-in mystic-card hover:shadow-2xl", isSelected ? "scale-105 shadow-2xl" : "hover:scale-102")} style={{
               animationDelay: `${index * 50}ms`,
@@ -183,9 +190,14 @@ const Traditions = () => {
                   background: `radial-gradient(circle, transparent 40%, ${tradition.color}30)`
                 }} />
                     
-                    <Icon className="w-12 h-12 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 relative z-10 drop-shadow-lg" style={{
-                  color: isSelected ? 'white' : tradition.color
-                }} strokeWidth={2.5} />
+                    <img 
+                      src={tradition.image} 
+                      alt={tradition.name}
+                      className="w-14 h-14 transition-all duration-300 group-hover:scale-110 relative z-10 drop-shadow-lg object-contain"
+                      style={{
+                        filter: isSelected ? 'brightness(1.2) drop-shadow(0 0 10px rgba(255,255,255,0.5))' : 'brightness(1)'
+                      }}
+                    />
                   </div>
                   
                   <span className={cn("text-sm font-semibold text-center transition-all duration-300 font-inter relative z-10", isSelected ? "text-[#F5F5F5] scale-105" : "text-[#EAD7B5]/80 group-hover:text-[#EAD7B5]")}>
