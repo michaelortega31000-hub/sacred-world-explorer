@@ -76,18 +76,25 @@ const Welcome = () => {
           {/* Logo */}
           <div className="mb-12 flex justify-center animate-fade-in relative">
             <div className="relative">
-              {/* Glow background */}
+              {/* Multiple glow layers for better effect */}
               <img 
                 src={logoGlow} 
                 alt="" 
-                className="absolute inset-0 w-full h-full object-contain opacity-60 blur-sm scale-110"
+                className="absolute inset-0 w-full h-full object-contain opacity-80 blur-2xl scale-125 animate-pulse"
                 aria-hidden="true"
               />
-              {/* Main logo */}
+              <img 
+                src={logoGlow} 
+                alt="" 
+                className="absolute inset-0 w-full h-full object-contain opacity-40 blur-md scale-110"
+                aria-hidden="true"
+              />
+              {/* Main logo - transparent background */}
               <img 
                 src={logo} 
                 alt="SacredWorld Logo" 
-                className="relative z-10 w-64 h-auto"
+                className="relative z-10 w-64 h-auto drop-shadow-2xl mix-blend-normal"
+                style={{ backgroundColor: 'transparent' }}
               />
             </div>
           </div>
