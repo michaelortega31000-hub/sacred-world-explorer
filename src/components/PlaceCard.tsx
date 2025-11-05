@@ -2,7 +2,6 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Info } from 'lucide-react';
-import ReligiousSymbol from './ReligiousSymbol';
 import { useNavigate } from 'react-router-dom';
 
 interface PlaceCardProps {
@@ -51,16 +50,6 @@ const PlaceCard = ({
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-        
-        {/* Religious symbol at top center */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-          <ReligiousSymbol 
-            religion={religion} 
-            unlocked={unlocked}
-            size="md"
-            intensity={proximityIntensity}
-          />
-        </div>
 
         {/* Distance indicator */}
         {distance !== undefined && (
