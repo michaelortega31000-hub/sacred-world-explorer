@@ -6,11 +6,23 @@ export interface ReligiousEvent {
   description: string;
   descriptionFr: string;
   descriptionEn: string;
+  longDescriptionFr?: string;
+  longDescriptionEn?: string;
   tradition: 'christianity' | 'islam' | 'judaism' | 'hinduism' | 'buddhism' | 'other';
   date: Date;
+  endDate?: Date;
   isRecurring: boolean;
   relatedPlaces?: string[]; // Place IDs
   color: string;
+  photos?: string[];
+  videoUrl?: string;
+  rituals?: string[];
+  traditionalFoods?: string[];
+  quotes?: string[];
+  symbolism?: string;
+  musicPlaylist?: string;
+  duration?: number;
+  type?: 'celebration' | 'fasting' | 'pilgrimage' | 'prayer' | 'festival';
 }
 
 // Helper function to get dates for 2025

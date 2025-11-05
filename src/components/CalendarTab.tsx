@@ -2,18 +2,21 @@ import { useState, useEffect } from 'react';
 import { Calendar as CalendarIcon, MapPin, CheckCircle2, Clock, Filter, Sparkles, Globe, X } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar } from '@/components/ui/calendar';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { getPlaceById } from '@/data/placesData';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { format, isSameDay } from 'date-fns';
+import { format, isSameDay, setMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { religiousEvents2025, getEventsByDate, getEventsByTradition, getAllEventDates, ReligiousEvent } from '@/data/religiousEvents';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
+import CalendarViewSelector from '@/components/calendar/CalendarViewSelector';
+import WeekView from '@/components/calendar/WeekView';
+import ListView from '@/components/calendar/ListView';
+import YearView from '@/components/calendar/YearView';
+import EventDetailEnriched from '@/components/calendar/EventDetailEnriched';
 interface VisitEvent {
   date: Date;
   placeId: string;
@@ -30,6 +33,13 @@ const CalendarTab = () => {
   const [events, setEvents] = useState<VisitEvent[]>([]);
   const [traditionFilter, setTraditionFilter] = useState<TraditionFilter>('all');
   const [selectedEvent, setSelectedEvent] = useState<ReligiousEvent | null>(null);
+  const [calendarView, setCalendarView] = useState<'month' | 'week' | 'list' | 'year'>('month');
+  
+  const handleMonthClick = (monthIndex: number) => {
+    setSelectedDate(setMonth(new Date(), monthIndex));
+    setCalendarView('month');
+  };
+  
   useEffect(() => {
     // Créer des événements à partir des lieux visités et planifiés
     const visitedEvents: VisitEvent[] = userProgress.visitedPlaces.map(placeId => {
@@ -112,7 +122,14 @@ const CalendarTab = () => {
             <Sparkles className="w-8 h-8" />
             Calendrier Spirituel Mondial
           </h1>
-          
+        </div>
+
+        {/* View Selector */}
+        <div className="mb-6">
+          <CalendarViewSelector 
+            currentView={calendarView}
+            onViewChange={setCalendarView}
+          />
         </div>
 
         {/* Tradition Filters */}
@@ -134,7 +151,7 @@ const CalendarTab = () => {
         </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Calendrier */}
+          {/* Calendrier Views */}
           <Card className="border-border bg-card shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
@@ -142,17 +159,45 @@ const CalendarTab = () => {
                 Calendrier 2025
               </CardTitle>
               <CardDescription className="text-muted-foreground">
-                Les points colorés indiquent les événements religieux
+                {calendarView === 'month' && 'Les points colorés indiquent les événements religieux'}
+                {calendarView === 'week' && 'Planning hebdomadaire des événements'}
+                {calendarView === 'list' && 'Liste chronologique des événements'}
+                {calendarView === 'year' && 'Vue d\'ensemble de l\'année 2025'}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
-              <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={fr} className={cn("rounded-md border pointer-events-auto")} modifiers={{
-              hasPersonalEvent: daysWithPersonalEvents,
-              hasReligiousEvent: daysWithReligiousEvents
-            }} modifiersClassNames={{
-              hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
-              hasReligiousEvent: 'relative'
-            }} />
+              {calendarView === 'month' && (
+                <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={fr} className={cn("rounded-md border pointer-events-auto")} modifiers={{
+                  hasPersonalEvent: daysWithPersonalEvents,
+                  hasReligiousEvent: daysWithReligiousEvents
+                }} modifiersClassNames={{
+                  hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
+                  hasReligiousEvent: 'relative'
+                }} />
+              )}
+              
+              {calendarView === 'week' && (
+                <WeekView 
+                  selectedDate={selectedDate || new Date()}
+                  events={filteredReligiousEvents}
+                  onEventClick={setSelectedEvent}
+                />
+              )}
+              
+              {calendarView === 'list' && (
+                <ListView 
+                  events={filteredReligiousEvents}
+                  onEventClick={setSelectedEvent}
+                />
+              )}
+              
+              {calendarView === 'year' && (
+                <YearView 
+                  year={2025}
+                  events={filteredReligiousEvents}
+                  onMonthClick={handleMonthClick}
+                />
+              )}
             </CardContent>
           </Card>
 
@@ -285,62 +330,11 @@ const CalendarTab = () => {
       </div>
 
       {/* Event Detail Modal */}
-      <Dialog open={!!selectedEvent} onOpenChange={() => setSelectedEvent(null)}>
-        <DialogContent className="max-w-2xl border-primary bg-card">
-          {selectedEvent && <>
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-3 text-2xl text-foreground">
-                  <div className="w-4 h-4 rounded-full" style={{
-                backgroundColor: selectedEvent.color,
-                boxShadow: `0 0 15px ${selectedEvent.color}`
-              }} />
-                  {selectedEvent.nameFr}
-                </DialogTitle>
-              </DialogHeader>
-              
-              <div className="space-y-4">
-                <div>
-                  <Badge className="mb-3" style={{
-                backgroundColor: selectedEvent.color,
-                color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
-              }}>
-                    {traditionLabels[selectedEvent.tradition].icon} {traditionLabels[selectedEvent.tradition].label}
-                  </Badge>
-                  
-                  <p className="text-lg leading-relaxed text-foreground">
-                    {selectedEvent.descriptionFr}
-                  </p>
-                </div>
-
-                <div className="p-4 rounded-lg bg-secondary/50">
-                  <p className="flex items-center gap-2 text-sm font-medium mb-2 text-foreground">
-                    <CalendarIcon className="w-4 h-4" />
-                    {format(selectedEvent.date, 'EEEE dd MMMM yyyy', {
-                  locale: fr
-                })}
-                  </p>
-                </div>
-
-                <div className="flex gap-3">
-                  <Button onClick={() => {
-                navigate('/explore');
-                setSelectedEvent(null);
-              }} className="flex-1 gap-2" style={{
-                background: selectedEvent.color,
-                color: selectedEvent.tradition === 'other' ? 'hsl(var(--background))' : 'hsl(var(--card))'
-              }}>
-                    <Globe className="w-4 h-4" />
-                    Voir sur la carte
-                  </Button>
-                  
-                  <Button variant="outline" onClick={() => setSelectedEvent(null)}>
-                    <X className="w-4 h-4" />
-                  </Button>
-                </div>
-              </div>
-            </>}
-        </DialogContent>
-      </Dialog>
+      <EventDetailEnriched 
+        event={selectedEvent}
+        open={!!selectedEvent}
+        onOpenChange={(open) => !open && setSelectedEvent(null)}
+      />
     </div>;
 };
 export default CalendarTab;

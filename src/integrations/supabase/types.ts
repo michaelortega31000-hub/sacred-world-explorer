@@ -514,6 +514,72 @@ export type Database = {
         }
         Relationships: []
       }
+      user_custom_events: {
+        Row: {
+          color: string | null
+          created_at: string | null
+          description: string | null
+          event_date: string
+          id: string
+          is_recurring: boolean | null
+          photo_url: string | null
+          title: string
+          tradition: string | null
+          user_id: string
+        }
+        Insert: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          event_date: string
+          id?: string
+          is_recurring?: boolean | null
+          photo_url?: string | null
+          title: string
+          tradition?: string | null
+          user_id: string
+        }
+        Update: {
+          color?: string | null
+          created_at?: string | null
+          description?: string | null
+          event_date?: string
+          id?: string
+          is_recurring?: boolean | null
+          photo_url?: string | null
+          title?: string
+          tradition?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_event_reminders: {
+        Row: {
+          created_at: string | null
+          enabled: boolean | null
+          event_id: string
+          id: string
+          reminder_type: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          enabled?: boolean | null
+          event_id: string
+          id?: string
+          reminder_type: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          enabled?: boolean | null
+          event_id?: string
+          id?: string
+          reminder_type?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_progress: {
         Row: {
           badges: string[]
