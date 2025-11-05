@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Cross, Moon, Star, CircleDot, Flower2, Mountain, Compass, Church, Palette, Award, BookOpen } from 'lucide-react';
+import { Building2, Moon, Star, CircleDot, Flower2, Mountain, Compass, Church, Palette, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/sacredworld-logo.png';
 import { logger } from '@/lib/logger';
@@ -15,7 +15,7 @@ type Tradition = {
 const traditions: Tradition[] = [{
   id: 'christianity',
   name: 'Christianisme',
-  icon: Cross,
+  icon: Church,
   color: 'hsl(220 70% 50%)'
 }, {
   id: 'islam',
@@ -55,7 +55,7 @@ const interests = [{
 }, {
   id: 'architecture',
   name: 'Architecture',
-  icon: Church
+  icon: Building2
 }, {
   id: 'history',
   name: 'Histoire',
