@@ -31,6 +31,7 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
   const recenterOnPosition = useRef(false);
   const hasCenteredOnUser = useRef(false);
+  const savedCameraPosition = useRef<{ center: [number, number]; zoom: number; pitch: number } | null>(null);
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
   const { userProgress } = useApp();
@@ -513,6 +514,15 @@ useEffect(() => {
   // Effet séparé pour recharger les monuments sans réinitialiser la carte
   useEffect(() => {
     if (map.current && map.current.loaded()) {
+      // Sauvegarder la position actuelle de la caméra si géolocalisé
+      if (geolocationEnabled && userPosition) {
+        savedCameraPosition.current = {
+          center: [map.current.getCenter().lng, map.current.getCenter().lat],
+          zoom: map.current.getZoom(),
+          pitch: map.current.getPitch()
+        };
+      }
+
       // Supprimer les anciens marqueurs
       markers.current.forEach(marker => marker.remove());
       markers.current = [];
@@ -625,10 +635,20 @@ useEffect(() => {
             
             markers.current.push(marker);
           });
+
+          // Restaurer la position de la caméra si elle avait été sauvegardée
+          if (savedCameraPosition.current && geolocationEnabled) {
+            map.current?.easeTo({
+              center: savedCameraPosition.current.center,
+              zoom: savedCameraPosition.current.zoom,
+              pitch: savedCameraPosition.current.pitch,
+              duration: 0 // Restauration instantanée
+            });
+          }
         });
       }
     }
-  }, [showMonuments, userProgress.visitedPlaces, filters]);
+  }, [showMonuments, userProgress.visitedPlaces, filters, geolocationEnabled, userPosition]);
 
   // Afficher la position de l'utilisateur sur la carte
   useEffect(() => {
