@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Globe, ArrowRight, BookOpen, MapPin, Award, X } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Globe, ArrowRight, BookOpen, MapPin, Award, X, Navigation, Mic } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
+import { useToast } from '@/components/ui/use-toast';
 import logo from '@/assets/sacredworld-logo-new.png';
 import logoGlow from '@/assets/logo-glow.png';
 const tutorialSteps = [{
@@ -26,8 +28,11 @@ const Welcome = () => {
     i18n
   } = useTranslation();
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
+  const [microphoneEnabled, setMicrophoneEnabled] = useState(false);
   useEffect(() => {
     // Auto-détection de la langue si pas déjà définie
     const savedLanguage = localStorage.getItem('language');
@@ -59,6 +64,55 @@ const Welcome = () => {
       setTutorialStep(prev => prev - 1);
     }
   };
+
+  const handleGeolocationToggle = async (checked: boolean) => {
+    if (checked) {
+      try {
+        const position = await new Promise<GeolocationPosition>((resolve, reject) => {
+          navigator.geolocation.getCurrentPosition(resolve, reject);
+        });
+        setGeolocationEnabled(true);
+        localStorage.setItem('geolocationEnabled', 'true');
+        toast({
+          title: t('welcome.permissions.geolocation.success'),
+          description: t('welcome.permissions.geolocation.successDesc'),
+        });
+      } catch (error) {
+        toast({
+          title: t('welcome.permissions.geolocation.error'),
+          description: t('welcome.permissions.geolocation.errorDesc'),
+          variant: 'destructive',
+        });
+      }
+    } else {
+      setGeolocationEnabled(false);
+      localStorage.setItem('geolocationEnabled', 'false');
+    }
+  };
+
+  const handleMicrophoneToggle = async (checked: boolean) => {
+    if (checked) {
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        setMicrophoneEnabled(true);
+        localStorage.setItem('microphoneEnabled', 'true');
+        toast({
+          title: t('welcome.permissions.microphone.success'),
+          description: t('welcome.permissions.microphone.successDesc'),
+        });
+      } catch (error) {
+        toast({
+          title: t('welcome.permissions.microphone.error'),
+          description: t('welcome.permissions.microphone.errorDesc'),
+          variant: 'destructive',
+        });
+      }
+    } else {
+      setMicrophoneEnabled(false);
+      localStorage.setItem('microphoneEnabled', 'false');
+    }
+  };
+
   const currentStep = tutorialSteps[tutorialStep];
   const StepIcon = currentStep?.icon;
   return <div className="min-h-screen flex flex-col bg-background relative">
@@ -110,9 +164,62 @@ const Welcome = () => {
             </p>
           </div>
 
+          {/* Permissions */}
+          <div className="mb-12 max-w-md mx-auto space-y-4 animate-fade-in" style={{
+          animationDelay: '200ms'
+        }}>
+            <div className="bg-card/50 backdrop-blur-sm border border-border rounded-2xl p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-foreground mb-4">
+                {t('welcome.permissions.title')}
+              </h3>
+              
+              {/* Géolocalisation */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-background/50 hover:bg-background/70 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Navigation className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {t('welcome.permissions.geolocation.title')}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('welcome.permissions.geolocation.desc')}
+                    </p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={geolocationEnabled}
+                  onCheckedChange={handleGeolocationToggle}
+                />
+              </div>
+
+              {/* Microphone */}
+              <div className="flex items-center justify-between p-4 rounded-xl bg-background/50 hover:bg-background/70 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                    <Mic className="w-5 h-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-foreground">
+                      {t('welcome.permissions.microphone.title')}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {t('welcome.permissions.microphone.desc')}
+                    </p>
+                  </div>
+                </div>
+                <Switch 
+                  checked={microphoneEnabled}
+                  onCheckedChange={handleMicrophoneToggle}
+                />
+              </div>
+            </div>
+          </div>
+
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in" style={{
-          animationDelay: '200ms'
+          animationDelay: '300ms'
         }}>
             <Button onClick={handleStart} size="lg" className="w-full sm:w-auto px-8 py-6 text-lg font-semibold rounded-full shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 font-poppins">
               {t('welcome.cta.start')}
@@ -127,7 +234,7 @@ const Welcome = () => {
 
           {/* Accessibilité note */}
           <p className="mt-8 text-sm text-muted-foreground animate-fade-in" style={{
-          animationDelay: '300ms'
+          animationDelay: '400ms'
         }}>
             {t('welcome.accessibility')}
           </p>
