@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { Globe, ArrowRight, BookOpen, MapPin, Award, X } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/sacredworld-logo-new.png';
 import logoGlow from '@/assets/logo-glow.png';
 const tutorialSteps = [{
   icon: MapPin,
@@ -93,8 +93,7 @@ const Welcome = () => {
               <img 
                 src={logo} 
                 alt="SacredWorld Logo" 
-                className="relative z-10 w-64 h-auto drop-shadow-2xl mix-blend-normal"
-                style={{ backgroundColor: 'transparent' }}
+                className="relative z-10 w-64 h-auto drop-shadow-[0_0_40px_rgba(79,209,197,0.3)]"
               />
             </div>
           </div>
