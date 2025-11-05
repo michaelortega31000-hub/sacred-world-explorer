@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { ArrowLeft, Mail, MapPin, Target, Award, Trophy, Cross, Moon, Star, Flower2, Flame, Atom, Globe, Users } from 'lucide-react';
+import { ArrowLeft, Mail, MapPin, Target, Award, Cross, Moon, Star, Flower2, Flame, Atom, Globe, Users } from 'lucide-react';
 import logo from '@/assets/logo-glow.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
@@ -44,7 +44,6 @@ const Header = ({
   const handleGeolocationToggle = () => {
     toggleGeolocation();
   };
-
   const getReligionIcon = (religion: Religion | null) => {
     const iconClass = "w-4 h-4 sm:w-5 sm:h-5";
     switch (religion) {
@@ -68,11 +67,7 @@ const Header = ({
         return null;
     }
   };
-
-  const religionColor = userProgress.selectedReligion 
-    ? religionColors[userProgress.selectedReligion]
-    : null;
-
+  const religionColor = userProgress.selectedReligion ? religionColors[userProgress.selectedReligion] : null;
   return <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
         {isTextOnlyPage ?
@@ -81,16 +76,11 @@ const Header = ({
             {/* Gauche : Religion + Géolocalisation + Points + Badges */}
             <div className="flex items-center gap-1.5 sm:gap-3">
               {/* Indicateur de religion */}
-              {userProgress.selectedReligion && religionColor && (
-                <div 
-                  className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full`}
-                  title={userProgress.selectedReligion}
-                >
+              {userProgress.selectedReligion && religionColor && <div className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full`} title={userProgress.selectedReligion}>
                   <div className={religionColor.text}>
                     {getReligionIcon(userProgress.selectedReligion)}
                   </div>
-                </div>
-              )}
+                </div>}
               
               <div className="flex items-center gap-2">
                 <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
@@ -98,10 +88,8 @@ const Header = ({
               
               {/* Points obtenus */}
               <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
-                <Trophy className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
-                <span className="text-xs sm:text-sm font-medium text-foreground">
-                  {userProgress.totalPoints.toLocaleString()}
-                </span>
+                
+                
               </div>
               
               {/* Badges obtenus */}
