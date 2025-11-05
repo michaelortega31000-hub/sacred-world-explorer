@@ -117,29 +117,31 @@ const Splash = () => {
         className="w-full h-full object-contain"
       />
       
-      {/* Bouton Mode hors ligne en haut à droite */}
-      <div className="absolute top-6 right-6 z-10">
-        <Button
-          onClick={handleOfflineMode}
-          variant="outline"
-          className="gap-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground"
-        >
-          <WifiOff className="w-4 h-4" />
-          Mode hors ligne
-        </Button>
-      </div>
-      
-      {/* Bouton Tutoriel en bas à droite */}
-      <div className="absolute bottom-6 right-6 z-10">
-        <Button
-          onClick={handleTutorialOpen}
-          size="lg"
-          variant="outline"
-          className="gap-2 border-primary/30 bg-sacred-blue/80 backdrop-blur-sm hover:bg-primary/20 text-foreground shadow-lg"
-        >
-          <BookOpen className="w-5 h-5" />
-          Tutoriel
-        </Button>
+      {/* Boutons Mode hors ligne et Tutoriel - En bas avec espacement mobile optimisé */}
+      <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 z-10 px-4 sm:px-6">
+        <div className="max-w-md mx-auto flex items-center justify-between gap-3 sm:gap-4">
+          {/* Bouton Mode hors ligne */}
+          <Button
+            onClick={handleOfflineMode}
+            variant="outline"
+            size="lg"
+            className="flex-1 gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-12 sm:h-14 text-sm sm:text-base"
+          >
+            <WifiOff className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Hors ligne</span>
+          </Button>
+          
+          {/* Bouton Tutoriel */}
+          <Button
+            onClick={handleTutorialOpen}
+            variant="outline"
+            size="lg"
+            className="flex-1 gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-12 sm:h-14 text-sm sm:text-base"
+          >
+            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
+            <span>Tutoriel</span>
+          </Button>
+        </div>
       </div>
       
       {/* Clickable zones overlay - transparent areas positioned on the image */}
