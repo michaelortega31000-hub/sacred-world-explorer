@@ -772,9 +772,9 @@ useEffect(() => {
     if (recenterOnPosition.current || (!hasCenteredOnUser.current && geolocationEnabled)) {
       map.current.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
-        zoom: 18,
-        pitch: 70,
-        duration: 2500,
+        zoom: 15,
+        pitch: 60,
+        duration: 1200,
         essential: true
       });
       hasCenteredOnUser.current = true;
@@ -797,9 +797,9 @@ useEffect(() => {
     if (userPosition) {
       map.current.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
-        zoom: 18,
-        pitch: 70,
-        duration: 2500,
+        zoom: 15,
+        pitch: 60,
+        duration: 1200,
         essential: true
       });
       toast.success('Carte recentrée sur votre position');
