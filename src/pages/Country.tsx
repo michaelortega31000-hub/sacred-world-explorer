@@ -262,28 +262,33 @@ const Country = () => {
       </Header>
 
       <Tabs value={activeTab} onValueChange={(value) => navigate(`/country/${country}?tab=${value}`)} className="flex-1 flex flex-col">
-        <div className="border-b border-border bg-card">
-          <div className="max-w-7xl mx-auto">
-            <TabsList className="w-full justify-start h-auto p-0 bg-transparent">
-              <TabsTrigger value="places" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <MapPin className="w-4 h-4" />
-                {t('country.title')}
+        <div className="border-b border-border bg-card sticky top-0 z-40 shadow-sm">
+          <div className="max-w-7xl mx-auto px-2 sm:px-4">
+            <TabsList className="w-full justify-start h-auto p-0 bg-transparent overflow-x-auto flex-nowrap">
+              <TabsTrigger value="places" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm whitespace-nowrap">
+                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">{t('country.title')}</span>
+                <span className="sm:hidden">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger value="quest" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Target className="w-4 h-4" />
-                {t('tabs.weeklyQuest')}
+              <TabsTrigger value="quest" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm whitespace-nowrap">
+                <Target className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">{t('tabs.weeklyQuest')}</span>
+                <span className="sm:hidden">Quête</span>
               </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Calendar className="w-4 h-4" />
-                {t('tabs.tripPlanner')}
+              <TabsTrigger value="trip" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm whitespace-nowrap">
+                <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">{t('tabs.tripPlanner')}</span>
+                <span className="sm:hidden">Voyage</span>
               </TabsTrigger>
-              <TabsTrigger value="restaurants" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Utensils className="w-4 h-4" />
-                Restaurants
+              <TabsTrigger value="restaurants" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm whitespace-nowrap">
+                <Utensils className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Restaurants</span>
+                <span className="sm:hidden">Resto</span>
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
-                <Trophy className="w-4 h-4" />
-                Classements
+              <TabsTrigger value="rankings" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary px-2 sm:px-3 py-2 sm:py-2.5 text-xs sm:text-sm whitespace-nowrap">
+                <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Classements</span>
+                <span className="sm:hidden">Rangs</span>
               </TabsTrigger>
             </TabsList>
           </div>
