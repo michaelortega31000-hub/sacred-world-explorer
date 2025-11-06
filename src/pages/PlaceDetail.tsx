@@ -36,9 +36,12 @@ import { useApp } from '@/contexts/AppContext';
 import { logger } from '@/lib/logger';
 import { AddMemoryDialog } from '@/components/AddMemoryDialog';
 import ReligiousSymbol from '@/components/ReligiousSymbol';
+import { ReligiousSymbol3D } from '@/components/ReligiousSymbol3D';
 import BadgeUnlock from '@/components/BadgeUnlock';
 import { PhotoCapture } from '@/components/PhotoCapture';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useARSupport } from '@/hooks/useARSupport';
+import { requestMotionPermission } from '@/utils/arPermissions';
 import { toast as sonnerToast } from 'sonner';
 
 const PlaceDetail = () => {
@@ -69,9 +72,11 @@ const PlaceDetail = () => {
     tier: 'bronze'
   });
   const [isARMode, setIsARMode] = useState(false);
+  const [arPermissionGranted, setArPermissionGranted] = useState(false);
   const [isPhotoVerificationOpen, setIsPhotoVerificationOpen] = useState(false);
   const { userProgress } = useApp();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
+  const arSupport = useARSupport();
   
   const { position } = useGeolocation(true);
 
@@ -317,6 +322,35 @@ const PlaceDetail = () => {
     });
   };
 
+  const handleARToggle = async () => {
+    if (!isARMode) {
+      // Check AR support
+      if (!arSupport.isSupported) {
+        sonnerToast.error('AR non supportée', {
+          description: 'Votre appareil ne supporte pas la réalité augmentée 3D',
+        });
+        return;
+      }
+
+      // Request motion permission if needed (iOS)
+      if (arSupport.needsPermission && !arPermissionGranted) {
+        const result = await requestMotionPermission();
+        if (!result.granted) {
+          sonnerToast.error('Permission refusée', {
+            description: result.error || 'Les capteurs de mouvement sont nécessaires',
+          });
+          return;
+        }
+        setArPermissionGranted(true);
+      }
+
+      sonnerToast.success('AR 3D activée', {
+        description: 'Bougez votre téléphone pour interagir avec le symbole',
+      });
+    }
+    setIsARMode(!isARMode);
+  };
+
   const handleReport = () => {
     toast({
       title: "Signalement envoyé",
@@ -375,10 +409,10 @@ const PlaceDetail = () => {
                 size="lg"
                 variant={isARMode ? "default" : "outline"}
                 className="gap-2 shadow-lg"
-                onClick={() => setIsARMode(!isARMode)}
+                onClick={handleARToggle}
               >
                 <Camera className="w-5 h-5" />
-                {isARMode ? "AR activé" : "Activer AR"}
+                {isARMode ? "AR 3D activé" : "Activer AR 3D"}
               </Button>
             </div>
 
@@ -400,15 +434,25 @@ const PlaceDetail = () => {
               </div>
             )}
 
-            {/* Religious Symbol - top center (visible only in AR mode) */}
+            {/* Religious Symbol 3D - fullscreen AR overlay */}
             {isARMode && (
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10">
-                <ReligiousSymbol 
-                  religion={place.religion}
-                  unlocked={isPlaceVisited(placeId!)}
-                  size="md"
-                  intensity={isPlaceVisited(placeId!) ? 90 : 30}
-                />
+              <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
+                {arSupport.isSupported ? (
+                  <ReligiousSymbol3D
+                    religion={place.religion || 'christianity'}
+                    unlocked={isPlaceVisited(placeId!)}
+                    size="lg"
+                    intensity={isPlaceVisited(placeId!) ? 90 : 30}
+                    useDeviceOrientation={arPermissionGranted}
+                  />
+                ) : (
+                  <ReligiousSymbol 
+                    religion={place.religion}
+                    unlocked={isPlaceVisited(placeId!)}
+                    size="lg"
+                    intensity={isPlaceVisited(placeId!) ? 90 : 30}
+                  />
+                )}
               </div>
             )}
 
