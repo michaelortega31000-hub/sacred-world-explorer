@@ -19,6 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import type { SavedPOI } from '@/contexts/AppContext';
 import jsPDF from 'jspdf';
+import TripStatsDashboard from './TripStatsDashboard';
 import {
   Select,
   SelectContent,
@@ -1230,6 +1231,16 @@ const LocationsTab = () => {
                         places={displayRoute} 
                         onMapReady={(captureFn) => setCaptureMapFn(() => captureFn)}
                       />
+
+                      {/* Statistics Dashboard */}
+                      {routeSegments.length > 0 && (
+                        <TripStatsDashboard
+                          places={displayRoute}
+                          segments={routeSegments}
+                          savedPOIs={userProgress.savedPOIs}
+                          transportMode={transportMode}
+                        />
+                      )}
 
                       {/* Points d'arrêt suggérés */}
                       {pois.length > 0 && (
