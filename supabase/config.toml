@@ -6,6 +6,9 @@ verify_jwt = true
 [functions.update-leaderboard-rewards]
 verify_jwt = false
 
+[functions.notify-leaderboard-reward]
+verify_jwt = false
+
 [functions.transcribe-audio]
 verify_jwt = true
 
