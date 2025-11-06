@@ -13,6 +13,7 @@ import Traditions from "./pages/Traditions";
 import Calendar from "./pages/Calendar";
 import Journal from "./pages/Journal";
 import Profile from "./pages/Profile";
+import PublicProfile from "./pages/PublicProfile";
 import Settings from "./pages/Settings";
 import Country from "./pages/Country";
 import PlaceDetail from "./pages/PlaceDetail";
@@ -41,6 +42,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/badges" element={<Badges />} />
+          <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/user/:userId" element={<UserProfile />} />
           <Route path="/country/:countryName" element={<Country />} />
           <Route path="/place/:placeId" element={<PlaceDetail />} />

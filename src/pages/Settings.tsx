@@ -6,15 +6,17 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import EventReminderSettings from '@/components/EventReminderSettings';
+import { logger } from '@/lib/logger';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -26,12 +28,27 @@ const Settings = () => {
   const [soundEffects, setSoundEffects] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [colorTheme, setColorTheme] = useState('default');
+  const [username, setUsername] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
+  const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         navigate('/auth');
+      } else {
+        setUserId(session.user.id);
+        // Fetch username
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('username')
+          .eq('id', session.user.id)
+          .maybeSingle();
+        
+        if (!error && data?.username) {
+          setUsername(data.username);
+        }
       }
     };
     checkAuth();
@@ -122,6 +139,78 @@ const Settings = () => {
     navigate('/auth');
   };
 
+  const handleUsernameUpdate = async () => {
+    if (!userId) return;
+    
+    // Validate username
+    const trimmedUsername = username.trim();
+    if (trimmedUsername.length < 3) {
+      toast({
+        variant: 'destructive',
+        title: 'Nom d\'utilisateur trop court',
+        description: 'Le nom d\'utilisateur doit contenir au moins 3 caractères',
+      });
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(trimmedUsername)) {
+      toast({
+        variant: 'destructive',
+        title: 'Nom d\'utilisateur invalide',
+        description: 'Le nom d\'utilisateur ne peut contenir que des lettres, chiffres et underscores',
+      });
+      return;
+    }
+
+    setIsUpdatingUsername(true);
+    
+    try {
+      // Check if username is already taken
+      const { data: existing, error: checkError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('username', trimmedUsername)
+        .neq('id', userId)
+        .maybeSingle();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existing) {
+        toast({
+          variant: 'destructive',
+          title: 'Nom d\'utilisateur déjà pris',
+          description: 'Ce nom d\'utilisateur est déjà utilisé par un autre utilisateur',
+        });
+        return;
+      }
+
+      // Update username
+      const { error } = await supabase
+        .from('profiles')
+        .update({ username: trimmedUsername })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      setUsername(trimmedUsername);
+      toast({
+        title: 'Nom d\'utilisateur mis à jour',
+        description: 'Votre nom d\'utilisateur a été modifié avec succès',
+      });
+    } catch (error) {
+      logger.error('Error updating username:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour le nom d\'utilisateur',
+      });
+    } finally {
+      setIsUpdatingUsername(false);
+    }
+  };
+
   return (
     <ImageBackground 
       images={backgroundImages}
@@ -160,6 +249,40 @@ const Settings = () => {
                     <SelectItem value="de">🇩🇪 Deutsch</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+          </Card>
+
+          {/* Nom d'utilisateur */}
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <User className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <Label className="text-lg font-semibold text-foreground mb-2 block">
+                  Nom d'utilisateur
+                </Label>
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    placeholder="votre_nom_utilisateur"
+                    className="flex-1"
+                    maxLength={30}
+                  />
+                  <Button
+                    onClick={handleUsernameUpdate}
+                    disabled={isUpdatingUsername || !username.trim()}
+                    size="sm"
+                  >
+                    {isUpdatingUsername ? 'Mise à jour...' : 'Enregistrer'}
+                  </Button>
+                </div>
+                <p className="text-sm text-muted-foreground mt-2">
+                  Requis pour partager votre profil publiquement
+                </p>
               </div>
             </div>
           </Card>

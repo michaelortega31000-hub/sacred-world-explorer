@@ -6,9 +6,11 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, TrendingUp } from 'lucide-react';
+import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, TrendingUp, Share2, Check, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { logger } from '@/lib/logger';
@@ -45,6 +47,9 @@ const Profile = () => {
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpData, setLevelUpData] = useState({ level: 1, points: 0 });
   const [hasShownLevelUp, setHasShownLevelUp] = useState<Set<number>>(new Set());
+  const [isPublic, setIsPublic] = useState(false);
+  const [username, setUsername] = useState('');
+  const [copied, setCopied] = useState(false);
 
   const currentLevel = useMemo(() => Math.floor(userProgress.totalPoints / 100) + 1, [userProgress.totalPoints]);
 
@@ -103,7 +108,7 @@ const Profile = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('avatar_url')
+        .select('avatar_url, is_public, username')
         .eq('id', uid)
         .maybeSingle();
 
@@ -112,14 +117,16 @@ const Profile = () => {
         return;
       }
       
-      if (data?.avatar_url) {
-        logger.log('Avatar URL found:', data.avatar_url);
-        setAvatarUrl(data.avatar_url);
+      if (data) {
+        logger.log('Profile data found:', data);
+        setAvatarUrl(data.avatar_url || null);
+        setIsPublic(data.is_public || false);
+        setUsername(data.username || '');
       } else {
-        logger.log('No avatar URL found for user');
+        logger.log('No profile data found for user');
       }
     } catch (error) {
-      logger.error('Error fetching avatar:', error);
+      logger.error('Error fetching profile:', error);
     }
   };
 
@@ -248,6 +255,56 @@ const Profile = () => {
     }
   };
 
+  const handlePublicToggle = async (checked: boolean) => {
+    if (!userId) return;
+
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ is_public: checked })
+        .eq('id', userId);
+
+      if (error) throw error;
+
+      setIsPublic(checked);
+      toast({
+        title: checked ? 'Profil public' : 'Profil privé',
+        description: checked 
+          ? 'Votre profil est maintenant visible publiquement'
+          : 'Votre profil est maintenant privé',
+      });
+    } catch (error) {
+      logger.error('Error updating profile visibility:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Impossible de modifier la visibilité du profil',
+      });
+    }
+  };
+
+  const handleCopyShareLink = () => {
+    if (!username) {
+      toast({
+        variant: 'destructive',
+        title: 'Nom d\'utilisateur requis',
+        description: 'Veuillez définir un nom d\'utilisateur dans les paramètres',
+      });
+      return;
+    }
+
+    const shareUrl = `${window.location.origin}/u/${username}`;
+    navigator.clipboard.writeText(shareUrl);
+    setCopied(true);
+    
+    toast({
+      title: 'Lien copié !',
+      description: 'Le lien de partage a été copié dans le presse-papiers',
+    });
+
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const badgeLabels: Record<string, string> = {
     explorer: 'Explorateur',
     pilgrim: 'Pèlerin',
@@ -351,6 +408,56 @@ const Profile = () => {
                     />
                   </div>
                 )}
+
+                {/* Public Profile Sharing */}
+                <Card className="mt-6 p-4 bg-card/60 backdrop-blur-sm border-primary/20">
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="space-y-0.5">
+                        <Label htmlFor="public-profile" className="text-base font-semibold">
+                          Profil public
+                        </Label>
+                        <p className="text-sm text-muted-foreground">
+                          Permettre aux autres de voir vos statistiques
+                        </p>
+                      </div>
+                      <Switch
+                        id="public-profile"
+                        checked={isPublic}
+                        onCheckedChange={handlePublicToggle}
+                      />
+                    </div>
+
+                    {isPublic && username && (
+                      <div className="pt-2 border-t border-border/50">
+                        <Button
+                          onClick={handleCopyShareLink}
+                          variant="outline"
+                          className="w-full"
+                          size="sm"
+                        >
+                          {copied ? (
+                            <>
+                              <Check className="w-4 h-4 mr-2" />
+                              Lien copié !
+                            </>
+                          ) : (
+                            <>
+                              <Share2 className="w-4 h-4 mr-2" />
+                              Partager mon profil
+                            </>
+                          )}
+                        </Button>
+                      </div>
+                    )}
+
+                    {isPublic && !username && (
+                      <p className="text-sm text-muted-foreground pt-2 border-t border-border/50">
+                        Définissez un nom d'utilisateur dans les paramètres pour partager votre profil
+                      </p>
+                    )}
+                  </div>
+                </Card>
               </div>
             </div>
           </div>
