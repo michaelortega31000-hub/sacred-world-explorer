@@ -478,10 +478,9 @@ const Profile = () => {
               </Button>
             </div>
           </div>
-        </div>
-      </main>
+        </main>
 
-      <BottomNavigation />
+        <BottomNavigation />
       </div>
     </ImageBackground>
   );
