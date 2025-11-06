@@ -283,6 +283,17 @@ const Settings = () => {
                 <p className="text-sm text-muted-foreground mt-2">
                   Requis pour partager votre profil publiquement
                 </p>
+                
+                {/* Link to Avatar Gallery */}
+                <Button
+                  onClick={() => navigate('/avatars')}
+                  variant="outline"
+                  className="w-full mt-3"
+                  size="sm"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  Galerie d'Avatars
+                </Button>
               </div>
             </div>
           </Card>

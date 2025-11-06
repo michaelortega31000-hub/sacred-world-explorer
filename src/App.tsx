@@ -19,6 +19,7 @@ import Country from "./pages/Country";
 import PlaceDetail from "./pages/PlaceDetail";
 import Badges from "./pages/Badges";
 import UserProfile from "./pages/UserProfile";
+import AvatarsGallery from "./pages/AvatarsGallery";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import Reminders from "./pages/Reminders";
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/profile" element={<Profile />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/badges" element={<Badges />} />
+          <Route path="/avatars" element={<AvatarsGallery />} />
           <Route path="/u/:username" element={<PublicProfile />} />
           <Route path="/user/:userId" element={<UserProfile />} />
           <Route path="/country/:countryName" element={<Country />} />

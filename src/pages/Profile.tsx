@@ -635,13 +635,23 @@ const Profile = () => {
             )}
 
             {/* Quick Actions */}
-            <Button
-              onClick={() => navigate('/badges')}
-              className="w-full h-14 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 transition-all duration-300 hover:scale-105 hover:shadow-lg"
-            >
-              <Trophy className="w-5 h-5 mr-2" />
-              Voir mes badges
-            </Button>
+            <div className="space-y-3">
+              <Button
+                onClick={() => navigate('/avatars')}
+                className="w-full h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
+                <User className="w-5 h-5 mr-2" />
+                Galerie d'Avatars
+              </Button>
+              
+              <Button
+                onClick={() => navigate('/badges')}
+                className="w-full h-14 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              >
+                <Trophy className="w-5 h-5 mr-2" />
+                Voir mes badges
+              </Button>
+            </div>
           </div>
         </main>
 
