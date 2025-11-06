@@ -15,6 +15,7 @@ import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { playWhooshSound, resumeAudioContext } from '@/utils/audioEffects';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -514,6 +515,12 @@ useEffect(() => {
         
         if (countryName && map.current) {
           logger.log('Country clicked:', countryName, 'from layer:', feature.layer?.id);
+          
+          // Resume audio context if needed (browser requirement)
+          resumeAudioContext();
+          
+          // Play whoosh sound effect
+          playWhooshSound();
           
           // Pause la rotation du globe
           setIsPaused(true);
