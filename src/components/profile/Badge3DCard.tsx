@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Trophy } from 'lucide-react';
+import { useBadgeConfetti } from '@/hooks/useBadgeConfetti';
 
 interface Badge3DCardProps {
   icon: string;
@@ -7,6 +8,7 @@ interface Badge3DCardProps {
   description: string;
   unlockedAt: string;
   rarity?: 'common' | 'rare' | 'epic' | 'legendary';
+  isNew?: boolean;
 }
 
 const rarityStyles = {
@@ -41,17 +43,37 @@ export const Badge3DCard = ({
   name, 
   description, 
   unlockedAt,
-  rarity = 'common'
+  rarity = 'common',
+  isNew = false
 }: Badge3DCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
-
+  const [showConfetti, setShowConfetti] = useState(isNew);
+  const cardRef = useRef<HTMLDivElement>(null);
+  const { triggerConfetti } = useBadgeConfetti();
   const styles = rarityStyles[rarity];
+
+  useEffect(() => {
+    if (showConfetti && cardRef.current) {
+      const timer = setTimeout(() => {
+        triggerConfetti(rarity, cardRef.current || undefined);
+        setShowConfetti(false);
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [showConfetti, rarity, triggerConfetti]);
   
   return (
     <div
+      ref={cardRef}
       className="relative w-full h-48 perspective-1000 group"
       onMouseEnter={() => setIsFlipped(true)}
       onMouseLeave={() => setIsFlipped(false)}
+      onClick={() => {
+        if (!isNew) {
+          triggerConfetti(rarity, cardRef.current || undefined);
+        }
+      }}
     >
       <div
         className={`relative w-full h-full transition-transform duration-500 transform-style-3d ${

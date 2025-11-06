@@ -369,16 +369,22 @@ const Profile = () => {
                   Badges de Quêtes Mensuelles
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {questBadges.map((badge, index) => (
-                    <Badge3DCard
-                      key={badge.id}
-                      icon={badge.quest_icon}
-                      name={badge.quest_name}
-                      description={badge.quest_description}
-                      unlockedAt={badge.unlocked_at}
-                      rarity={index === 0 ? 'legendary' : index < 3 ? 'epic' : 'rare'}
-                    />
-                  ))}
+                  {questBadges.map((badge, index) => {
+                    const unlockedDate = new Date(badge.unlocked_at);
+                    const isNew = (Date.now() - unlockedDate.getTime()) < 24 * 60 * 60 * 1000; // Last 24h
+                    
+                    return (
+                      <Badge3DCard
+                        key={badge.id}
+                        icon={badge.quest_icon}
+                        name={badge.quest_name}
+                        description={badge.quest_description}
+                        unlockedAt={badge.unlocked_at}
+                        rarity={index === 0 ? 'legendary' : index < 3 ? 'epic' : 'rare'}
+                        isNew={isNew}
+                      />
+                    );
+                  })}
                 </div>
               </Card>
             )}
