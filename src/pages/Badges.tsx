@@ -8,8 +8,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Award, Trophy, Star, Lock, ArrowLeft, Calendar, Compass, Target, MapPin, Medal } from 'lucide-react';
+import { Award, Trophy, Star, Lock, ArrowLeft, Calendar, Compass, Target, MapPin, Medal, TrendingUp } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 
 interface UserBadge {
   id: string;
@@ -31,12 +32,18 @@ interface BadgeStats {
   totalUsers: number;
 }
 
+interface MonthlyProgress {
+  month: string;
+  badges: number;
+}
+
 const Badges = () => {
   const { session } = useApp();
   const navigate = useNavigate();
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [monthlyData, setMonthlyData] = useState<MonthlyProgress[]>([]);
   const [stats, setStats] = useState<BadgeStats>({
     totalBadges: 0,
     completionRate: 0,
@@ -63,8 +70,39 @@ const Badges = () => {
 
     if (!error && data) {
       setBadges(data);
+      calculateMonthlyProgress(data);
     }
     setLoading(false);
+  };
+
+  const calculateMonthlyProgress = (badgesData: UserBadge[]) => {
+    const monthlyBadges: Record<string, number> = {};
+    
+    badgesData.forEach(badge => {
+      const date = new Date(badge.unlocked_at);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyBadges[monthKey] = (monthlyBadges[monthKey] || 0) + 1;
+    });
+
+    // Get last 6 months
+    const now = new Date();
+    const last6Months: MonthlyProgress[] = [];
+    let cumulativeBadges = 0;
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthName = date.toLocaleDateString('fr-FR', { month: 'short', year: '2-digit' });
+      
+      cumulativeBadges += monthlyBadges[monthKey] || 0;
+      
+      last6Months.push({
+        month: monthName,
+        badges: cumulativeBadges
+      });
+    }
+
+    setMonthlyData(last6Months);
   };
 
   const fetchStats = async () => {
@@ -262,6 +300,60 @@ const Badges = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Monthly Progress Chart */}
+        {monthlyData.length > 0 && (
+          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-lg">
+                <TrendingUp className="w-5 h-5 text-primary" />
+                Progression mensuelle
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={200}>
+                <AreaChart data={monthlyData}>
+                  <defs>
+                    <linearGradient id="colorBadges" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="hsl(var(--accent))" stopOpacity={0.8}/>
+                      <stop offset="95%" stopColor="hsl(var(--accent))" stopOpacity={0.1}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis 
+                    dataKey="month" 
+                    tick={{ fontSize: 12 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <YAxis 
+                    tick={{ fontSize: 12 }}
+                    stroke="hsl(var(--muted-foreground))"
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: 'hsl(var(--card))',
+                      border: '1px solid hsl(var(--border))',
+                      borderRadius: '8px',
+                      padding: '8px'
+                    }}
+                    labelStyle={{ color: 'hsl(var(--foreground))' }}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="badges" 
+                    stroke="hsl(var(--accent))" 
+                    strokeWidth={2}
+                    fill="url(#colorBadges)" 
+                    name="Badges"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+              <p className="text-xs text-muted-foreground text-center mt-2">
+                Évolution de votre collection sur les 6 derniers mois
+              </p>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Filter Buttons */}
         <div className="flex gap-2 justify-center flex-wrap">

@@ -37,6 +37,10 @@ const Header = ({
 
   // Pages où on affiche uniquement le texte "Sacred World" sans logo
   const isTextOnlyPage = location.pathname === '/explore' || location.pathname === '/profile' || location.pathname.startsWith('/country') || location.pathname.startsWith('/place');
+  
+  // Afficher les contrôles de géolocalisation et voix uniquement sur la page explore
+  const showExploreControls = location.pathname === '/explore';
+  
   const handleMessagesClick = () => {
     markAsRead();
     navigate('/journal');
@@ -82,9 +86,11 @@ const Header = ({
                   </div>
                 </div>}
               
-              <div className="flex items-center gap-2">
-                <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
-              </div>
+              {showExploreControls && (
+                <div className="flex items-center gap-2">
+                  <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
+                </div>
+              )}
               
               {/* Points obtenus */}
               <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
@@ -108,7 +114,7 @@ const Header = ({
             
             {/* Droite : Commande vocale + Quête + Messages */}
             <div className="flex items-center gap-1 sm:gap-2">
-              <VoiceCommand />
+              {showExploreControls && <VoiceCommand />}
               
               <Button variant="ghost" size="sm" onClick={() => navigate('/world?tab=quest')} className="hidden sm:flex gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10">
                 <Target className="w-4 h-4" />
@@ -143,12 +149,16 @@ const Header = ({
               </div>
               
               <div className="flex items-center gap-2">
-                <div className="flex items-center gap-2">
-                  <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
-                  <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
-                </div>
-                
-                <VoiceCommand />
+                {showExploreControls && (
+                  <>
+                    <div className="flex items-center gap-2">
+                      <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
+                      <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
+                    </div>
+                    
+                    <VoiceCommand />
+                  </>
+                )}
                 
                 
                 

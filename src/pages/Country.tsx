@@ -16,7 +16,6 @@ import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
 import RestaurantsTab from '@/components/RestaurantsTab';
-import AudioImmersiveIcon from '@/components/AudioImmersiveIcon';
 import Header from '@/components/Header';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
@@ -425,10 +424,6 @@ const Country = () => {
                               <div className="flex items-start justify-between gap-2 mb-2">
                                 <CardTitle className="flex-1">{place.name}</CardTitle>
                                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                  <AudioImmersiveIcon 
-                                    isPremium={false}
-                                    onClick={() => toast.info('Abonnez-vous au mode Premium pour débloquer l\'audio immersif ! 👑')}
-                                  />
                                   {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
                                 </div>
                               </div>
