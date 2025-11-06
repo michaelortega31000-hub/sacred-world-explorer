@@ -55,28 +55,34 @@ export const ImageBackground = ({
     <div className={`relative ${className}`}>
       {/* Image de fond */}
       <div className="absolute inset-0 overflow-hidden">
-        {imageArray.map((img, idx) => (
-          <div
-            key={idx}
-            className={`absolute inset-0 transition-opacity duration-1000 ${
-              idx === currentIndex ? 'opacity-100' : 'opacity-0'
-            }`}
-            style={{
-              transform: parallaxTransform,
-              transition: parallax ? 'transform 0.1s ease-out' : undefined
-            }}
-          >
-            <img
-              src={img}
-              alt="Background"
-              className="w-full h-full object-cover"
+        {imageArray.map((img, idx) => {
+          const isActive = idx === currentIndex;
+          return (
+            <div
+              key={idx}
+              className={`absolute inset-0 transition-opacity duration-1000 ${
+                isActive ? 'opacity-100' : 'opacity-0'
+              }`}
               style={{
-                filter: blur > 0 ? `blur(${blur}px)` : undefined
+                transform: parallaxTransform,
+                transition: parallax ? 'transform 0.1s ease-out' : undefined
               }}
-              loading="lazy"
-            />
-          </div>
-        ))}
+            >
+              <img
+                src={img}
+                alt="Background"
+                className={`w-full h-full object-cover ${
+                  isActive ? 'animate-ken-burns' : ''
+                }`}
+                style={{
+                  filter: blur > 0 ? `blur(${blur}px)` : undefined,
+                  animation: isActive && carousel ? 'ken-burns 15s ease-in-out infinite alternate' : undefined
+                }}
+                loading="lazy"
+              />
+            </div>
+          );
+        })}
         {/* Overlay */}
         <div className={`absolute inset-0 ${overlayStyles[overlay]}`} />
       </div>

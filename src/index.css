@@ -640,3 +640,33 @@ All colors MUST be HSL.
 .flame-glow {
   filter: drop-shadow(0 0 8px rgba(251, 146, 60, 0.8)) drop-shadow(0 0 16px rgba(234, 88, 12, 0.6));
 }
+
+/* Ken Burns Effect - Slow Zoom Animation */
+@keyframes ken-burns {
+  0% {
+    transform: scale(1) translate(0, 0);
+  }
+  50% {
+    transform: scale(1.1) translate(-2%, -1%);
+  }
+  100% {
+    transform: scale(1.15) translate(-3%, -2%);
+  }
+}
+
+.animate-ken-burns {
+  animation: ken-burns 15s ease-in-out infinite alternate;
+  transform-origin: center center;
+}
+
+/* Smooth opacity transition for carousel */
+@keyframes fade-slide {
+  0% {
+    opacity: 0;
+    transform: scale(1.05);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
