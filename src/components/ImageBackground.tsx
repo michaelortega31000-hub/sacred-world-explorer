@@ -7,6 +7,8 @@ interface ImageBackgroundProps {
   parallax?: boolean;
   carousel?: boolean;
   carouselInterval?: number;
+  particles?: boolean;
+  particleCount?: number;
   className?: string;
   children: React.ReactNode;
 }
@@ -18,6 +20,8 @@ export const ImageBackground = ({
   parallax = false,
   carousel = false,
   carouselInterval = 8000,
+  particles = false,
+  particleCount = 20,
   className = '',
   children 
 }: ImageBackgroundProps) => {
@@ -85,6 +89,40 @@ export const ImageBackground = ({
         })}
         {/* Overlay */}
         <div className={`absolute inset-0 ${overlayStyles[overlay]}`} />
+        
+        {/* Particules flottantes */}
+        {particles && (
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            {Array.from({ length: particleCount }).map((_, i) => {
+              const size = Math.random() * 4 + 2;
+              const left = Math.random() * 100;
+              const top = Math.random() * 100;
+              const duration = Math.random() * 10 + 8;
+              const delay = Math.random() * 5;
+              const isGolden = Math.random() > 0.5;
+              
+              return (
+                <div
+                  key={i}
+                  className={`absolute rounded-full ${
+                    isGolden ? 'bg-sacred-gold/40' : 'bg-sacred-turquoise/30'
+                  } animate-float-particle`}
+                  style={{
+                    width: `${size}px`,
+                    height: `${size}px`,
+                    left: `${left}%`,
+                    top: `${top}%`,
+                    animationDuration: `${duration}s`,
+                    animationDelay: `${delay}s`,
+                    boxShadow: isGolden 
+                      ? '0 0 10px hsl(var(--sacred-gold) / 0.6), 0 0 20px hsl(var(--sacred-gold) / 0.3)'
+                      : '0 0 8px hsl(var(--sacred-turquoise) / 0.5), 0 0 16px hsl(var(--sacred-turquoise) / 0.2)'
+                  }}
+                />
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Contenu */}
