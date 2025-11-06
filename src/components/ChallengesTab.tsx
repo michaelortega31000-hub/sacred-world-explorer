@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Target, Trophy, MapPin, Compass, CheckCircle, Clock, Calendar, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { mockPlaces as placesData } from '@/data/placesData';
+import confetti from 'canvas-confetti';
 
 const ChallengesTab = () => {
   const { userProgress, addPoints, userLocation, flyToLocation, updateStreak, getStreakBonus } = useApp();
@@ -29,7 +30,24 @@ const ChallengesTab = () => {
     setClaimedQuests([...claimedQuests, questId]);
     
     if (isDaily) {
+      const oldStreak = userProgress.currentStreak;
       updateStreak();
+      
+      // Déclencher les confettis si nouveau record atteint
+      if (oldStreak >= userProgress.longestStreak && oldStreak > 0) {
+        confetti({
+          particleCount: 150,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#fb923c', '#f97316', '#ea580c', '#dc2626', '#ec4899'],
+          startVelocity: 45,
+          decay: 0.9,
+          scalar: 1.2,
+        });
+        toast.success(`🔥 Nouveau record de série !`, {
+          description: `${oldStreak + 1} jours consécutifs - Incroyable !`
+        });
+      }
     }
     
     if (bonusPoints > 0) {
@@ -254,8 +272,21 @@ const ChallengesTab = () => {
         <CardContent className="pt-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
-                <Flame className="w-8 h-8 text-white" />
+              <div 
+                className="rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center transition-all duration-500"
+                style={{
+                  width: `${Math.min(64 + userProgress.currentStreak * 2, 120)}px`,
+                  height: `${Math.min(64 + userProgress.currentStreak * 2, 120)}px`,
+                }}
+              >
+                <Flame 
+                  className="text-white flame-pulse flame-glow transition-all duration-500" 
+                  style={{
+                    width: `${Math.min(32 + userProgress.currentStreak * 1, 64)}px`,
+                    height: `${Math.min(32 + userProgress.currentStreak * 1, 64)}px`,
+                    filter: `brightness(${1 + userProgress.currentStreak * 0.03})`,
+                  }}
+                />
               </div>
               <div>
                 <div className="flex items-center gap-2">
