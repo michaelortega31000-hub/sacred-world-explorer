@@ -21,6 +21,7 @@ import { StatsChart } from '@/components/profile/StatsChart';
 import { BentoGallery } from '@/components/profile/BentoGallery';
 import { Badge3DCard } from '@/components/profile/Badge3DCard';
 import { ProgressSection } from '@/components/profile/ProgressSection';
+import { LevelUpModal } from '@/components/profile/LevelUpModal';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -39,6 +40,10 @@ const Profile = () => {
     quest_icon: string;
     unlocked_at: string;
   }>>([]);
+  const [showLevelUpModal, setShowLevelUpModal] = useState(false);
+  const [levelUpData, setLevelUpData] = useState({ level: 1, points: 0 });
+
+  const currentLevel = useMemo(() => Math.floor(userProgress.totalPoints / 100) + 1, [userProgress.totalPoints]);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -53,6 +58,22 @@ const Profile = () => {
     };
     checkAuth();
   }, [navigate]);
+
+  // Check for level up
+  useEffect(() => {
+    const storedLevel = localStorage.getItem('lastKnownLevel');
+    const lastLevel = storedLevel ? parseInt(storedLevel) : 1;
+
+    if (currentLevel > lastLevel) {
+      // Level up detected!
+      setLevelUpData({ level: currentLevel, points: userProgress.totalPoints });
+      setShowLevelUpModal(true);
+      localStorage.setItem('lastKnownLevel', currentLevel.toString());
+    } else if (!storedLevel) {
+      // First visit, store current level
+      localStorage.setItem('lastKnownLevel', currentLevel.toString());
+    }
+  }, [currentLevel, userProgress.totalPoints]);
 
   const fetchQuestBadges = async (uid: string) => {
     try {
@@ -446,6 +467,14 @@ const Profile = () => {
 
         <BottomNavigation />
       </div>
+
+      {/* Level Up Modal */}
+      <LevelUpModal
+        isOpen={showLevelUpModal}
+        onClose={() => setShowLevelUpModal(false)}
+        newLevel={levelUpData.level}
+        totalPoints={levelUpData.points}
+      />
     </ImageBackground>
   );
 };
