@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
@@ -42,6 +42,15 @@ interface RouteSegment {
   duration: number; // in minutes
 }
 
+interface POI {
+  id: string;
+  name: string;
+  type: 'restaurant' | 'lodging' | 'fuel';
+  address: string;
+  coordinates: [number, number];
+  segmentIndex: number; // which route segment this POI is near
+}
+
 const LocationsTab = () => {
   const navigate = useNavigate();
   const { userProgress, updatePlannedRoute } = useApp();
@@ -54,6 +63,8 @@ const LocationsTab = () => {
   const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
   const [routeSegments, setRouteSegments] = useState<RouteSegment[]>([]);
   const [loadingRouteInfo, setLoadingRouteInfo] = useState(false);
+  const [pois, setPois] = useState<POI[]>([]);
+  const [loadingPOIs, setLoadingPOIs] = useState(false);
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -245,12 +256,83 @@ const LocationsTab = () => {
     return route;
   }, [startingCity, plannedPlaces]);
 
+  // Search for POIs along the route
+  const searchPOIsAlongRoute = async (places: typeof plannedPlaces) => {
+    if (places.length < 2) {
+      setPois([]);
+      return;
+    }
+    
+    setLoadingPOIs(true);
+    const foundPOIs: POI[] = [];
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+
+    if (!mapboxToken) {
+      console.warn('Mapbox token not configured');
+      setLoadingPOIs(false);
+      return;
+    }
+
+    try {
+      // Search along each route segment
+      for (let i = 0; i < places.length - 1; i++) {
+        const start = places[i];
+        const end = places[i + 1];
+        
+        // Calculate midpoint for each segment
+        const midLng = (start.coordinates[0] + end.coordinates[0]) / 2;
+        const midLat = (start.coordinates[1] + end.coordinates[1]) / 2;
+
+        // Search for different types of POIs near the midpoint
+        const poiTypes = [
+          { query: 'restaurant', type: 'restaurant' as const },
+          { query: 'hotel', type: 'lodging' as const },
+          { query: 'gas station', type: 'fuel' as const }
+        ];
+
+        for (const { query, type } of poiTypes) {
+          try {
+            const response = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+              `proximity=${midLng},${midLat}&limit=2&access_token=${mapboxToken}`
+            );
+
+            if (response.ok) {
+              const data = await response.json();
+              data.features?.forEach((feature: any) => {
+                foundPOIs.push({
+                  id: feature.id,
+                  name: feature.text,
+                  type,
+                  address: feature.place_name,
+                  coordinates: feature.center,
+                  segmentIndex: i
+                });
+              });
+            }
+          } catch (error) {
+            console.error(`Error fetching ${type} POIs:`, error);
+          }
+        }
+      }
+
+      setPois(foundPOIs);
+    } catch (error) {
+      console.error('Error searching POIs:', error);
+      setPois([]);
+    } finally {
+      setLoadingPOIs(false);
+    }
+  };
+
   // Calculate route segments when optimized route changes
   useEffect(() => {
     if (showOptimizedRoute && optimizedRoute.length >= 2) {
       calculateRouteSegments(optimizedRoute);
+      searchPOIsAlongRoute(optimizedRoute);
     } else {
       setRouteSegments([]);
+      setPois([]);
     }
   }, [optimizedRoute, showOptimizedRoute]);
 
@@ -800,6 +882,101 @@ const LocationsTab = () => {
 
                       {/* Interactive Route Map */}
                       <TripRouteMap places={optimizedRoute} />
+
+                      {/* Points d'arrêt suggérés */}
+                      {pois.length > 0 && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <MapPin className="w-5 h-5 text-primary" />
+                              Points d'arrêt suggérés
+                            </CardTitle>
+                            <CardDescription>
+                              Restaurants, hébergements et stations-service le long du parcours
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            {loadingPOIs ? (
+                              <div className="text-center py-4 text-muted-foreground animate-pulse">
+                                Recherche des points d'arrêt...
+                              </div>
+                            ) : (
+                              <div className="space-y-6">
+                                {/* Group POIs by segment */}
+                                {Array.from(new Set(pois.map(p => p.segmentIndex))).map(segmentIndex => {
+                                  const segmentPOIs = pois.filter(p => p.segmentIndex === segmentIndex);
+                                  const fromPlace = optimizedRoute[segmentIndex];
+                                  const toPlace = optimizedRoute[segmentIndex + 1];
+                                  
+                                  return (
+                                    <div key={segmentIndex} className="border-l-2 border-primary/20 pl-4">
+                                      <h4 className="font-medium mb-3 text-sm flex items-center gap-2">
+                                        <Navigation className="w-4 h-4 text-primary" />
+                                        Entre {fromPlace.name} et {toPlace.name}
+                                      </h4>
+                                      <div className="space-y-4">
+                                        {/* Restaurants */}
+                                        {segmentPOIs.filter(p => p.type === 'restaurant').length > 0 && (
+                                          <div>
+                                            <div className="flex items-center gap-2 text-sm font-medium mb-2 text-primary">
+                                              <Utensils className="w-4 h-4" />
+                                              Restaurants
+                                            </div>
+                                            <div className="space-y-2 ml-6">
+                                              {segmentPOIs.filter(p => p.type === 'restaurant').map(poi => (
+                                                <div key={poi.id} className="text-sm bg-muted/30 p-2 rounded">
+                                                  <div className="font-medium">{poi.name}</div>
+                                                  <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                        
+                                        {/* Hébergements */}
+                                        {segmentPOIs.filter(p => p.type === 'lodging').length > 0 && (
+                                          <div>
+                                            <div className="flex items-center gap-2 text-sm font-medium mb-2 text-secondary">
+                                              <Hotel className="w-4 h-4" />
+                                              Hébergements
+                                            </div>
+                                            <div className="space-y-2 ml-6">
+                                              {segmentPOIs.filter(p => p.type === 'lodging').map(poi => (
+                                                <div key={poi.id} className="text-sm bg-muted/30 p-2 rounded">
+                                                  <div className="font-medium">{poi.name}</div>
+                                                  <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                        
+                                        {/* Stations-service */}
+                                        {segmentPOIs.filter(p => p.type === 'fuel').length > 0 && (
+                                          <div>
+                                            <div className="flex items-center gap-2 text-sm font-medium mb-2 text-accent">
+                                              <Fuel className="w-4 h-4" />
+                                              Stations-service
+                                            </div>
+                                            <div className="space-y-2 ml-6">
+                                              {segmentPOIs.filter(p => p.type === 'fuel').map(poi => (
+                                                <div key={poi.id} className="text-sm bg-muted/30 p-2 rounded">
+                                                  <div className="font-medium">{poi.name}</div>
+                                                  <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                </div>
+                                              ))}
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      )}
 
                       {/* Restaurants Section */}
                       {filteredRestaurants.length > 0 && (
