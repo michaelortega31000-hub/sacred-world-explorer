@@ -789,6 +789,9 @@ export type Database = {
           created_at: string
           id: string
           is_active: boolean
+          moderated_at: string | null
+          moderation_reason: string | null
+          moderation_status: string
           name: string | null
           uploaded_at: string
           user_id: string
@@ -798,6 +801,9 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          moderated_at?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string
           name?: string | null
           uploaded_at?: string
           user_id: string
@@ -807,6 +813,9 @@ export type Database = {
           created_at?: string
           id?: string
           is_active?: boolean
+          moderated_at?: string | null
+          moderation_reason?: string | null
+          moderation_status?: string
           name?: string | null
           uploaded_at?: string
           user_id?: string

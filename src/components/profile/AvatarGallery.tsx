@@ -128,6 +128,46 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
         });
         return;
       }
+
+      // Convert image to base64 for moderation
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      
+      const base64Promise = new Promise<string>((resolve, reject) => {
+        reader.onload = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          resolve(base64);
+        };
+        reader.onerror = reject;
+      });
+
+      const imageBase64 = await base64Promise;
+
+      // Call moderation function
+      toast({
+        title: 'Analyse en cours',
+        description: 'Vérification du contenu de l\'image...',
+      });
+
+      const { data: moderationData, error: moderationError } = await supabase.functions.invoke(
+        'moderate-avatar',
+        {
+          body: { imageBase64, fileName: file.name }
+        }
+      );
+
+      if (moderationError) {
+        throw new Error(moderationError.message);
+      }
+
+      if (!moderationData.approved) {
+        toast({
+          variant: 'destructive',
+          title: 'Image refusée',
+          description: moderationData.reason || 'Cette image ne respecte pas nos règles de contenu',
+        });
+        return;
+      }
       
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/custom-${Date.now()}.${fileExt}`;
@@ -144,13 +184,15 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Save to database
+      // Save to database with approved status
       const { error: dbError } = await supabase
         .from('user_custom_avatars')
         .insert({
           user_id: userId,
           avatar_url: publicUrl,
-          name: file.name
+          name: file.name,
+          moderation_status: 'approved',
+          moderated_at: new Date().toISOString()
         });
 
       if (dbError) throw dbError;

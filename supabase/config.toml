@@ -17,3 +17,6 @@ verify_jwt = true
 
 [functions.check-event-reminders]
 verify_jwt = false
+
+[functions.moderate-avatar]
+verify_jwt = true
