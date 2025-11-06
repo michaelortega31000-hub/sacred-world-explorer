@@ -4,10 +4,25 @@ import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MapPin, Award, BookHeart, Calendar } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Separator } from '@/components/ui/separator';
+import { MapPin, Award, BookHeart, Calendar, Heart, MessageCircle, Send } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { mockPlaces } from '@/data/placesData';
+import { toast } from 'sonner';
+import { z } from 'zod';
+
+const commentSchema = z.object({
+  content: z.string()
+    .trim()
+    .min(1, 'Le commentaire ne peut pas être vide')
+    .max(500, 'Le commentaire ne peut pas dépasser 500 caractères')
+    .refine(val => !/<[^>]*>/g.test(val), {
+      message: 'Les balises HTML ne sont pas autorisées'
+    }),
+});
 
 interface Activity {
   id: string;
@@ -25,12 +40,26 @@ interface Activity {
     tier?: string;
     media_urls?: string[];
   };
+  likes_count: number;
+  is_liked: boolean;
+  comments_count: number;
+}
+
+interface Comment {
+  id: string;
+  user_id: string;
+  username: string;
+  content: string;
+  created_at: string;
 }
 
 const ActivityFeed = () => {
   const { session } = useApp();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
+  const [comments, setComments] = useState<Record<string, Comment[]>>({});
+  const [newComment, setNewComment] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (session?.user) {
@@ -116,6 +145,9 @@ const ActivityFeed = () => {
           content: m.content,
           media_urls: m.media_urls,
         },
+        likes_count: 0,
+        is_liked: false,
+        comments_count: 0,
       });
     });
 
@@ -134,6 +166,9 @@ const ActivityFeed = () => {
           tier: b.tier,
           place_name: place?.name,
         },
+        likes_count: 0,
+        is_liked: false,
+        comments_count: 0,
       });
     });
 
@@ -150,6 +185,9 @@ const ActivityFeed = () => {
           place_id: v.place_id,
           place_name: place?.name || v.place_id,
         },
+        likes_count: 0,
+        is_liked: false,
+        comments_count: 0,
       });
     });
 
@@ -158,8 +196,175 @@ const ActivityFeed = () => {
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
 
-    setActivities(allActivities.slice(0, 20));
+    const limitedActivities = allActivities.slice(0, 20);
+
+    // Load likes and comments counts
+    await loadInteractions(limitedActivities);
+
+    setActivities(limitedActivities);
     setLoading(false);
+  };
+
+  const loadInteractions = async (activities: Activity[]) => {
+    if (!session?.user || activities.length === 0) return;
+
+    const activityMap: Record<string, { type: string; id: string }> = {};
+    activities.forEach(a => {
+      const [type, id] = a.id.split('-');
+      activityMap[a.id] = { type, id };
+    });
+
+    // Load likes
+    const { data: likesData } = await supabase
+      .from('activity_likes')
+      .select('activity_type, activity_id, user_id');
+
+    // Load comments count
+    const { data: commentsData } = await supabase
+      .from('activity_comments')
+      .select('activity_type, activity_id');
+
+    // Update activities with interaction data
+    activities.forEach(activity => {
+      const { type, id } = activityMap[activity.id];
+      
+      const activityLikes = (likesData || []).filter(
+        l => l.activity_type === type && l.activity_id === id
+      );
+      activity.likes_count = activityLikes.length;
+      activity.is_liked = activityLikes.some(l => l.user_id === session.user.id);
+
+      const activityComments = (commentsData || []).filter(
+        c => c.activity_type === type && c.activity_id === id
+      );
+      activity.comments_count = activityComments.length;
+    });
+  };
+
+  const toggleLike = async (activity: Activity) => {
+    if (!session?.user) return;
+
+    const [type, id] = activity.id.split('-');
+
+    if (activity.is_liked) {
+      // Unlike
+      const { error } = await supabase
+        .from('activity_likes')
+        .delete()
+        .eq('user_id', session.user.id)
+        .eq('activity_type', type)
+        .eq('activity_id', id);
+
+      if (!error) {
+        setActivities(prev => prev.map(a => 
+          a.id === activity.id 
+            ? { ...a, is_liked: false, likes_count: a.likes_count - 1 }
+            : a
+        ));
+      }
+    } else {
+      // Like
+      const { error } = await supabase
+        .from('activity_likes')
+        .insert({
+          user_id: session.user.id,
+          activity_type: type,
+          activity_id: id,
+        });
+
+      if (!error) {
+        setActivities(prev => prev.map(a => 
+          a.id === activity.id 
+            ? { ...a, is_liked: true, likes_count: a.likes_count + 1 }
+            : a
+        ));
+      } else if (error.code === '23505') {
+        toast.error('Vous avez déjà liké cette activité');
+      }
+    }
+  };
+
+  const loadComments = async (activity: Activity) => {
+    const [type, id] = activity.id.split('-');
+
+    const { data, error } = await supabase
+      .from('activity_comments')
+      .select('id, user_id, content, created_at')
+      .eq('activity_type', type)
+      .eq('activity_id', id)
+      .order('created_at', { ascending: true });
+
+    if (error) {
+      toast.error('Erreur lors du chargement des commentaires');
+      return;
+    }
+
+    const userIds = Array.from(new Set((data || []).map(c => c.user_id)));
+    let profilesMap: Record<string, string> = {};
+
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('public_profiles_store')
+        .select('id, username')
+        .in('id', userIds);
+      profilesMap = Object.fromEntries((profiles || []).map((p: any) => [p.id, p.username || 'Anonyme']));
+    }
+
+    const enrichedComments = (data || []).map(c => ({
+      ...c,
+      username: profilesMap[c.user_id] || 'Anonyme',
+    }));
+
+    setComments(prev => ({ ...prev, [activity.id]: enrichedComments }));
+  };
+
+  const toggleComments = async (activity: Activity) => {
+    if (expandedComments.has(activity.id)) {
+      setExpandedComments(prev => {
+        const next = new Set(prev);
+        next.delete(activity.id);
+        return next;
+      });
+    } else {
+      await loadComments(activity);
+      setExpandedComments(prev => new Set(prev).add(activity.id));
+    }
+  };
+
+  const addComment = async (activity: Activity) => {
+    if (!session?.user) return;
+
+    const commentText = newComment[activity.id] || '';
+    const validation = commentSchema.safeParse({ content: commentText });
+
+    if (!validation.success) {
+      toast.error(validation.error.errors[0].message);
+      return;
+    }
+
+    const [type, id] = activity.id.split('-');
+
+    const { error } = await supabase
+      .from('activity_comments')
+      .insert({
+        user_id: session.user.id,
+        activity_type: type,
+        activity_id: id,
+        content: validation.data.content,
+      });
+
+    if (error) {
+      toast.error('Erreur lors de l\'ajout du commentaire');
+      return;
+    }
+
+    setNewComment(prev => ({ ...prev, [activity.id]: '' }));
+    setActivities(prev => prev.map(a => 
+      a.id === activity.id 
+        ? { ...a, comments_count: a.comments_count + 1 }
+        : a
+    ));
+    await loadComments(activity);
   };
 
   const getActivityIcon = (type: Activity['type']) => {
@@ -274,6 +479,81 @@ const ActivityFeed = () => {
                     <Badge variant="secondary" className="mt-2">
                       {activity.data.tier}
                     </Badge>
+                  )}
+
+                  {/* Like and Comment buttons */}
+                  <div className="flex items-center gap-4 mt-3 pt-3 border-t">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleLike(activity)}
+                      className="gap-1"
+                    >
+                      <Heart 
+                        className={`w-4 h-4 ${activity.is_liked ? 'fill-destructive text-destructive' : ''}`}
+                      />
+                      <span className="text-sm">{activity.likes_count}</span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => toggleComments(activity)}
+                      className="gap-1"
+                    >
+                      <MessageCircle className="w-4 h-4" />
+                      <span className="text-sm">{activity.comments_count}</span>
+                    </Button>
+                  </div>
+
+                  {/* Comments section */}
+                  {expandedComments.has(activity.id) && (
+                    <div className="mt-4 space-y-3">
+                      <Separator />
+                      
+                      {/* Comments list */}
+                      {comments[activity.id]?.map((comment) => (
+                        <div key={comment.id} className="flex gap-2">
+                          <Avatar className="w-8 h-8">
+                            <AvatarFallback className="text-xs">
+                              {comment.username[0]?.toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <div className="bg-muted rounded-lg p-2">
+                              <p className="font-semibold text-xs">{comment.username}</p>
+                              <p className="text-sm">{comment.content}</p>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {formatDistanceToNow(new Date(comment.created_at), { 
+                                addSuffix: true, 
+                                locale: fr 
+                              })}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+
+                      {/* Add comment */}
+                      <div className="flex gap-2">
+                        <Textarea
+                          placeholder="Ajouter un commentaire..."
+                          value={newComment[activity.id] || ''}
+                          onChange={(e) => setNewComment(prev => ({ 
+                            ...prev, 
+                            [activity.id]: e.target.value 
+                          }))}
+                          rows={2}
+                          className="resize-none"
+                        />
+                        <Button
+                          size="sm"
+                          onClick={() => addComment(activity)}
+                          disabled={!newComment[activity.id]?.trim()}
+                        >
+                          <Send className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
                   )}
                 </div>
               </div>
