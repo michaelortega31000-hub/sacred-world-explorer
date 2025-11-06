@@ -1083,6 +1083,7 @@ export type Database = {
           last_quest_date: string
           longest_streak: number
           planned_route_start_city: string
+          saved_pois: Json | null
           saved_restaurants: string[]
           selected_religion: string | null
           show_planned_route: boolean
@@ -1102,6 +1103,7 @@ export type Database = {
           last_quest_date?: string
           longest_streak?: number
           planned_route_start_city?: string
+          saved_pois?: Json | null
           saved_restaurants?: string[]
           selected_religion?: string | null
           show_planned_route?: boolean
@@ -1121,6 +1123,7 @@ export type Database = {
           last_quest_date?: string
           longest_streak?: number
           planned_route_start_city?: string
+          saved_pois?: Json | null
           saved_restaurants?: string[]
           selected_religion?: string | null
           show_planned_route?: boolean

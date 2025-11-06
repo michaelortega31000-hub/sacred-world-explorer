@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
@@ -17,6 +17,7 @@ import { Label } from '@/components/ui/label';
 import TripRouteMap from './TripRouteMap';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import type { SavedPOI } from '@/contexts/AppContext';
 import {
   Select,
   SelectContent,
@@ -55,7 +56,7 @@ interface POI {
 
 const LocationsTab = () => {
   const navigate = useNavigate();
-  const { userProgress, updatePlannedRoute } = useApp();
+  const { userProgress, updatePlannedRoute, savePOI, removePOI, getPOIsForPlace } = useApp();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
@@ -70,6 +71,7 @@ const LocationsTab = () => {
   const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'fuel'>>(
     new Set(['restaurant', 'lodging', 'fuel'])
   );
+  const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -92,6 +94,18 @@ const LocationsTab = () => {
       }
       return newSet;
     });
+  };
+
+  const handleSavePOI = (poi: POI, placeId: string) => {
+    const savedPOI: SavedPOI = {
+      ...poi,
+      placeId
+    };
+    savePOI(savedPOI);
+  };
+
+  const isPOISaved = (poiId: string): boolean => {
+    return userProgress.savedPOIs.some(p => p.id === poiId);
   };
 
   // Calculate route segments with distance and duration
@@ -811,32 +825,87 @@ const LocationsTab = () => {
                                       </span>
                                     </div>
                                   )}
-                                  <div className="space-y-2">
-                                    <div className="flex items-start gap-4 ml-6">
-                                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                                        {index + 1}
-                                      </div>
-                                      <div 
-                                        className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
-                                        onClick={() => navigate(`/place/${place.id}`)}
-                                      >
-                                        {place.imageUrl && (
-                                          <img 
-                                            src={getImageUrl(place.imageUrl)} 
-                                            alt={place.name}
-                                            className="w-16 h-16 object-cover rounded"
-                                            onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-                                          />
-                                        )}
-                                        <div className="flex-1">
-                                          <h4 className="font-semibold">{place.name}</h4>
-                                          <p className="text-sm text-muted-foreground line-clamp-1">
-                                            {place.description}
-                                          </p>
-                                          <Badge variant="outline" className="mt-1">{place.points} pts</Badge>
-                                        </div>
-                                      </div>
-                                    </div>
+                                   <div className="space-y-2">
+                                     <div className="flex items-start gap-4 ml-6 relative">
+                                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                                         {index + 1}
+                                       </div>
+                                       <div className="flex-1 space-y-2">
+                                         <div 
+                                           className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                                           onClick={() => navigate(`/place/${place.id}`)}
+                                         >
+                                           {place.imageUrl && (
+                                             <div className="relative">
+                                               <img 
+                                                 src={getImageUrl(place.imageUrl)} 
+                                                 alt={place.name}
+                                                 className="w-16 h-16 object-cover rounded"
+                                                 onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                                               />
+                                               {getPOIsForPlace(place.id).length > 0 && (
+                                                 <Button
+                                                   size="sm"
+                                                   variant="secondary"
+                                                   className="absolute -bottom-2 -right-2 h-6 w-6 rounded-full p-0 shadow-lg"
+                                                   onClick={(e) => {
+                                                     e.stopPropagation();
+                                                     setExpandedPlaceId(expandedPlaceId === place.id ? null : place.id);
+                                                   }}
+                                                 >
+                                                   <Info className="w-3 h-3" />
+                                                 </Button>
+                                               )}
+                                             </div>
+                                           )}
+                                           <div className="flex-1">
+                                             <h4 className="font-semibold">{place.name}</h4>
+                                             <p className="text-sm text-muted-foreground line-clamp-1">
+                                               {place.description}
+                                             </p>
+                                             <Badge variant="outline" className="mt-1">{place.points} pts</Badge>
+                                           </div>
+                                         </div>
+                                         
+                                         {/* Display saved POIs for this place */}
+                                         {expandedPlaceId === place.id && getPOIsForPlace(place.id).length > 0 && (
+                                           <div className="ml-20 p-3 bg-primary/5 rounded-lg border border-primary/20 space-y-2">
+                                             <div className="flex items-center justify-between">
+                                               <h5 className="text-sm font-semibold text-primary">Points d'arrêt sauvegardés</h5>
+                                               <Button
+                                                 size="sm"
+                                                 variant="ghost"
+                                                 className="h-6 w-6 p-0"
+                                                 onClick={() => setExpandedPlaceId(null)}
+                                               >
+                                                 <X className="w-4 h-4" />
+                                               </Button>
+                                             </div>
+                                             {getPOIsForPlace(place.id).map(poi => (
+                                               <div key={poi.id} className="flex items-start justify-between gap-2 p-2 bg-background rounded text-sm">
+                                                 <div className="flex items-start gap-2 flex-1">
+                                                   {poi.type === 'restaurant' && <Utensils className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />}
+                                                   {poi.type === 'lodging' && <Hotel className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />}
+                                                   {poi.type === 'fuel' && <Fuel className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />}
+                                                   <div className="flex-1">
+                                                     <div className="font-medium">{poi.name}</div>
+                                                     <div className="text-xs text-muted-foreground line-clamp-1">{poi.address}</div>
+                                                   </div>
+                                                 </div>
+                                                 <Button
+                                                   size="sm"
+                                                   variant="ghost"
+                                                   className="h-6 w-6 p-0 text-destructive hover:text-destructive"
+                                                   onClick={() => removePOI(poi.id)}
+                                                 >
+                                                   <X className="w-3 h-3" />
+                                                 </Button>
+                                               </div>
+                                             ))}
+                                           </div>
+                                         )}
+                                       </div>
+                                     </div>
                                     {index < optimizedRoute.length - 1 && segment && (
                                       <div className="ml-14 flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
                                         <div className="flex items-center gap-2">
@@ -992,12 +1061,25 @@ const LocationsTab = () => {
                                               Restaurants
                                             </div>
                                             <div className="space-y-2 ml-6">
-                                              {segmentPOIs.filter(p => p.type === 'restaurant').map(poi => (
-                                                <div key={poi.id} className="text-sm bg-muted/30 p-2 rounded">
-                                                  <div className="font-medium">{poi.name}</div>
-                                                  <div className="text-xs text-muted-foreground">{poi.address}</div>
-                                                </div>
-                                              ))}
+                                              {segmentPOIs.filter(p => p.type === 'restaurant').map(poi => {
+                                                const saved = isPOISaved(poi.id);
+                                                return (
+                                                  <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
+                                                    <div>
+                                                      <div className="font-medium">{poi.name}</div>
+                                                      <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                    </div>
+                                                    <Button
+                                                      size="sm"
+                                                      variant={saved ? "secondary" : "ghost"}
+                                                      className="h-6 w-6 p-0 flex-shrink-0"
+                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, fromPlace.id)}
+                                                    >
+                                                      {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                                    </Button>
+                                                  </div>
+                                                );
+                                              })}
                                             </div>
                                           </div>
                                         )}
@@ -1010,12 +1092,25 @@ const LocationsTab = () => {
                                               Hébergements
                                             </div>
                                             <div className="space-y-2 ml-6">
-                                              {segmentPOIs.filter(p => p.type === 'lodging').map(poi => (
-                                                <div key={poi.id} className="text-sm bg-muted/30 p-2 rounded">
-                                                  <div className="font-medium">{poi.name}</div>
-                                                  <div className="text-xs text-muted-foreground">{poi.address}</div>
-                                                </div>
-                                              ))}
+                                              {segmentPOIs.filter(p => p.type === 'lodging').map(poi => {
+                                                const saved = isPOISaved(poi.id);
+                                                return (
+                                                  <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
+                                                    <div>
+                                                      <div className="font-medium">{poi.name}</div>
+                                                      <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                    </div>
+                                                    <Button
+                                                      size="sm"
+                                                      variant={saved ? "secondary" : "ghost"}
+                                                      className="h-6 w-6 p-0 flex-shrink-0"
+                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, fromPlace.id)}
+                                                    >
+                                                      {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                                    </Button>
+                                                  </div>
+                                                );
+                                              })}
                                             </div>
                                           </div>
                                         )}
@@ -1028,12 +1123,25 @@ const LocationsTab = () => {
                                               Stations-service
                                             </div>
                                             <div className="space-y-2 ml-6">
-                                              {segmentPOIs.filter(p => p.type === 'fuel').map(poi => (
-                                                <div key={poi.id} className="text-sm bg-muted/30 p-2 rounded">
-                                                  <div className="font-medium">{poi.name}</div>
-                                                  <div className="text-xs text-muted-foreground">{poi.address}</div>
-                                                </div>
-                                              ))}
+                                              {segmentPOIs.filter(p => p.type === 'fuel').map(poi => {
+                                                const saved = isPOISaved(poi.id);
+                                                return (
+                                                  <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
+                                                    <div>
+                                                      <div className="font-medium">{poi.name}</div>
+                                                      <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                    </div>
+                                                    <Button
+                                                      size="sm"
+                                                      variant={saved ? "secondary" : "ghost"}
+                                                      className="h-6 w-6 p-0 flex-shrink-0"
+                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, fromPlace.id)}
+                                                    >
+                                                      {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                                    </Button>
+                                                  </div>
+                                                );
+                                              })}
                                             </div>
                                           </div>
                                         )}

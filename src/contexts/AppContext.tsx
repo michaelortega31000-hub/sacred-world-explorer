@@ -26,6 +26,15 @@ export interface Place {
   religion?: Religion;
 }
 
+export interface SavedPOI {
+  id: string;
+  name: string;
+  type: 'restaurant' | 'lodging' | 'fuel';
+  address: string;
+  coordinates: [number, number];
+  placeId: string; // ID du lieu associé dans l'itinéraire
+}
+
 export interface UserProgress {
   selectedReligion: Religion | null;
   language: string;
@@ -34,6 +43,7 @@ export interface UserProgress {
   badges: string[];
   tripPlaces: string[];
   savedRestaurants: string[];
+  savedPOIs: SavedPOI[];
   geolocationEnabled: boolean;
   plannedRouteStartCity: string;
   showPlannedRoute: boolean;
@@ -55,6 +65,9 @@ interface AppContextType {
   clearTrip: () => void;
   saveRestaurant: (restaurantId: string) => void;
   unsaveRestaurant: (restaurantId: string) => void;
+  savePOI: (poi: SavedPOI) => void;
+  removePOI: (poiId: string) => void;
+  getPOIsForPlace: (placeId: string) => SavedPOI[];
   addPoints: (points: number) => void;
   toggleGeolocation: () => void;
   updatePlannedRoute: (startCity: string, showRoute: boolean) => void;
@@ -92,6 +105,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         badges: [],
         tripPlaces: [],
         savedRestaurants: [],
+        savedPOIs: [],
         geolocationEnabled: false,
       plannedRouteStartCity: '',
       showPlannedRoute: false,
@@ -149,6 +163,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           badges: data.badges,
           tripPlaces: data.trip_places,
           savedRestaurants: data.saved_restaurants || [],
+          savedPOIs: Array.isArray(data.saved_pois) ? data.saved_pois as unknown as SavedPOI[] : [],
           geolocationEnabled: data.geolocation_enabled,
           plannedRouteStartCity: data.planned_route_start_city || '',
           showPlannedRoute: data.show_planned_route || false,
@@ -194,6 +209,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
             badges: localProgress.badges || [],
             trip_places: localProgress.tripPlaces || [],
             saved_restaurants: localProgress.savedRestaurants || [],
+            saved_pois: localProgress.savedPOIs || [],
             geolocation_enabled: localProgress.geolocationEnabled || false,
             planned_route_start_city: localProgress.plannedRouteStartCity || '',
             show_planned_route: localProgress.showPlannedRoute || false
@@ -226,10 +242,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         badges: userProgress.badges,
         trip_places: userProgress.tripPlaces,
         saved_restaurants: userProgress.savedRestaurants,
+        saved_pois: userProgress.savedPOIs as any,
         geolocation_enabled: userProgress.geolocationEnabled,
           planned_route_start_city: userProgress.plannedRouteStartCity,
           show_planned_route: userProgress.showPlannedRoute
-        }, {
+        } as any, {
           onConflict: 'user_id'
         });
 
@@ -405,6 +422,28 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const savePOI = (poi: SavedPOI) => {
+    setUserProgress(prev => {
+      // Check if POI already saved
+      if (prev.savedPOIs.some(p => p.id === poi.id)) return prev;
+      return {
+        ...prev,
+        savedPOIs: [...prev.savedPOIs, poi]
+      };
+    });
+  };
+
+  const removePOI = (poiId: string) => {
+    setUserProgress(prev => ({
+      ...prev,
+      savedPOIs: prev.savedPOIs.filter(p => p.id !== poiId)
+    }));
+  };
+
+  const getPOIsForPlace = (placeId: string): SavedPOI[] => {
+    return userProgress.savedPOIs.filter(poi => poi.placeId === placeId);
+  };
+
   const flyToLocation = (lat: number, lng: number, zoom: number = 12) => {
     if (flyToFn) {
       flyToFn(lat, lng, zoom);
@@ -524,6 +563,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       clearTrip,
       saveRestaurant,
       unsaveRestaurant,
+      savePOI,
+      removePOI,
+      getPOIsForPlace,
       addPoints,
       toggleGeolocation,
       updatePlannedRoute,
