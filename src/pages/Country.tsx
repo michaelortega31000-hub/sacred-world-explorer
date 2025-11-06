@@ -16,7 +16,7 @@ import ReligionRankingTab from '@/components/ReligionRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
 import RestaurantsTab from '@/components/RestaurantsTab';
-import Header from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import { logger } from '@/lib/logger';
 import { toast } from 'sonner';
 import { useToast } from '@/hooks/use-toast';
@@ -235,12 +235,10 @@ const Country = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header 
-        showBack 
-        backTo="/world" 
-        backLabel={t('worldMap.back')}
-      >
-        <div className="flex items-center gap-4">
+      <BackButton to="/world" />
+      
+      <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm px-4 py-3">
+        <div className="max-w-7xl mx-auto flex items-center gap-4">
           <Select value={country} onValueChange={handleCountryChange}>
             <SelectTrigger className="w-[200px] bg-card border-border">
               <Globe className="w-4 h-4 mr-2" />
@@ -258,7 +256,7 @@ const Country = () => {
             <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
           </div>
         </div>
-      </Header>
+      </div>
 
       <Tabs value={activeTab} onValueChange={(value) => navigate(`/country/${country}?tab=${value}`)} className="flex-1 flex flex-col">
         <div className="border-b border-border bg-card sticky top-0 z-40 shadow-sm">

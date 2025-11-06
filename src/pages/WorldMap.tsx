@@ -14,7 +14,7 @@ import SocialTab from '@/components/SocialTab';
 import CountriesByContinent from '@/components/CountriesByContinent';
 import CalendarTab from '@/components/CalendarTab';
 import Globe3D from '@/components/Globe3D';
-import Header from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { ReligionAnimation } from '@/components/ReligionAnimation';
 
@@ -95,11 +95,7 @@ const WorldMap = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col pb-20">
       <ReligionAnimation />
-      <Header>
-        <div className="text-sm text-muted-foreground hidden sm:block">
-          <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
-        </div>
-      </Header>
+      <BackButton />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <TabsContent value="map" className="flex-1 m-0 relative min-h-[70vh]">

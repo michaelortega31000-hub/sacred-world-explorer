@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import Header from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -241,16 +241,7 @@ const Profile = () => {
           <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
         </div>
 
-        <Header>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate('/settings')}
-            className="hover:bg-primary/10"
-          >
-            <SettingsIcon className="w-5 h-5" />
-          </Button>
-        </Header>
+        <BackButton to="/settings" />
 
         <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
           <div className="w-full">

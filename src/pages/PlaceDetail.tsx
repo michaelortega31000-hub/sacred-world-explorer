@@ -7,7 +7,6 @@ import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { 
-  ArrowLeft, 
   MapPin, 
   Clock, 
   CheckCircle2, 
@@ -24,7 +23,7 @@ import {
   Utensils,
   ImagePlus
 } from 'lucide-react';
-import Header from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 import { useToast } from '@/hooks/use-toast';
@@ -330,7 +329,7 @@ const PlaceDetail = () => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header showBack backLabel="Retour" />
+      <BackButton />
 
       <div className="flex-1 overflow-y-auto">
         {/* Galerie d'images */}

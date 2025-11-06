@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Header from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -124,16 +124,7 @@ const Settings = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
       </div>
 
-      <Header>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate(-1)}
-          className="hover:bg-primary/10"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-      </Header>
+      <BackButton />
 
       <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <h1 className="text-3xl font-bold text-foreground mb-6 flex items-center gap-3">

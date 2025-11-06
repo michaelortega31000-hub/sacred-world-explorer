@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CommunityPost } from "@/components/CommunityPost";
-import Header from "@/components/Header";
+import { BackButton } from "@/components/BackButton";
 import { useApp } from "@/contexts/AppContext";
 
 const Community = () => {
@@ -43,7 +43,7 @@ const Community = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <BackButton />
       
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-24">
         <div className="text-center space-y-2">

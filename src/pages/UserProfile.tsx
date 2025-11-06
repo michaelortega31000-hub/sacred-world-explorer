@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
-import Header from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
@@ -249,7 +249,7 @@ const UserProfile = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header />
+        <BackButton />
         <div className="container mx-auto px-4 py-6">
           <div className="animate-pulse space-y-4">
             <div className="h-32 bg-muted rounded"></div>
@@ -264,7 +264,7 @@ const UserProfile = () => {
   if (!stats) {
     return (
       <div className="min-h-screen bg-background pb-20">
-        <Header />
+        <BackButton />
         <div className="container mx-auto px-4 py-6">
           <Card>
             <CardContent className="py-12 text-center">
@@ -282,13 +282,10 @@ const UserProfile = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header />
+      <BackButton />
       
       <div className="container mx-auto px-4 py-6 space-y-6">
-        <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Retour
-        </Button>
+        {/* Remove duplicate back button */}
 
         {/* Profile Header */}
         <Card>

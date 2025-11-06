@@ -2,13 +2,13 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import Header from '@/components/Header';
+import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Award, Trophy, Star, Lock, ArrowLeft, Calendar, Compass, Target, MapPin, Medal, TrendingUp } from 'lucide-react';
+import { Award, Trophy, Star, Lock, Calendar, Compass, Target, MapPin, Medal, TrendingUp } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { ImageBackground } from '@/components/ImageBackground';
@@ -232,16 +232,7 @@ const Badges = () => {
         </div>
       </ImageBackground>
 
-      <Header>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/profile')}
-          className="hover:bg-primary/10"
-        >
-          <ArrowLeft className="w-5 h-5" />
-        </Button>
-      </Header>
+      <BackButton to="/profile" />
       
       <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-6">
         <div className="text-center space-y-2">
