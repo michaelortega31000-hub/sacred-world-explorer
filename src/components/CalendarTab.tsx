@@ -18,6 +18,7 @@ import ListView from '@/components/calendar/ListView';
 import YearView from '@/components/calendar/YearView';
 import EventDetailEnriched from '@/components/calendar/EventDetailEnriched';
 import EventNotificationBanner from '@/components/EventNotificationBanner';
+import CalendarLegend from '@/components/calendar/CalendarLegend';
 
 interface VisitEvent {
   date: Date;
@@ -154,6 +155,13 @@ const CalendarTab = () => {
             </div>
           </CardContent>
         </Card>
+
+        {/* Légende des traditions */}
+        <CalendarLegend 
+          events={filteredReligiousEvents}
+          traditionColors={traditionColors}
+          traditionLabels={traditionLabels}
+        />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Calendrier Views */}

@@ -29,12 +29,17 @@ const WeekView = ({ selectedDate, events, onEventClick }: WeekViewProps) => {
         const isToday = isSameDay(day, new Date());
 
         return (
-          <Card key={day.toISOString()} className={`p-3 min-h-[200px] ${isToday ? 'ring-2 ring-primary' : ''}`}>
+          <Card 
+            key={day.toISOString()} 
+            className={`p-3 min-h-[200px] transition-all hover:shadow-lg ${
+              isToday ? 'ring-2 ring-primary shadow-primary/20' : ''
+            }`}
+          >
             <div className="text-center mb-3">
-              <p className="text-xs text-muted-foreground uppercase">
+              <p className="text-xs text-muted-foreground uppercase font-semibold">
                 {format(day, 'EEE', { locale: fr })}
               </p>
-              <p className={`text-lg font-bold ${isToday ? 'text-primary' : ''}`}>
+              <p className={`text-xl font-bold ${isToday ? 'text-primary' : ''}`}>
                 {format(day, 'd')}
               </p>
             </div>
@@ -44,14 +49,29 @@ const WeekView = ({ selectedDate, events, onEventClick }: WeekViewProps) => {
                 <div
                   key={event.id}
                   onClick={() => onEventClick(event)}
-                  className="cursor-pointer hover:opacity-80 transition-opacity"
+                  className="cursor-pointer transition-all hover:scale-105 group"
                 >
-                  <Badge 
-                    style={{ backgroundColor: event.color }}
-                    className="w-full text-white text-xs py-1 px-2 justify-start"
+                  <div
+                    className="relative rounded-lg overflow-hidden p-2 border-l-4 transition-all"
+                    style={{
+                      background: `linear-gradient(90deg, ${event.color}15 0%, transparent 100%)`,
+                      borderLeftColor: event.color,
+                      boxShadow: `0 2px 8px ${event.color}20`,
+                    }}
                   >
-                    {event.nameFr}
-                  </Badge>
+                    <div className="flex items-center gap-2">
+                      <div
+                        className="w-2 h-2 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform"
+                        style={{
+                          backgroundColor: event.color,
+                          boxShadow: `0 0 8px ${event.color}`,
+                        }}
+                      />
+                      <span className="text-xs font-medium line-clamp-2 text-foreground">
+                        {event.nameFr}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
