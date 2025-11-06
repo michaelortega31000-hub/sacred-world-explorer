@@ -16,6 +16,8 @@ import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { useApp } from '@/contexts/AppContext';
 import BottomNavigation from '@/components/BottomNavigation';
 import { LeaderboardSection } from '@/components/avatars/LeaderboardSection';
+import { LeaderboardRewardsInfo } from '@/components/avatars/LeaderboardRewardsInfo';
+import { useLeaderboardRewards } from '@/hooks/useLeaderboardRewards';
 
 interface DefaultAvatar {
   id: string;
@@ -39,6 +41,9 @@ const AvatarsGallery = () => {
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedRarity, setSelectedRarity] = useState<string>('all');
+
+  // Listen for leaderboard rewards
+  useLeaderboardRewards(userId);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -173,6 +178,11 @@ const AvatarsGallery = () => {
             <p className="text-muted-foreground">
               Débloquez des avatars exclusifs en progressant dans votre aventure
             </p>
+          </div>
+
+          {/* Leaderboard Rewards Info */}
+          <div className="mb-8">
+            <LeaderboardRewardsInfo />
           </div>
 
           {/* Global Stats */}

@@ -414,6 +414,41 @@ export type Database = {
           },
         ]
       }
+      leaderboard_achievements: {
+        Row: {
+          achieved_at: string
+          achievement_type: string
+          avatar_unlocked: string | null
+          id: string
+          rank: number
+          user_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          achievement_type: string
+          avatar_unlocked?: string | null
+          id?: string
+          rank: number
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          achievement_type?: string
+          avatar_unlocked?: string | null
+          id?: string
+          rank?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "leaderboard_achievements_avatar_unlocked_fkey"
+            columns: ["avatar_unlocked"]
+            isOneToOne: false
+            referencedRelation: "default_avatars"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       level_rewards: {
         Row: {
           created_at: string
@@ -1442,6 +1477,7 @@ export type Database = {
       }
     }
     Functions: {
+      check_leaderboard_positions: { Args: never; Returns: undefined }
       get_user_payment_info: {
         Args: { _user_id: string }
         Returns: {
