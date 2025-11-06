@@ -271,6 +271,56 @@ export const playRemoveFromTripSound = () => {
 };
 
 /**
+ * Play a gentle notification sound
+ * Soft bell tone for reminders and notifications
+ */
+export const playNotificationSound = () => {
+  try {
+    const ctx = getAudioContext();
+    const now = ctx.currentTime;
+    
+    const osc1 = ctx.createOscillator();
+    const osc2 = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    osc1.connect(gainNode);
+    osc2.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    // Gentle two-tone bell: G5 -> C6
+    osc1.type = 'sine';
+    osc2.type = 'sine';
+    
+    // First bell (G5 - 784Hz)
+    osc1.frequency.setValueAtTime(784, now);
+    osc2.frequency.setValueAtTime(784 * 2, now); // Octave
+    
+    // Second bell (C6 - 1047Hz)
+    osc1.frequency.setValueAtTime(1047, now + 0.15);
+    osc2.frequency.setValueAtTime(1047 * 2, now + 0.15);
+    
+    // Soft, gentle envelope
+    gainNode.gain.setValueAtTime(0, now);
+    gainNode.gain.linearRampToValueAtTime(0.08, now + 0.02); // Very subtle
+    gainNode.gain.linearRampToValueAtTime(0.06, now + 0.15);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+    
+    osc1.start(now);
+    osc2.start(now);
+    osc1.stop(now + 0.6);
+    osc2.stop(now + 0.6);
+    
+    osc1.onended = () => {
+      osc1.disconnect();
+      osc2.disconnect();
+      gainNode.disconnect();
+    };
+  } catch (error) {
+    console.debug('Audio playback not available:', error);
+  }
+};
+
+/**
  * Resume audio context after user interaction (required by some browsers)
  */
 export const resumeAudioContext = () => {

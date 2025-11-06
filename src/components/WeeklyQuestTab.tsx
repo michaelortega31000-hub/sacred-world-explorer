@@ -9,6 +9,7 @@ import DailyQuiz from './DailyQuiz';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { mockPlaces } from '@/data/placesData';
+import { playNotificationSound, resumeAudioContext } from '@/utils/audioEffects';
 
 const WeeklyQuestTab = () => {
   const { t } = useTranslation();
@@ -24,6 +25,8 @@ const WeeklyQuestTab = () => {
 
   const handleClaimReward = (questId: number, reward: number, title: string) => {
     if (!claimedQuests.includes(questId)) {
+      resumeAudioContext();
+      playNotificationSound();
       addPoints(reward);
       setClaimedQuests(prev => [...prev, questId]);
       toast.success(`🎉 Quête complétée ! +${reward} points`, {
