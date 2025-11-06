@@ -204,7 +204,7 @@ const CalendarTab = () => {
                   hasReligiousEvent: daysWithReligiousEvents
                 }} modifiersClassNames={{
                   hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
-                  hasReligiousEvent: 'relative'
+                  hasReligiousEvent: 'has-religious-event'
                 }} />
               )}
               
