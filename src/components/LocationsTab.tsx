@@ -75,6 +75,8 @@ const LocationsTab = () => {
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   const [transportMode, setTransportMode] = useState<'driving' | 'cycling' | 'walking'>('driving');
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+  const [optimizedRouteState, setOptimizedRouteState] = useState<typeof plannedPlaces>([]);
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -109,6 +111,35 @@ const LocationsTab = () => {
 
   const isPOISaved = (poiId: string): boolean => {
     return userProgress.savedPOIs.some(p => p.id === poiId);
+  };
+
+  const handleDragStart = (index: number) => {
+    setDraggedIndex(index);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const handleDrop = (dropIndex: number) => {
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null);
+      return;
+    }
+
+    const newRoute = [...optimizedRouteState];
+    const [draggedItem] = newRoute.splice(draggedIndex, 1);
+    newRoute.splice(dropIndex, 0, draggedItem);
+    
+    setOptimizedRouteState(newRoute);
+    setDraggedIndex(null);
+    
+    // Recalculate segments with new order
+    calculateRouteSegments(newRoute, transportMode);
+  };
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null);
   };
 
   // Export route to PDF
@@ -424,6 +455,16 @@ const LocationsTab = () => {
     return route;
   }, [startingCity, plannedPlaces]);
 
+  // Use optimizedRouteState if user has reordered, otherwise use calculated optimizedRoute
+  const displayRoute = optimizedRouteState.length > 0 ? optimizedRouteState : optimizedRoute;
+
+  // Update state when optimizedRoute changes
+  useEffect(() => {
+    if (optimizedRoute.length > 0) {
+      setOptimizedRouteState(optimizedRoute);
+    }
+  }, [optimizedRoute]);
+
   // Search for POIs along the route
   const searchPOIsAlongRoute = async (places: typeof plannedPlaces) => {
     if (places.length < 2) {
@@ -495,14 +536,14 @@ const LocationsTab = () => {
 
   // Calculate route segments when optimized route changes
   useEffect(() => {
-    if (showOptimizedRoute && optimizedRoute.length >= 2) {
-      calculateRouteSegments(optimizedRoute, transportMode);
-      searchPOIsAlongRoute(optimizedRoute);
+    if (showOptimizedRoute && displayRoute.length >= 2) {
+      calculateRouteSegments(displayRoute, transportMode);
+      searchPOIsAlongRoute(displayRoute);
     } else {
       setRouteSegments([]);
       setPois([]);
     }
-  }, [optimizedRoute, showOptimizedRoute, transportMode]);
+  }, [displayRoute, showOptimizedRoute, transportMode]);
 
   // Get unique cities from planned places
   const tripCities = useMemo(() => {
@@ -965,7 +1006,7 @@ const LocationsTab = () => {
                   </Card>
 
                   {/* Optimized Route Display */}
-                  {showOptimizedRoute && startingCity && optimizedRoute.length > 0 && (
+                  {showOptimizedRoute && startingCity && displayRoute.length > 0 && (
                     <>
                        <Card className="border-primary/30">
                         <CardHeader>
@@ -973,10 +1014,10 @@ const LocationsTab = () => {
                             <div>
                               <CardTitle className="flex items-center gap-2 text-primary">
                                 <Route className="w-5 h-5" />
-                                Itinéraire optimisé ({optimizedRoute.length} étapes)
+                                Itinéraire optimisé ({displayRoute.length} étapes)
                               </CardTitle>
                               <CardDescription>
-                                Parcours recommandé depuis {startingCity}
+                                Parcours recommandé depuis {startingCity} - Glissez pour réorganiser
                               </CardDescription>
                             </div>
                             <Button
@@ -991,13 +1032,25 @@ const LocationsTab = () => {
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-4">
-                            {optimizedRoute.map((place, index) => {
+                            {displayRoute.map((place, index) => {
                               const isNewCity = index === 0 || 
-                                `${place.city}, ${place.country}` !== `${optimizedRoute[index-1]?.city}, ${optimizedRoute[index-1]?.country}`;
+                                `${place.city}, ${place.country}` !== `${displayRoute[index-1]?.city}, ${displayRoute[index-1]?.country}`;
                               const segment = routeSegments[index];
+                              const isDragging = draggedIndex === index;
                               
                               return (
-                                <div key={place.id}>
+                                <div 
+                                  key={place.id}
+                                  draggable
+                                  onDragStart={() => handleDragStart(index)}
+                                  onDragOver={handleDragOver}
+                                  onDrop={() => handleDrop(index)}
+                                  onDragEnd={handleDragEnd}
+                                  className={cn(
+                                    "transition-all duration-200",
+                                    isDragging && "opacity-50 scale-95"
+                                  )}
+                                >
                                   {isNewCity && (
                                     <div className="flex items-center gap-2 mb-3 mt-2">
                                       <Navigation className="w-4 h-4 text-secondary" />
@@ -1008,7 +1061,7 @@ const LocationsTab = () => {
                                   )}
                                    <div className="space-y-2">
                                      <div className="flex items-start gap-4 ml-6 relative">
-                                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                                       <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm cursor-grab active:cursor-grabbing">
                                          {index + 1}
                                        </div>
                                        <div className="flex-1 space-y-2">
@@ -1087,17 +1140,17 @@ const LocationsTab = () => {
                                          )}
                                        </div>
                                      </div>
-                                    {index < optimizedRoute.length - 1 && segment && (
-                                      <div className="ml-14 flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
-                                        <div className="flex items-center gap-2">
-                                          <ArrowRight className="w-4 h-4 text-secondary" />
-                                          <span className="font-medium">
-                                            {segment.distance.toFixed(1)} km
-                                          </span>
-                                        </div>
-                                        <div className="w-px h-4 bg-border" />
-                                        <div className="flex items-center gap-2">
-                                          <Calendar className="w-4 h-4 text-secondary" />
+                                     {index < displayRoute.length - 1 && segment && (
+                                       <div className="ml-14 flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
+                                         <div className="flex items-center gap-2">
+                                           <ArrowRight className="w-4 h-4 text-secondary" />
+                                           <span className="font-medium">
+                                             {segment.distance.toFixed(1)} km
+                                           </span>
+                                         </div>
+                                         <div className="w-px h-4 bg-border" />
+                                         <div className="flex items-center gap-2">
+                                           <Calendar className="w-4 h-4 text-secondary" />
                                           <span className="font-medium">
                                             {segment.duration < 60 
                                               ? `${Math.round(segment.duration)} min`
@@ -1149,7 +1202,7 @@ const LocationsTab = () => {
 
                        {/* Interactive Route Map */}
                       <TripRouteMap 
-                        places={optimizedRoute} 
+                        places={displayRoute} 
                         onMapReady={(captureFn) => setCaptureMapFn(() => captureFn)}
                       />
 
