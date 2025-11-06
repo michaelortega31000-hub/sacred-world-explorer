@@ -783,6 +783,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_custom_avatars: {
+        Row: {
+          avatar_url: string
+          created_at: string
+          id: string
+          is_active: boolean
+          name: string | null
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          name?: string | null
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_custom_events: {
         Row: {
           color: string | null
@@ -1201,6 +1231,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      set_active_avatar: { Args: { p_avatar_id: string }; Returns: undefined }
       unlock_level_rewards: {
         Args: { p_new_level: number; p_user_id: string }
         Returns: {

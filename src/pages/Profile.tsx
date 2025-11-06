@@ -23,6 +23,7 @@ import { Badge3DCard } from '@/components/profile/Badge3DCard';
 import { ProgressSection } from '@/components/profile/ProgressSection';
 import { LevelUpModal } from '@/components/profile/LevelUpModal';
 import { RewardsSection } from '@/components/profile/RewardsSection';
+import { AvatarGallery } from '@/components/profile/AvatarGallery';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -338,6 +339,17 @@ const Profile = () => {
                 )}
                 {uploading && (
                   <p className="text-sm text-muted-foreground mt-2">Téléchargement en cours...</p>
+                )}
+                
+                {/* Avatar Gallery Button */}
+                {userId && (
+                  <div className="mt-4">
+                    <AvatarGallery 
+                      userId={userId} 
+                      currentAvatarUrl={avatarUrl}
+                      onAvatarChange={(url) => setAvatarUrl(url)}
+                    />
+                  </div>
                 )}
               </div>
             </div>
