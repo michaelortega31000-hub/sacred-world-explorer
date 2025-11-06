@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { Card, CardContent, CardDescription, CardHeader } from '@/components/ui/card';
@@ -55,6 +56,7 @@ interface Comment {
 
 const ActivityFeed = () => {
   const { session } = useApp();
+  const navigate = useNavigate();
   const [activities, setActivities] = useState<Activity[]>([]);
   const [loading, setLoading] = useState(true);
   const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
@@ -437,10 +439,15 @@ const ActivityFeed = () => {
                     {activity.username[0]?.toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex-1 min-w-0">
+                  <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     {getActivityIcon(activity.type)}
-                    <span className="font-semibold">{activity.username}</span>
+                    <button
+                      onClick={() => navigate(`/user/${activity.user_id}`)}
+                      className="font-semibold hover:underline"
+                    >
+                      {activity.username}
+                    </button>
                     <span className="text-sm text-muted-foreground">
                       {getActivityText(activity)}
                     </span>
@@ -513,14 +520,24 @@ const ActivityFeed = () => {
                       {/* Comments list */}
                       {comments[activity.id]?.map((comment) => (
                         <div key={comment.id} className="flex gap-2">
-                          <Avatar className="w-8 h-8">
-                            <AvatarFallback className="text-xs">
-                              {comment.username[0]?.toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
+                          <button
+                            onClick={() => navigate(`/user/${comment.user_id}`)}
+                            className="flex-shrink-0"
+                          >
+                            <Avatar className="w-8 h-8">
+                              <AvatarFallback className="text-xs">
+                                {comment.username[0]?.toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                          </button>
                           <div className="flex-1">
                             <div className="bg-muted rounded-lg p-2">
-                              <p className="font-semibold text-xs">{comment.username}</p>
+                              <button
+                                onClick={() => navigate(`/user/${comment.user_id}`)}
+                                className="font-semibold text-xs hover:underline"
+                              >
+                                {comment.username}
+                              </button>
                               <p className="text-sm">{comment.content}</p>
                             </div>
                             <p className="text-xs text-muted-foreground mt-1">

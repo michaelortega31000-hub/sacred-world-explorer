@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
@@ -33,6 +34,7 @@ interface Friendship {
 
 const FriendsTab = () => {
   const { t } = useTranslation();
+  const navigate = useNavigate();
   const { session } = useApp();
   const { checkRateLimit } = useRateLimit();
   const [searchTerm, setSearchTerm] = useState('');
@@ -251,12 +253,15 @@ const FriendsTab = () => {
             <div className="mt-4 space-y-2">
               {searchResults.map((user) => (
                 <div key={user.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => navigate(`/user/${user.id}`)}
+                    className="flex items-center gap-3 hover:opacity-70 transition-opacity"
+                  >
                     <Avatar>
                       <AvatarFallback>{user.username?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{user.username}</span>
-                  </div>
+                  </button>
                   <Button size="sm" onClick={() => sendFriendRequest(user.id)}>
                     <UserPlus className="w-4 h-4 mr-2" />
                     Ajouter
@@ -313,12 +318,15 @@ const FriendsTab = () => {
             <div className="space-y-2">
               {friends.map((friendship) => (
                 <div key={friendship.id} className="flex items-center justify-between p-3 border rounded-lg">
-                  <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => navigate(`/user/${friendship.friend_id}`)}
+                    className="flex items-center gap-3 hover:opacity-70 transition-opacity"
+                  >
                     <Avatar>
                       <AvatarFallback>{friendship.friend?.username?.[0]?.toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <span className="font-medium">{friendship.friend?.username}</span>
-                  </div>
+                  </button>
                   <Button
                     size="sm"
                     variant="outline"
