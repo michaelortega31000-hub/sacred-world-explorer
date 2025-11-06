@@ -125,9 +125,9 @@ const Header = ({
                 <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
                   <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
                 </Button>
-                {unreadCount > 0 && <Badge className="absolute -top-1 -right-1 h-4 min-w-[16px] sm:h-5 sm:min-w-[20px] flex items-center justify-center p-0.5 sm:p-1 bg-primary text-primary-foreground text-[10px] sm:text-xs">
-                    {unreadCount > 99 ? '99+' : unreadCount}
-                  </Badge>}
+                {unreadCount > 0 && (
+                  <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-background" />
+                )}
               </div>
             </div>
           </div> :
@@ -166,9 +166,9 @@ const Header = ({
                   <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
                     <Mail className="w-5 h-5" />
                   </Button>
-                  {unreadCount > 0 && <Badge className="absolute -top-1 -right-1 h-5 min-w-[20px] flex items-center justify-center p-1 bg-primary text-primary-foreground text-xs">
-                      {unreadCount > 99 ? '99+' : unreadCount}
-                    </Badge>}
+                  {unreadCount > 0 && (
+                    <div className="absolute top-0 right-0 h-3 w-3 bg-red-500 rounded-full border-2 border-background" />
+                  )}
                 </div>
                 {children}
               </div>
