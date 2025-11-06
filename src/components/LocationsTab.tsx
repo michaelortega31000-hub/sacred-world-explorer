@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
@@ -12,6 +12,8 @@ import NearMeFeature from './NearMeFeature';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getImageUrl } from '@/lib/imageHelper';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 import TripRouteMap from './TripRouteMap';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -65,6 +67,9 @@ const LocationsTab = () => {
   const [loadingRouteInfo, setLoadingRouteInfo] = useState(false);
   const [pois, setPois] = useState<POI[]>([]);
   const [loadingPOIs, setLoadingPOIs] = useState(false);
+  const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'fuel'>>(
+    new Set(['restaurant', 'lodging', 'fuel'])
+  );
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -75,6 +80,18 @@ const LocationsTab = () => {
   
   const setShowOptimizedRoute = (show: boolean) => {
     updatePlannedRoute(userProgress.plannedRouteStartCity, show);
+  };
+
+  const togglePOIType = (type: 'restaurant' | 'lodging' | 'fuel') => {
+    setSelectedPOITypes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(type)) {
+        newSet.delete(type);
+      } else {
+        newSet.add(type);
+      }
+      return newSet;
+    });
   };
 
   // Calculate route segments with distance and duration
@@ -902,11 +919,63 @@ const LocationsTab = () => {
                               </div>
                             ) : (
                               <div className="space-y-6">
+                                {/* Filtre des types de POI */}
+                                <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/30 rounded-lg border border-muted">
+                                  <div className="flex items-center gap-2">
+                                    <Filter className="w-4 h-4 text-primary" />
+                                    <span className="text-sm font-medium">Afficher :</span>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Checkbox 
+                                      id="filter-restaurant" 
+                                      checked={selectedPOITypes.has('restaurant')}
+                                      onCheckedChange={() => togglePOIType('restaurant')}
+                                    />
+                                    <Label 
+                                      htmlFor="filter-restaurant" 
+                                      className="text-sm font-normal cursor-pointer flex items-center gap-1"
+                                    >
+                                      <Utensils className="w-4 h-4 text-primary" />
+                                      Restaurants
+                                    </Label>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Checkbox 
+                                      id="filter-lodging" 
+                                      checked={selectedPOITypes.has('lodging')}
+                                      onCheckedChange={() => togglePOIType('lodging')}
+                                    />
+                                    <Label 
+                                      htmlFor="filter-lodging" 
+                                      className="text-sm font-normal cursor-pointer flex items-center gap-1"
+                                    >
+                                      <Hotel className="w-4 h-4 text-secondary" />
+                                      Hébergements
+                                    </Label>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Checkbox 
+                                      id="filter-fuel" 
+                                      checked={selectedPOITypes.has('fuel')}
+                                      onCheckedChange={() => togglePOIType('fuel')}
+                                    />
+                                    <Label 
+                                      htmlFor="filter-fuel" 
+                                      className="text-sm font-normal cursor-pointer flex items-center gap-1"
+                                    >
+                                      <Fuel className="w-4 h-4 text-accent" />
+                                      Stations-service
+                                    </Label>
+                                  </div>
+                                </div>
                                 {/* Group POIs by segment */}
                                 {Array.from(new Set(pois.map(p => p.segmentIndex))).map(segmentIndex => {
-                                  const segmentPOIs = pois.filter(p => p.segmentIndex === segmentIndex);
+                                  const segmentPOIs = pois.filter(p => p.segmentIndex === segmentIndex && selectedPOITypes.has(p.type));
                                   const fromPlace = optimizedRoute[segmentIndex];
                                   const toPlace = optimizedRoute[segmentIndex + 1];
+                                  
+                                  // Skip segment if no POIs match the filter
+                                  if (segmentPOIs.length === 0) return null;
                                   
                                   return (
                                     <div key={segmentIndex} className="border-l-2 border-primary/20 pl-4">
