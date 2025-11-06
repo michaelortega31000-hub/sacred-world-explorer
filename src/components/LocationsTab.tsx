@@ -1257,6 +1257,7 @@ const LocationsTab = () => {
                        {/* Interactive Route Map */}
                       <TripRouteMap 
                         places={displayRoute} 
+                        savedPOIs={userProgress.savedPOIs}
                         onMapReady={(captureFn) => setCaptureMapFn(() => captureFn)}
                       />
 
