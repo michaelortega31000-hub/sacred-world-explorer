@@ -1,13 +1,10 @@
-import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import SocialTab from '@/components/SocialTab';
 
 const Journal = () => {
   return (
     <div className="min-h-screen bg-background pb-20">
-      <Header />
-      
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 py-6 pt-8">
         <div className="space-y-6">
           <div className="space-y-2">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
