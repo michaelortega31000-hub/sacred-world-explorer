@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, Trophy, MapPin, Compass, CheckCircle, Clock } from 'lucide-react';
+import { Target, Trophy, MapPin, Compass, CheckCircle, Clock, Calendar } from 'lucide-react';
 import { toast } from 'sonner';
 import { mockPlaces as placesData } from '@/data/placesData';
 
 const ChallengesTab = () => {
-  const { userProgress, addPoints } = useApp();
+  const { userProgress, addPoints, userLocation, flyToLocation } = useApp();
   const [claimedQuests, setClaimedQuests] = useState<string[]>(() => {
     const saved = localStorage.getItem('claimedQuests');
     return saved ? JSON.parse(saved) : [];
@@ -40,6 +40,25 @@ const ChallengesTab = () => {
     const today = new Date();
     const daysUntilMonday = (8 - today.getDay()) % 7 || 7;
     return daysUntilMonday;
+  };
+
+  const getDaysUntilEndOfMonth = () => {
+    const now = new Date();
+    const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    const daysLeft = Math.ceil((lastDay.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
+    return daysLeft;
+  };
+
+  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+    const R = 6371; // Rayon de la Terre en km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
   };
 
   const getContinent = (country: string): string => {
@@ -73,11 +92,27 @@ const ChallengesTab = () => {
       return place && getContinent(place.country) === 'Europe';
     }).length;
 
+    const countriesVisited = new Set(
+      visitedPlaces.map(placeId => {
+        const place = placesData.find(p => p.id === placeId);
+        return place?.country;
+      }).filter(Boolean)
+    ).size;
+
+    const religionsVisited = new Set(
+      visitedPlaces.map(placeId => {
+        const place = placesData.find(p => p.id === placeId);
+        return place?.religion;
+      }).filter(Boolean)
+    ).size;
+
     return {
       continents: continentsVisited,
       christian: christianPlaces,
       europe: europePlaces,
       total: visitedPlaces.length,
+      countries: countriesVisited,
+      religions: religionsVisited,
     };
   }, [userProgress.visitedPlaces]);
 
@@ -132,19 +167,78 @@ const ChallengesTab = () => {
     },
   ];
 
+  const monthlyQuests = [
+    {
+      id: 'monthly-continents',
+      title: 'Collectionneur de Continents',
+      description: 'Visitez 5 continents différents',
+      progress: questProgress.continents,
+      goal: 5,
+      reward: 1000,
+      icon: Compass,
+    },
+    {
+      id: 'monthly-pilgrimage',
+      title: 'Maître Pèlerin',
+      description: 'Visitez 25 lieux sacrés',
+      progress: questProgress.total,
+      goal: 25,
+      reward: 1500,
+      icon: Trophy,
+    },
+    {
+      id: 'monthly-religions',
+      title: 'Explorateur des Religions',
+      description: 'Visitez des lieux de 4 religions différentes',
+      progress: questProgress.religions,
+      goal: 4,
+      reward: 1200,
+      icon: Target,
+    },
+    {
+      id: 'monthly-countries',
+      title: 'Voyage Mondial',
+      description: 'Visitez 15 pays différents',
+      progress: questProgress.countries,
+      goal: 15,
+      reward: 1300,
+      icon: MapPin,
+    },
+  ];
+
   const nearbyPlaces = useMemo(() => {
-    return placesData.slice(0, 5).map(place => ({
-      ...place,
-      distance: Math.floor(Math.random() * 50) + 1,
-    }));
-  }, []);
+    if (!userLocation?.latitude || !userLocation?.longitude) {
+      return [];
+    }
+
+    const placesWithDistance = placesData
+      .map(place => ({
+        ...place,
+        distance: calculateDistance(
+          userLocation.latitude,
+          userLocation.longitude,
+          place.coordinates[1],
+          place.coordinates[0]
+        )
+      }))
+      .filter(place => place.distance <= 50)
+      .sort((a, b) => a.distance - b.distance)
+      .slice(0, 10)
+      .map(place => ({
+        ...place,
+        distance: Math.round(place.distance * 10) / 10
+      }));
+
+    return placesWithDistance;
+  }, [userLocation]);
 
   return (
     <div className="space-y-6">
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="daily">Journalière</TabsTrigger>
           <TabsTrigger value="weekly">Hebdomadaire</TabsTrigger>
+          <TabsTrigger value="monthly">Mensuelle</TabsTrigger>
           <TabsTrigger value="nearby">À proximité</TabsTrigger>
         </TabsList>
 
@@ -296,40 +390,138 @@ const ChallengesTab = () => {
           </div>
         </TabsContent>
 
+        <TabsContent value="monthly" className="space-y-6">
+          <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-accent" />
+                  <CardTitle>Quêtes Mensuelles</CardTitle>
+                </div>
+                <Badge variant="outline">
+                  Réinitialisation dans {getDaysUntilEndOfMonth()} jours
+                </Badge>
+              </div>
+              <CardDescription>
+                Relevez ces défis ambitieux pour gagner des récompenses exceptionnelles
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <div className="grid gap-4">
+            {monthlyQuests.map((quest) => {
+              const Icon = quest.icon;
+              const isCompleted = quest.progress >= quest.goal;
+              const isClaimed = claimedQuests.includes(quest.id);
+              const progressPercent = Math.min((quest.progress / quest.goal) * 100, 100);
+
+              return (
+                <Card key={quest.id} className="overflow-hidden">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-accent/10 flex items-center justify-center">
+                          <Icon className="w-6 h-6 text-accent" />
+                        </div>
+                        <div className="space-y-1">
+                          <CardTitle className="text-xl">{quest.title}</CardTitle>
+                          <CardDescription>{quest.description}</CardDescription>
+                        </div>
+                      </div>
+                      {isCompleted && (
+                        <CheckCircle className="w-6 h-6 text-green-500" />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Progression: {quest.progress} / {quest.goal}
+                        </span>
+                        <span className="font-medium">{Math.round(progressPercent)}%</span>
+                      </div>
+                      <Progress value={progressPercent} className="h-2" />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-accent" />
+                        <span className="font-semibold text-accent">+{quest.reward} points</span>
+                      </div>
+                      <Button
+                        disabled={!isCompleted || isClaimed}
+                        onClick={() => handleClaimReward(quest.id, quest.reward)}
+                        variant={isCompleted && !isClaimed ? 'default' : 'outline'}
+                      >
+                        {isClaimed ? 'Réclamé' : isCompleted ? 'Réclamer' : 'En cours'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+
         <TabsContent value="nearby" className="space-y-4">
           <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
             <CardHeader>
               <CardTitle>Lieux à proximité</CardTitle>
               <CardDescription>
-                Découvrez les lieux sacrés près de vous
+                Découvrez les lieux sacrés dans un rayon de 50 km
               </CardDescription>
             </CardHeader>
           </Card>
 
-          {nearbyPlaces.map((place) => (
-            <Card key={place.id}>
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="space-y-1">
-                    <CardTitle className="text-lg">{place.name}</CardTitle>
-                    <CardDescription>{place.country}</CardDescription>
-                  </div>
-                  <Badge variant="secondary">{place.distance} km</Badge>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-4 h-4 text-primary" />
-                    <span className="font-semibold">+{place.points} points</span>
-                  </div>
-                  <Button variant="outline" size="sm">
-                    Voir sur la carte
-                  </Button>
-                </div>
+          {!userProgress.geolocationEnabled ? (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  Activez la géolocalisation dans les réglages pour découvrir les lieux près de vous
+                </p>
               </CardContent>
             </Card>
-          ))}
+          ) : nearbyPlaces.length === 0 ? (
+            <Card>
+              <CardContent className="pt-6 text-center">
+                <Compass className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-muted-foreground">
+                  Aucun lieu sacré trouvé dans un rayon de 50 km
+                </p>
+              </CardContent>
+            </Card>
+          ) : (
+            nearbyPlaces.map((place) => (
+              <Card key={place.id}>
+                <CardHeader>
+                  <div className="flex items-start justify-between">
+                    <div className="space-y-1">
+                      <CardTitle className="text-lg">{place.name}</CardTitle>
+                      <CardDescription>{place.country}</CardDescription>
+                    </div>
+                    <Badge variant="secondary">{place.distance} km</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Trophy className="w-4 h-4 text-primary" />
+                      <span className="font-semibold">+{place.points} points</span>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={() => flyToLocation(place.coordinates[1], place.coordinates[0], 12)}
+                    >
+                      Voir sur la carte
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          )}
         </TabsContent>
       </Tabs>
     </div>
