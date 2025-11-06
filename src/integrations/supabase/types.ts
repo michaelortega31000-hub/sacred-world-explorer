@@ -584,9 +584,12 @@ export type Database = {
         Row: {
           badges: string[]
           created_at: string
+          current_streak: number
           geolocation_enabled: boolean
           id: string
           language: string
+          last_quest_date: string
+          longest_streak: number
           planned_route_start_city: string
           saved_restaurants: string[]
           selected_religion: string | null
@@ -600,9 +603,12 @@ export type Database = {
         Insert: {
           badges?: string[]
           created_at?: string
+          current_streak?: number
           geolocation_enabled?: boolean
           id?: string
           language?: string
+          last_quest_date?: string
+          longest_streak?: number
           planned_route_start_city?: string
           saved_restaurants?: string[]
           selected_religion?: string | null
@@ -616,9 +622,12 @@ export type Database = {
         Update: {
           badges?: string[]
           created_at?: string
+          current_streak?: number
           geolocation_enabled?: boolean
           id?: string
           language?: string
+          last_quest_date?: string
+          longest_streak?: number
           planned_route_start_city?: string
           saved_restaurants?: string[]
           selected_religion?: string | null

@@ -30,6 +30,9 @@ export interface UserProgress {
   geolocationEnabled: boolean;
   plannedRouteStartCity: string;
   showPlannedRoute: boolean;
+  currentStreak: number;
+  lastQuestDate: string;
+  longestStreak: number;
 }
 
 interface AppContextType {
@@ -52,6 +55,8 @@ interface AppContextType {
   geolocationError: string | null;
   flyToLocation: (lat: number, lng: number, zoom?: number) => void;
   setFlyToFunction: (fn: (lat: number, lng: number, zoom?: number) => void) => void;
+  updateStreak: () => void;
+  getStreakBonus: () => number;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -81,7 +86,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         savedRestaurants: [],
         geolocationEnabled: false,
       plannedRouteStartCity: '',
-      showPlannedRoute: false
+      showPlannedRoute: false,
+      currentStreak: 0,
+      lastQuestDate: '',
+      longestStreak: 0
     };
   });
 
@@ -135,7 +143,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           savedRestaurants: data.saved_restaurants || [],
           geolocationEnabled: data.geolocation_enabled,
           plannedRouteStartCity: data.planned_route_start_city || '',
-          showPlannedRoute: data.show_planned_route || false
+          showPlannedRoute: data.show_planned_route || false,
+          currentStreak: data.current_streak || 0,
+          lastQuestDate: data.last_quest_date || '',
+          longestStreak: data.longest_streak || 0
         };
 
         // Merge localStorage trip data if it exists and is more recent
@@ -383,6 +394,58 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateStreak = () => {
+    const today = new Date().toISOString().split('T')[0];
+    const lastDate = userProgress.lastQuestDate;
+    
+    setUserProgress(prev => {
+      if (!lastDate) {
+        // First quest ever
+        return {
+          ...prev,
+          currentStreak: 1,
+          lastQuestDate: today,
+          longestStreak: Math.max(1, prev.longestStreak)
+        };
+      }
+
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+      if (lastDate === today) {
+        // Already completed today
+        return prev;
+      } else if (lastDate === yesterdayStr) {
+        // Consecutive day
+        const newStreak = prev.currentStreak + 1;
+        return {
+          ...prev,
+          currentStreak: newStreak,
+          lastQuestDate: today,
+          longestStreak: Math.max(newStreak, prev.longestStreak)
+        };
+      } else {
+        // Streak broken
+        return {
+          ...prev,
+          currentStreak: 1,
+          lastQuestDate: today
+        };
+      }
+    });
+  };
+
+  const getStreakBonus = (): number => {
+    const streak = userProgress.currentStreak;
+    if (streak <= 1) return 0;
+    if (streak <= 3) return 5;
+    if (streak <= 7) return 10;
+    if (streak <= 14) return 20;
+    if (streak <= 30) return 30;
+    return 50;
+  };
+
   return (
     <AppContext.Provider value={{
       userProgress,
@@ -403,7 +466,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       userLocation: position,
       geolocationError: error?.message || null,
       flyToLocation,
-      setFlyToFunction
+      setFlyToFunction,
+      updateStreak,
+      getStreakBonus
     }}>
       {children}
     </AppContext.Provider>

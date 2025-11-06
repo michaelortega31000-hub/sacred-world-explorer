@@ -5,12 +5,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, Trophy, MapPin, Compass, CheckCircle, Clock, Calendar } from 'lucide-react';
+import { Target, Trophy, MapPin, Compass, CheckCircle, Clock, Calendar, Flame } from 'lucide-react';
 import { toast } from 'sonner';
 import { mockPlaces as placesData } from '@/data/placesData';
 
 const ChallengesTab = () => {
-  const { userProgress, addPoints, userLocation, flyToLocation } = useApp();
+  const { userProgress, addPoints, userLocation, flyToLocation, updateStreak, getStreakBonus } = useApp();
   const [claimedQuests, setClaimedQuests] = useState<string[]>(() => {
     const saved = localStorage.getItem('claimedQuests');
     return saved ? JSON.parse(saved) : [];
@@ -20,12 +20,27 @@ const ChallengesTab = () => {
     localStorage.setItem('claimedQuests', JSON.stringify(claimedQuests));
   }, [claimedQuests]);
 
-  const handleClaimReward = (questId: string, reward: number) => {
-    addPoints(reward);
+  const handleClaimReward = (questId: string, reward: number, isDaily: boolean = false) => {
+    const bonusPercent = getStreakBonus();
+    const bonusPoints = Math.floor(reward * bonusPercent / 100);
+    const totalReward = reward + bonusPoints;
+    
+    addPoints(totalReward);
     setClaimedQuests([...claimedQuests, questId]);
-    toast.success(`Bravo ! +${reward} points gagnés !`, {
-      icon: '🎉',
-    });
+    
+    if (isDaily) {
+      updateStreak();
+    }
+    
+    if (bonusPoints > 0) {
+      toast.success(`Bravo ! +${reward} points + ${bonusPoints} bonus (série ${userProgress.currentStreak}🔥) = ${totalReward} points !`, {
+        icon: '🎉',
+      });
+    } else {
+      toast.success(`Bravo ! +${totalReward} points gagnés !`, {
+        icon: '🎉',
+      });
+    }
   };
 
   const getDaysUntilMidnight = () => {
@@ -234,6 +249,51 @@ const ChallengesTab = () => {
 
   return (
     <div className="space-y-6">
+      {/* Streak Display */}
+      <Card className="border-accent/30 bg-gradient-to-r from-orange-500/10 via-red-500/10 to-pink-500/10">
+        <CardContent className="pt-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center">
+                <Flame className="w-8 h-8 text-white" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="text-2xl font-bold">{userProgress.currentStreak} jour{userProgress.currentStreak > 1 ? 's' : ''}</h3>
+                  <Flame className="w-5 h-5 text-orange-500" />
+                </div>
+                <p className="text-sm text-muted-foreground">
+                  Série en cours • Bonus: +{getStreakBonus()}%
+                </p>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm text-muted-foreground">Record</div>
+              <div className="text-xl font-bold flex items-center gap-1">
+                <Trophy className="w-5 h-5 text-accent" />
+                {userProgress.longestStreak}
+              </div>
+            </div>
+          </div>
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between text-xs text-muted-foreground">
+              <span>Progression des bonus</span>
+              <span>Prochain palier: {
+                userProgress.currentStreak <= 1 ? '2 jours (+5%)' :
+                userProgress.currentStreak <= 3 ? '4 jours (+10%)' :
+                userProgress.currentStreak <= 7 ? '8 jours (+20%)' :
+                userProgress.currentStreak <= 14 ? '15 jours (+30%)' :
+                userProgress.currentStreak <= 30 ? '31 jours (+50%)' : 'Maximum atteint!'
+              }</span>
+            </div>
+            <Progress 
+              value={Math.min((userProgress.currentStreak / 30) * 100, 100)} 
+              className="h-2"
+            />
+          </div>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="daily" className="w-full">
         <TabsList className="grid w-full grid-cols-4">
           <TabsTrigger value="daily">Journalière</TabsTrigger>
@@ -303,7 +363,7 @@ const ChallengesTab = () => {
                       </div>
                       <Button
                         disabled={!isCompleted || isClaimed}
-                        onClick={() => handleClaimReward(quest.id, quest.reward)}
+                        onClick={() => handleClaimReward(quest.id, quest.reward, true)}
                         variant={isCompleted && !isClaimed ? 'default' : 'outline'}
                       >
                         {isClaimed ? 'Réclamé' : isCompleted ? 'Réclamer' : 'En cours'}
