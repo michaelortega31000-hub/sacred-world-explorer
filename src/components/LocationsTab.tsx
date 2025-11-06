@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
@@ -140,6 +140,10 @@ const LocationsTab = () => {
 
   const handleDragEnd = () => {
     setDraggedIndex(null);
+  };
+
+  const resetToOptimizedOrder = () => {
+    setOptimizedRouteState([]);
   };
 
   // Export route to PDF
@@ -457,6 +461,14 @@ const LocationsTab = () => {
 
   // Use optimizedRouteState if user has reordered, otherwise use calculated optimizedRoute
   const displayRoute = optimizedRouteState.length > 0 ? optimizedRouteState : optimizedRoute;
+
+  // Check if route has been manually reordered
+  const isRouteModified = useMemo(() => {
+    if (optimizedRouteState.length === 0 || optimizedRoute.length === 0) return false;
+    if (optimizedRouteState.length !== optimizedRoute.length) return true;
+    
+    return optimizedRouteState.some((place, index) => place.id !== optimizedRoute[index]?.id);
+  }, [optimizedRouteState, optimizedRoute]);
 
   // Update state when optimizedRoute changes
   useEffect(() => {
@@ -1020,14 +1032,27 @@ const LocationsTab = () => {
                                 Parcours recommandé depuis {startingCity} - Glissez pour réorganiser
                               </CardDescription>
                             </div>
-                            <Button
-                              onClick={exportToPDF}
-                              variant="outline"
-                              className="gap-2"
-                            >
-                              <Download className="w-4 h-4" />
-                              Exporter PDF
-                            </Button>
+                            <div className="flex gap-2">
+                              {isRouteModified && (
+                                <Button
+                                  onClick={resetToOptimizedOrder}
+                                  variant="outline"
+                                  className="gap-2"
+                                  title="Réinitialiser à l'ordre optimisé"
+                                >
+                                  <RotateCcw className="w-4 h-4" />
+                                  Réinitialiser
+                                </Button>
+                              )}
+                              <Button
+                                onClick={exportToPDF}
+                                variant="outline"
+                                className="gap-2"
+                              >
+                                <Download className="w-4 h-4" />
+                                Exporter PDF
+                              </Button>
+                            </div>
                           </div>
                         </CardHeader>
                         <CardContent>
