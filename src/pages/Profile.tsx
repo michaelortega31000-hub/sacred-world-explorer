@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useEffect, useState, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Card } from '@/components/ui/card';
@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, Settings as SettingsIcon } from 'lucide-react';
+import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, TrendingUp } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { logger } from '@/lib/logger';
@@ -16,10 +16,14 @@ import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { mockPlaces } from '@/data/placesData';
 import { getImageUrl } from '@/lib/imageHelper';
+import { StatsCard } from '@/components/profile/StatsCard';
+import { StatsChart } from '@/components/profile/StatsChart';
+import { BentoGallery } from '@/components/profile/BentoGallery';
+import { Badge3DCard } from '@/components/profile/Badge3DCard';
+import { ProgressSection } from '@/components/profile/ProgressSection';
 
 const Profile = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const { userProgress } = useApp();
   const { checkRateLimit } = useRateLimit();
@@ -227,6 +231,32 @@ const Profile = () => {
     master: 'Maître'
   };
 
+  // Generate mock chart data (last 7 days)
+  const chartData = useMemo(() => {
+    const data = [];
+    const today = new Date();
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - i);
+      data.push({
+        date: date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }),
+        points: Math.max(0, userProgress.totalPoints - (i * 20) + Math.random() * 10)
+      });
+    }
+    return data;
+  }, [userProgress.totalPoints]);
+
+  const visitedPlacesWithImages = useMemo(() => {
+    return userProgress.visitedPlaces
+      .map(placeId => mockPlaces.find(p => p.id === placeId))
+      .filter(place => place)
+      .map(place => ({
+        id: place!.id,
+        name: place!.name,
+        imageUrl: getImageUrl(place!.imageUrl || '')
+      }));
+  }, [userProgress.visitedPlaces]);
+
   return (
     <ImageBackground 
       images={backgroundImages}
@@ -244,227 +274,164 @@ const Profile = () => {
         <BackButton to="/settings" />
 
         <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
-          <div className="w-full">
-          <div 
-            className="bg-sacred-beige/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl"
-            style={{
-              boxShadow: '0 0 40px rgba(52, 224, 161, 0.2), 0 0 80px rgba(244, 197, 66, 0.1)'
-            }}
-          >
-
-          {/* Avatar Section */}
-          <div className="flex flex-col items-center mb-6 sm:mb-8">
-            <div className="relative group">
-              <Avatar className="w-24 h-24 sm:w-32 sm:h-32 border-4 border-primary/20">
-                <AvatarImage src={avatarUrl || undefined} alt="Photo de profil" />
-                <AvatarFallback className="bg-primary/10 text-primary text-4xl">
-                  <User className="w-16 h-16" />
-                </AvatarFallback>
-              </Avatar>
-              <label 
-                htmlFor="avatar-upload" 
-                className="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary/80 transition-colors shadow-lg"
-              >
-                <Camera className="w-5 h-5 text-primary-foreground" />
-                <input
-                  id="avatar-upload"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
-                  onChange={handleAvatarUpload}
-                  disabled={uploading}
-                  className="hidden"
-                />
-              </label>
-            </div>
-            {uploading && (
-              <p className="text-sm text-muted-foreground mt-2">Téléchargement en cours...</p>
-            )}
-          </div>
-
-          <div className="space-y-4 sm:space-y-6">
-            {/* Points totaux */}
-            <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-full">
-                  <Trophy className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Points totaux</p>
-                  <p className="text-3xl font-bold text-primary">{userProgress.totalPoints}</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Lieux visités */}
-            <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-full">
-                  <MapPin className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Lieux visités</p>
-                  <p className="text-3xl font-bold text-sacred-blue">{userProgress.visitedPlaces.length}</p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Religion sélectionnée */}
-            {userProgress.selectedReligion && (
-              <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
-                <div className="flex items-center gap-4">
-                  <div className="p-3 bg-primary/10 rounded-full">
-                    <Star className="w-8 h-8 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Tradition spirituelle</p>
-                    <p className="text-xl font-semibold text-sacred-blue capitalize">
-                      {userProgress.selectedReligion}
-                    </p>
-                  </div>
-                </div>
-              </Card>
-            )}
-
-            {/* Langue */}
-            <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-primary/10 rounded-full">
-                  <Globe className="w-8 h-8 text-primary" />
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">Langue</p>
-                  <p className="text-xl font-semibold text-sacred-blue uppercase">
-                    {userProgress.language}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Gallery of Visited Places */}
-          {userProgress.visitedPlaces.length > 0 && (
-            <Card className="bg-card/80 backdrop-blur-sm border-primary/20">
-              <div className="p-4 sm:p-6">
-                <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
-                  <MapPin className="w-5 h-5 text-primary" />
-                  Lieux visités ({userProgress.visitedPlaces.length})
-                </h3>
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
-                  {userProgress.visitedPlaces.slice(0, 15).map(placeId => {
-                    const place = mockPlaces.find(p => p.id === placeId);
-                    if (!place) return null;
-                    return (
-                      <div 
-                        key={placeId}
-                        className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer hover:scale-105 transition-transform"
-                        onClick={() => navigate(`/place/${placeId}`)}
-                      >
-                        <img 
-                          src={getImageUrl(place.imageUrl || '')} 
-                          alt={place.name}
-                          className="w-full h-full object-cover"
-                          loading="lazy"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
-                          <span className="text-white text-xs font-medium line-clamp-2">
-                            {place.name}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-                {userProgress.visitedPlaces.length > 15 && (
-                  <Button 
-                    variant="ghost" 
-                    className="w-full mt-4"
-                    onClick={() => navigate('/my-visits')}
+          {/* Modern Header with Avatar */}
+          <div className="relative mb-8">
+            <div 
+              className="bg-gradient-to-r from-primary/20 via-accent/20 to-primary/20 rounded-2xl p-8 mb-6"
+              style={{
+                backgroundSize: '200% 100%',
+                animation: 'gradient-shift 8s ease infinite'
+              }}
+            >
+              <div className="flex flex-col items-center">
+                <div className="relative group mb-4" style={{ animation: 'float 3s ease-in-out infinite' }}>
+                  <div 
+                    className="absolute inset-0 rounded-full blur-xl opacity-50"
+                    style={{ animation: 'glow-pulse 2s ease-in-out infinite' }}
+                  />
+                  <Avatar className="relative w-32 h-32 border-4 border-primary shadow-2xl">
+                    <AvatarImage src={avatarUrl || undefined} alt="Photo de profil" />
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      <User className="w-16 h-16" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <label 
+                    htmlFor="avatar-upload" 
+                    className="absolute bottom-0 right-0 p-2 bg-primary rounded-full cursor-pointer hover:bg-primary/80 transition-all shadow-lg hover:scale-110"
                   >
-                    Voir tous les {userProgress.visitedPlaces.length} lieux →
-                  </Button>
+                    <Camera className="w-5 h-5 text-primary-foreground" />
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
+                      onChange={handleAvatarUpload}
+                      disabled={uploading}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+                <h1 className="text-3xl font-bold text-foreground mb-2">Mon Profil</h1>
+                {userProgress.selectedReligion && (
+                  <p className="text-muted-foreground capitalize">{userProgress.selectedReligion}</p>
+                )}
+                {uploading && (
+                  <p className="text-sm text-muted-foreground mt-2">Téléchargement en cours...</p>
                 )}
               </div>
-            </Card>
-          )}
+            </div>
+          </div>
 
-          {/* Badges de quêtes mensuelles */}
+          <div className="space-y-6">
+            {/* Progress Section */}
+            <ProgressSection totalPoints={userProgress.totalPoints} />
+
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <StatsCard
+                title="Points totaux"
+                value={userProgress.totalPoints}
+                maxValue={Math.max(userProgress.totalPoints + 100, 1000)}
+                icon={Trophy}
+                description={`Niveau ${Math.floor(userProgress.totalPoints / 100) + 1}`}
+              />
+              <StatsCard
+                title="Lieux visités"
+                value={userProgress.visitedPlaces.length}
+                maxValue={Math.max(userProgress.visitedPlaces.length + 10, 50)}
+                icon={MapPin}
+              />
+              <StatsCard
+                title="Badges"
+                value={userProgress.badges.length + questBadges.length}
+                maxValue={Math.max((userProgress.badges.length + questBadges.length) + 5, 20)}
+                icon={Star}
+              />
+            </div>
+
+            {/* Stats Chart */}
+            {chartData.length > 0 && (
+              <StatsChart
+                data={chartData}
+                title="Évolution de vos points (7 derniers jours)"
+              />
+            )}
+
+            {/* Bento Gallery */}
+            {visitedPlacesWithImages.length > 0 && (
+              <BentoGallery places={visitedPlacesWithImages} maxDisplay={9} />
+            )}
+
+            {/* 3D Badge Cards */}
             {questBadges.length > 0 && (
-              <Card className="p-4 sm:p-6 bg-white/50 border-accent/30">
-                <h2 className="text-lg font-semibold text-sacred-blue mb-4 flex items-center gap-2">
+              <Card className="p-6 bg-card/80 backdrop-blur-sm border-primary/20">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Trophy className="w-5 h-5 text-accent" />
                   Badges de Quêtes Mensuelles
                 </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {questBadges.map((badge) => (
-                    <div 
+                    <Badge3DCard
                       key={badge.id}
-                      className="p-4 bg-gradient-to-br from-accent/10 to-transparent rounded-lg border border-accent/20"
-                      style={{
-                        boxShadow: '0 0 15px rgba(244, 197, 66, 0.2)'
-                      }}
-                    >
-                      <div className="flex items-start gap-3">
-                        <div className="text-3xl">{badge.quest_icon}</div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-sacred-blue">{badge.quest_name}</h3>
-                          <p className="text-xs text-muted-foreground mt-1">{badge.quest_description}</p>
-                          <p className="text-xs text-accent/70 mt-2">
-                            Débloqué le {new Date(badge.unlocked_at).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
+                      icon={badge.quest_icon}
+                      name={badge.quest_name}
+                      description={badge.quest_description}
+                      unlockedAt={badge.unlocked_at}
+                      rarity="epic"
+                    />
                   ))}
                 </div>
               </Card>
             )}
 
-          {/* Badges */}
-          {userProgress.badges.length > 0 && (
-              <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
-                <h2 className="text-lg font-semibold text-sacred-blue mb-4">Mes Badges</h2>
-                <div className="flex flex-wrap gap-2">
+            {/* General Badges */}
+            {userProgress.badges.length > 0 && (
+              <Card className="p-6 bg-card/80 backdrop-blur-sm border-primary/20">
+                <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Star className="w-5 h-5 text-primary" />
+                  Mes Badges
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {userProgress.badges.map((badge) => (
-                    <Badge 
+                    <Badge3DCard
                       key={badge}
-                      className="bg-primary/20 text-primary px-4 py-2 text-base"
-                      style={{
-                        boxShadow: '0 0 10px rgba(52, 224, 161, 0.3)'
-                      }}
-                    >
-                      {badgeLabels[badge] || badge}
-                    </Badge>
+                      icon="🏆"
+                      name={badgeLabels[badge] || badge}
+                      description={`Badge ${badgeLabels[badge] || badge}`}
+                      unlockedAt={new Date().toISOString()}
+                      rarity="rare"
+                    />
                   ))}
                 </div>
               </Card>
             )}
 
-          {/* Voyage planifié */}
-          {userProgress.tripPlaces.length > 0 && (
-              <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
-                <h2 className="text-lg font-semibold text-sacred-blue mb-2">Voyage en cours</h2>
+            {/* Voyage planifié */}
+            {userProgress.tripPlaces.length > 0 && (
+              <Card className="p-6 bg-card/80 backdrop-blur-sm border-primary/20">
+                <h2 className="text-lg font-semibold mb-2 flex items-center gap-2">
+                  <Globe className="w-5 h-5 text-primary" />
+                  Voyage en cours
+                </h2>
                 <p className="text-muted-foreground">
                   {userProgress.tripPlaces.length} lieu{userProgress.tripPlaces.length > 1 ? 'x' : ''} planifié{userProgress.tripPlaces.length > 1 ? 's' : ''}
                 </p>
-            </Card>
-          )}
-        </div>
+              </Card>
+            )}
 
-        {/* Quick Actions */}
-        <div className="mt-6 grid grid-cols-2 gap-3">
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-4">
               <Button
                 onClick={() => navigate('/badges')}
-                className="w-full bg-gradient-to-r from-accent/80 to-accent hover:from-accent hover:to-accent/80"
+                className="w-full h-14 bg-gradient-to-r from-accent to-accent/80 hover:from-accent/90 hover:to-accent/70 transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
-                <Trophy className="w-4 h-4 mr-2" />
+                <Trophy className="w-5 h-5 mr-2" />
                 Voir mes badges
               </Button>
               <Button
                 onClick={() => navigate('/journal')}
-                variant="outline"
-                className="w-full"
+                className="w-full h-14 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all duration-300 hover:scale-105 hover:shadow-lg"
               >
-                <BookOpen className="w-4 h-4 mr-2" />
+                <BookOpen className="w-5 h-5 mr-2" />
                 Mon journal
               </Button>
             </div>
