@@ -369,14 +369,14 @@ const Profile = () => {
                   Badges de Quêtes Mensuelles
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {questBadges.map((badge) => (
+                  {questBadges.map((badge, index) => (
                     <Badge3DCard
                       key={badge.id}
                       icon={badge.quest_icon}
                       name={badge.quest_name}
                       description={badge.quest_description}
                       unlockedAt={badge.unlocked_at}
-                      rarity="epic"
+                      rarity={index === 0 ? 'legendary' : index < 3 ? 'epic' : 'rare'}
                     />
                   ))}
                 </div>
@@ -391,14 +391,14 @@ const Profile = () => {
                   Mes Badges
                 </h2>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {userProgress.badges.map((badge) => (
+                  {userProgress.badges.map((badge, index) => (
                     <Badge3DCard
                       key={badge}
-                      icon="🏆"
+                      icon={badge === 'master' ? '👑' : badge === 'pilgrim' ? '🎖️' : '🏆'}
                       name={badgeLabels[badge] || badge}
                       description={`Badge ${badgeLabels[badge] || badge}`}
                       unlockedAt={new Date().toISOString()}
-                      rarity="rare"
+                      rarity={badge === 'master' ? 'legendary' : badge === 'pilgrim' ? 'epic' : 'common'}
                     />
                   ))}
                 </div>
