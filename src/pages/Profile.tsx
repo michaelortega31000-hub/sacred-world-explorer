@@ -15,6 +15,7 @@ import { logger } from '@/lib/logger';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { mockPlaces } from '@/data/placesData';
+import { getImageUrl } from '@/lib/imageHelper';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -234,25 +235,25 @@ const Profile = () => {
       overlay="gradient"
       className="min-h-screen pb-20"
     >
-      <div className="min-h-screen bg-sacred-blue relative overflow-hidden">
+      <div className="min-h-screen relative overflow-hidden">
         {/* Background with rotating globe effect */}
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
         </div>
 
         <Header>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/settings')}
-          className="hover:bg-primary/10"
-        >
-          <SettingsIcon className="w-5 h-5" />
-        </Button>
-      </Header>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate('/settings')}
+            className="hover:bg-primary/10"
+          >
+            <SettingsIcon className="w-5 h-5" />
+          </Button>
+        </Header>
 
-      <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
-        <div className="w-full">
+        <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
+          <div className="w-full">
           <div 
             className="bg-sacred-beige/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl"
             style={{
@@ -347,8 +348,55 @@ const Profile = () => {
                 </div>
               </div>
             </Card>
+          </div>
 
-            {/* Badges de quêtes mensuelles */}
+          {/* Gallery of Visited Places */}
+          {userProgress.visitedPlaces.length > 0 && (
+            <Card className="bg-card/80 backdrop-blur-sm border-primary/20">
+              <div className="p-4 sm:p-6">
+                <h3 className="text-lg font-semibold flex items-center gap-2 mb-4">
+                  <MapPin className="w-5 h-5 text-primary" />
+                  Lieux visités ({userProgress.visitedPlaces.length})
+                </h3>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2">
+                  {userProgress.visitedPlaces.slice(0, 15).map(placeId => {
+                    const place = mockPlaces.find(p => p.id === placeId);
+                    if (!place) return null;
+                    return (
+                      <div 
+                        key={placeId}
+                        className="relative aspect-square rounded-lg overflow-hidden group cursor-pointer hover:scale-105 transition-transform"
+                        onClick={() => navigate(`/place/${placeId}`)}
+                      >
+                        <img 
+                          src={getImageUrl(place.imageUrl || '')} 
+                          alt={place.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-2">
+                          <span className="text-white text-xs font-medium line-clamp-2">
+                            {place.name}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                {userProgress.visitedPlaces.length > 15 && (
+                  <Button 
+                    variant="ghost" 
+                    className="w-full mt-4"
+                    onClick={() => navigate('/my-visits')}
+                  >
+                    Voir tous les {userProgress.visitedPlaces.length} lieux →
+                  </Button>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Badges de quêtes mensuelles */}
             {questBadges.length > 0 && (
               <Card className="p-4 sm:p-6 bg-white/50 border-accent/30">
                 <h2 className="text-lg font-semibold text-sacred-blue mb-4 flex items-center gap-2">
@@ -380,8 +428,8 @@ const Profile = () => {
               </Card>
             )}
 
-            {/* Badges */}
-            {userProgress.badges.length > 0 && (
+          {/* Badges */}
+          {userProgress.badges.length > 0 && (
               <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
                 <h2 className="text-lg font-semibold text-sacred-blue mb-4">Mes Badges</h2>
                 <div className="flex flex-wrap gap-2">
@@ -400,19 +448,19 @@ const Profile = () => {
               </Card>
             )}
 
-            {/* Voyage planifié */}
-            {userProgress.tripPlaces.length > 0 && (
+          {/* Voyage planifié */}
+          {userProgress.tripPlaces.length > 0 && (
               <Card className="p-4 sm:p-6 bg-white/50 border-primary/20">
                 <h2 className="text-lg font-semibold text-sacred-blue mb-2">Voyage en cours</h2>
                 <p className="text-muted-foreground">
                   {userProgress.tripPlaces.length} lieu{userProgress.tripPlaces.length > 1 ? 'x' : ''} planifié{userProgress.tripPlaces.length > 1 ? 's' : ''}
                 </p>
-              </Card>
-              )}
-            </div>
+            </Card>
+          )}
+        </div>
 
-            {/* Quick Actions */}
-            <div className="mt-6 grid grid-cols-2 gap-3">
+        {/* Quick Actions */}
+        <div className="mt-6 grid grid-cols-2 gap-3">
               <Button
                 onClick={() => navigate('/badges')}
                 className="w-full bg-gradient-to-r from-accent/80 to-accent hover:from-accent hover:to-accent/80"
