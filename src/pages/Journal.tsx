@@ -12,7 +12,7 @@ const Journal = () => {
       
       <div className="container mx-auto px-4 py-6 pt-16">
         <div className="space-y-6">
-          <div className="space-y-2">
+          <div className="space-y-2 animate-fade-in">
             <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               Mon Espace Social
             </h1>
@@ -21,7 +21,9 @@ const Journal = () => {
             </p>
           </div>
 
-          <SocialTab />
+          <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
+            <SocialTab />
+          </div>
         </div>
       </div>
 
