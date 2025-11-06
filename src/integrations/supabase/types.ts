@@ -313,6 +313,48 @@ export type Database = {
           },
         ]
       }
+      level_rewards: {
+        Row: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          level_required: number
+          metadata: Json | null
+          name: string
+          rarity: string
+          reward_id: string
+          reward_type: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          level_required: number
+          metadata?: Json | null
+          name: string
+          rarity?: string
+          reward_id: string
+          reward_type: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          level_required?: number
+          metadata?: Json | null
+          name?: string
+          rarity?: string
+          reward_id?: string
+          reward_type?: string
+        }
+        Relationships: []
+      }
       memories: {
         Row: {
           content: string | null
@@ -924,6 +966,41 @@ export type Database = {
         }
         Relationships: []
       }
+      user_unlocked_rewards: {
+        Row: {
+          created_at: string
+          id: string
+          is_equipped: boolean
+          reward_id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_equipped?: boolean
+          reward_id: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_equipped?: boolean
+          reward_id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_unlocked_rewards_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "level_rewards"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       visit_history: {
         Row: {
           audio_played: boolean
@@ -1124,6 +1201,28 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      unlock_level_rewards: {
+        Args: { p_new_level: number; p_user_id: string }
+        Returns: {
+          created_at: string
+          description: string | null
+          icon: string | null
+          id: string
+          is_active: boolean
+          level_required: number
+          metadata: Json | null
+          name: string
+          rarity: string
+          reward_id: string
+          reward_type: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "level_rewards"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
     }
     Enums: {
       app_role: "admin" | "moderator" | "user"

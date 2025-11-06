@@ -22,6 +22,7 @@ import { BentoGallery } from '@/components/profile/BentoGallery';
 import { Badge3DCard } from '@/components/profile/Badge3DCard';
 import { ProgressSection } from '@/components/profile/ProgressSection';
 import { LevelUpModal } from '@/components/profile/LevelUpModal';
+import { RewardsSection } from '@/components/profile/RewardsSection';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -381,6 +382,9 @@ const Profile = () => {
             {visitedPlacesWithImages.length > 0 && (
               <BentoGallery places={visitedPlacesWithImages} maxDisplay={9} />
             )}
+
+            {/* Rewards Section */}
+            <RewardsSection currentLevel={currentLevel} />
 
             {/* 3D Badge Cards */}
             {questBadges.length > 0 && (

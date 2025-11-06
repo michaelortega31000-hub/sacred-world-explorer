@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Trophy, Sparkles, Star, Zap } from 'lucide-react';
+import { Trophy, Sparkles, Star, Zap, Gift } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
+import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
+
+interface Reward {
+  id: string;
+  name: string;
+  icon: string | null;
+  rarity: 'common' | 'rare' | 'epic' | 'legendary';
+  reward_type: string;
+}
 
 interface LevelUpModalProps {
   isOpen: boolean;
@@ -13,10 +23,12 @@ interface LevelUpModalProps {
 
 export const LevelUpModal = ({ isOpen, onClose, newLevel, totalPoints }: LevelUpModalProps) => {
   const [showContent, setShowContent] = useState(false);
+  const [newRewards, setNewRewards] = useState<Reward[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       setShowContent(false);
+      unlockRewards();
       
       // Trigger massive confetti burst
       const duration = 3000;
@@ -81,6 +93,27 @@ export const LevelUpModal = ({ isOpen, onClose, newLevel, totalPoints }: LevelUp
       };
     }
   }, [isOpen]);
+
+  const unlockRewards = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase.rpc('unlock_level_rewards', {
+        p_user_id: user.id,
+        p_new_level: newLevel
+      });
+
+      if (error) {
+        logger.error('Error unlocking rewards:', error);
+        return;
+      }
+
+      setNewRewards((data || []) as Reward[]);
+    } catch (error) {
+      logger.error('Error in unlockRewards:', error);
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -150,8 +183,8 @@ export const LevelUpModal = ({ isOpen, onClose, newLevel, totalPoints }: LevelUp
             <div className="grid grid-cols-3 gap-4 mb-8">
               <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-primary/20">
                 <div className="text-3xl mb-2">🏆</div>
-                <div className="text-sm text-muted-foreground">Nouveau</div>
-                <div className="text-lg font-bold text-primary">Badge</div>
+                <div className="text-sm text-muted-foreground">Récompenses</div>
+                <div className="text-lg font-bold text-primary">{newRewards.length}</div>
               </div>
               <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-accent/20">
                 <div className="text-3xl mb-2">✨</div>
@@ -160,10 +193,32 @@ export const LevelUpModal = ({ isOpen, onClose, newLevel, totalPoints }: LevelUp
               </div>
               <div className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-purple-500/20">
                 <div className="text-3xl mb-2">🎁</div>
-                <div className="text-sm text-muted-foreground">Récompense</div>
-                <div className="text-lg font-bold text-purple-400">Débloquée</div>
+                <div className="text-sm text-muted-foreground">Niveau</div>
+                <div className="text-lg font-bold text-purple-400">{newLevel}</div>
               </div>
             </div>
+
+            {/* New Rewards Display */}
+            {newRewards.length > 0 && (
+              <div className="mb-8">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Gift className="w-5 h-5 text-accent" />
+                  Nouvelles récompenses débloquées !
+                </h3>
+                <div className="grid grid-cols-2 gap-3">
+                  {newRewards.map((reward) => (
+                    <div
+                      key={reward.id}
+                      className="bg-card/50 backdrop-blur-sm rounded-xl p-4 border border-primary/20 text-center"
+                    >
+                      <div className="text-4xl mb-2">{reward.icon || '🎁'}</div>
+                      <div className="text-sm font-bold text-foreground">{reward.name}</div>
+                      <div className="text-xs text-muted-foreground capitalize">{reward.reward_type}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* CTA Button */}
             <Button
