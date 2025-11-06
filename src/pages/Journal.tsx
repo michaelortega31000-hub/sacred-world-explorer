@@ -15,7 +15,6 @@ const Journal = () => {
             <div key={i} className="w-full h-full bg-primary/20" />
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
       </div>
       
       <div className="container mx-auto px-4 py-6 pt-2">
