@@ -3,11 +3,13 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Upload, Check, Trash2, User, Plus } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Upload, Check, Trash2, User, Plus, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { logger } from '@/lib/logger';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { DefaultAvatarSelector } from './DefaultAvatarSelector';
 
 interface CustomAvatar {
   id: string;
@@ -334,81 +336,106 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
             </DialogTitle>
           </DialogHeader>
 
-          {/* Upload Button */}
-          <Card className="p-4 border-dashed border-2 hover:border-primary/50 transition-colors">
-            <label className="flex flex-col items-center gap-2 cursor-pointer">
-              <input
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
-                onChange={handleUpload}
-                disabled={uploading}
-                className="hidden"
+          <Tabs defaultValue="default" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="default" className="gap-2">
+                <Sparkles className="w-4 h-4" />
+                Avatars par défaut
+              </TabsTrigger>
+              <TabsTrigger value="custom" className="gap-2">
+                <Upload className="w-4 h-4" />
+                Mes uploads
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Default Avatars Tab */}
+            <TabsContent value="default" className="mt-4">
+              <DefaultAvatarSelector 
+                userId={userId}
+                currentAvatarUrl={currentAvatarUrl || undefined}
+                onAvatarSelect={onAvatarChange}
               />
-              <div className="p-4 bg-primary/10 rounded-full">
-                {uploading ? (
-                  <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                ) : (
-                  <Plus className="w-8 h-8 text-primary" />
-                )}
-              </div>
-              <div className="text-center">
-                <p className="font-semibold">
-                  {uploading ? 'Upload en cours...' : 'Ajouter un nouvel avatar'}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  JPG, PNG, WebP ou HEIC - Max 2 Mo
-                </p>
-              </div>
-            </label>
-          </Card>
+            </TabsContent>
 
-          {/* Avatars Grid */}
-          <div className="grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
-            {avatars.map((avatar) => (
-              <Card
-                key={avatar.id}
-                className={`relative p-3 cursor-pointer transition-all hover:scale-105 ${
-                  avatar.is_active ? 'ring-2 ring-primary shadow-lg' : ''
-                }`}
-                onClick={() => handleSetActive(avatar.id)}
-              >
-                {avatar.is_active && (
-                  <div className="absolute -top-2 -right-2 z-10">
-                    <div className="bg-primary rounded-full p-1">
-                      <Check className="w-4 h-4 text-primary-foreground" />
-                    </div>
+            {/* Custom Avatars Tab */}
+            <TabsContent value="custom" className="mt-4">
+              {/* Upload Button */}
+              <Card className="p-4 border-dashed border-2 hover:border-primary/50 transition-colors">
+                <label className="flex flex-col items-center gap-2 cursor-pointer">
+                  <input
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif"
+                    onChange={handleUpload}
+                    disabled={uploading}
+                    className="hidden"
+                  />
+                  <div className="p-4 bg-primary/10 rounded-full">
+                    {uploading ? (
+                      <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    ) : (
+                      <Plus className="w-8 h-8 text-primary" />
+                    )}
                   </div>
-                )}
-
-                <Avatar className="w-full h-auto aspect-square">
-                  <AvatarImage src={avatar.avatar_url} alt={avatar.name || 'Avatar'} />
-                  <AvatarFallback>
-                    <User className="w-12 h-12" />
-                  </AvatarFallback>
-                </Avatar>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="absolute bottom-2 right-2 h-6 w-6 bg-destructive/90 hover:bg-destructive text-destructive-foreground"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(avatar.id, avatar.avatar_url);
-                  }}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </Button>
+                  <div className="text-center">
+                    <p className="font-semibold">
+                      {uploading ? 'Upload en cours...' : 'Ajouter un nouvel avatar'}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      JPG, PNG, WebP ou HEIC - Max 2 Mo
+                    </p>
+                  </div>
+                </label>
               </Card>
-            ))}
-          </div>
 
-          {avatars.length === 0 && (
-            <div className="text-center py-12 text-muted-foreground">
-              <User className="w-16 h-16 mx-auto mb-4 opacity-20" />
-              <p>Aucun avatar personnalisé</p>
-              <p className="text-sm">Uploadez votre premier avatar ci-dessus</p>
-            </div>
-          )}
+              {/* Avatars Grid */}
+              <div className="grid grid-cols-3 md:grid-cols-4 gap-4 mt-4">
+                {avatars.map((avatar) => (
+                  <Card
+                    key={avatar.id}
+                    className={`relative p-3 cursor-pointer transition-all hover:scale-105 ${
+                      avatar.is_active ? 'ring-2 ring-primary shadow-lg' : ''
+                    }`}
+                    onClick={() => handleSetActive(avatar.id)}
+                  >
+                    {avatar.is_active && (
+                      <div className="absolute -top-2 -right-2 z-10">
+                        <div className="bg-primary rounded-full p-1">
+                          <Check className="w-4 h-4 text-primary-foreground" />
+                        </div>
+                      </div>
+                    )}
+
+                    <Avatar className="w-full h-auto aspect-square">
+                      <AvatarImage src={avatar.avatar_url} alt={avatar.name || 'Avatar'} />
+                      <AvatarFallback>
+                        <User className="w-12 h-12" />
+                      </AvatarFallback>
+                    </Avatar>
+
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="absolute bottom-2 right-2 h-6 w-6 bg-destructive/90 hover:bg-destructive text-destructive-foreground"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(avatar.id, avatar.avatar_url);
+                      }}
+                    >
+                      <Trash2 className="w-3 h-3" />
+                    </Button>
+                  </Card>
+                ))}
+              </div>
+
+              {avatars.length === 0 && (
+                <div className="text-center py-12 text-muted-foreground">
+                  <User className="w-16 h-16 mx-auto mb-4 opacity-20" />
+                  <p>Aucun avatar personnalisé</p>
+                  <p className="text-sm">Uploadez votre premier avatar ci-dessus</p>
+                </div>
+              )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
     </>

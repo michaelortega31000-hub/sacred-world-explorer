@@ -68,6 +68,36 @@ export type Database = {
         }
         Relationships: []
       }
+      default_avatars: {
+        Row: {
+          avatar_url: string
+          category: string
+          created_at: string
+          display_order: number
+          id: string
+          is_active: boolean
+          name: string
+        }
+        Insert: {
+          avatar_url: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name: string
+        }
+        Update: {
+          avatar_url?: string
+          category?: string
+          created_at?: string
+          display_order?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+        }
+        Relationships: []
+      }
       event_reminders: {
         Row: {
           created_at: string
