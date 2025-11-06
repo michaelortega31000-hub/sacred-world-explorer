@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Globe, MapPin, Trophy, Target, Compass } from 'lucide-react';
 import Header from '@/components/Header';
@@ -9,18 +9,9 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
-import { useApp } from '@/contexts/AppContext';
-import { getTabImagesForReligion } from '@/lib/religionImageHelper';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
-  const { userProgress } = useApp();
-  
-  // Get images adapted to the selected religion
-  const tabImages = useMemo(
-    () => getTabImagesForReligion(userProgress.selectedReligion),
-    [userProgress.selectedReligion]
-  );
   
   return <div className="min-h-screen bg-background pb-20">
     <Header />
@@ -34,65 +25,25 @@ const Explore = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-5 mb-3">
-              <TabsTrigger 
-                value="map" 
-                className="gap-2 relative overflow-hidden"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.map})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <Globe className="w-4 h-4 relative z-10" />
-                <span className="hidden sm:inline relative z-10">Carte 3D</span>
+              <TabsTrigger value="map" className="gap-2">
+                <Globe className="w-4 h-4" />
+                <span className="hidden sm:inline">Carte 3D</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="nearby" 
-                className="gap-2 relative overflow-hidden"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.nearby})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <Compass className="w-4 h-4 relative z-10" />
-                <span className="hidden sm:inline relative z-10">Proche</span>
+              <TabsTrigger value="nearby" className="gap-2">
+                <Compass className="w-4 h-4" />
+                <span className="hidden sm:inline">Proche</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="locations" 
-                className="gap-2 relative overflow-hidden"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.locations})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <MapPin className="w-4 h-4 relative z-10" />
-                <span className="hidden sm:inline relative z-10">Lieux</span>
+              <TabsTrigger value="locations" className="gap-2">
+                <MapPin className="w-4 h-4" />
+                <span className="hidden sm:inline">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="challenges" 
-                className="gap-2 relative overflow-hidden"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.challenges})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <Target className="w-4 h-4 relative z-10" />
-                <span className="hidden sm:inline relative z-10">Défis</span>
+              <TabsTrigger value="challenges" className="gap-2">
+                <Target className="w-4 h-4" />
+                <span className="hidden sm:inline">Défis</span>
               </TabsTrigger>
-              <TabsTrigger 
-                value="rankings" 
-                className="gap-2 relative overflow-hidden"
-                style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.rankings})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center'
-                }}
-              >
-                <Trophy className="w-4 h-4 relative z-10" />
-                <span className="hidden sm:inline relative z-10">Classement</span>
+              <TabsTrigger value="rankings" className="gap-2">
+                <Trophy className="w-4 h-4" />
+                <span className="hidden sm:inline">Classement</span>
               </TabsTrigger>
             </TabsList>
 
