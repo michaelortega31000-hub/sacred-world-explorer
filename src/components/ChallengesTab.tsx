@@ -326,22 +326,22 @@ const ChallengesTab = () => {
       </Card>
 
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="w-full inline-flex justify-start overflow-x-auto">
+        <TabsList className="w-full grid grid-cols-4 sm:inline-flex sm:justify-start">
           <TabsTrigger value="daily" className="flex-shrink-0 gap-2">
             <Clock className="w-4 h-4" />
-            <span>Journalière</span>
+            <span className="hidden sm:inline">Journalière</span>
           </TabsTrigger>
           <TabsTrigger value="weekly" className="flex-shrink-0 gap-2">
             <Target className="w-4 h-4" />
-            <span>Hebdomadaire</span>
+            <span className="hidden sm:inline">Hebdomadaire</span>
           </TabsTrigger>
           <TabsTrigger value="monthly" className="flex-shrink-0 gap-2">
             <Calendar className="w-4 h-4" />
-            <span>Mensuelle</span>
+            <span className="hidden sm:inline">Mensuelle</span>
           </TabsTrigger>
           <TabsTrigger value="nearby" className="flex-shrink-0 gap-2">
             <MapPin className="w-4 h-4" />
-            <span>À proximité</span>
+            <span className="hidden sm:inline">À proximité</span>
           </TabsTrigger>
         </TabsList>
 
