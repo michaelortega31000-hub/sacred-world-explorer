@@ -2,6 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Mail, MapPin, Target, Award, Cross, Moon, Star, Flower2, Flame, Atom, Globe, Users } from 'lucide-react';
 import logo from '@/assets/logo-glow.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
@@ -121,14 +122,25 @@ const Header = ({
                 Quête
               </Button>
               
-              <div className="relative">
-                <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
-                  <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
-                {unreadCount > 0 && (
-                  <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-background" />
-                )}
-              </div>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="relative">
+                      <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
+                        <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+                      </Button>
+                      {unreadCount > 0 && (
+                        <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+                      )}
+                    </div>
+                  </TooltipTrigger>
+                  {unreadCount > 0 && (
+                    <TooltipContent>
+                      <p>{unreadCount} message{unreadCount > 1 ? 's' : ''} non lu{unreadCount > 1 ? 's' : ''}</p>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div> :
       // Header normal pour les autres pages
@@ -162,14 +174,25 @@ const Header = ({
                 
                 
                 
-                <div className="relative">
-                  <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
-                    <Mail className="w-5 h-5" />
-                  </Button>
-                  {unreadCount > 0 && (
-                    <div className="absolute top-0 right-0 h-3 w-3 bg-red-500 rounded-full border-2 border-background" />
-                  )}
-                </div>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="relative">
+                        <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
+                          <Mail className="w-5 h-5" />
+                        </Button>
+                        {unreadCount > 0 && (
+                          <div className="absolute top-0 right-0 h-3 w-3 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+                        )}
+                      </div>
+                    </TooltipTrigger>
+                    {unreadCount > 0 && (
+                      <TooltipContent>
+                        <p>{unreadCount} message{unreadCount > 1 ? 's' : ''} non lu{unreadCount > 1 ? 's' : ''}</p>
+                      </TooltipContent>
+                    )}
+                  </Tooltip>
+                </TooltipProvider>
                 {children}
               </div>
             </div>
