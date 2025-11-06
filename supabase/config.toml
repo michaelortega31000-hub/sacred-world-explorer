@@ -3,6 +3,9 @@ project_id = "uekqjlaguhzotiuqskvb"
 [functions.verify-visit]
 verify_jwt = true
 
+[functions.update-leaderboard-rewards]
+verify_jwt = false
+
 [functions.transcribe-audio]
 verify_jwt = true
 
