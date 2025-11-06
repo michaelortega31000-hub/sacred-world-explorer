@@ -222,6 +222,7 @@ All colors MUST be HSL.
   transition: all 0.3s ease;
 }
 
+/* Single event dot (hidden when multi-dots are present) */
 .has-religious-event::after {
   content: '';
   position: absolute;
@@ -234,6 +235,11 @@ All colors MUST be HSL.
   border-radius: 50%;
   box-shadow: 0 0 8px hsl(var(--primary) / 0.8), 0 0 12px hsl(var(--primary) / 0.4);
   animation: pulse-subtle 2s ease-in-out infinite;
+}
+
+/* Hide single dot when multi-dots are present */
+.has-religious-event[style*="--hide-single-dot"]::after {
+  display: none;
 }
 
 .has-religious-event:hover {

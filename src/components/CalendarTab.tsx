@@ -20,6 +20,7 @@ import EventDetailEnriched from '@/components/calendar/EventDetailEnriched';
 import EventNotificationBanner from '@/components/EventNotificationBanner';
 import CalendarLegend from '@/components/calendar/CalendarLegend';
 import UpcomingEventsWeek from '@/components/calendar/UpcomingEventsWeek';
+import { CalendarMultiDots } from '@/components/calendar/CalendarMultiDots';
 
 interface VisitEvent {
   date: Date;
@@ -71,6 +72,8 @@ const CalendarTab = () => {
   const religiousEventsForSelectedDate = selectedDate ? getEventsByDate(selectedDate).filter(event => traditionFilter === 'all' || event.tradition === traditionFilter) : [];
   const daysWithPersonalEvents = events.map(event => event.date);
   const daysWithReligiousEvents = filteredReligiousEvents.map(event => event.date);
+  
+  // Tradition colors mapping
   const traditionColors: Record<string, string> = {
     christianity: '#C6A45A',
     islam: '#00C6FF',
@@ -79,6 +82,32 @@ const CalendarTab = () => {
     buddhism: '#50C878',
     other: '#FFFFFF'
   };
+  
+  // Group events by day and get unique traditions per day
+  const eventsByDay = new Map<string, Set<string>>();
+  filteredReligiousEvents.forEach(event => {
+    const dateKey = format(event.date, 'yyyy-MM-dd');
+    if (!eventsByDay.has(dateKey)) {
+      eventsByDay.set(dateKey, new Set());
+    }
+    eventsByDay.get(dateKey)?.add(event.tradition);
+  });
+  
+  // Create custom styles for multi-tradition days
+  const dayStyles = new Map<string, React.CSSProperties>();
+  eventsByDay.forEach((traditions, dateKey) => {
+    if (traditions.size > 1) {
+      const colors = Array.from(traditions).map(t => traditionColors[t]);
+      dayStyles.set(dateKey, {
+        ['--dot-count' as any]: traditions.size,
+        ['--dot-color-1' as any]: colors[0] || '',
+        ['--dot-color-2' as any]: colors[1] || '',
+        ['--dot-color-3' as any]: colors[2] || '',
+        ['--dot-color-4' as any]: colors[3] || '',
+      });
+    }
+  });
+  
   const traditionLabels: Record<TraditionFilter, {
     icon: string;
     label: string;
@@ -199,13 +228,27 @@ const CalendarTab = () => {
             </CardHeader>
             <CardContent className="flex justify-center">
               {calendarView === 'month' && (
-                <Calendar mode="single" selected={selectedDate} onSelect={setSelectedDate} locale={fr} className={cn("rounded-md border pointer-events-auto")} modifiers={{
-                  hasPersonalEvent: daysWithPersonalEvents,
-                  hasReligiousEvent: daysWithReligiousEvents
-                }} modifiersClassNames={{
-                  hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
-                  hasReligiousEvent: 'has-religious-event'
-                }} />
+                <>
+                  <Calendar 
+                    mode="single" 
+                    selected={selectedDate} 
+                    onSelect={setSelectedDate} 
+                    locale={fr} 
+                    className={cn("rounded-md border pointer-events-auto")} 
+                    modifiers={{
+                      hasPersonalEvent: daysWithPersonalEvents,
+                      hasReligiousEvent: daysWithReligiousEvents
+                    }} 
+                    modifiersClassNames={{
+                      hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
+                      hasReligiousEvent: 'has-religious-event'
+                    }}
+                  />
+                  <CalendarMultiDots 
+                    eventsByDay={eventsByDay}
+                    traditionColors={traditionColors}
+                  />
+                </>
               )}
               
               {calendarView === 'week' && (
