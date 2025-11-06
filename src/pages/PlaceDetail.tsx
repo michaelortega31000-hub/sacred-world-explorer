@@ -360,6 +360,74 @@ const PlaceDetail = () => {
     setIsARMode(!isARMode);
   };
 
+  const handleCaptureAR = async () => {
+    if (!arCanvas) {
+      sonnerToast.error('Canvas non disponible');
+      return;
+    }
+
+    setIsCapturing(true);
+    hapticFeedback('tap');
+
+    try {
+      const blob = await captureARScene(arCanvas, {
+        width: 1920,
+        height: 1920,
+        quality: 0.95,
+        format: 'png',
+      });
+
+      const url = URL.createObjectURL(blob);
+      setCapturedImage(url);
+      setShowFilters(true);
+      hapticFeedback('success');
+    } catch (error) {
+      console.error('Capture failed:', error);
+      sonnerToast.error('Échec de la capture');
+      hapticFeedback('error');
+    } finally {
+      setIsCapturing(false);
+    }
+  };
+
+  const handleApplyFilter = async (filter: FilterType) => {
+    if (!capturedImage) return;
+
+    try {
+      // Convert data URL to blob
+      const response = await fetch(capturedImage);
+      const blob = await response.blob();
+
+      // Save to storage
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        await saveARCapture(blob, session.user.id, place?.name || 'unknown');
+      }
+
+      // Share
+      const shared = await shareARCapture(
+        blob,
+        place?.name || '',
+        `${place?.city}, ${place?.country}` || ''
+      );
+
+      if (shared) {
+        hapticFeedback('success');
+        sonnerToast.success('AR partagé avec succès!');
+      } else {
+        hapticFeedback('warning');
+        sonnerToast.success('AR copié dans le presse-papiers');
+      }
+
+      setShowFilters(false);
+      setCapturedImage(null);
+    } catch (error) {
+      console.error('Share failed:', error);
+      sonnerToast.error('Échec du partage');
+      hapticFeedback('error');
+    }
+  };
+
   const handleReport = () => {
     toast({
       title: "Signalement envoyé",
@@ -464,7 +532,7 @@ const PlaceDetail = () => {
                       placeLocation={`${place.city}, ${place.country}`}
                       placePoints={place.points}
                       userPosition={position}
-                      placePosition={place.coordinates}
+                      placePosition={{ latitude: place.coordinates[0], longitude: place.coordinates[1] }}
                       unlocked={isPlaceVisited(placeId!)}
                     />
 
