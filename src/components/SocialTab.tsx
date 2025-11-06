@@ -1,16 +1,21 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
 import { Users, MessageSquare, BookHeart, Rss } from 'lucide-react';
 import FriendsTab from './FriendsTab';
 import ForumTab from './ForumTab';
 import MessagesTab from './MessagesTab';
 import MemoriesTab from './MemoriesTab';
 import ActivityFeed from './ActivityFeed';
+import { useUnreadMessages } from '@/hooks/useUnreadMessages';
+import { useUnreadForumPosts } from '@/hooks/useUnreadForumPosts';
 
 const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' | 'friends' | 'messages' | 'forum' }) => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(defaultTab);
+  const { unreadCount: unreadMessages, markAsRead: markMessagesRead } = useUnreadMessages();
+  const { unreadCount: unreadForumPosts, markAsRead: markForumRead } = useUnreadForumPosts();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -23,6 +28,13 @@ const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' |
   const handleTabChange = (value: string) => {
     if (value === 'feed' || value === 'memories' || value === 'friends' || value === 'messages' || value === 'forum') {
       setActiveTab(value);
+      
+      // Mark as read when switching to the tab
+      if (value === 'messages') {
+        markMessagesRead();
+      } else if (value === 'forum') {
+        markForumRead();
+      }
     }
   };
 
@@ -47,10 +59,20 @@ const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' |
               <TabsTrigger value="messages" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-3 sm:px-4">
                 <MessageSquare className="w-4 h-4 flex-shrink-0" />
                 <span className="hidden sm:inline text-sm whitespace-nowrap">Messages</span>
+                {unreadMessages > 0 && (
+                  <Badge variant="destructive" className="ml-1 h-5 min-w-5 flex items-center justify-center px-1.5 text-[10px] animate-pulse">
+                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  </Badge>
+                )}
               </TabsTrigger>
               <TabsTrigger value="forum" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-3 sm:px-4">
                 <MessageSquare className="w-4 h-4 flex-shrink-0" />
                 <span className="hidden sm:inline text-sm whitespace-nowrap">Forum</span>
+                {unreadForumPosts > 0 && (
+                  <Badge variant="destructive" className="ml-1 h-5 min-w-5 flex items-center justify-center px-1.5 text-[10px] animate-pulse">
+                    {unreadForumPosts > 99 ? '99+' : unreadForumPosts}
+                  </Badge>
+                )}
               </TabsTrigger>
             </TabsList>
           </div>
