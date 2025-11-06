@@ -12,7 +12,7 @@ import { Award, Trophy, Star, Lock, Calendar, Compass, Target, MapPin, Medal, Tr
 import { Progress } from '@/components/ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { ImageBackground } from '@/components/ImageBackground';
-import { getIconicImageForReligion, getImagesByReligion } from '@/lib/religionImageHelper';
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { getImageUrl } from '@/lib/imageHelper';
 
 interface UserBadge {
@@ -43,7 +43,7 @@ interface MonthlyProgress {
 const Badges = () => {
   const { session, userProgress } = useApp();
   const navigate = useNavigate();
-  const iconicImage = getIconicImageForReligion(userProgress.selectedReligion);
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -220,19 +220,15 @@ const Badges = () => {
     : religionBadges;
 
   return (
-    <div className="min-h-screen bg-sacred-blue relative overflow-hidden pb-20">
-      <ImageBackground 
-        images={iconicImage}
-        blur={5}
-        overlay="dark"
-        className="h-64 mb-6"
-      >
-        <div className="flex items-center justify-center h-full">
-          <h1 className="text-4xl font-bold text-white">Mes Badges</h1>
-        </div>
-      </ImageBackground>
-
-      <BackButton to="/profile" />
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen pb-20"
+    >
+      <div className="min-h-screen relative pb-20">
+        <BackButton to="/profile" />
       
       <div className="relative z-10 container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-6">
         <div className="text-center space-y-2">
@@ -522,7 +518,8 @@ const Badges = () => {
       </div>
 
       <BottomNavigation />
-    </div>
+      </div>
+    </ImageBackground>
   );
 };
 

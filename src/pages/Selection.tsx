@@ -8,6 +8,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { religionColors } from '@/config/religionColors';
 import logo from '@/assets/sacredworld-logo.png';
+import { ImageBackground } from '@/components/ImageBackground';
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 // Icons for religious symbols
 import { Church, Moon, Star as StarIcon, Sparkles, Flame as FlameIcon, Users, AtSign, LogOut } from 'lucide-react';
 
@@ -41,6 +43,7 @@ const Selection = () => {
   const { t, i18n } = useTranslation();
   const { updateReligion, updateLanguage, userProgress } = useApp();
   const { toast } = useToast();
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [selectedReligion, setSelectedReligion] = useState<Religion | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState(i18n.language);
 
@@ -94,9 +97,14 @@ const Selection = () => {
   };
 
   return (
-    <div className="min-h-screen p-6 flex flex-col bg-background relative">
-      {/* Overlay gradient turquoise subtil */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen"
+    >
+      <div className="min-h-screen p-6 flex flex-col relative">
       
       <div className="absolute top-6 right-6 z-10">
         <Button
@@ -190,7 +198,8 @@ const Selection = () => {
           </Button>
         </div>
       </div>
-    </div>
+      </div>
+    </ImageBackground>
   );
 };
 

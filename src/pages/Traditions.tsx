@@ -6,7 +6,9 @@ import { Palette, Building2, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/sacredworld-logo.png';
 import { logger } from '@/lib/logger';
-import { getIconicImageForReligion } from '@/lib/religionImageHelper';
+import { getIconicImageForReligion, getBackgroundRotationImages } from '@/lib/religionImageHelper';
+import { ImageBackground } from '@/components/ImageBackground';
+import { useApp } from '@/contexts/AppContext';
 import crossBubbleIcon from '@/assets/animations/cross-bubble.png';
 import crescentIcon from '@/assets/animations/crescent.png';
 import starDavidIcon from '@/assets/animations/star-david.png';
@@ -75,6 +77,8 @@ const interests = [{
   icon: BookOpen
 }];
 const Traditions = () => {
+  const { userProgress } = useApp();
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [selectedMain, setSelectedMain] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const navigate = useNavigate();
@@ -92,10 +96,15 @@ const Traditions = () => {
     });
     navigate('/explore');
   };
-  return <div className="min-h-screen flex flex-col relative p-6 overflow-hidden">
-      {/* Cosmic gradient background with slow vertical glow motion */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0E1B3F] via-[#1a2847] to-[#34E0A1]/20" />
-      <div className="absolute inset-0 cosmic-glow pointer-events-none" />
+  return (
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen"
+    >
+      <div className="min-h-screen flex flex-col relative p-6 overflow-hidden">
       
       {/* Atmospheric particles */}
       <div className="absolute inset-0 pointer-events-none opacity-30">
@@ -261,6 +270,8 @@ const Traditions = () => {
             </p>}
         </div>
       </div>
-    </div>;
+      </div>
+    </ImageBackground>
+  );
 };
 export default Traditions;
