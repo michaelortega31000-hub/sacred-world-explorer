@@ -3,6 +3,13 @@ import { useGeolocation, UserGeolocation } from '@/hooks/useGeolocation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
+import { 
+  playSuccessSound, 
+  playBadgeUnlockSound, 
+  playAddToTripSound, 
+  playRemoveFromTripSound,
+  resumeAudioContext 
+} from '@/utils/audioEffects';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
@@ -244,8 +251,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserProgress(prev => {
       if (prev.visitedPlaces.includes(placeId)) return prev;
       
+      // Resume audio context for sounds
+      resumeAudioContext();
+      
+      // Play success sound for visit validation
+      playSuccessSound();
+      
       const newTotalPoints = prev.totalPoints + points;
       const newBadges = [...prev.badges];
+      const previousBadgeCount = newBadges.length;
       
       // Award badges based on milestones
       if (newTotalPoints >= 100 && !newBadges.includes('explorer')) {
@@ -275,6 +289,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         newBadges.push(badgeId);
       }
       
+      // Play badge unlock sound if new badge(s) were earned
+      if (newBadges.length > previousBadgeCount) {
+        setTimeout(() => playBadgeUnlockSound(), 400);
+      }
+      
       // Remove place from trip planner when visited
       const newTripPlaces = prev.tripPlaces.filter(id => id !== placeId);
       
@@ -297,6 +316,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const addToTrip = (placeId: string) => {
     const currentTrip = userProgress.tripPlaces || [];
     if (!currentTrip.includes(placeId)) {
+      // Resume audio context and play sound
+      resumeAudioContext();
+      playAddToTripSound();
+      
       setUserProgress(prev => ({
         ...prev,
         tripPlaces: [...currentTrip, placeId]
@@ -305,6 +328,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const removeFromTrip = (placeId: string) => {
+    // Resume audio context and play sound
+    resumeAudioContext();
+    playRemoveFromTripSound();
+    
     setUserProgress(prev => ({
       ...prev,
       tripPlaces: (prev.tripPlaces || []).filter(id => id !== placeId)
