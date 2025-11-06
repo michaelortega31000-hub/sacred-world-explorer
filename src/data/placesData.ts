@@ -2505,6 +2505,7 @@ export const mockPlaces: Place[] = [
     country: 'France',
     city: 'Toulouse',
     type: 'Couvent',
+    religion: 'christianity',
     description: 'Chef-d\'œuvre gothique méridional (1230-1385) en brique toulousaine. Église à deux nefs, voûte palmier 28m colonnes centrales. Architecture gothique languedocien unique. Reliques Saint Thomas d\'Aquin. Centre intellectuel dominicain médiéval. Elle incarne ordres mendiants, architecture brique Midi et rayonnement intellectuel Toulouse.',
     points: 60,
     coordinates: [1.4419, 43.6062],

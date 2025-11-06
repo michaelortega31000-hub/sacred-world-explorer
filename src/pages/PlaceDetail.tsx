@@ -5,7 +5,7 @@ import { getAllPlaces } from '@/data/placesData';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { 
@@ -672,6 +672,10 @@ const PlaceDetail = () => {
       {/* Modal Check-in */}
       <Dialog open={isCheckinModalOpen} onOpenChange={setIsCheckinModalOpen}>
         <DialogContent className="max-w-md">
+          <DialogTitle className="sr-only">Vérifier ma visite</DialogTitle>
+          <DialogDescription className="sr-only">
+            Prouvez que vous êtes sur place en utilisant le GPS ou en prenant une photo
+          </DialogDescription>
           <div className="text-center space-y-6 py-6">
             <div className="w-20 h-20 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
               <MapPin className="w-10 h-10 text-primary" />
@@ -736,6 +740,10 @@ const PlaceDetail = () => {
       {/* Modal Récompense */}
       <Dialog open={isRewardModalOpen} onOpenChange={setIsRewardModalOpen}>
         <DialogContent className="max-w-md">
+          <DialogTitle className="sr-only">Félicitations</DialogTitle>
+          <DialogDescription className="sr-only">
+            Visite validée avec succès, vous avez gagné des points et un badge
+          </DialogDescription>
           <div className="text-center space-y-6 py-6">
             {/* Badge animé */}
             <div 
@@ -797,6 +805,10 @@ const PlaceDetail = () => {
       {/* Modal Fullscreen Image */}
       <Dialog open={!!fullscreenImage} onOpenChange={() => setFullscreenImage(null)}>
         <DialogContent className="max-w-4xl p-0">
+          <DialogTitle className="sr-only">Photo en plein écran</DialogTitle>
+          <DialogDescription className="sr-only">
+            Affichage de la photo de la communauté en grand format
+          </DialogDescription>
           <div className="relative">
             <img
               src={fullscreenImage || ''}
