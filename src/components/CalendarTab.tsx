@@ -19,6 +19,7 @@ import YearView from '@/components/calendar/YearView';
 import EventDetailEnriched from '@/components/calendar/EventDetailEnriched';
 import EventNotificationBanner from '@/components/EventNotificationBanner';
 import CalendarLegend from '@/components/calendar/CalendarLegend';
+import UpcomingEventsWeek from '@/components/calendar/UpcomingEventsWeek';
 
 interface VisitEvent {
   date: Date;
@@ -129,6 +130,13 @@ const CalendarTab = () => {
 
         {/* Event Notification Banner */}
         <EventNotificationBanner />
+
+        {/* Upcoming Events Week */}
+        <UpcomingEventsWeek 
+          events={filteredReligiousEvents}
+          onEventClick={setSelectedEvent}
+          traditionColors={traditionColors}
+        />
 
         {/* View Selector */}
         <div className="mb-6">

@@ -68,6 +68,45 @@ export type Database = {
         }
         Relationships: []
       }
+      event_reminders: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_id: string
+          event_name: string
+          id: string
+          is_enabled: boolean
+          last_sent_at: string | null
+          reminder_times: number[]
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_id: string
+          event_name: string
+          id?: string
+          is_enabled?: boolean
+          last_sent_at?: string | null
+          reminder_times?: number[]
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_id?: string
+          event_name?: string
+          id?: string
+          is_enabled?: boolean
+          last_sent_at?: string | null
+          reminder_times?: number[]
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       forum_post_reports: {
         Row: {
           created_at: string
