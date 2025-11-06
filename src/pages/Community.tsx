@@ -6,11 +6,14 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CommunityPost } from "@/components/CommunityPost";
 import { BackButton } from "@/components/BackButton";
 import { useApp } from "@/contexts/AppContext";
+import { ImageBackground } from "@/components/ImageBackground";
+import { getBackgroundRotationImages } from "@/lib/religionImageHelper";
 
 const Community = () => {
   const { t } = useTranslation();
   const { userProgress } = useApp();
   const [activeFilter, setActiveFilter] = useState("all");
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
 
   // Mock data - in production this would come from the database
   const posts = [
@@ -42,45 +45,53 @@ const Community = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <BackButton />
-      
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-24">
-        <div className="text-center space-y-2">
-          <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-cinzel">
-            {t("community.title", "Community")}
-          </h1>
-          <p className="text-muted-foreground">
-            {t("community.subtitle", "Share your wishes and memories with the world")}
-          </p>
-        </div>
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen bg-background"
+    >
+      <div className="min-h-screen relative">
+        <BackButton />
+        
+        <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 space-y-4 sm:space-y-6 pb-24 relative z-10">
+          <div className="text-center space-y-2">
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground font-cinzel">
+              {t("community.title", "Community")}
+            </h1>
+            <p className="text-muted-foreground">
+              {t("community.subtitle", "Share your wishes and memories with the world")}
+            </p>
+          </div>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
-          <Tabs value={activeFilter} onValueChange={setActiveFilter} className="flex-1">
-            <TabsList className="grid grid-cols-5 w-full bg-card/50 backdrop-blur-sm h-9 sm:h-10">
-              <TabsTrigger value="all" className="text-[10px] sm:text-xs px-1">All</TabsTrigger>
-              <TabsTrigger value="wishes" className="text-[10px] sm:text-xs px-1">Wish</TabsTrigger>
-              <TabsTrigger value="photos" className="text-[10px] sm:text-xs px-1">Photo</TabsTrigger>
-              <TabsTrigger value="quotes" className="text-[10px] sm:text-xs px-1">Quote</TabsTrigger>
-              <TabsTrigger value="memories" className="text-[10px] sm:text-xs px-1">Memo</TabsTrigger>
-            </TabsList>
-          </Tabs>
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4">
+            <Tabs value={activeFilter} onValueChange={setActiveFilter} className="flex-1">
+              <TabsList className="grid grid-cols-5 w-full bg-card/50 backdrop-blur-sm h-9 sm:h-10">
+                <TabsTrigger value="all" className="text-[10px] sm:text-xs px-1">All</TabsTrigger>
+                <TabsTrigger value="wishes" className="text-[10px] sm:text-xs px-1">Wish</TabsTrigger>
+                <TabsTrigger value="photos" className="text-[10px] sm:text-xs px-1">Photo</TabsTrigger>
+                <TabsTrigger value="quotes" className="text-[10px] sm:text-xs px-1">Quote</TabsTrigger>
+                <TabsTrigger value="memories" className="text-[10px] sm:text-xs px-1">Memo</TabsTrigger>
+              </TabsList>
+            </Tabs>
 
-          <Button 
-            className="bg-primary text-primary-foreground shadow-turquoise breathing-glow"
-            size="icon"
-          >
-            <Plus className="w-5 h-5" />
-          </Button>
-        </div>
+            <Button 
+              className="bg-primary text-primary-foreground shadow-turquoise breathing-glow"
+              size="icon"
+            >
+              <Plus className="w-5 h-5" />
+            </Button>
+          </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {posts.map((post) => (
-            <CommunityPost key={post.id} {...post} />
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {posts.map((post) => (
+              <CommunityPost key={post.id} {...post} />
+            ))}
+          </div>
         </div>
       </div>
-    </div>
+    </ImageBackground>
   );
 };
 

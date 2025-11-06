@@ -12,12 +12,15 @@ import { supabase } from '@/integrations/supabase/client';
 import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
+import { ImageBackground } from '@/components/ImageBackground';
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 
 const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
   const { userProgress, updateLanguage } = useApp();
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -119,12 +122,15 @@ const Settings = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background relative overflow-hidden pb-20">
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
-      </div>
-
-      <BackButton />
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen pb-20"
+    >
+      <div className="min-h-screen relative overflow-hidden pb-20">
+        <BackButton />
 
       <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <h1 className="text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
@@ -259,9 +265,10 @@ const Settings = () => {
           </Card>
         </div>
       </main>
-
+      
       <BottomNavigation />
     </div>
+  </ImageBackground>
   );
 };
 

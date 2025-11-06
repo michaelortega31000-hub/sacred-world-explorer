@@ -9,31 +9,14 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
-import { ImageBackground } from '@/components/ImageBackground';
-import { useApp } from '@/contexts/AppContext';
-import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
-  const { userProgress } = useApp();
-  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   
-  return <ImageBackground 
-    images={backgroundImages}
-    carousel={true}
-    blur={4}
-    overlay="gradient"
-    className="min-h-screen pb-20"
-  >
-    <div className="min-h-screen relative overflow-hidden">
-      {/* Background effect */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
-      </div>
+  return <div className="min-h-screen bg-background pb-20">
+    <Header />
       
-      <Header />
-      
-      <div className="container mx-auto px-4 py-2 relative z-10">
+      <div className="container mx-auto px-4 py-2">
         <div className="space-y-6">
           <div className="space-y-2">
             
@@ -41,7 +24,7 @@ const Explore = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-3 bg-card/80 backdrop-blur-sm">
+            <TabsList className="grid w-full grid-cols-5 mb-3">
               <TabsTrigger value="map" className="gap-2">
                 <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">Carte 3D</span>
@@ -65,41 +48,32 @@ const Explore = () => {
             </TabsList>
 
             <TabsContent value="map" className="space-y-4">
-              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl bg-background/80 backdrop-blur-sm">
+              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl">
                 <Globe3D />
               </div>
               <NearMeFeature />
             </TabsContent>
 
             <TabsContent value="nearby">
-              <div className="bg-card/80 backdrop-blur-sm rounded-xl p-4">
-                <ProximityDetector />
-              </div>
+              <ProximityDetector />
             </TabsContent>
 
             <TabsContent value="locations">
-              <div className="bg-card/80 backdrop-blur-sm rounded-xl p-4">
-                <LocationsTab />
-              </div>
+              <LocationsTab />
             </TabsContent>
 
             <TabsContent value="challenges">
-              <div className="bg-card/80 backdrop-blur-sm rounded-xl p-4">
-                <ChallengesTab />
-              </div>
+              <ChallengesTab />
             </TabsContent>
 
             <TabsContent value="rankings">
-              <div className="bg-card/80 backdrop-blur-sm rounded-xl p-4">
-                <RankingsTab />
-              </div>
+              <RankingsTab />
             </TabsContent>
           </Tabs>
         </div>
       </div>
 
       <BottomNavigation />
-    </div>
-  </ImageBackground>;
+    </div>;
 };
 export default Explore;
