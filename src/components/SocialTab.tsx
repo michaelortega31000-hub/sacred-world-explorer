@@ -1,25 +1,26 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Users, MessageSquare } from 'lucide-react';
+import { Users, MessageSquare, BookHeart } from 'lucide-react';
 import FriendsTab from './FriendsTab';
 import ForumTab from './ForumTab';
 import MessagesTab from './MessagesTab';
+import MemoriesTab from './MemoriesTab';
 
-const SocialTab = ({ defaultTab = 'friends' }: { defaultTab?: 'friends' | 'messages' | 'forum' }) => {
+const SocialTab = ({ defaultTab = 'memories' }: { defaultTab?: 'memories' | 'friends' | 'messages' | 'forum' }) => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(defaultTab);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const subTab = params.get('sub') as 'friends' | 'messages' | 'forum';
+    const subTab = params.get('sub') as 'memories' | 'friends' | 'messages' | 'forum';
     if (subTab) {
       setActiveTab(subTab);
     }
   }, [location.search]);
 
   const handleTabChange = (value: string) => {
-    if (value === 'friends' || value === 'messages' || value === 'forum') {
+    if (value === 'memories' || value === 'friends' || value === 'messages' || value === 'forum') {
       setActiveTab(value);
     }
   };
@@ -29,7 +30,11 @@ const SocialTab = ({ defaultTab = 'friends' }: { defaultTab?: 'friends' | 'messa
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="border-b border-border bg-card">
           <div className="container mx-auto px-4">
-            <TabsList className="w-full justify-start h-auto p-0 bg-transparent grid grid-cols-3">
+            <TabsList className="w-full justify-start h-auto p-0 bg-transparent grid grid-cols-4">
+              <TabsTrigger value="memories" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
+                <BookHeart className="w-4 h-4" />
+                Souvenirs
+              </TabsTrigger>
               <TabsTrigger value="friends" className="gap-2 rounded-none border-b-2 data-[state=active]:border-primary">
                 <Users className="w-4 h-4" />
                 Amis
@@ -45,6 +50,10 @@ const SocialTab = ({ defaultTab = 'friends' }: { defaultTab?: 'friends' | 'messa
             </TabsList>
           </div>
         </div>
+
+        <TabsContent value="memories" className="mt-0">
+          <MemoriesTab />
+        </TabsContent>
 
         <TabsContent value="friends" className="mt-0">
           <FriendsTab />
