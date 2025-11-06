@@ -20,6 +20,7 @@ import { cn } from '@/lib/utils';
 import type { SavedPOI } from '@/contexts/AppContext';
 import jsPDF from 'jspdf';
 import TripStatsDashboard from './TripStatsDashboard';
+import ThemedRouteSuggestions from './ThemedRouteSuggestions';
 import {
   Select,
   SelectContent,
@@ -58,7 +59,7 @@ interface POI {
 
 const LocationsTab = () => {
   const navigate = useNavigate();
-  const { userProgress, updatePlannedRoute, savePOI, removePOI, getPOIsForPlace } = useApp();
+  const { userProgress, updatePlannedRoute, savePOI, removePOI, getPOIsForPlace, addToTrip, removeFromTrip } = useApp();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
@@ -145,6 +146,25 @@ const LocationsTab = () => {
 
   const resetToOptimizedOrder = () => {
     setOptimizedRouteState([]);
+  };
+
+  const applyThemedRoute = (placeIds: string[]) => {
+    // Clear current trip
+    userProgress.tripPlaces?.forEach(placeId => {
+      removeFromTrip(placeId);
+    });
+    
+    // Add all places from themed route
+    placeIds.forEach(placeId => {
+      addToTrip(placeId);
+    });
+    
+    // Set starting city if places available
+    const firstPlace = mockPlaces.find(p => p.id === placeIds[0]);
+    if (firstPlace) {
+      setStartingCity(`${firstPlace.city}, ${firstPlace.country}`);
+      setShowOptimizedRoute(true);
+    }
   };
 
   // Export route to PDF
@@ -939,6 +959,14 @@ const LocationsTab = () => {
                     ))}
                   </div>
                 </ScrollArea>
+              )}
+
+              {/* Themed Route Suggestions */}
+              {mockPlaces.length > 0 && (
+                <ThemedRouteSuggestions
+                  availablePlaces={mockPlaces}
+                  onApplyRoute={applyThemedRoute}
+                />
               )}
 
               {/* Route Optimizer Section */}

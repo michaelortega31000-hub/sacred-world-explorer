@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.moderate-avatar]
 verify_jwt = true
+
+[functions.suggest-themed-routes]
+verify_jwt = true
