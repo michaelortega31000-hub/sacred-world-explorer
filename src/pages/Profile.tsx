@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, TrendingUp, Share2, Check, Copy } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { useAvatarUnlock } from '@/hooks/useAvatarUnlock';
 import { logger } from '@/lib/logger';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
@@ -53,6 +54,13 @@ const Profile = () => {
   const [copied, setCopied] = useState(false);
 
   const currentLevel = useMemo(() => Math.floor(userProgress.totalPoints / 100) + 1, [userProgress.totalPoints]);
+
+  // Auto-unlock avatars based on level and badges
+  useAvatarUnlock({
+    userId: userId || '',
+    currentLevel,
+    badges: userProgress.badges
+  });
 
   useEffect(() => {
     const checkAuth = async () => {

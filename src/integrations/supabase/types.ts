@@ -76,7 +76,12 @@ export type Database = {
           display_order: number
           id: string
           is_active: boolean
+          is_exclusive: boolean
+          level_required: number | null
           name: string
+          rarity: string
+          required_badge_types: string[] | null
+          unlock_description: string | null
         }
         Insert: {
           avatar_url: string
@@ -85,7 +90,12 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
+          is_exclusive?: boolean
+          level_required?: number | null
           name: string
+          rarity?: string
+          required_badge_types?: string[] | null
+          unlock_description?: string | null
         }
         Update: {
           avatar_url?: string
@@ -94,7 +104,12 @@ export type Database = {
           display_order?: number
           id?: string
           is_active?: boolean
+          is_exclusive?: boolean
+          level_required?: number | null
           name?: string
+          rarity?: string
+          required_badge_types?: string[] | null
+          unlock_description?: string | null
         }
         Relationships: []
       }
@@ -1086,6 +1101,35 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      user_unlocked_default_avatars: {
+        Row: {
+          avatar_id: string
+          id: string
+          unlocked_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_id: string
+          id?: string
+          unlocked_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_id?: string
+          id?: string
+          unlocked_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_unlocked_default_avatars_avatar_id_fkey"
+            columns: ["avatar_id"]
+            isOneToOne: false
+            referencedRelation: "default_avatars"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_unlocked_rewards: {
         Row: {
