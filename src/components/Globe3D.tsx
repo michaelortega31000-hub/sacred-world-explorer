@@ -186,6 +186,20 @@ useEffect(() => {
         } as any);
       }
 
+      // Ajouter une layer invisible pour les clics sur les pays
+      if (!map.current.getLayer('country-boundaries-fill')) {
+        map.current.addLayer({
+          id: 'country-boundaries-fill',
+          type: 'fill',
+          source: 'country-boundaries',
+          'source-layer': 'country_boundaries',
+          paint: {
+            'fill-color': 'transparent',
+            'fill-opacity': 0
+          }
+        } as any);
+      }
+
       // Effets hover désactivés
 
       // Configurer la langue des labels selon la langue sélectionnée
@@ -471,16 +485,35 @@ useEffect(() => {
         [e.point.x + 20, e.point.y + 20]
       ];
       
-      // Chercher dans les polygones des pays (pas juste les labels)
-      const features = map.current.queryRenderedFeatures(bbox, {
+      // Chercher dans les polygones des pays
+      let features = map.current.queryRenderedFeatures(bbox, {
         layers: ['country-boundaries-fill']
       });
       
+      // Si aucune feature trouvée avec country-boundaries, essayer avec les layers natives
+      if (!features || features.length === 0) {
+        features = map.current.queryRenderedFeatures(e.point, {
+          layers: map.current.getStyle().layers
+            ?.filter(layer => 
+              layer.id.includes('admin-0') || 
+              layer.id.includes('country') ||
+              layer.type === 'fill'
+            )
+            .map(layer => layer.id) || []
+        });
+      }
+      
       if (features && features.length > 0) {
-        // Récupérer le nom en anglais qui est la clé standard
-        const countryName = features[0].properties?.name_en || features[0].properties?.name;
+        // Récupérer le nom du pays dans différents formats possibles
+        const feature = features[0];
+        const countryName = 
+          feature.properties?.name_en || 
+          feature.properties?.name || 
+          feature.properties?.iso_3166_1 ||
+          feature.properties?.worldview;
+        
         if (countryName) {
-          logger.log('Country clicked:', countryName);
+          logger.log('Country clicked:', countryName, 'from layer:', feature.layer?.id);
           navigate(`/country/${countryName}`);
         }
       }
