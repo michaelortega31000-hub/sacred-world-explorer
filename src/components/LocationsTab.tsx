@@ -37,6 +37,11 @@ interface SavedRestaurant {
   description: string;
 }
 
+interface RouteSegment {
+  distance: number; // in kilometers
+  duration: number; // in minutes
+}
+
 const LocationsTab = () => {
   const navigate = useNavigate();
   const { userProgress, updatePlannedRoute } = useApp();
@@ -47,6 +52,8 @@ const LocationsTab = () => {
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
   const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
+  const [routeSegments, setRouteSegments] = useState<RouteSegment[]>([]);
+  const [loadingRouteInfo, setLoadingRouteInfo] = useState(false);
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -57,6 +64,65 @@ const LocationsTab = () => {
   
   const setShowOptimizedRoute = (show: boolean) => {
     updatePlannedRoute(userProgress.plannedRouteStartCity, show);
+  };
+
+  // Calculate route segments with distance and duration
+  const calculateRouteSegments = async (places: typeof plannedPlaces) => {
+    if (places.length < 2) {
+      setRouteSegments([]);
+      return;
+    }
+
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    if (!mapboxToken) {
+      console.warn('Mapbox token not configured');
+      return;
+    }
+
+    setLoadingRouteInfo(true);
+    const segments: RouteSegment[] = [];
+
+    try {
+      for (let i = 0; i < places.length - 1; i++) {
+        const start = places[i];
+        const end = places[i + 1];
+
+        const coordinates = `${start.coordinates[0]},${start.coordinates[1]};${end.coordinates[0]},${end.coordinates[1]}`;
+        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
+
+        const response = await fetch(url);
+        const data = await response.json();
+
+        if (data.routes && data.routes[0]) {
+          const route = data.routes[0];
+          segments.push({
+            distance: route.distance / 1000, // Convert meters to kilometers
+            duration: route.duration / 60, // Convert seconds to minutes
+          });
+        } else {
+          // Fallback: calculate straight-line distance
+          const R = 6371; // Earth's radius in km
+          const dLat = (end.coordinates[1] - start.coordinates[1]) * Math.PI / 180;
+          const dLon = (end.coordinates[0] - start.coordinates[0]) * Math.PI / 180;
+          const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(start.coordinates[1] * Math.PI / 180) * Math.cos(end.coordinates[1] * Math.PI / 180) *
+            Math.sin(dLon/2) * Math.sin(dLon/2);
+          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+          const distance = R * c;
+          segments.push({
+            distance,
+            duration: distance / 80 * 60, // Rough estimate: 80 km/h average
+          });
+        }
+      }
+
+      setRouteSegments(segments);
+    } catch (error) {
+      console.error('Error calculating route segments:', error);
+      setRouteSegments([]);
+    } finally {
+      setLoadingRouteInfo(false);
+    }
   };
 
   const continents = useMemo(() => getAllContinents(), []);
@@ -178,6 +244,15 @@ const LocationsTab = () => {
     
     return route;
   }, [startingCity, plannedPlaces]);
+
+  // Calculate route segments when optimized route changes
+  useEffect(() => {
+    if (showOptimizedRoute && optimizedRoute.length >= 2) {
+      calculateRouteSegments(optimizedRoute);
+    } else {
+      setRouteSegments([]);
+    }
+  }, [optimizedRoute, showOptimizedRoute]);
 
   // Get unique cities from planned places
   const tripCities = useMemo(() => {
@@ -625,6 +700,7 @@ const LocationsTab = () => {
                             {optimizedRoute.map((place, index) => {
                               const isNewCity = index === 0 || 
                                 `${place.city}, ${place.country}` !== `${optimizedRoute[index-1]?.city}, ${optimizedRoute[index-1]?.country}`;
+                              const segment = routeSegments[index];
                               
                               return (
                                 <div key={place.id}>
@@ -636,37 +712,88 @@ const LocationsTab = () => {
                                       </span>
                                     </div>
                                   )}
-                                  <div className="flex items-start gap-4 ml-6">
-                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
-                                      {index + 1}
-                                    </div>
-                                    <div 
-                                      className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
-                                      onClick={() => navigate(`/place/${place.id}`)}
-                                    >
-                                      {place.imageUrl && (
-                                        <img 
-                                          src={getImageUrl(place.imageUrl)} 
-                                          alt={place.name}
-                                          className="w-16 h-16 object-cover rounded"
-                                          onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
-                                        />
-                                      )}
-                                      <div className="flex-1">
-                                        <h4 className="font-semibold">{place.name}</h4>
-                                        <p className="text-sm text-muted-foreground line-clamp-1">
-                                          {place.description}
-                                        </p>
-                                        <Badge variant="outline" className="mt-1">{place.points} pts</Badge>
+                                  <div className="space-y-2">
+                                    <div className="flex items-start gap-4 ml-6">
+                                      <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                                        {index + 1}
                                       </div>
-                                      {index < optimizedRoute.length - 1 && (
-                                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
-                                      )}
+                                      <div 
+                                        className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                                        onClick={() => navigate(`/place/${place.id}`)}
+                                      >
+                                        {place.imageUrl && (
+                                          <img 
+                                            src={getImageUrl(place.imageUrl)} 
+                                            alt={place.name}
+                                            className="w-16 h-16 object-cover rounded"
+                                            onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                                          />
+                                        )}
+                                        <div className="flex-1">
+                                          <h4 className="font-semibold">{place.name}</h4>
+                                          <p className="text-sm text-muted-foreground line-clamp-1">
+                                            {place.description}
+                                          </p>
+                                          <Badge variant="outline" className="mt-1">{place.points} pts</Badge>
+                                        </div>
+                                      </div>
                                     </div>
+                                    {index < optimizedRoute.length - 1 && segment && (
+                                      <div className="ml-14 flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
+                                        <div className="flex items-center gap-2">
+                                          <ArrowRight className="w-4 h-4 text-secondary" />
+                                          <span className="font-medium">
+                                            {segment.distance.toFixed(1)} km
+                                          </span>
+                                        </div>
+                                        <div className="w-px h-4 bg-border" />
+                                        <div className="flex items-center gap-2">
+                                          <Calendar className="w-4 h-4 text-secondary" />
+                                          <span className="font-medium">
+                                            {segment.duration < 60 
+                                              ? `${Math.round(segment.duration)} min`
+                                              : `${Math.floor(segment.duration / 60)}h ${Math.round(segment.duration % 60)}min`
+                                            }
+                                          </span>
+                                        </div>
+                                      </div>
+                                    )}
+                                    {index < optimizedRoute.length - 1 && loadingRouteInfo && !segment && (
+                                      <div className="ml-14 text-sm text-muted-foreground animate-pulse">
+                                        Calcul en cours...
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               );
                             })}
+                            {routeSegments.length > 0 && (
+                              <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-primary/20">
+                                <div className="flex items-center justify-between text-sm">
+                                  <span className="font-semibold">Totaux :</span>
+                                  <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-2">
+                                      <MapPin className="w-4 h-4 text-primary" />
+                                      <span className="font-bold text-primary">
+                                        {routeSegments.reduce((sum, seg) => sum + seg.distance, 0).toFixed(1)} km
+                                      </span>
+                                    </div>
+                                    <div className="w-px h-4 bg-border" />
+                                    <div className="flex items-center gap-2">
+                                      <Calendar className="w-4 h-4 text-primary" />
+                                      <span className="font-bold text-primary">
+                                        {(() => {
+                                          const totalMinutes = routeSegments.reduce((sum, seg) => sum + seg.duration, 0);
+                                          const hours = Math.floor(totalMinutes / 60);
+                                          const minutes = Math.round(totalMinutes % 60);
+                                          return hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`;
+                                        })()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
