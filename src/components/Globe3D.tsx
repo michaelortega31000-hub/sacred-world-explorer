@@ -469,7 +469,7 @@ useEffect(() => {
 
     spinGlobe();
 
-    // Click sur un pays - amélioration de la zone cliquable
+    // Click sur un pays - amélioration de la zone cliquable avec animation zoom
     map.current.on('click', (e) => {
       if (!map.current) return;
       
@@ -512,9 +512,30 @@ useEffect(() => {
           feature.properties?.iso_3166_1 ||
           feature.properties?.worldview;
         
-        if (countryName) {
+        if (countryName && map.current) {
           logger.log('Country clicked:', countryName, 'from layer:', feature.layer?.id);
-          navigate(`/country/${countryName}`);
+          
+          // Pause la rotation du globe
+          setIsPaused(true);
+          
+          // Calculer le centre approximatif du pays depuis les coordonnées du clic
+          const lngLat = e.lngLat;
+          
+          // Animation de zoom vers le pays
+          map.current.flyTo({
+            center: [lngLat.lng, lngLat.lat],
+            zoom: 5, // Zoom assez proche pour voir le pays
+            pitch: 45, // Angle 3D
+            bearing: 0,
+            duration: 1800, // Animation de 1.8 secondes
+            essential: true,
+            easing: (t) => t * (2 - t) // Easing smooth (ease-out-quad)
+          });
+          
+          // Attendre la fin de l'animation avant de naviguer
+          setTimeout(() => {
+            navigate(`/country/${countryName}`);
+          }, 1900); // Légèrement après l'animation pour un effet smooth
         }
       }
     });
