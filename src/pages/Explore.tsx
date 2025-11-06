@@ -9,6 +9,7 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
+import mapBg from '@/assets/tabs/map-bg.jpg';
 import nearbyBg from '@/assets/tabs/nearby-bg.jpg';
 import locationsBg from '@/assets/tabs/locations-bg.jpg';
 import challengesBg from '@/assets/tabs/challenges-bg.jpg';
@@ -29,9 +30,17 @@ const Explore = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-5 mb-3">
-              <TabsTrigger value="map" className="gap-2">
-                <Globe className="w-4 h-4" />
-                <span className="hidden sm:inline">Carte 3D</span>
+              <TabsTrigger 
+                value="map" 
+                className="gap-2 relative overflow-hidden"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${mapBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                <Globe className="w-4 h-4 relative z-10" />
+                <span className="hidden sm:inline relative z-10">Carte 3D</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="nearby" 
