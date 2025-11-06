@@ -228,7 +228,8 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
 
       const avatar = avatars.find(a => a.id === avatarId);
       if (avatar) {
-        onAvatarChange(avatar.avatar_url);
+        // Add cache buster to force browser to reload the image
+        onAvatarChange(`${avatar.avatar_url}?t=${Date.now()}`);
       }
 
       toast({
