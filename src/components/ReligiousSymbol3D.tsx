@@ -1,4 +1,4 @@
-import { Suspense, useRef, useEffect } from 'react';
+import { Suspense, useRef, useEffect, useState } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { OrbitControls } from '@react-three/drei';
 import * as THREE from 'three';
@@ -7,7 +7,10 @@ import { religionColors } from '@/config/religionColors';
 import { SymbolGeometry } from './ar/SymbolGeometry';
 import { ParticleSystem } from './ar/ParticleSystem';
 import { LightingSystem } from './ar/LightingSystem';
+import { PostProcessingEffects } from './ar/PostProcessingEffects';
 import { useDeviceOrientation } from '@/hooks/useDeviceOrientation';
+import { Button } from '@/components/ui/button';
+import { Sparkles, SparklesIcon } from 'lucide-react';
 
 interface ReligiousSymbol3DProps {
   religion: Religion;
@@ -15,12 +18,14 @@ interface ReligiousSymbol3DProps {
   size?: 'sm' | 'md' | 'lg';
   intensity?: number;
   useDeviceOrientation?: boolean;
+  enablePostProcessing?: boolean;
 }
 
 interface SymbolSceneProps {
   religion: Religion;
   unlocked: boolean;
   intensity: number;
+  enablePostProcessing: boolean;
   deviceOrientation: {
     alpha: number | null;
     beta: number | null;
@@ -32,6 +37,7 @@ const SymbolScene = ({
   religion,
   unlocked,
   intensity,
+  enablePostProcessing,
   deviceOrientation,
 }: SymbolSceneProps) => {
   const groupRef = useRef<THREE.Group>(null);
@@ -94,6 +100,12 @@ const SymbolScene = ({
       </group>
 
       <ParticleSystem count={50} color={color} unlocked={unlocked} />
+      
+      <PostProcessingEffects 
+        unlocked={unlocked} 
+        intensity={intensity}
+        enableEffects={enablePostProcessing}
+      />
     </>
   );
 };
@@ -104,8 +116,10 @@ export const ReligiousSymbol3D = ({
   size = 'md',
   intensity = 50,
   useDeviceOrientation: enableDeviceOrientation = false,
+  enablePostProcessing = true,
 }: ReligiousSymbol3DProps) => {
   const orientation = useDeviceOrientation(enableDeviceOrientation);
+  const [effectsEnabled, setEffectsEnabled] = useState(enablePostProcessing);
 
   const sizeMap = {
     sm: '200px',
@@ -122,31 +136,45 @@ export const ReligiousSymbol3D = ({
     : null;
 
   return (
-    <div
-      style={{
-        width: sizeMap[size],
-        height: sizeMap[size],
-        margin: '0 auto',
-      }}
-    >
-      <Canvas
-        camera={{ position: [0, 0, 8], fov: 50 }}
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance',
+    <div className="relative">
+      {/* Effects Toggle Button */}
+      <Button
+        variant="outline"
+        size="sm"
+        className="absolute top-2 right-2 z-10 bg-background/80 backdrop-blur-sm pointer-events-auto"
+        onClick={() => setEffectsEnabled(!effectsEnabled)}
+      >
+        <SparklesIcon className="w-4 h-4 mr-2" />
+        {effectsEnabled ? 'Effets ON' : 'Effets OFF'}
+      </Button>
+
+      <div
+        style={{
+          width: sizeMap[size],
+          height: sizeMap[size],
+          margin: '0 auto',
         }}
       >
-        <Suspense fallback={null}>
-          <SymbolScene
-            religion={religion}
-            unlocked={unlocked}
-            intensity={intensity}
-            deviceOrientation={deviceOrientationData}
-          />
-          {!enableDeviceOrientation && <OrbitControls enableZoom={false} />}
-        </Suspense>
-      </Canvas>
+        <Canvas
+          camera={{ position: [0, 0, 8], fov: 50 }}
+          gl={{
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance',
+          }}
+        >
+          <Suspense fallback={null}>
+            <SymbolScene
+              religion={religion}
+              unlocked={unlocked}
+              intensity={intensity}
+              enablePostProcessing={effectsEnabled}
+              deviceOrientation={deviceOrientationData}
+            />
+            {!enableDeviceOrientation && <OrbitControls enableZoom={false} />}
+          </Suspense>
+        </Canvas>
+      </div>
     </div>
   );
 };
