@@ -6,6 +6,7 @@ import { Palette, Building2, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import logo from '@/assets/sacredworld-logo.png';
 import { logger } from '@/lib/logger';
+import { getIconicImageForReligion } from '@/lib/religionImageHelper';
 import crossBubbleIcon from '@/assets/animations/cross-bubble.png';
 import crescentIcon from '@/assets/animations/crescent.png';
 import starDavidIcon from '@/assets/animations/star-david.png';
@@ -23,37 +24,37 @@ type Tradition = {
 const traditions: Tradition[] = [{
   id: 'christianity',
   name: 'Christianisme',
-  image: crossBubbleIcon,
+  image: getIconicImageForReligion('christianity'),
   color: 'hsl(220 70% 50%)'
 }, {
   id: 'islam',
   name: 'Islam',
-  image: crescentIcon,
+  image: getIconicImageForReligion('islam'),
   color: 'hsl(142 76% 36%)'
 }, {
   id: 'judaism',
   name: 'Judaïsme',
-  image: starDavidIcon,
+  image: getIconicImageForReligion('judaism'),
   color: 'hsl(262 83% 58%)'
 }, {
   id: 'hinduism',
   name: 'Hindouisme',
-  image: omIcon,
+  image: getIconicImageForReligion('hinduism'),
   color: 'hsl(24 95% 53%)'
 }, {
   id: 'buddhism',
   name: 'Bouddhisme',
-  image: lotusIcon,
+  image: getIconicImageForReligion('buddhism'),
   color: 'hsl(45 93% 47%)'
 }, {
   id: 'other',
   name: 'Autres traditions',
-  image: spiritIcon,
+  image: getIconicImageForReligion('traditional'),
   color: 'hsl(173 58% 39%)'
 }, {
   id: 'curious',
   name: 'Curieux / Athée',
-  image: starsIcon,
+  image: getIconicImageForReligion('astronomy'),
   color: 'hsl(215 20% 45%)'
 }];
 const interests = [{

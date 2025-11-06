@@ -12,6 +12,9 @@ import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, Settings as Settin
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { logger } from '@/lib/logger';
+import { ImageBackground } from '@/components/ImageBackground';
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
+import { mockPlaces } from '@/data/placesData';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -19,6 +22,7 @@ const Profile = () => {
   const { toast } = useToast();
   const { userProgress } = useApp();
   const { checkRateLimit } = useRateLimit();
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -223,13 +227,20 @@ const Profile = () => {
   };
 
   return (
-    <div className="min-h-screen bg-sacred-blue relative overflow-hidden">
-      {/* Background with rotating globe effect */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
-      </div>
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen pb-20"
+    >
+      <div className="min-h-screen bg-sacred-blue relative overflow-hidden">
+        {/* Background with rotating globe effect */}
+        <div className="absolute inset-0 opacity-20">
+          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
+        </div>
 
-      <Header>
+        <Header>
         <Button
           variant="ghost"
           size="icon"
@@ -423,7 +434,8 @@ const Profile = () => {
       </main>
 
       <BottomNavigation />
-    </div>
+      </div>
+    </ImageBackground>
   );
 };
 

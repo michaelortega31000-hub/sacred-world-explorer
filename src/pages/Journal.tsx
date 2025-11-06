@@ -9,7 +9,16 @@ const Journal = () => {
 
   return (
     <div className="min-h-screen bg-background pb-20">
-      <div className="container mx-auto px-4 py-6 pt-8">
+      <div className="relative h-32 mb-6 overflow-hidden">
+        <div className="absolute inset-0 grid grid-cols-4 gap-1 opacity-20">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="w-full h-full bg-primary/20" />
+          ))}
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-background/50 to-background" />
+      </div>
+      
+      <div className="container mx-auto px-4 py-6 pt-2">
         <div className="space-y-6">
           <Button 
             variant="ghost" 

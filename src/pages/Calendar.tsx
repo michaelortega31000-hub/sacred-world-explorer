@@ -1,8 +1,35 @@
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import CalendarTab from '@/components/CalendarTab';
+import { ImageBackground } from '@/components/ImageBackground';
+import { useApp } from '@/contexts/AppContext';
+import { useMemo } from 'react';
+import { mockPlaces } from '@/data/placesData';
+import { inferReligionFromPlace } from '@/lib/religionHelper';
+import { getImageUrl } from '@/lib/imageHelper';
 const Calendar = () => {
-  return <div className="min-h-screen bg-background pb-20">
+  const { userProgress } = useApp();
+  
+  const seasonalImage = useMemo(() => {
+    const religion = userProgress.selectedReligion;
+    const month = new Date().getMonth();
+    
+    const seasonalPlaces = mockPlaces.filter(place => {
+      const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
+      return placeReligion === religion;
+    });
+    
+    return seasonalPlaces.length > 0 
+      ? getImageUrl(seasonalPlaces[month % seasonalPlaces.length]?.imageUrl || '')
+      : getImageUrl('/src/assets/places/notre-dame.jpg');
+  }, [userProgress.selectedReligion]);
+
+  return <ImageBackground 
+    images={seasonalImage}
+    blur={4}
+    parallax={true}
+    className="min-h-screen pb-20"
+  >
       <Header />
       
       <div className="container mx-auto px-4 py-6">
@@ -19,6 +46,6 @@ const Calendar = () => {
       </div>
 
       <BottomNavigation />
-    </div>;
+    </ImageBackground>;
 };
 export default Calendar;

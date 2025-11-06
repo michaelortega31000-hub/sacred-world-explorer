@@ -10,6 +10,9 @@ import { Loader2 } from 'lucide-react';
 import logo from '@/assets/sacredworld-logo.png';
 import { z } from 'zod';
 import { Checkbox } from '@/components/ui/checkbox';
+import { ImageBackground } from '@/components/ImageBackground';
+import { getIconicImageForReligion } from '@/lib/religionImageHelper';
+import { Religion } from '@/contexts/AppContext';
 
 const signupSchema = z.object({
   username: z.string().min(3, 'Le nom d\'utilisateur doit contenir au moins 3 caractères'),
@@ -40,6 +43,11 @@ const Auth = () => {
     password: ''
   });
   const [rememberMe, setRememberMe] = useState(true);
+  const [authImage] = useState(() => {
+    const allReligions: Religion[] = ['christianity', 'islam', 'judaism', 'buddhism', 'hinduism', 'astronomy'];
+    const randomReligion = allReligions[Math.floor(Math.random() * allReligions.length)];
+    return getIconicImageForReligion(randomReligion);
+  });
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
@@ -226,10 +234,12 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden bg-background">
-      {/* Overlay gradient turquoise subtil */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
-
+    <ImageBackground 
+      images={authImage}
+      blur={6}
+      overlay="dark"
+      className="min-h-screen flex items-center justify-center p-4"
+    >
       <Card className="w-full max-w-md relative z-10 bg-card/90 backdrop-blur-md border-primary/20 shadow-halo turquoise-reflection">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
@@ -410,7 +420,7 @@ const Auth = () => {
           )}
         </CardContent>
       </Card>
-    </div>
+    </ImageBackground>
   );
 };
 
