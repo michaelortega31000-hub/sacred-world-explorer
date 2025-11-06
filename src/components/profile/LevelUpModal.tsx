@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
-import { Trophy, Sparkles, Star, Zap, Gift } from 'lucide-react';
+import { Trophy, Sparkles, Star, Zap, Gift, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import confetti from 'canvas-confetti';
 import { supabase } from '@/integrations/supabase/client';
@@ -87,12 +87,18 @@ export const LevelUpModal = ({ isOpen, onClose, newLevel, totalPoints }: LevelUp
         setShowContent(true);
       }, 300);
 
+      // Safety timeout - auto close after 30 seconds
+      const safetyTimeout = setTimeout(() => {
+        onClose();
+      }, 30000);
+
       return () => {
         clearInterval(interval);
         clearTimeout(timer);
+        clearTimeout(safetyTimeout);
       };
     }
-  }, [isOpen]);
+  }, [isOpen, onClose]);
 
   const unlockRewards = async () => {
     try {
@@ -116,8 +122,15 @@ export const LevelUpModal = ({ isOpen, onClose, newLevel, totalPoints }: LevelUp
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()} modal={true}>
       <DialogContent className="max-w-2xl border-0 bg-transparent p-0 shadow-none">
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 z-50 rounded-full p-2 bg-card/80 backdrop-blur-sm border border-border hover:bg-card transition-colors"
+          aria-label="Fermer"
+        >
+          <X className="w-5 h-5 text-foreground" />
+        </button>
         <div className="relative min-h-[600px] flex items-center justify-center">
           {/* Animated background */}
           <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-accent/20 to-purple-500/20 rounded-3xl backdrop-blur-xl border-2 border-primary/30">

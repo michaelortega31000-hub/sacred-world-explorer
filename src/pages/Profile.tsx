@@ -44,6 +44,7 @@ const Profile = () => {
   }>>([]);
   const [showLevelUpModal, setShowLevelUpModal] = useState(false);
   const [levelUpData, setLevelUpData] = useState({ level: 1, points: 0 });
+  const [hasShownLevelUp, setHasShownLevelUp] = useState<Set<number>>(new Set());
 
   const currentLevel = useMemo(() => Math.floor(userProgress.totalPoints / 100) + 1, [userProgress.totalPoints]);
 
@@ -66,16 +67,15 @@ const Profile = () => {
     const storedLevel = localStorage.getItem('lastKnownLevel');
     const lastLevel = storedLevel ? parseInt(storedLevel) : 1;
 
-    if (currentLevel > lastLevel) {
+    if (currentLevel > lastLevel && !hasShownLevelUp.has(currentLevel)) {
       // Level up detected!
       setLevelUpData({ level: currentLevel, points: userProgress.totalPoints });
       setShowLevelUpModal(true);
-      localStorage.setItem('lastKnownLevel', currentLevel.toString());
     } else if (!storedLevel) {
       // First visit, store current level
       localStorage.setItem('lastKnownLevel', currentLevel.toString());
     }
-  }, [currentLevel, userProgress.totalPoints]);
+  }, [currentLevel, userProgress.totalPoints, hasShownLevelUp]);
 
   const fetchQuestBadges = async (uid: string) => {
     try {
@@ -485,12 +485,16 @@ const Profile = () => {
       </div>
 
       {/* Level Up Modal */}
-      <LevelUpModal
-        isOpen={showLevelUpModal}
-        onClose={() => setShowLevelUpModal(false)}
-        newLevel={levelUpData.level}
-        totalPoints={levelUpData.points}
-      />
+        <LevelUpModal
+          isOpen={showLevelUpModal}
+          onClose={() => {
+            setShowLevelUpModal(false);
+            setHasShownLevelUp(prev => new Set(prev).add(currentLevel));
+            localStorage.setItem('lastKnownLevel', currentLevel.toString());
+          }}
+          newLevel={levelUpData.level}
+          totalPoints={levelUpData.points}
+        />
     </ImageBackground>
   );
 };
