@@ -327,10 +327,22 @@ const ChallengesTab = () => {
 
       <Tabs defaultValue="daily" className="w-full">
         <TabsList className="w-full inline-flex justify-start overflow-x-auto">
-          <TabsTrigger value="daily" className="flex-shrink-0">Journalière</TabsTrigger>
-          <TabsTrigger value="weekly" className="flex-shrink-0">Hebdomadaire</TabsTrigger>
-          <TabsTrigger value="monthly" className="flex-shrink-0">Mensuelle</TabsTrigger>
-          <TabsTrigger value="nearby" className="flex-shrink-0">À proximité</TabsTrigger>
+          <TabsTrigger value="daily" className="flex-shrink-0 gap-2">
+            <Clock className="w-4 h-4" />
+            <span>Journalière</span>
+          </TabsTrigger>
+          <TabsTrigger value="weekly" className="flex-shrink-0 gap-2">
+            <Target className="w-4 h-4" />
+            <span>Hebdomadaire</span>
+          </TabsTrigger>
+          <TabsTrigger value="monthly" className="flex-shrink-0 gap-2">
+            <Calendar className="w-4 h-4" />
+            <span>Mensuelle</span>
+          </TabsTrigger>
+          <TabsTrigger value="nearby" className="flex-shrink-0 gap-2">
+            <MapPin className="w-4 h-4" />
+            <span>À proximité</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="daily" className="space-y-6">
