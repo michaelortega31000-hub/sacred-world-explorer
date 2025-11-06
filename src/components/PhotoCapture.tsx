@@ -1,9 +1,10 @@
 import { useState, useRef } from 'react';
-import { Camera, X, Check, Loader2 } from 'lucide-react';
+import { Camera, X, Check, Loader2, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { PhotoAnalysisPreview } from './PhotoAnalysisPreview';
 
 interface PhotoCaptureProps {
   isOpen: boolean;
@@ -13,6 +14,13 @@ interface PhotoCaptureProps {
   userLat: number;
   userLon: number;
   onSuccess: (data: { pointsEarned: number; photoUrl: string }) => void;
+}
+
+interface AnalysisResult {
+  match: boolean;
+  confidence: number;
+  identified_elements: string[];
+  reason: string;
 }
 
 export const PhotoCapture = ({ 
@@ -26,6 +34,8 @@ export const PhotoCapture = ({
 }: PhotoCaptureProps) => {
   const [photoData, setPhotoData] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isValidating, setIsValidating] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -50,15 +60,50 @@ export const PhotoCapture = ({
 
   const handleRetake = () => {
     setPhotoData(null);
+    setAnalysisResult(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
+    }
+  };
+
+  const handleAnalyze = async () => {
+    if (!photoData) return;
+
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+
+    try {
+      const base64Data = photoData.split(',')[1];
+
+      const { data, error } = await supabase.functions.invoke('analyze-visit-photo', {
+        body: {
+          placeId,
+          photoBase64: base64Data
+        }
+      });
+
+      if (error) {
+        console.error('Analysis error:', error);
+        toast.error('Erreur lors de l\'analyse');
+        return;
+      }
+
+      if (data.success && data.analysis) {
+        setAnalysisResult(data.analysis);
+        toast.success('🤖 Analyse terminée !');
+      }
+    } catch (error) {
+      console.error('Analysis error:', error);
+      toast.error('Erreur lors de l\'analyse');
+    } finally {
+      setIsAnalyzing(false);
     }
   };
 
   const handleValidate = async () => {
     if (!photoData) return;
 
-    setIsAnalyzing(true);
+    setIsValidating(true);
 
     try {
       // Extract base64 data
@@ -100,7 +145,7 @@ export const PhotoCapture = ({
       console.error('Validation error:', error);
       toast.error('Erreur lors de la validation');
     } finally {
-      setIsAnalyzing(false);
+      setIsValidating(false);
     }
   };
 
@@ -142,49 +187,98 @@ export const PhotoCapture = ({
             </div>
           ) : (
             <div className="space-y-4">
-              <div className="relative rounded-lg overflow-hidden border border-border">
-                <img
-                  src={photoData}
-                  alt="Photo capturée"
-                  className="w-full h-auto max-h-96 object-contain"
-                />
-              </div>
+              {!analysisResult ? (
+                <>
+                  <div className="relative rounded-lg overflow-hidden border border-border">
+                    <img
+                      src={photoData}
+                      alt="Photo capturée"
+                      className="w-full h-auto max-h-96 object-contain"
+                    />
+                  </div>
 
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  onClick={handleRetake}
-                  disabled={isAnalyzing}
-                  className="flex-1"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  Reprendre
-                </Button>
-                <Button
-                  onClick={handleValidate}
-                  disabled={isAnalyzing}
-                  className="flex-1"
-                >
-                  {isAnalyzing ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Analyse en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Check className="w-4 h-4 mr-2" />
-                      Valider
-                    </>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleRetake}
+                      disabled={isAnalyzing}
+                      className="flex-1"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Reprendre
+                    </Button>
+                    <Button
+                      onClick={handleAnalyze}
+                      disabled={isAnalyzing}
+                      className="flex-1"
+                    >
+                      {isAnalyzing ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Analyse en cours...
+                        </>
+                      ) : (
+                        <>
+                          <Eye className="w-4 h-4 mr-2" />
+                          Analyser la photo
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {isAnalyzing && (
+                    <div className="text-center p-4 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        🤖 L'IA analyse votre photo pour identifier {placeName}...
+                      </p>
+                    </div>
                   )}
-                </Button>
-              </div>
+                </>
+              ) : (
+                <>
+                  <PhotoAnalysisPreview
+                    analysis={analysisResult}
+                    placeName={placeName}
+                    photoData={photoData}
+                  />
 
-              {isAnalyzing && (
-                <div className="text-center p-4 bg-muted/50 rounded-lg">
-                  <p className="text-sm text-muted-foreground">
-                    🤖 L'IA analyse votre photo pour vérifier qu'il s'agit bien de {placeName}...
-                  </p>
-                </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleRetake}
+                      disabled={isValidating}
+                      className="flex-1"
+                    >
+                      <X className="w-4 h-4 mr-2" />
+                      Retenter
+                    </Button>
+                    <Button
+                      onClick={handleValidate}
+                      disabled={isValidating || analysisResult.confidence < 50}
+                      className="flex-1"
+                    >
+                      {isValidating ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Validation...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="w-4 h-4 mr-2" />
+                          Valider la visite
+                        </>
+                      )}
+                    </Button>
+                  </div>
+
+                  {isValidating && (
+                    <div className="text-center p-4 bg-muted/50 rounded-lg">
+                      <p className="text-sm text-muted-foreground">
+                        ✨ Validation de votre visite en cours...
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           )}
