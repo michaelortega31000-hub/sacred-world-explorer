@@ -1,10 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2 } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
@@ -12,6 +12,9 @@ import NearMeFeature from './NearMeFeature';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getImageUrl } from '@/lib/imageHelper';
+import TripRouteMap from './TripRouteMap';
+import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';
 import {
   Select,
   SelectContent,
@@ -20,15 +23,41 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 
+interface SavedRestaurant {
+  id: string;
+  name: string;
+  type: string[];
+  cuisine: string;
+  address: string;
+  city: string;
+  country: string;
+  phone?: string;
+  rating: number;
+  website?: string;
+  description: string;
+}
+
 const LocationsTab = () => {
   const navigate = useNavigate();
-  const { userProgress } = useApp();
+  const { userProgress, updatePlannedRoute } = useApp();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
+  
+  const startingCity = userProgress.plannedRouteStartCity;
+  const showOptimizedRoute = userProgress.showPlannedRoute;
+  
+  const setStartingCity = (city: string) => {
+    updatePlannedRoute(city, userProgress.showPlannedRoute);
+  };
+  
+  const setShowOptimizedRoute = (show: boolean) => {
+    updatePlannedRoute(userProgress.plannedRouteStartCity, show);
+  };
 
   const continents = useMemo(() => getAllContinents(), []);
   const countries = useMemo(() => {
@@ -56,6 +85,151 @@ const LocationsTab = () => {
   const plannedPlaces = useMemo(() => {
     return mockPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
   }, [userProgress.tripPlaces]);
+
+  // Get all unique cities from planned places
+  const availableCities = useMemo(() => {
+    const cities = new Set<string>();
+    plannedPlaces.forEach(place => {
+      if (place.city) cities.add(`${place.city}, ${place.country}`);
+    });
+    return Array.from(cities).sort();
+  }, [plannedPlaces]);
+
+  // Optimize route based on starting city with geographic proximity
+  const optimizedRoute = useMemo(() => {
+    if (!startingCity || plannedPlaces.length === 0) return [];
+    
+    const [city, country] = startingCity.split(', ');
+    
+    // Group all places by city
+    const placesByCity = plannedPlaces.reduce((acc, place) => {
+      const key = `${place.city}, ${place.country}`;
+      if (!acc[key]) acc[key] = [];
+      acc[key].push(place);
+      return acc;
+    }, {} as Record<string, typeof plannedPlaces>);
+    
+    // Simple geographic proximity map (European cities)
+    const cityProximity: Record<string, string[]> = {
+      'Barcelona, Spain': ['Madrid, Spain', 'Montserrat, Spain', 'Valencia, Spain', 'Marseille, France', 'Lyon, France'],
+      'Madrid, Spain': ['Barcelona, Spain', 'Toledo, Spain', 'Lisbon, Portugal', 'Seville, Spain'],
+      'Paris, France': ['Reims, France', 'Chartres, France', 'Strasbourg, France', 'Lyon, France', 'Brussels, Belgium'],
+      'Rome, Italy': ['Naples, Italy', 'Florence, Italy', 'Siena, Italy', 'Pisa, Italy', 'Vatican City, Vatican'],
+      'London, United Kingdom': ['Canterbury, United Kingdom', 'York, United Kingdom', 'Westminster, United Kingdom', 'Paris, France'],
+      'Berlin, Germany': ['Dresden, Germany', 'Cologne, Germany', 'Munich, Germany', 'Prague, Czech Republic'],
+      'Istanbul, Turkey': ['Ankara, Turkey', 'Athens, Greece', 'Sofia, Bulgaria'],
+      'Athens, Greece': ['Delphi, Greece', 'Thessaloniki, Greece', 'Istanbul, Turkey'],
+      'Moscow, Russia': ['St. Petersburg, Russia', 'Sergiyev Posad, Russia', 'Kiev, Ukraine'],
+      'Cairo, Egypt': ['Alexandria, Egypt', 'Giza, Egypt', 'Luxor, Egypt'],
+      'Bangkok, Thailand': ['Ayutthaya, Thailand', 'Chiang Mai, Thailand', 'Phuket, Thailand'],
+      'Tokyo, Japan': ['Kyoto, Japan', 'Osaka, Japan', 'Nara, Japan', 'Nikko, Japan'],
+      'Beijing, China': ['Xi\'an, China', 'Shanghai, China', 'Luoyang, China'],
+      'Delhi, India': ['Agra, India', 'Jaipur, India', 'Varanasi, India'],
+      'Mexico City, Mexico': ['Teotihuacan, Mexico', 'Puebla, Mexico', 'Guadalajara, Mexico'],
+      'Lima, Peru': ['Cusco, Peru', 'Arequipa, Peru', 'Machu Picchu, Peru'],
+      'Rio de Janeiro, Brazil': ['São Paulo, Brazil', 'Brasília, Brazil', 'Salvador, Brazil'],
+      'Buenos Aires, Argentina': ['Córdoba, Argentina', 'Mendoza, Argentina', 'Luján, Argentina'],
+    };
+    
+    const route: typeof plannedPlaces = [];
+    const visitedCities = new Set<string>();
+    let currentCity = startingCity;
+    
+    // Start with places in the starting city
+    if (placesByCity[currentCity]) {
+      route.push(...placesByCity[currentCity]);
+      visitedCities.add(currentCity);
+    }
+    
+    // Visit nearest cities
+    while (visitedCities.size < Object.keys(placesByCity).length) {
+      let nearestCity: string | null = null;
+      let foundInProximity = false;
+      
+      // First, try to find a nearby city from proximity map
+      if (cityProximity[currentCity]) {
+        for (const nearCity of cityProximity[currentCity]) {
+          if (placesByCity[nearCity] && !visitedCities.has(nearCity)) {
+            nearestCity = nearCity;
+            foundInProximity = true;
+            break;
+          }
+        }
+      }
+      
+      // If no nearby city found in proximity map, pick next unvisited city
+      if (!foundInProximity) {
+        for (const city of Object.keys(placesByCity)) {
+          if (!visitedCities.has(city)) {
+            nearestCity = city;
+            break;
+          }
+        }
+      }
+      
+      if (nearestCity) {
+        route.push(...placesByCity[nearestCity]);
+        visitedCities.add(nearestCity);
+        currentCity = nearestCity;
+      } else {
+        break;
+      }
+    }
+    
+    return route;
+  }, [startingCity, plannedPlaces]);
+
+  // Get unique cities from planned places
+  const tripCities = useMemo(() => {
+    return new Set(plannedPlaces.map(place => place.city));
+  }, [plannedPlaces]);
+
+  // Fetch saved restaurants
+  useEffect(() => {
+    const fetchRestaurants = async () => {
+      if (userProgress.savedRestaurants.length === 0) {
+        setSavedRestaurants([]);
+        return;
+      }
+
+      const { data, error } = await supabase
+        .from('restaurants')
+        .select('*')
+        .in('id', userProgress.savedRestaurants);
+
+      if (!error && data) {
+        setSavedRestaurants(data as SavedRestaurant[]);
+      }
+    };
+
+    fetchRestaurants();
+  }, [userProgress.savedRestaurants]);
+
+  // Filter restaurants by trip cities
+  const filteredRestaurants = useMemo(() => {
+    if (plannedPlaces.length === 0) return [];
+    return savedRestaurants.filter(restaurant => tripCities.has(restaurant.city));
+  }, [savedRestaurants, tripCities, plannedPlaces]);
+
+  // Group restaurants by city
+  const restaurantsByCity = useMemo(() => {
+    return filteredRestaurants.reduce((acc, restaurant) => {
+      if (!acc[restaurant.city]) acc[restaurant.city] = [];
+      acc[restaurant.city].push(restaurant);
+      return acc;
+    }, {} as Record<string, SavedRestaurant[]>);
+  }, [filteredRestaurants]);
+
+  const getTypeColor = (type: string) => {
+    const colors: Record<string, string> = {
+      halal: 'bg-green-500/20 text-green-700 border-green-500/30',
+      kosher: 'bg-blue-500/20 text-blue-700 border-blue-500/30',
+      vegetarian: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30',
+      vegan: 'bg-lime-500/20 text-lime-700 border-lime-500/30',
+      neutral: 'bg-slate-500/20 text-slate-700 border-slate-500/30',
+    };
+    return colors[type] || 'bg-slate-500/20 text-slate-700 border-slate-500/30';
+  };
 
   // Check if filters are applied
   const hasFilters = useMemo(() => {
@@ -294,21 +468,6 @@ const LocationsTab = () => {
         </TabsContent>
 
         <TabsContent value="planned" className="space-y-6 mt-6">
-          {/* Search and filters for planned places */}
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-            <Input
-              placeholder="Rechercher dans votre itinéraire..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-
-          <div className="text-sm text-muted-foreground">
-            {filteredPlaces.length} lieu{filteredPlaces.length > 1 ? 'x' : ''} dans votre itinéraire
-          </div>
-
           {plannedPlaces.length === 0 ? (
             <Card className="border-2" style={{ borderColor: '#34E0A1' }}>
               <CardContent className="py-12 text-center">
@@ -321,69 +480,301 @@ const LocationsTab = () => {
                 </p>
               </CardContent>
             </Card>
-          ) : filteredPlaces.length === 0 ? (
-            <Card className="border-2" style={{ borderColor: '#34E0A1' }}>
-              <CardContent className="py-12 text-center">
-                <MapPin className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-xl text-muted-foreground mb-2">
-                  Aucun lieu trouvé
-                </p>
-                <p className="text-muted-foreground">
-                  Essayez de modifier votre recherche
-                </p>
-              </CardContent>
-            </Card>
           ) : (
-            <ScrollArea className="h-[600px]">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
-                {filteredPlaces.map((place) => (
-                  <Card 
-                    key={place.id}
-                    className="overflow-hidden cursor-pointer transition-all hover:scale-105"
-                    style={{
-                      background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
-                      border: '1px solid rgba(52, 224, 161, 0.2)'
-                    }}
-                    onClick={() => navigate(`/place/${place.id}`)}
-                  >
-                    <div className="relative h-48 overflow-hidden">
-                      <img
-                        src={getImageUrl(place.imageUrl)}
-                        alt={place.name}
-                        className="w-full h-full object-cover"
-                        loading="lazy"
-                      />
-                      {isPlaceVisited(place.id) && (
-                        <Badge 
-                          className="absolute top-2 right-2 bg-primary text-primary-foreground"
-                          style={{
-                            boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)'
-                          }}
-                        >
-                          Visité
-                        </Badge>
-                      )}
-                    </div>
-                    <CardHeader>
-                      <CardTitle className="text-foreground line-clamp-1">
-                        {place.name}
-                      </CardTitle>
-                      <CardDescription className="text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {place.city}, {t(`countries.${place.country}`, { defaultValue: place.country })}
+            <div className="space-y-6">
+              {/* Places List */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher dans votre itinéraire..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+
+              <div className="text-sm text-muted-foreground">
+                {filteredPlaces.length} lieu{filteredPlaces.length > 1 ? 'x' : ''} dans votre itinéraire
+              </div>
+
+              {filteredPlaces.length === 0 ? (
+                <Card className="border-2" style={{ borderColor: '#34E0A1' }}>
+                  <CardContent className="py-12 text-center">
+                    <MapPin className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
+                    <p className="text-xl text-muted-foreground mb-2">
+                      Aucun lieu trouvé
+                    </p>
+                    <p className="text-muted-foreground">
+                      Essayez de modifier votre recherche
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <ScrollArea className="h-[400px]">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
+                    {filteredPlaces.map((place) => (
+                      <Card 
+                        key={place.id}
+                        className="overflow-hidden cursor-pointer transition-all hover:scale-105"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
+                          border: '1px solid rgba(52, 224, 161, 0.2)'
+                        }}
+                        onClick={() => navigate(`/place/${place.id}`)}
+                      >
+                        <div className="relative h-48 overflow-hidden">
+                          <img
+                            src={getImageUrl(place.imageUrl)}
+                            alt={place.name}
+                            className="w-full h-full object-cover"
+                            loading="lazy"
+                          />
+                          {isPlaceVisited(place.id) && (
+                            <Badge 
+                              className="absolute top-2 right-2 bg-primary text-primary-foreground"
+                              style={{
+                                boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)'
+                              }}
+                            >
+                              Visité
+                            </Badge>
+                          )}
                         </div>
+                        <CardHeader>
+                          <CardTitle className="text-foreground line-clamp-1">
+                            {place.name}
+                          </CardTitle>
+                          <CardDescription className="text-muted-foreground">
+                            <div className="flex items-center gap-1">
+                              <MapPin className="w-4 h-4" />
+                              {place.city}, {t(`countries.${place.country}`, { defaultValue: place.country })}
+                            </div>
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground line-clamp-2">
+                            {place.description}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </ScrollArea>
+              )}
+
+              {/* Route Optimizer Section */}
+              {plannedPlaces.length >= 2 && (
+                <>
+                  <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Route className="w-5 h-5 text-primary" />
+                        Optimiser mon itinéraire
+                      </CardTitle>
+                      <CardDescription>
+                        Calculez le parcours optimal entre vos lieux sélectionnés
                       </CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {place.description}
-                      </p>
+                    <CardContent className="space-y-4">
+                      <div className="flex flex-col sm:flex-row gap-4">
+                        <div className="flex-1">
+                          <label className="text-sm font-medium mb-2 block">Ville de départ</label>
+                          <Select value={startingCity} onValueChange={setStartingCity}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Choisir une ville..." />
+                            </SelectTrigger>
+                            <SelectContent className="z-50 bg-background">
+                              {availableCities.map(city => (
+                                <SelectItem key={city} value={city}>
+                                  {city}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        {startingCity && (
+                          <div className="flex items-end">
+                            <Button 
+                              onClick={() => setShowOptimizedRoute(!showOptimizedRoute)}
+                              className="gap-2"
+                            >
+                              <Navigation className="w-4 h-4" />
+                              {showOptimizedRoute ? 'Masquer' : 'Afficher'} l'itinéraire
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </CardContent>
                   </Card>
-                ))}
-              </div>
-            </ScrollArea>
+
+                  {/* Optimized Route Display */}
+                  {showOptimizedRoute && startingCity && optimizedRoute.length > 0 && (
+                    <>
+                      <Card className="border-primary/30">
+                        <CardHeader>
+                          <CardTitle className="flex items-center gap-2 text-primary">
+                            <Route className="w-5 h-5" />
+                            Itinéraire optimisé ({optimizedRoute.length} étapes)
+                          </CardTitle>
+                          <CardDescription>
+                            Parcours recommandé depuis {startingCity}
+                          </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-4">
+                            {optimizedRoute.map((place, index) => {
+                              const isNewCity = index === 0 || 
+                                `${place.city}, ${place.country}` !== `${optimizedRoute[index-1]?.city}, ${optimizedRoute[index-1]?.country}`;
+                              
+                              return (
+                                <div key={place.id}>
+                                  {isNewCity && (
+                                    <div className="flex items-center gap-2 mb-3 mt-2">
+                                      <Navigation className="w-4 h-4 text-secondary" />
+                                      <span className="font-bold text-secondary">
+                                        {place.city}, {place.country}
+                                      </span>
+                                    </div>
+                                  )}
+                                  <div className="flex items-start gap-4 ml-6">
+                                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center font-bold text-sm">
+                                      {index + 1}
+                                    </div>
+                                    <div 
+                                      className="flex-1 flex items-center gap-4 p-3 bg-muted/50 rounded-lg cursor-pointer hover:bg-muted transition-colors"
+                                      onClick={() => navigate(`/place/${place.id}`)}
+                                    >
+                                      {place.imageUrl && (
+                                        <img 
+                                          src={getImageUrl(place.imageUrl)} 
+                                          alt={place.name}
+                                          className="w-16 h-16 object-cover rounded"
+                                          onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                                        />
+                                      )}
+                                      <div className="flex-1">
+                                        <h4 className="font-semibold">{place.name}</h4>
+                                        <p className="text-sm text-muted-foreground line-clamp-1">
+                                          {place.description}
+                                        </p>
+                                        <Badge variant="outline" className="mt-1">{place.points} pts</Badge>
+                                      </div>
+                                      {index < optimizedRoute.length - 1 && (
+                                        <ArrowRight className="w-4 h-4 text-muted-foreground" />
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </CardContent>
+                      </Card>
+
+                      {/* Interactive Route Map */}
+                      <TripRouteMap places={optimizedRoute} />
+
+                      {/* Restaurants Section */}
+                      {filteredRestaurants.length > 0 && (
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="flex items-center gap-2">
+                              <Utensils className="w-5 h-5 text-primary" />
+                              Restaurants recommandés
+                            </CardTitle>
+                            <CardDescription>
+                              Découvrez des restaurants dans les villes de votre itinéraire
+                            </CardDescription>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-6">
+                              {Object.entries(restaurantsByCity)
+                                .sort(([a], [b]) => a.localeCompare(b))
+                                .map(([city, restaurants]) => (
+                                  <div key={city}>
+                                    <h4 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                                      <MapPin className="w-4 h-4" />
+                                      {city}
+                                    </h4>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                      {restaurants.map(restaurant => (
+                                        <Card key={restaurant.id} className="hover:shadow-md transition-shadow">
+                                          <CardHeader>
+                                            <div className="flex items-start justify-between">
+                                              <div className="flex-1">
+                                                <CardTitle className="text-lg">{restaurant.name}</CardTitle>
+                                                <CardDescription className="mt-1">
+                                                  {restaurant.cuisine}
+                                                </CardDescription>
+                                              </div>
+                                              <div className="flex items-center gap-1 text-yellow-500">
+                                                <Star className="w-4 h-4 fill-current" />
+                                                <span className="font-semibold">{restaurant.rating}</span>
+                                              </div>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2 mt-2">
+                                              {restaurant.type.map(type => (
+                                                <Badge 
+                                                  key={type}
+                                                  variant="outline"
+                                                  className={cn("text-xs", getTypeColor(type))}
+                                                >
+                                                  {type}
+                                                </Badge>
+                                              ))}
+                                            </div>
+                                          </CardHeader>
+                                          <CardContent className="space-y-2">
+                                            <p className="text-sm text-muted-foreground line-clamp-2">
+                                              {restaurant.description}
+                                            </p>
+                                            <div className="text-sm">
+                                              <div className="flex items-start gap-2">
+                                                <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0 mt-0.5" />
+                                                <span className="text-muted-foreground">{restaurant.address}</span>
+                                              </div>
+                                              {restaurant.phone && (
+                                                <div className="flex items-center gap-2 mt-1">
+                                                  <Phone className="w-4 h-4 text-muted-foreground" />
+                                                  <span className="text-muted-foreground">{restaurant.phone}</span>
+                                                </div>
+                                              )}
+                                            </div>
+                                            <div className="flex gap-2 pt-2">
+                                              <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="flex-1"
+                                                onClick={() => window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(restaurant.address)}`, '_blank')}
+                                              >
+                                                <MapPin className="w-3 h-3 mr-1" />
+                                                Voir sur la carte
+                                              </Button>
+                                              {restaurant.website && (
+                                                <Button
+                                                  size="sm"
+                                                  variant="outline"
+                                                  onClick={() => window.open(restaurant.website, '_blank')}
+                                                >
+                                                  <ExternalLink className="w-3 h-3" />
+                                                </Button>
+                                              )}
+                                            </div>
+                                          </CardContent>
+                                        </Card>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      )}
+                    </>
+                  )}
+                </>
+              )}
+            </div>
           )}
         </TabsContent>
       </Tabs>

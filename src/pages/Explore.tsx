@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Globe, MapPin, Trophy, Target, Compass, Route } from 'lucide-react';
+import { Globe, MapPin, Trophy, Target, Compass } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import Globe3D from '@/components/Globe3D';
@@ -9,7 +9,6 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
-import TripPlannerTab from '@/components/TripPlannerTab';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
@@ -25,7 +24,7 @@ const Explore = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-6 mb-3">
+            <TabsList className="grid w-full grid-cols-3 sm:grid-cols-5 mb-3">
               <TabsTrigger value="map" className="gap-2">
                 <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">Carte 3D</span>
@@ -37,10 +36,6 @@ const Explore = () => {
               <TabsTrigger value="locations" className="gap-2">
                 <MapPin className="w-4 h-4" />
                 <span className="hidden sm:inline">Lieux</span>
-              </TabsTrigger>
-              <TabsTrigger value="trip" className="gap-2">
-                <Route className="w-4 h-4" />
-                <span className="hidden sm:inline">Itinéraire</span>
               </TabsTrigger>
               <TabsTrigger value="challenges" className="gap-2">
                 <Target className="w-4 h-4" />
@@ -63,15 +58,11 @@ const Explore = () => {
               <ProximityDetector />
             </TabsContent>
 
-            <TabsContent value="locations">
-              <LocationsTab />
-            </TabsContent>
+          <TabsContent value="locations">
+            <LocationsTab />
+          </TabsContent>
 
-            <TabsContent value="trip">
-              <TripPlannerTab />
-            </TabsContent>
-
-            <TabsContent value="challenges">
+          <TabsContent value="challenges">
               <ChallengesTab />
             </TabsContent>
 
