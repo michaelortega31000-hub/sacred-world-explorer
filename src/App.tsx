@@ -19,6 +19,7 @@ import PlaceDetail from "./pages/PlaceDetail";
 import Badges from "./pages/Badges";
 import UserProfile from "./pages/UserProfile";
 import NotFound from "./pages/NotFound";
+import Admin from "./pages/Admin";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const App = () => (
           <Route path="/user/:userId" element={<UserProfile />} />
           <Route path="/country/:countryName" element={<Country />} />
           <Route path="/place/:placeId" element={<PlaceDetail />} />
+          <Route path="/admin" element={<Admin />} />
 
           {/* Legacy paths redirects */}
           <Route path="/world" element={<Navigate to="/explore" replace />} />
