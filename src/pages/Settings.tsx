@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
+import EventReminderSettings from '@/components/EventReminderSettings';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -252,6 +253,9 @@ const Settings = () => {
               />
             </div>
           </Card>
+
+          {/* Event Reminders */}
+          <EventReminderSettings />
 
           {/* Déconnexion */}
           <Card className="p-6 bg-card border-border">

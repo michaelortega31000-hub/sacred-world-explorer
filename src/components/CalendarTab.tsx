@@ -17,6 +17,8 @@ import WeekView from '@/components/calendar/WeekView';
 import ListView from '@/components/calendar/ListView';
 import YearView from '@/components/calendar/YearView';
 import EventDetailEnriched from '@/components/calendar/EventDetailEnriched';
+import EventNotificationBanner from '@/components/EventNotificationBanner';
+
 interface VisitEvent {
   date: Date;
   placeId: string;
@@ -123,6 +125,9 @@ const CalendarTab = () => {
             Calendrier Spirituel Mondial
           </h1>
         </div>
+
+        {/* Event Notification Banner */}
+        <EventNotificationBanner />
 
         {/* View Selector */}
         <div className="mb-6">
