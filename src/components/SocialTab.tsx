@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Users, MessageSquare, BookHeart, Rss } from 'lucide-react';
+import { Users, MessageSquare, BookHeart, Newspaper, MessagesSquare } from 'lucide-react';
 import FriendsTab from './FriendsTab';
 import ForumTab from './ForumTab';
 import MessagesTab from './MessagesTab';
@@ -42,35 +42,35 @@ const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' |
     <div className="w-full">
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
         <div className="border-b border-border bg-card">
-          <div className="container mx-auto px-2 sm:px-4">
-            <TabsList className="w-full justify-start h-auto p-0 bg-transparent flex overflow-x-auto scrollbar-hide">
-              <TabsTrigger value="feed" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-3 sm:px-4">
-                <Rss className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline text-sm whitespace-nowrap">Actualités</span>
+          <div className="container mx-auto px-1 sm:px-4">
+            <TabsList className="w-full justify-start h-auto p-0 bg-transparent flex overflow-x-auto scrollbar-hide gap-0.5 sm:gap-1">
+              <TabsTrigger value="feed" className="flex-col sm:flex-row gap-0.5 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-2 sm:px-4 py-2 min-w-[60px] sm:min-w-0">
+                <Newspaper className="w-4 h-4 flex-shrink-0" />
+                <span className="text-[10px] sm:text-sm whitespace-nowrap leading-tight">Actus</span>
               </TabsTrigger>
-              <TabsTrigger value="memories" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-3 sm:px-4">
+              <TabsTrigger value="memories" className="flex-col sm:flex-row gap-0.5 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-2 sm:px-4 py-2 min-w-[60px] sm:min-w-0">
                 <BookHeart className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline text-sm whitespace-nowrap">Souvenirs</span>
+                <span className="text-[10px] sm:text-sm whitespace-nowrap leading-tight">Souvenirs</span>
               </TabsTrigger>
-              <TabsTrigger value="friends" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-3 sm:px-4">
+              <TabsTrigger value="friends" className="flex-col sm:flex-row gap-0.5 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-2 sm:px-4 py-2 min-w-[60px] sm:min-w-0">
                 <Users className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline text-sm whitespace-nowrap">Amis</span>
+                <span className="text-[10px] sm:text-sm whitespace-nowrap leading-tight">Amis</span>
               </TabsTrigger>
-              <TabsTrigger value="messages" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-3 sm:px-4">
+              <TabsTrigger value="messages" className="flex-col sm:flex-row gap-0.5 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-2 sm:px-4 py-2 min-w-[60px] sm:min-w-0 relative">
                 <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline text-sm whitespace-nowrap">Messages</span>
+                <span className="text-[10px] sm:text-sm whitespace-nowrap leading-tight">Messages</span>
                 {unreadMessages > 0 && (
-                  <Badge variant="destructive" className="ml-1 h-5 min-w-5 flex items-center justify-center px-1.5 text-[10px] animate-pulse">
-                    {unreadMessages > 99 ? '99+' : unreadMessages}
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 text-[9px] animate-pulse">
+                    {unreadMessages > 9 ? '9+' : unreadMessages}
                   </Badge>
                 )}
               </TabsTrigger>
-              <TabsTrigger value="forum" className="gap-1 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-3 sm:px-4">
-                <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                <span className="hidden sm:inline text-sm whitespace-nowrap">Forum</span>
+              <TabsTrigger value="forum" className="flex-col sm:flex-row gap-0.5 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-2 sm:px-4 py-2 min-w-[60px] sm:min-w-0 relative">
+                <MessagesSquare className="w-4 h-4 flex-shrink-0" />
+                <span className="text-[10px] sm:text-sm whitespace-nowrap leading-tight">Forum</span>
                 {unreadForumPosts > 0 && (
-                  <Badge variant="destructive" className="ml-1 h-5 min-w-5 flex items-center justify-center px-1.5 text-[10px] animate-pulse">
-                    {unreadForumPosts > 99 ? '99+' : unreadForumPosts}
+                  <Badge variant="destructive" className="absolute -top-1 -right-1 h-4 min-w-4 flex items-center justify-center px-1 text-[9px] animate-pulse">
+                    {unreadForumPosts > 9 ? '9+' : unreadForumPosts}
                   </Badge>
                 )}
               </TabsTrigger>
