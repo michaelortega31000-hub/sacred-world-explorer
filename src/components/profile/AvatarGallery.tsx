@@ -109,7 +109,7 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
       
       // Validate file type
       const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
-      if (!allowedTypes.includes(file.type)) {
+      if (!allowedTypes.includes(file.type) && !/\.(heic|heif)$/i.test(file.name)) {
         toast({
           variant: 'destructive',
           title: 'Type de fichier non autorisé',
@@ -129,9 +129,34 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
         return;
       }
 
+      // Convert HEIC/HEIF to JPEG for browser compatibility
+      let processedFile = file;
+      let fileExt = file.name.split('.').pop();
+      
+      if (file.type === 'image/heic' || file.type === 'image/heif' || /\.(heic|heif)$/i.test(file.name)) {
+        try {
+          const heic2any = (await import('heic2any')).default;
+          const convertedBlob = await heic2any({ 
+            blob: file, 
+            toType: 'image/jpeg', 
+            quality: 0.9 
+          }) as Blob;
+          processedFile = new File([convertedBlob], `custom-${Date.now()}.jpg`, { type: 'image/jpeg' });
+          fileExt = 'jpg';
+        } catch (conversionError) {
+          logger.error('HEIC conversion error:', conversionError);
+          toast({
+            variant: 'destructive',
+            title: 'Erreur de conversion',
+            description: 'Impossible de convertir l\'image HEIC. Essayez un format JPG ou PNG.',
+          });
+          return;
+        }
+      }
+
       // Convert image to base64 for moderation
       const reader = new FileReader();
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(processedFile);
       
       const base64Promise = new Promise<string>((resolve, reject) => {
         reader.onload = () => {
@@ -152,7 +177,7 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
       const { data: moderationData, error: moderationError } = await supabase.functions.invoke(
         'moderate-avatar',
         {
-          body: { imageBase64, fileName: file.name }
+          body: { imageBase64, fileName: processedFile.name }
         }
       );
 
@@ -169,13 +194,14 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
         return;
       }
       
-      const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/custom-${Date.now()}.${fileExt}`;
 
       // Upload to storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file);
+        .upload(fileName, processedFile, {
+          cacheControl: '0'
+        });
 
       if (uploadError) throw uploadError;
 
@@ -184,13 +210,13 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
         .from('avatars')
         .getPublicUrl(fileName);
 
-      // Save to database with approved status
+      // Save to database with approved status (clean URL, no cache buster)
       const { error: dbError } = await supabase
         .from('user_custom_avatars')
         .insert({
           user_id: userId,
           avatar_url: publicUrl,
-          name: file.name,
+          name: processedFile.name,
           moderation_status: 'approved',
           moderated_at: new Date().toISOString()
         });
@@ -228,8 +254,9 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
 
       const avatar = avatars.find(a => a.id === avatarId);
       if (avatar) {
-        // Add cache buster to force browser to reload the image
-        onAvatarChange(`${avatar.avatar_url}?t=${Date.now()}`);
+        // Remove any existing cache buster and add a fresh one for UI display
+        const cleanUrl = avatar.avatar_url.split('?')[0];
+        onAvatarChange(`${cleanUrl}?t=${Date.now()}`);
       }
 
       toast({

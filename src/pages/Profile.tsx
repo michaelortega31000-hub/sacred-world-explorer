@@ -212,14 +212,41 @@ const Profile = () => {
         });
         return;
       }
+
+      // Convert HEIC/HEIF to JPEG for browser compatibility
+      let processedFile = file;
+      let fileExt = file.name.split('.').pop();
       
-      const fileExt = file.name.split('.').pop();
+      if (file.type === 'image/heic' || file.type === 'image/heif' || /\.(heic|heif)$/i.test(file.name)) {
+        try {
+          const heic2any = (await import('heic2any')).default;
+          const convertedBlob = await heic2any({ 
+            blob: file, 
+            toType: 'image/jpeg', 
+            quality: 0.9 
+          }) as Blob;
+          processedFile = new File([convertedBlob], 'avatar.jpg', { type: 'image/jpeg' });
+          fileExt = 'jpg';
+        } catch (conversionError) {
+          logger.error('HEIC conversion error:', conversionError);
+          toast({
+            variant: 'destructive',
+            title: 'Erreur de conversion',
+            description: 'Impossible de convertir l\'image HEIC. Essayez un format JPG ou PNG.',
+          });
+          return;
+        }
+      }
+      
       const filePath = `${userId}/avatar.${fileExt}`;
 
       // Upload image to storage
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, file, { upsert: true });
+        .upload(filePath, processedFile, { 
+          upsert: true,
+          cacheControl: '0'
+        });
 
       if (uploadError) throw uploadError;
 
@@ -228,20 +255,18 @@ const Profile = () => {
         .from('avatars')
         .getPublicUrl(filePath);
 
-      // Add cache buster to force browser to reload the image
-      const urlWithCacheBuster = `${publicUrl}?t=${Date.now()}`;
-
-      // Update profile with avatar URL
+      // Update profile with clean URL (no cache buster in DB)
       const { error: updateError } = await supabase
         .from('profiles')
-        .update({ avatar_url: urlWithCacheBuster })
+        .update({ avatar_url: publicUrl })
         .eq('id', userId);
 
       if (updateError) {
         throw updateError;
       }
 
-      setAvatarUrl(urlWithCacheBuster);
+      // Add cache buster only for UI display
+      setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
       
       toast({
         title: 'Photo de profil mise à jour',
@@ -379,7 +404,25 @@ const Profile = () => {
                     style={{ animation: 'glow-pulse 2s ease-in-out infinite' }}
                   />
                   <Avatar className="relative w-32 h-32 border-4 border-primary shadow-2xl">
-                    <AvatarImage src={avatarUrl || undefined} alt="Photo de profil" />
+                    <AvatarImage 
+                      src={avatarUrl || undefined} 
+                      alt="Photo de profil"
+                      onError={(e) => {
+                        const img = e.currentTarget as HTMLImageElement;
+                        if (img.src && !img.src.includes('retry=1')) {
+                          // Try once more with a new cache buster
+                          const baseUrl = img.src.split('?')[0];
+                          img.src = `${baseUrl}?t=${Date.now()}&retry=1`;
+                        } else {
+                          // Failed after retry, show toast
+                          toast({
+                            variant: 'destructive',
+                            title: 'Image non supportée',
+                            description: 'Essayez de télécharger une photo au format JPG ou PNG.',
+                          });
+                        }
+                      }}
+                    />
                     <AvatarFallback className="bg-primary/10 text-primary">
                       <User className="w-16 h-16" />
                     </AvatarFallback>
