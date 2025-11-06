@@ -6,15 +6,12 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, Image, Settings as SettingsIcon } from 'lucide-react';
+import { Trophy, MapPin, Star, Globe, Camera, User, BookOpen, Settings as SettingsIcon } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { logger } from '@/lib/logger';
-import LocationsTab from '@/components/LocationsTab';
-import MemoriesTab from '@/components/MemoriesTab';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -33,10 +30,6 @@ const Profile = () => {
     quest_icon: string;
     unlocked_at: string;
   }>>([]);
-  
-  // Check if we should open the journal tab
-  const params = new URLSearchParams(location.search);
-  const initialTab = params.get('section') || 'profile';
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -248,33 +241,13 @@ const Profile = () => {
       </Header>
 
       <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
-        <Tabs defaultValue={initialTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-4 sm:mb-6">
-            <TabsTrigger value="profile" className="gap-2">
-              <User className="w-4 h-4" />
-              <span className="hidden sm:inline">Profil</span>
-            </TabsTrigger>
-            <TabsTrigger value="memories" className="gap-2">
-              <Image className="w-4 h-4" />
-              <span className="hidden sm:inline">Souvenirs</span>
-            </TabsTrigger>
-            <TabsTrigger value="journal" className="gap-2">
-              <BookOpen className="w-4 h-4" />
-              <span className="hidden sm:inline">Journal</span>
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2">
-              <SettingsIcon className="w-4 h-4" />
-              <span className="hidden sm:inline">Paramètres</span>
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="profile">
-            <div 
-              className="bg-sacred-beige/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl"
-              style={{
-                boxShadow: '0 0 40px rgba(52, 224, 161, 0.2), 0 0 80px rgba(244, 197, 66, 0.1)'
-              }}
-            >
+        <div className="w-full">
+          <div 
+            className="bg-sacred-beige/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl"
+            style={{
+              boxShadow: '0 0 40px rgba(52, 224, 161, 0.2), 0 0 80px rgba(244, 197, 66, 0.1)'
+            }}
+          >
 
           {/* Avatar Section */}
           <div className="flex flex-col items-center mb-6 sm:mb-8">
@@ -424,44 +397,29 @@ const Profile = () => {
                   {userProgress.tripPlaces.length} lieu{userProgress.tripPlaces.length > 1 ? 'x' : ''} planifié{userProgress.tripPlaces.length > 1 ? 's' : ''}
                 </p>
               </Card>
-            )}
+              )}
+            </div>
+
+            {/* Quick Actions */}
+            <div className="mt-6 grid grid-cols-2 gap-3">
+              <Button
+                onClick={() => navigate('/badges')}
+                className="w-full bg-gradient-to-r from-accent/80 to-accent hover:from-accent hover:to-accent/80"
+              >
+                <Trophy className="w-4 h-4 mr-2" />
+                Voir mes badges
+              </Button>
+              <Button
+                onClick={() => navigate('/journal')}
+                variant="outline"
+                className="w-full"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Mon journal
+              </Button>
+            </div>
           </div>
         </div>
-          </TabsContent>
-
-          <TabsContent value="memories">
-            <MemoriesTab />
-          </TabsContent>
-
-          <TabsContent value="journal">
-            <LocationsTab />
-          </TabsContent>
-
-          <TabsContent value="settings">
-            <div 
-              className="bg-sacred-beige/90 backdrop-blur-sm rounded-xl sm:rounded-2xl p-4 sm:p-8 shadow-2xl"
-              style={{
-                boxShadow: '0 0 40px rgba(52, 224, 161, 0.2), 0 0 80px rgba(244, 197, 66, 0.1)'
-              }}
-            >
-              <div className="space-y-4">
-                <Button
-                  onClick={() => navigate('/settings')}
-                  className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
-                >
-                  <SettingsIcon className="w-5 h-5 mr-2" />
-                  Accéder aux paramètres complets
-                </Button>
-                
-                <Card className="p-4 bg-white/50 border-primary/20">
-                  <p className="text-sm text-muted-foreground">
-                    Gérez vos préférences : langue, thème de couleur, notifications, et plus encore.
-                  </p>
-                </Card>
-              </div>
-            </div>
-          </TabsContent>
-        </Tabs>
       </main>
 
       <BottomNavigation />
