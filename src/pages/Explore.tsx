@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Globe, MapPin, Trophy, Target, Compass } from 'lucide-react';
 import Header from '@/components/Header';
@@ -9,14 +9,18 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
-import mapBg from '@/assets/tabs/map-bg.jpg';
-import nearbyBg from '@/assets/tabs/nearby-bg.jpg';
-import locationsBg from '@/assets/tabs/locations-bg.jpg';
-import challengesBg from '@/assets/tabs/challenges-bg.jpg';
-import rankingsBg from '@/assets/tabs/rankings-bg.jpg';
+import { useApp } from '@/contexts/AppContext';
+import { getTabImagesForReligion } from '@/lib/religionImageHelper';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
+  const { userProgress } = useApp();
+  
+  // Get images adapted to the selected religion
+  const tabImages = useMemo(
+    () => getTabImagesForReligion(userProgress.selectedReligion),
+    [userProgress.selectedReligion]
+  );
   
   return <div className="min-h-screen bg-background pb-20">
     <Header />
@@ -34,7 +38,7 @@ const Explore = () => {
                 value="map" 
                 className="gap-2 relative overflow-hidden"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${mapBg})`,
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.map})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
@@ -46,7 +50,7 @@ const Explore = () => {
                 value="nearby" 
                 className="gap-2 relative overflow-hidden"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${nearbyBg})`,
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.nearby})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
@@ -58,7 +62,7 @@ const Explore = () => {
                 value="locations" 
                 className="gap-2 relative overflow-hidden"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${locationsBg})`,
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.locations})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
@@ -70,7 +74,7 @@ const Explore = () => {
                 value="challenges" 
                 className="gap-2 relative overflow-hidden"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${challengesBg})`,
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.challenges})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
@@ -82,7 +86,7 @@ const Explore = () => {
                 value="rankings" 
                 className="gap-2 relative overflow-hidden"
                 style={{
-                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${rankingsBg})`,
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${tabImages.rankings})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center'
                 }}
