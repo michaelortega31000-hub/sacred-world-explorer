@@ -23,16 +23,32 @@ interface UserBadge {
   quest_icon: string | null;
 }
 
+interface BadgeStats {
+  totalBadges: number;
+  completionRate: number;
+  rareBadges: number;
+  rank: number;
+  totalUsers: number;
+}
+
 const Badges = () => {
   const { session } = useApp();
   const navigate = useNavigate();
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
+  const [stats, setStats] = useState<BadgeStats>({
+    totalBadges: 0,
+    completionRate: 0,
+    rareBadges: 0,
+    rank: 0,
+    totalUsers: 0
+  });
 
   useEffect(() => {
     if (session?.user) {
       fetchBadges();
+      fetchStats();
     }
   }, [session]);
 
@@ -49,6 +65,56 @@ const Badges = () => {
       setBadges(data);
     }
     setLoading(false);
+  };
+
+  const fetchStats = async () => {
+    if (!session?.user) return;
+
+    try {
+      // Get user's badge count
+      const { count: userBadgeCount } = await supabase
+        .from('user_badges')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id);
+
+      // Get rare badges count (gold, platinum, diamond)
+      const { count: rareBadgeCount } = await supabase
+        .from('user_badges')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .in('tier', ['gold', 'platinum', 'diamond']);
+
+      // Get all users' badge counts for ranking
+      const { data: allUserBadges } = await supabase
+        .from('user_badges')
+        .select('user_id');
+
+      if (allUserBadges) {
+        const badgeCounts = allUserBadges.reduce((acc: Record<string, number>, curr) => {
+          acc[curr.user_id] = (acc[curr.user_id] || 0) + 1;
+          return acc;
+        }, {});
+
+        const userCount = userBadgeCount || 0;
+        const sortedCounts = Object.values(badgeCounts).sort((a, b) => b - a);
+        const userRank = sortedCounts.findIndex(count => count <= userCount) + 1;
+        const totalUsers = Object.keys(badgeCounts).length;
+
+        // Calculate completion rate (assuming 50 possible badges total)
+        const TOTAL_POSSIBLE_BADGES = 50;
+        const completionRate = Math.round((userCount / TOTAL_POSSIBLE_BADGES) * 100);
+
+        setStats({
+          totalBadges: userCount,
+          completionRate: Math.min(completionRate, 100),
+          rareBadges: rareBadgeCount || 0,
+          rank: userRank || totalUsers + 1,
+          totalUsers: totalUsers
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    }
   };
 
   const getBadgesByType = (type: string) => {
@@ -137,6 +203,65 @@ const Badges = () => {
             {badges.length} badge{badges.length > 1 ? 's' : ''} débloqué{badges.length > 1 ? 's' : ''}
           </p>
         </div>
+
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
+          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+            <CardContent className="pt-4 pb-3 px-3 text-center">
+              <Trophy className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-accent" />
+              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">{stats.totalBadges}</div>
+              <div className="text-xs text-muted-foreground">Badges totaux</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+            <CardContent className="pt-4 pb-3 px-3 text-center">
+              <Target className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-primary" />
+              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">{stats.completionRate}%</div>
+              <div className="text-xs text-muted-foreground">Complétion</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+            <CardContent className="pt-4 pb-3 px-3 text-center">
+              <Star className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-yellow-500" />
+              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">{stats.rareBadges}</div>
+              <div className="text-xs text-muted-foreground">Badges rares</div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+            <CardContent className="pt-4 pb-3 px-3 text-center">
+              <Medal className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-blue-500" />
+              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">#{stats.rank}</div>
+              <div className="text-xs text-muted-foreground">Classement</div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Progress Card */}
+        <Card className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 backdrop-blur-sm border-accent/30">
+          <CardContent className="pt-4 pb-4">
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="font-semibold text-sacred-blue">Progression globale</h3>
+                  <p className="text-xs text-muted-foreground">
+                    Vous êtes classé(e) #{stats.rank} sur {stats.totalUsers} utilisateurs
+                  </p>
+                </div>
+                <Badge variant="default" className="bg-accent">
+                  {stats.completionRate}%
+                </Badge>
+              </div>
+              <Progress value={stats.completionRate} className="h-3" />
+              <div className="flex justify-between text-xs text-muted-foreground">
+                <span>{stats.totalBadges} débloqués</span>
+                <span>{50 - stats.totalBadges} restants</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Filter Buttons */}
         <div className="flex gap-2 justify-center flex-wrap">
