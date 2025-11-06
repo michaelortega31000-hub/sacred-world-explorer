@@ -6,15 +6,11 @@ interface BackButtonProps {
   to?: string;
 }
 
-export const BackButton = ({ to }: BackButtonProps) => {
+export const BackButton = ({ to = '/world' }: BackButtonProps) => {
   const navigate = useNavigate();
 
   const handleClick = () => {
-    if (to) {
-      navigate(to);
-    } else {
-      navigate(-1);
-    }
+    navigate(to);
   };
 
   return (
