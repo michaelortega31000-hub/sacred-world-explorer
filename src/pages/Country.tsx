@@ -23,6 +23,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/imageHelper';
+import { ImageBackground } from '@/components/ImageBackground';
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 
 const Country = () => {
   const { countryName: country } = useParams<{ countryName: string }>();
@@ -31,6 +33,7 @@ const Country = () => {
   const { t } = useTranslation();
   const { visitPlace, isPlaceVisited, userProgress, addToTrip, removeFromTrip, isInTrip } = useApp();
   const { toast: toastHook } = useToast();
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
@@ -234,8 +237,15 @@ const Country = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <BackButton to="/world" />
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen flex flex-col"
+    >
+      <div className="min-h-screen flex flex-col relative">
+        <BackButton to="/world" />
       
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-4">
@@ -826,7 +836,8 @@ const Country = () => {
           50% { transform: scale(1.1); }
         }
       `}</style>
-    </div>
+      </div>
+    </ImageBackground>
   );
 };
 

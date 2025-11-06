@@ -6,6 +6,8 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { ImageBackground } from '@/components/ImageBackground';
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { 
   MapPin, 
   Clock, 
@@ -68,6 +70,8 @@ const PlaceDetail = () => {
   });
   const [isARMode, setIsARMode] = useState(false);
   const [isPhotoVerificationOpen, setIsPhotoVerificationOpen] = useState(false);
+  const { userProgress } = useApp();
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   
   const { position } = useGeolocation(true);
 
@@ -328,8 +332,15 @@ const PlaceDetail = () => {
   ] : [];
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <BackButton />
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen flex flex-col"
+    >
+      <div className="min-h-screen flex flex-col relative">
+        <BackButton />
 
       <div className="flex-1 overflow-y-auto">
         {/* Galerie d'images */}
@@ -847,7 +858,8 @@ const PlaceDetail = () => {
           50% { transform: scale(1.1); }
         }
       `}</style>
-    </div>
+      </div>
+    </ImageBackground>
   );
 };
 

@@ -4,6 +4,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
 import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
+import { ImageBackground } from '@/components/ImageBackground';
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -62,7 +64,8 @@ interface Friend {
 const UserProfile = () => {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
-  const { session } = useApp();
+  const { session, userProgress } = useApp();
+  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [stats, setStats] = useState<UserStats | null>(null);
   const [memories, setMemories] = useState<Memory[]>([]);
   const [badges, setBadges] = useState<UserBadge[]>([]);
@@ -248,8 +251,15 @@ const UserProfile = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background pb-20">
-        <BackButton />
+      <ImageBackground 
+        images={backgroundImages}
+        carousel={true}
+        blur={3}
+        overlay="gradient"
+        className="min-h-screen pb-20"
+      >
+        <div className="min-h-screen pb-20 relative">
+          <BackButton />
         <div className="container mx-auto px-4 py-6">
           <div className="animate-pulse space-y-4">
             <div className="h-32 bg-muted rounded"></div>
@@ -257,14 +267,22 @@ const UserProfile = () => {
           </div>
         </div>
         <BottomNavigation />
-      </div>
+        </div>
+      </ImageBackground>
     );
   }
 
   if (!stats) {
     return (
-      <div className="min-h-screen bg-background pb-20">
-        <BackButton />
+      <ImageBackground 
+        images={backgroundImages}
+        carousel={true}
+        blur={3}
+        overlay="gradient"
+        className="min-h-screen pb-20"
+      >
+        <div className="min-h-screen pb-20 relative">
+          <BackButton />
         <div className="container mx-auto px-4 py-6">
           <Card>
             <CardContent className="py-12 text-center">
@@ -276,13 +294,21 @@ const UserProfile = () => {
           </Card>
         </div>
         <BottomNavigation />
-      </div>
+        </div>
+      </ImageBackground>
     );
   }
 
   return (
-    <div className="min-h-screen bg-background pb-20">
-      <BackButton />
+    <ImageBackground 
+      images={backgroundImages}
+      carousel={true}
+      blur={3}
+      overlay="gradient"
+      className="min-h-screen pb-20"
+    >
+      <div className="min-h-screen pb-20 relative">
+        <BackButton />
       
       <div className="container mx-auto px-4 py-6 space-y-6">
         {/* Remove duplicate back button */}
@@ -558,7 +584,8 @@ const UserProfile = () => {
       </div>
 
       <BottomNavigation />
-    </div>
+      </div>
+    </ImageBackground>
   );
 };
 
