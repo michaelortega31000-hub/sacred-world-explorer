@@ -5,9 +5,10 @@ import { Place } from '@/contexts/AppContext';
 
 interface TripRouteMapProps {
   places: Place[];
+  onMapReady?: (captureMap: () => string | null) => void;
 }
 
-const TripRouteMap = ({ places }: TripRouteMapProps) => {
+const TripRouteMap = ({ places, onMapReady }: TripRouteMapProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
@@ -35,6 +36,14 @@ const TripRouteMap = ({ places }: TripRouteMapProps) => {
 
     map.current.on('load', () => {
       if (!map.current) return;
+
+      // Expose map capture function
+      if (onMapReady) {
+        onMapReady(() => {
+          if (!map.current) return null;
+          return map.current.getCanvas().toDataURL('image/png');
+        });
+      }
 
       // Create route line
       const coordinates = places.map(p => p.coordinates);

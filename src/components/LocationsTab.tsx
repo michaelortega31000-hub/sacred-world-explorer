@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
@@ -18,6 +18,7 @@ import TripRouteMap from './TripRouteMap';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import type { SavedPOI } from '@/contexts/AppContext';
+import jsPDF from 'jspdf';
 import {
   Select,
   SelectContent,
@@ -73,6 +74,7 @@ const LocationsTab = () => {
   );
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   const [transportMode, setTransportMode] = useState<'driving' | 'cycling' | 'walking'>('driving');
+  const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -107,6 +109,140 @@ const LocationsTab = () => {
 
   const isPOISaved = (poiId: string): boolean => {
     return userProgress.savedPOIs.some(p => p.id === poiId);
+  };
+
+  // Export route to PDF
+  const exportToPDF = async () => {
+    if (optimizedRoute.length === 0) return;
+
+    const pdf = new jsPDF();
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    let yPosition = 20;
+
+    // Title
+    pdf.setFontSize(20);
+    pdf.setTextColor(52, 224, 161);
+    pdf.text('Mon Itinéraire Sacré', pageWidth / 2, yPosition, { align: 'center' });
+    yPosition += 15;
+
+    // General info
+    pdf.setFontSize(12);
+    pdf.setTextColor(0, 0, 0);
+    pdf.text(`Ville de départ: ${startingCity}`, 20, yPosition);
+    yPosition += 7;
+    pdf.text(`Mode de transport: ${transportMode === 'driving' ? 'Voiture' : transportMode === 'cycling' ? 'Vélo' : 'Marche'}`, 20, yPosition);
+    yPosition += 7;
+    pdf.text(`Nombre d'étapes: ${optimizedRoute.length}`, 20, yPosition);
+    yPosition += 10;
+
+    // Totals
+    if (routeSegments.length > 0) {
+      const totalDistance = routeSegments.reduce((sum, seg) => sum + seg.distance, 0);
+      const totalMinutes = routeSegments.reduce((sum, seg) => sum + seg.duration, 0);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = Math.round(totalMinutes % 60);
+      
+      pdf.setTextColor(52, 224, 161);
+      pdf.text(`Distance totale: ${totalDistance.toFixed(1)} km`, 20, yPosition);
+      yPosition += 7;
+      pdf.text(`Durée totale: ${hours > 0 ? `${hours}h ${minutes}min` : `${minutes} min`}`, 20, yPosition);
+      yPosition += 12;
+    }
+
+    // Try to capture map
+    if (captureMapFn) {
+      try {
+        const mapImageData = captureMapFn();
+        if (mapImageData) {
+          const mapWidth = pageWidth - 40;
+          const mapHeight = 100;
+          pdf.addImage(mapImageData, 'PNG', 20, yPosition, mapWidth, mapHeight);
+          yPosition += mapHeight + 10;
+        }
+      } catch (error) {
+        console.error('Error capturing map:', error);
+      }
+    }
+
+    // Add new page for places list
+    pdf.addPage();
+    yPosition = 20;
+
+    // Places list
+    pdf.setFontSize(16);
+    pdf.setTextColor(52, 224, 161);
+    pdf.text('Détails de l\'itinéraire', 20, yPosition);
+    yPosition += 12;
+
+    optimizedRoute.forEach((place, index) => {
+      // Check if we need a new page
+      if (yPosition > pageHeight - 40) {
+        pdf.addPage();
+        yPosition = 20;
+      }
+
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.setFont(undefined, 'bold');
+      pdf.text(`${index + 1}. ${place.name}`, 20, yPosition);
+      yPosition += 6;
+      
+      pdf.setFont(undefined, 'normal');
+      pdf.setFontSize(10);
+      pdf.setTextColor(80, 80, 80);
+      pdf.text(`${place.city}, ${place.country}`, 25, yPosition);
+      yPosition += 5;
+      
+      // Description (truncated)
+      const description = place.description.length > 100 
+        ? place.description.substring(0, 100) + '...' 
+        : place.description;
+      const descLines = pdf.splitTextToSize(description, pageWidth - 50);
+      pdf.text(descLines, 25, yPosition);
+      yPosition += descLines.length * 5;
+
+      // Saved POIs for this place
+      const placePOIs = getPOIsForPlace(place.id);
+      if (placePOIs.length > 0) {
+        yPosition += 3;
+        pdf.setFontSize(9);
+        pdf.setTextColor(52, 224, 161);
+        pdf.text('Points d\'arrêt sauvegardés:', 25, yPosition);
+        yPosition += 4;
+        
+        placePOIs.forEach(poi => {
+          if (yPosition > pageHeight - 30) {
+            pdf.addPage();
+            yPosition = 20;
+          }
+          
+          pdf.setTextColor(0, 0, 0);
+          const poiTypeIcon = poi.type === 'restaurant' ? '🍴' : poi.type === 'lodging' ? '🏨' : '⛽';
+          pdf.text(`  ${poiTypeIcon} ${poi.name}`, 30, yPosition);
+          yPosition += 4;
+        });
+        yPosition += 2;
+      }
+
+      // Segment info (distance and duration to next place)
+      const segment = routeSegments[index];
+      if (index < optimizedRoute.length - 1 && segment) {
+        yPosition += 2;
+        pdf.setFontSize(9);
+        pdf.setTextColor(100, 100, 100);
+        const duration = segment.duration < 60 
+          ? `${Math.round(segment.duration)} min`
+          : `${Math.floor(segment.duration / 60)}h ${Math.round(segment.duration % 60)}min`;
+        pdf.text(`➜ ${segment.distance.toFixed(1)} km - ${duration}`, 25, yPosition);
+        yPosition += 8;
+      } else {
+        yPosition += 6;
+      }
+    });
+
+    // Save the PDF
+    pdf.save(`itineraire-sacre-${startingCity?.split(',')[0] || 'voyage'}.pdf`);
   };
 
   // Calculate route segments with distance and duration
@@ -831,15 +967,27 @@ const LocationsTab = () => {
                   {/* Optimized Route Display */}
                   {showOptimizedRoute && startingCity && optimizedRoute.length > 0 && (
                     <>
-                      <Card className="border-primary/30">
+                       <Card className="border-primary/30">
                         <CardHeader>
-                          <CardTitle className="flex items-center gap-2 text-primary">
-                            <Route className="w-5 h-5" />
-                            Itinéraire optimisé ({optimizedRoute.length} étapes)
-                          </CardTitle>
-                          <CardDescription>
-                            Parcours recommandé depuis {startingCity}
-                          </CardDescription>
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <CardTitle className="flex items-center gap-2 text-primary">
+                                <Route className="w-5 h-5" />
+                                Itinéraire optimisé ({optimizedRoute.length} étapes)
+                              </CardTitle>
+                              <CardDescription>
+                                Parcours recommandé depuis {startingCity}
+                              </CardDescription>
+                            </div>
+                            <Button
+                              onClick={exportToPDF}
+                              variant="outline"
+                              className="gap-2"
+                            >
+                              <Download className="w-4 h-4" />
+                              Exporter PDF
+                            </Button>
+                          </div>
                         </CardHeader>
                         <CardContent>
                           <div className="space-y-4">
@@ -999,8 +1147,11 @@ const LocationsTab = () => {
                         </CardContent>
                       </Card>
 
-                      {/* Interactive Route Map */}
-                      <TripRouteMap places={optimizedRoute} />
+                       {/* Interactive Route Map */}
+                      <TripRouteMap 
+                        places={optimizedRoute} 
+                        onMapReady={(captureFn) => setCaptureMapFn(() => captureFn)}
+                      />
 
                       {/* Points d'arrêt suggérés */}
                       {pois.length > 0 && (
