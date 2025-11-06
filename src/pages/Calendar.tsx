@@ -1,4 +1,3 @@
-import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import CalendarTab from '@/components/CalendarTab';
 import { ImageBackground } from '@/components/ImageBackground';
@@ -7,8 +6,12 @@ import { useMemo } from 'react';
 import { mockPlaces } from '@/data/placesData';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
 import { getImageUrl } from '@/lib/imageHelper';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 const Calendar = () => {
   const { userProgress } = useApp();
+  const navigate = useNavigate();
   
   const seasonalImage = useMemo(() => {
     const religion = userProgress.selectedReligion;
@@ -30,9 +33,15 @@ const Calendar = () => {
     parallax={true}
     className="min-h-screen pb-20"
   >
-      <Header />
-      
       <div className="container mx-auto px-4 py-6">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={() => navigate(-1)}
+          className="mb-4 text-foreground hover:text-primary"
+        >
+          <ArrowLeft className="h-6 w-6" />
+        </Button>
         <div className="space-y-6">
           <div className="space-y-2">
             
