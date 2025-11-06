@@ -149,8 +149,28 @@ serve(async (req) => {
 
               console.log(`[Reminders] Notification sent to user ${reminder.user_id}`);
               sentCount++;
+              
+              // Enregistrer dans l'historique
+              await supabaseClient.from('notification_history').insert({
+                user_id: reminder.user_id,
+                event_id: reminder.event_id,
+                event_name: reminder.event_name,
+                event_date: reminder.event_date,
+                notification_type: 'push',
+                reminder_time_minutes: reminderTime
+              });
             } catch (error: any) {
               console.error(`[Reminders] Failed to send notification:`, error);
+              
+              // Enregistrer l'échec dans l'historique
+              await supabaseClient.from('notification_history').insert({
+                user_id: reminder.user_id,
+                event_id: reminder.event_id,
+                event_name: reminder.event_name,
+                event_date: reminder.event_date,
+                notification_type: 'failed',
+                reminder_time_minutes: reminderTime
+              });
               
               // Nettoyer les abonnements invalides
               if (error.statusCode === 410 || error.statusCode === 404) {

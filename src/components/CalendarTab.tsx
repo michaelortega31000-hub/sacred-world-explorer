@@ -122,10 +122,21 @@ const CalendarTab = () => {
       <div className="container mx-auto p-6 space-y-6 relative z-10">
         {/* Header */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-serif font-bold mb-2 flex items-center justify-center gap-3 text-primary">
-            <Sparkles className="w-8 h-8" />
-            Calendrier Spirituel Mondial
-          </h1>
+          <div className="flex items-center justify-center gap-4 mb-2">
+            <h1 className="text-4xl font-serif font-bold flex items-center gap-3 text-primary">
+              <Sparkles className="w-8 h-8" />
+              Calendrier Spirituel Mondial
+            </h1>
+            <Button
+              onClick={() => navigate('/reminders')}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <Clock className="w-4 h-4" />
+              <span className="hidden sm:inline">Mes rappels</span>
+            </Button>
+          </div>
         </div>
 
         {/* Event Notification Banner */}

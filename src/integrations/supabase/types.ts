@@ -408,6 +408,48 @@ export type Database = {
           },
         ]
       }
+      notification_history: {
+        Row: {
+          created_at: string
+          event_date: string
+          event_id: string
+          event_name: string
+          id: string
+          notification_type: string
+          opened: boolean
+          opened_at: string | null
+          reminder_time_minutes: number
+          sent_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          event_id: string
+          event_name: string
+          id?: string
+          notification_type: string
+          opened?: boolean
+          opened_at?: string | null
+          reminder_time_minutes: number
+          sent_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          event_id?: string
+          event_name?: string
+          id?: string
+          notification_type?: string
+          opened?: boolean
+          opened_at?: string | null
+          reminder_time_minutes?: number
+          sent_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       places: {
         Row: {
           city: string
