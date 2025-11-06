@@ -489,6 +489,9 @@ export type Database = {
           badge_type: string
           id: string
           place_id: string | null
+          quest_description: string | null
+          quest_icon: string | null
+          quest_name: string | null
           religion: string | null
           tier: string | null
           unlocked_at: string | null
@@ -498,6 +501,9 @@ export type Database = {
           badge_type: string
           id?: string
           place_id?: string | null
+          quest_description?: string | null
+          quest_icon?: string | null
+          quest_name?: string | null
           religion?: string | null
           tier?: string | null
           unlocked_at?: string | null
@@ -507,6 +513,9 @@ export type Database = {
           badge_type?: string
           id?: string
           place_id?: string | null
+          quest_description?: string | null
+          quest_icon?: string | null
+          quest_name?: string | null
           religion?: string | null
           tier?: string | null
           unlocked_at?: string | null

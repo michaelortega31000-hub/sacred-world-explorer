@@ -11,7 +11,7 @@ import { mockPlaces as placesData } from '@/data/placesData';
 import confetti from 'canvas-confetti';
 
 const ChallengesTab = () => {
-  const { userProgress, addPoints, userLocation, flyToLocation, updateStreak, getStreakBonus } = useApp();
+  const { userProgress, addPoints, userLocation, flyToLocation, updateStreak, getStreakBonus, awardQuestBadge } = useApp();
   const [claimedQuests, setClaimedQuests] = useState<string[]>(() => {
     const saved = localStorage.getItem('claimedQuests');
     return saved ? JSON.parse(saved) : [];
@@ -21,7 +21,7 @@ const ChallengesTab = () => {
     localStorage.setItem('claimedQuests', JSON.stringify(claimedQuests));
   }, [claimedQuests]);
 
-  const handleClaimReward = (questId: string, reward: number, isDaily: boolean = false) => {
+  const handleClaimReward = async (questId: string, reward: number, isDaily: boolean = false, isMonthly: boolean = false, questName?: string, questDescription?: string) => {
     const bonusPercent = getStreakBonus();
     const bonusPoints = Math.floor(reward * bonusPercent / 100);
     const totalReward = reward + bonusPoints;
@@ -46,6 +46,32 @@ const ChallengesTab = () => {
         });
         toast.success(`🔥 Nouveau record de série !`, {
           description: `${oldStreak + 1} jours consécutifs - Incroyable !`
+        });
+      }
+    }
+    
+    // Award badge for monthly quests
+    if (isMonthly && questName && questDescription) {
+      const badgeAwarded = await awardQuestBadge(
+        questId,
+        questName,
+        questDescription,
+        '🏆'
+      );
+      
+      if (badgeAwarded) {
+        confetti({
+          particleCount: 200,
+          spread: 100,
+          origin: { y: 0.6 },
+          colors: ['#34E0A1', '#F4C542', '#0EA5E9', '#A855F7'],
+          startVelocity: 50,
+          decay: 0.85,
+          scalar: 1.5,
+        });
+        toast.success(`🏆 Badge débloqué : ${questName}`, {
+          description: 'Consultez votre profil pour voir vos badges !',
+          duration: 5000,
         });
       }
     }
@@ -554,7 +580,7 @@ const ChallengesTab = () => {
                       </div>
                       <Button
                         disabled={!isCompleted || isClaimed}
-                        onClick={() => handleClaimReward(quest.id, quest.reward)}
+                        onClick={() => handleClaimReward(quest.id, quest.reward, false, true, quest.title, quest.description)}
                         variant={isCompleted && !isClaimed ? 'default' : 'outline'}
                       >
                         {isClaimed ? 'Réclamé' : isCompleted ? 'Réclamer' : 'En cours'}

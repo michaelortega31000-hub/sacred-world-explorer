@@ -25,6 +25,14 @@ const Profile = () => {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
+  const [questBadges, setQuestBadges] = useState<Array<{
+    id: string;
+    place_id: string;
+    quest_name: string;
+    quest_description: string;
+    quest_icon: string;
+    unlocked_at: string;
+  }>>([]);
   
   // Check if we should open the journal tab
   const params = new URLSearchParams(location.search);
@@ -38,10 +46,33 @@ const Profile = () => {
       } else {
         setUserId(session.user.id);
         fetchAvatar(session.user.id);
+        fetchQuestBadges(session.user.id);
       }
     };
     checkAuth();
   }, [navigate]);
+
+  const fetchQuestBadges = async (uid: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('user_badges')
+        .select('id, place_id, quest_name, quest_description, quest_icon, unlocked_at')
+        .eq('user_id', uid)
+        .eq('badge_type', 'quest')
+        .order('unlocked_at', { ascending: false });
+
+      if (error) {
+        logger.error('Error fetching quest badges:', error);
+        return;
+      }
+      
+      if (data) {
+        setQuestBadges(data);
+      }
+    } catch (error) {
+      logger.error('Error fetching quest badges:', error);
+    }
+  };
 
   const fetchAvatar = async (uid: string) => {
     try {
@@ -332,6 +363,38 @@ const Profile = () => {
                 </div>
               </div>
             </Card>
+
+            {/* Badges de quêtes mensuelles */}
+            {questBadges.length > 0 && (
+              <Card className="p-4 sm:p-6 bg-white/50 border-accent/30">
+                <h2 className="text-lg font-semibold text-sacred-blue mb-4 flex items-center gap-2">
+                  <Trophy className="w-5 h-5 text-accent" />
+                  Badges de Quêtes Mensuelles
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {questBadges.map((badge) => (
+                    <div 
+                      key={badge.id}
+                      className="p-4 bg-gradient-to-br from-accent/10 to-transparent rounded-lg border border-accent/20"
+                      style={{
+                        boxShadow: '0 0 15px rgba(244, 197, 66, 0.2)'
+                      }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="text-3xl">{badge.quest_icon}</div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-sacred-blue">{badge.quest_name}</h3>
+                          <p className="text-xs text-muted-foreground mt-1">{badge.quest_description}</p>
+                          <p className="text-xs text-accent/70 mt-2">
+                            Débloqué le {new Date(badge.unlocked_at).toLocaleDateString('fr-FR')}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </Card>
+            )}
 
             {/* Badges */}
             {userProgress.badges.length > 0 && (

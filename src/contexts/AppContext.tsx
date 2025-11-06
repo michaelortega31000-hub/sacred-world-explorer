@@ -57,6 +57,7 @@ interface AppContextType {
   setFlyToFunction: (fn: (lat: number, lng: number, zoom?: number) => void) => void;
   updateStreak: () => void;
   getStreakBonus: () => number;
+  awardQuestBadge: (questId: string, questName: string, questDescription: string, questIcon: string) => Promise<boolean>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -446,6 +447,42 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return 50;
   };
 
+  const awardQuestBadge = async (questId: string, questName: string, questDescription: string, questIcon: string): Promise<boolean> => {
+    if (!session?.user?.id) {
+      logger.error('No user session found');
+      return false;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_badges')
+        .insert({
+          user_id: session.user.id,
+          place_id: questId,
+          quest_name: questName,
+          quest_description: questDescription,
+          quest_icon: questIcon,
+          badge_type: 'quest',
+        });
+
+      if (error) {
+        // If error is duplicate key, badge already exists - that's ok
+        if (error.code === '23505') {
+          logger.log('Badge already earned:', questId);
+          return true;
+        }
+        logger.error('Error awarding badge:', error);
+        return false;
+      }
+
+      logger.log('Badge awarded:', questId);
+      return true;
+    } catch (error) {
+      logger.error('Error awarding badge:', error);
+      return false;
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       userProgress,
@@ -468,7 +505,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       flyToLocation,
       setFlyToFunction,
       updateStreak,
-      getStreakBonus
+      getStreakBonus,
+      awardQuestBadge
     }}>
       {children}
     </AppContext.Provider>
