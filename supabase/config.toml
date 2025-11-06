@@ -11,3 +11,6 @@ verify_jwt = true
 
 [functions.analyze-visit-photo]
 verify_jwt = true
+
+[functions.send-push-notification]
+verify_jwt = true

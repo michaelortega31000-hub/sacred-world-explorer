@@ -122,7 +122,7 @@ export const useEventReminders = (userSelectedReligion?: string | null) => {
     }
   };
 
-  const showEventNotification = (event: ReligiousEvent, daysUntil: number) => {
+  const showEventNotification = async (event: ReligiousEvent, daysUntil: number) => {
     // Check if notifications are enabled in browser
     if ('Notification' in window && Notification.permission === 'granted') {
       // Check if sound effects are enabled
@@ -146,12 +146,48 @@ export const useEventReminders = (userSelectedReligion?: string | null) => {
         body = event.descriptionFr;
       }
 
-      new Notification(title, {
-        body,
-        icon: '/logo-icon.png',
-        badge: '/logo-icon.png',
-        tag: `event-${event.id}-${daysUntil}`,
-      });
+      // Try to use push notification via edge function
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          const { error } = await supabase.functions.invoke('send-push-notification', {
+            body: {
+              title,
+              body,
+              tag: `event-${event.id}-${daysUntil}`,
+              url: '/calendar'
+            }
+          });
+
+          if (error) {
+            console.warn('[Push] Failed to send push notification, falling back to basic notification:', error);
+            // Fallback to basic notification
+            new Notification(title, {
+              body,
+              icon: '/logo-icon.png',
+              badge: '/logo-icon.png',
+              tag: `event-${event.id}-${daysUntil}`,
+            });
+          }
+        } else {
+          // Not authenticated, use basic notification
+          new Notification(title, {
+            body,
+            icon: '/logo-icon.png',
+            badge: '/logo-icon.png',
+            tag: `event-${event.id}-${daysUntil}`,
+          });
+        }
+      } catch (error) {
+        console.warn('[Push] Error with push notification:', error);
+        // Fallback to basic notification
+        new Notification(title, {
+          body,
+          icon: '/logo-icon.png',
+          badge: '/logo-icon.png',
+          tag: `event-${event.id}-${daysUntil}`,
+        });
+      }
     }
   };
 

@@ -8,6 +8,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useApp } from '@/contexts/AppContext';
 import { Badge } from '@/components/ui/badge';
+import { usePushNotifications } from '@/hooks/usePushNotifications';
+import { Button } from '@/components/ui/button';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type ReminderType = 'day_before' | 'week_before' | 'day_of';
 type TraditionFilter = 'selected_religion' | 'all_religions' | 'custom';
@@ -24,6 +27,7 @@ const traditionLabels: Record<string, { icon: string; label: string }> = {
 const EventReminderSettings = () => {
   const { toast } = useToast();
   const { userProgress } = useApp();
+  const { isSupported, isSubscribed, subscribe, unsubscribe } = usePushNotifications();
   const [eventNotifications, setEventNotifications] = useState(false);
   const [reminderType, setReminderType] = useState<ReminderType>('day_before');
   const [traditionFilter, setTraditionFilter] = useState<TraditionFilter>('selected_religion');
@@ -71,6 +75,19 @@ const EventReminderSettings = () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+
+      // If enabling, subscribe to push notifications
+      if (checked && isSupported && !isSubscribed) {
+        const subscribed = await subscribe();
+        if (!subscribed) {
+          return; // Don't enable if push subscription failed
+        }
+      }
+
+      // If disabling, unsubscribe from push notifications
+      if (!checked && isSubscribed) {
+        await unsubscribe();
+      }
 
       setEventNotifications(checked);
 
@@ -275,8 +292,34 @@ const EventReminderSettings = () => {
           />
         </div>
 
+        {!isSupported && (
+          <Alert className="ml-16">
+            <AlertDescription>
+              Votre navigateur ne supporte pas les notifications push. Vous recevrez uniquement des notifications basiques.
+            </AlertDescription>
+          </Alert>
+        )}
+
         {eventNotifications && (
           <div className="ml-16 space-y-4">
+            {isSupported && (
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Bell className="w-4 h-4 text-primary" />
+                    <span className="text-sm font-medium text-foreground">
+                      Notifications Push
+                    </span>
+                  </div>
+                  <Badge variant={isSubscribed ? 'default' : 'outline'}>
+                    {isSubscribed ? 'Activées' : 'Désactivées'}
+                  </Badge>
+                </div>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Les notifications push fonctionnent même quand l'application est fermée.
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label className="text-sm text-foreground">Quand recevoir le rappel</Label>
               <Select value={reminderType} onValueChange={handleReminderTypeChange}>
