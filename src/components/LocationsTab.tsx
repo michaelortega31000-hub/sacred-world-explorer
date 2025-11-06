@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
@@ -72,6 +72,7 @@ const LocationsTab = () => {
     new Set(['restaurant', 'lodging', 'fuel'])
   );
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
+  const [transportMode, setTransportMode] = useState<'driving' | 'cycling' | 'walking'>('driving');
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -109,7 +110,7 @@ const LocationsTab = () => {
   };
 
   // Calculate route segments with distance and duration
-  const calculateRouteSegments = async (places: typeof plannedPlaces) => {
+  const calculateRouteSegments = async (places: typeof plannedPlaces, mode: 'driving' | 'cycling' | 'walking') => {
     if (places.length < 2) {
       setRouteSegments([]);
       return;
@@ -130,7 +131,7 @@ const LocationsTab = () => {
         const end = places[i + 1];
 
         const coordinates = `${start.coordinates[0]},${start.coordinates[1]};${end.coordinates[0]},${end.coordinates[1]}`;
-        const url = `https://api.mapbox.com/directions/v5/mapbox/driving/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
+        const url = `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
 
         const response = await fetch(url);
         const data = await response.json();
@@ -359,13 +360,13 @@ const LocationsTab = () => {
   // Calculate route segments when optimized route changes
   useEffect(() => {
     if (showOptimizedRoute && optimizedRoute.length >= 2) {
-      calculateRouteSegments(optimizedRoute);
+      calculateRouteSegments(optimizedRoute, transportMode);
       searchPOIsAlongRoute(optimizedRoute);
     } else {
       setRouteSegments([]);
       setPois([]);
     }
-  }, [optimizedRoute, showOptimizedRoute]);
+  }, [optimizedRoute, showOptimizedRoute, transportMode]);
 
   // Get unique cities from planned places
   const tripCities = useMemo(() => {
@@ -779,6 +780,38 @@ const LocationsTab = () => {
                               ))}
                             </SelectContent>
                           </Select>
+                        </div>
+                        <div className="flex-1">
+                          <label className="text-sm font-medium mb-2 block">Mode de transport</label>
+                          <div className="flex gap-2">
+                            <Button
+                              variant={transportMode === 'driving' ? 'default' : 'outline'}
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => setTransportMode('driving')}
+                            >
+                              <Car className="w-4 h-4 mr-2" />
+                              Voiture
+                            </Button>
+                            <Button
+                              variant={transportMode === 'cycling' ? 'default' : 'outline'}
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => setTransportMode('cycling')}
+                            >
+                              <Bike className="w-4 h-4 mr-2" />
+                              Vélo
+                            </Button>
+                            <Button
+                              variant={transportMode === 'walking' ? 'default' : 'outline'}
+                              size="sm"
+                              className="flex-1"
+                              onClick={() => setTransportMode('walking')}
+                            >
+                              <PersonStanding className="w-4 h-4 mr-2" />
+                              Marche
+                            </Button>
+                          </div>
                         </div>
                         {startingCity && (
                           <div className="flex items-end">
