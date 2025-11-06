@@ -9,6 +9,7 @@ import { ParticleSystem } from './ar/ParticleSystem';
 import { LightingSystem } from './ar/LightingSystem';
 import { PostProcessingEffects } from './ar/PostProcessingEffects';
 import { PerformanceMonitor } from './ar/PerformanceMonitor';
+import { AREnvironment } from './ar/AREnvironment';
 import { QualityPresets, QUALITY_PRESETS, type QualityLevel } from './ar/QualityPresets';
 import { useDeviceOrientation } from '@/hooks/useDeviceOrientation';
 import { useARGestures } from '@/hooks/useARGestures';
@@ -105,6 +106,7 @@ const SymbolScene = ({
 
   return (
     <>
+      <AREnvironment religion={religion} color={color} unlocked={unlocked} />
       <LightingSystem color={color} intensity={intensity} unlocked={unlocked} />
       
       <group ref={groupRef}>
@@ -221,11 +223,14 @@ export const ReligiousSymbol3D = ({
         }}
       >
         <Canvas
+          shadows
           camera={{ position: [0, 0, 8], fov: 50 }}
           gl={{
             antialias: true,
             alpha: true,
             powerPreference: 'high-performance',
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.2,
           }}
           onCreated={({ gl }) => {
             if (onCanvasReady) {
