@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { religiousEvents2025, ReligiousEvent } from '@/data/religiousEvents';
-import { differenceInDays, isToday, addDays, startOfDay } from 'date-fns';
+import { differenceInDays, isToday, startOfDay } from 'date-fns';
 import { playNotificationSound, resumeAudioContext } from '@/utils/audioEffects';
 
 interface EventReminder {
@@ -10,7 +10,13 @@ interface EventReminder {
   reminderType: 'day_of' | 'day_before' | 'week_before';
 }
 
-export const useEventReminders = () => {
+interface ReminderPreferences {
+  enabled: boolean;
+  reminder_type: string;
+  filter_traditions: string[] | null;
+}
+
+export const useEventReminders = (userSelectedReligion?: string | null) => {
   const [upcomingEvents, setUpcomingEvents] = useState<EventReminder[]>([]);
   const [hasShownNotification, setHasShownNotification] = useState<Set<string>>(
     new Set(JSON.parse(localStorage.getItem('shownEventReminders') || '[]'))
@@ -23,7 +29,7 @@ export const useEventReminders = () => {
     const interval = setInterval(checkForReminders, 60 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, []);
+  }, [userSelectedReligion]);
 
   const checkForReminders = async () => {
     try {
@@ -46,7 +52,29 @@ export const useEventReminders = () => {
       const today = startOfDay(new Date());
       const reminders: EventReminder[] = [];
 
+      // Determine which traditions to filter
+      const prefs = preferences as ReminderPreferences;
+      let allowedTraditions: Set<string> | null = null;
+      
+      if (prefs.filter_traditions === null) {
+        // Use user's selected religion only
+        if (userSelectedReligion) {
+          allowedTraditions = new Set([userSelectedReligion]);
+        }
+      } else if (prefs.filter_traditions.length === 0) {
+        // All religions allowed
+        allowedTraditions = null;
+      } else {
+        // Custom selection
+        allowedTraditions = new Set(prefs.filter_traditions);
+      }
+
       religiousEvents2025.forEach(event => {
+        // Filter by tradition
+        if (allowedTraditions && !allowedTraditions.has(event.tradition)) {
+          return;
+        }
+
         const eventDate = startOfDay(event.date);
         const daysUntil = differenceInDays(eventDate, today);
 

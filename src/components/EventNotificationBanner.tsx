@@ -4,9 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Bell, Calendar, X } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { useApp } from '@/contexts/AppContext';
 
 const EventNotificationBanner = () => {
-  const { upcomingEvents, requestNotificationPermission } = useEventReminders();
+  const { userProgress } = useApp();
+  const { upcomingEvents, requestNotificationPermission } = useEventReminders(userProgress.selectedReligion);
   const [dismissed, setDismissed] = useState(false);
   const [permissionDismissed, setPermissionDismissed] = useState(
     localStorage.getItem('notificationPermissionDismissed') === 'true'

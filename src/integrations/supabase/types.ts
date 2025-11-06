@@ -674,6 +674,7 @@ export type Database = {
           created_at: string | null
           enabled: boolean | null
           event_id: string
+          filter_traditions: string[] | null
           id: string
           reminder_type: string
           user_id: string
@@ -682,6 +683,7 @@ export type Database = {
           created_at?: string | null
           enabled?: boolean | null
           event_id: string
+          filter_traditions?: string[] | null
           id?: string
           reminder_type: string
           user_id: string
@@ -690,6 +692,7 @@ export type Database = {
           created_at?: string | null
           enabled?: boolean | null
           event_id?: string
+          filter_traditions?: string[] | null
           id?: string
           reminder_type?: string
           user_id?: string

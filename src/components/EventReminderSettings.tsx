@@ -3,16 +3,31 @@ import { Card } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Bell, Calendar } from 'lucide-react';
+import { Bell, Calendar, Filter } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useApp } from '@/contexts/AppContext';
+import { Badge } from '@/components/ui/badge';
 
 type ReminderType = 'day_before' | 'week_before' | 'day_of';
+type TraditionFilter = 'selected_religion' | 'all_religions' | 'custom';
+
+const traditionLabels: Record<string, { icon: string; label: string }> = {
+  christianity: { icon: '✝️', label: 'Christianisme' },
+  islam: { icon: '☪️', label: 'Islam' },
+  judaism: { icon: '✡️', label: 'Judaïsme' },
+  hinduism: { icon: '🕉️', label: 'Hindouisme' },
+  buddhism: { icon: '☸️', label: 'Bouddhisme' },
+  other: { icon: '🕊️', label: 'Autres' }
+};
 
 const EventReminderSettings = () => {
   const { toast } = useToast();
+  const { userProgress } = useApp();
   const [eventNotifications, setEventNotifications] = useState(false);
   const [reminderType, setReminderType] = useState<ReminderType>('day_before');
+  const [traditionFilter, setTraditionFilter] = useState<TraditionFilter>('selected_religion');
+  const [selectedTraditions, setSelectedTraditions] = useState<string[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -34,6 +49,16 @@ const EventReminderSettings = () => {
       if (data) {
         setEventNotifications(data.enabled);
         setReminderType(data.reminder_type as ReminderType);
+        
+        // Determine tradition filter based on filter_traditions column
+        if (data.filter_traditions === null) {
+          setTraditionFilter('selected_religion');
+        } else if (data.filter_traditions.length === 0) {
+          setTraditionFilter('all_religions');
+        } else {
+          setTraditionFilter('custom');
+          setSelectedTraditions(data.filter_traditions);
+        }
       }
       setLoading(false);
     } catch (error) {
@@ -49,6 +74,16 @@ const EventReminderSettings = () => {
 
       setEventNotifications(checked);
 
+      // Determine filter_traditions value based on current filter
+      let filterTraditions: string[] | null;
+      if (traditionFilter === 'selected_religion') {
+        filterTraditions = null; // NULL means use selected religion
+      } else if (traditionFilter === 'all_religions') {
+        filterTraditions = []; // Empty array means all religions
+      } else {
+        filterTraditions = selectedTraditions;
+      }
+
       const { error } = await supabase
         .from('user_event_reminders')
         .upsert({
@@ -56,6 +91,7 @@ const EventReminderSettings = () => {
           event_id: 'global_preference',
           reminder_type: reminderType,
           enabled: checked,
+          filter_traditions: filterTraditions,
         }, {
           onConflict: 'user_id,event_id'
         });
@@ -86,6 +122,15 @@ const EventReminderSettings = () => {
 
       setReminderType(value);
 
+      let filterTraditions: string[] | null;
+      if (traditionFilter === 'selected_religion') {
+        filterTraditions = null;
+      } else if (traditionFilter === 'all_religions') {
+        filterTraditions = [];
+      } else {
+        filterTraditions = selectedTraditions;
+      }
+
       const { error } = await supabase
         .from('user_event_reminders')
         .upsert({
@@ -93,6 +138,7 @@ const EventReminderSettings = () => {
           event_id: 'global_preference',
           reminder_type: value,
           enabled: eventNotifications,
+          filter_traditions: filterTraditions,
         }, {
           onConflict: 'user_id,event_id'
         });
@@ -120,9 +166,91 @@ const EventReminderSettings = () => {
     }
   };
 
+  const handleTraditionFilterChange = async (value: TraditionFilter) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      setTraditionFilter(value);
+
+      let filterTraditions: string[] | null;
+      if (value === 'selected_religion') {
+        filterTraditions = null;
+      } else if (value === 'all_religions') {
+        filterTraditions = [];
+      } else {
+        filterTraditions = selectedTraditions.length > 0 ? selectedTraditions : [userProgress.selectedReligion || 'christianity'];
+        setSelectedTraditions(filterTraditions);
+      }
+
+      const { error } = await supabase
+        .from('user_event_reminders')
+        .upsert({
+          user_id: user.id,
+          event_id: 'global_preference',
+          reminder_type: reminderType,
+          enabled: eventNotifications,
+          filter_traditions: filterTraditions,
+        }, {
+          onConflict: 'user_id,event_id'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: 'Filtre mis à jour',
+        description: value === 'selected_religion' 
+          ? 'Notifications pour votre religion uniquement' 
+          : value === 'all_religions'
+          ? 'Notifications pour toutes les religions'
+          : 'Filtre personnalisé appliqué',
+      });
+    } catch (error) {
+      console.error('Error updating tradition filter:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de sauvegarder vos préférences',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  const toggleTradition = async (tradition: string) => {
+    const newTraditions = selectedTraditions.includes(tradition)
+      ? selectedTraditions.filter(t => t !== tradition)
+      : [...selectedTraditions, tradition];
+    
+    setSelectedTraditions(newTraditions);
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { error } = await supabase
+        .from('user_event_reminders')
+        .upsert({
+          user_id: user.id,
+          event_id: 'global_preference',
+          reminder_type: reminderType,
+          enabled: eventNotifications,
+          filter_traditions: newTraditions,
+        }, {
+          onConflict: 'user_id,event_id'
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error updating traditions:', error);
+    }
+  };
+
   if (loading) {
     return null;
   }
+
+  const userReligionLabel = userProgress.selectedReligion 
+    ? traditionLabels[userProgress.selectedReligion]?.label 
+    : 'votre religion';
 
   return (
     <Card className="p-6 bg-card border-border">
@@ -148,33 +276,88 @@ const EventReminderSettings = () => {
         </div>
 
         {eventNotifications && (
-          <div className="ml-16 space-y-2">
-            <Label className="text-sm text-foreground">Quand recevoir le rappel</Label>
-            <Select value={reminderType} onValueChange={handleReminderTypeChange}>
-              <SelectTrigger className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="day_of">
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4" />
-                    <span>Le jour même</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="day_before">
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4" />
-                    <span>1 jour avant</span>
-                  </div>
-                </SelectItem>
-                <SelectItem value="week_before">
-                  <div className="flex items-center gap-2">
-                    <Bell className="w-4 h-4" />
-                    <span>1 semaine avant</span>
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+          <div className="ml-16 space-y-4">
+            <div className="space-y-2">
+              <Label className="text-sm text-foreground">Quand recevoir le rappel</Label>
+              <Select value={reminderType} onValueChange={handleReminderTypeChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="day_of">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4" />
+                      <span>Le jour même</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="day_before">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4" />
+                      <span>1 jour avant</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="week_before">
+                    <div className="flex items-center gap-2">
+                      <Bell className="w-4 h-4" />
+                      <span>1 semaine avant</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-sm text-foreground flex items-center gap-2">
+                <Filter className="w-4 h-4" />
+                Filtrer les traditions
+              </Label>
+              <Select value={traditionFilter} onValueChange={handleTraditionFilterChange}>
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="selected_religion">
+                    <div className="flex items-center gap-2">
+                      <span>{traditionLabels[userProgress.selectedReligion || 'christianity']?.icon}</span>
+                      <span>Uniquement {userReligionLabel}</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="all_religions">
+                    <div className="flex items-center gap-2">
+                      <span>🌍</span>
+                      <span>Toutes les traditions</span>
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="custom">
+                    <div className="flex items-center gap-2">
+                      <Filter className="w-4 h-4" />
+                      <span>Personnalisé</span>
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {traditionFilter === 'custom' && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">
+                  Sélectionnez les traditions à inclure
+                </Label>
+                <div className="flex flex-wrap gap-2">
+                  {Object.entries(traditionLabels).map(([key, { icon, label }]) => (
+                    <Badge
+                      key={key}
+                      variant={selectedTraditions.includes(key) ? 'default' : 'outline'}
+                      className="cursor-pointer transition-all"
+                      onClick={() => toggleTradition(key)}
+                    >
+                      <span className="mr-1">{icon}</span>
+                      {label}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
