@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getAllPlaces } from '@/data/placesData';
@@ -23,7 +23,8 @@ import {
   Info,
   Users,
   Utensils,
-  ImagePlus
+  ImagePlus,
+  ImageIcon
 } from 'lucide-react';
 import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -43,6 +44,10 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { useARSupport } from '@/hooks/useARSupport';
 import { requestMotionPermission } from '@/utils/arPermissions';
 import { toast as sonnerToast } from 'sonner';
+import { AROverlay } from '@/components/ar/AROverlay';
+import { ARFilters, type FilterType } from '@/components/ar/ARFilters';
+import { captureARScene, saveARCapture, shareARCapture } from '@/utils/arCapture';
+import { hapticFeedback } from '@/hooks/useARGestures';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -74,6 +79,10 @@ const PlaceDetail = () => {
   const [isARMode, setIsARMode] = useState(false);
   const [arPermissionGranted, setArPermissionGranted] = useState(false);
   const [isPhotoVerificationOpen, setIsPhotoVerificationOpen] = useState(false);
+  const [arCanvas, setArCanvas] = useState<HTMLCanvasElement | null>(null);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
   const { userProgress } = useApp();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const arSupport = useARSupport();
@@ -438,13 +447,43 @@ const PlaceDetail = () => {
             {isARMode && (
               <div className="fixed inset-0 z-50 pointer-events-none flex items-center justify-center">
                 {arSupport.isSupported ? (
-                  <ReligiousSymbol3D
-                    religion={place.religion || 'christianity'}
-                    unlocked={isPlaceVisited(placeId!)}
-                    size="lg"
-                    intensity={isPlaceVisited(placeId!) ? 90 : 30}
-                    useDeviceOrientation={arPermissionGranted}
-                  />
+                  <>
+                    <ReligiousSymbol3D
+                      religion={place.religion || 'christianity'}
+                      unlocked={isPlaceVisited(placeId!)}
+                      size="lg"
+                      intensity={isPlaceVisited(placeId!) ? 90 : 30}
+                      useDeviceOrientation={arPermissionGranted}
+                      showPerformance={true}
+                      onCanvasReady={setArCanvas}
+                    />
+                    
+                    {/* AR Overlay with contextual info */}
+                    <AROverlay
+                      placeName={place.name}
+                      placeLocation={`${place.city}, ${place.country}`}
+                      placePoints={place.points}
+                      userPosition={position}
+                      placePosition={place.coordinates}
+                      unlocked={isPlaceVisited(placeId!)}
+                    />
+
+                    {/* Capture button */}
+                    <div className="absolute bottom-24 left-1/2 -translate-x-1/2 pointer-events-auto z-10">
+                      <Button
+                        size="lg"
+                        onClick={handleCaptureAR}
+                        disabled={isCapturing}
+                        className="rounded-full w-16 h-16 p-0"
+                        style={{
+                          background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                          color: 'black'
+                        }}
+                      >
+                        <ImageIcon className="w-8 h-8" />
+                      </Button>
+                    </div>
+                  </>
                 ) : (
                   <ReligiousSymbol 
                     religion={place.religion}
@@ -904,6 +943,18 @@ const PlaceDetail = () => {
 
             // Refresh the page data
             window.location.reload();
+          }}
+        />
+      )}
+
+      {/* AR Filters */}
+      {showFilters && capturedImage && (
+        <ARFilters
+          imageUrl={capturedImage}
+          onApply={handleApplyFilter}
+          onClose={() => {
+            setShowFilters(false);
+            setCapturedImage(null);
           }}
         />
       )}
