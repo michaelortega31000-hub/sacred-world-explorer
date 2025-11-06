@@ -248,6 +248,16 @@ All colors MUST be HSL.
   box-shadow: 0 0 16px hsl(var(--primary) / 0.3);
 }
 
+/* Tabs with background images */
+[role="tab"][data-state="active"] {
+  color: white !important;
+}
+
+[role="tab"]:hover {
+  opacity: 0.9;
+  transition: opacity 0.3s ease;
+}
+
 /* Sacred World Animations */
 @keyframes breathing-glow {
   0%, 100% {

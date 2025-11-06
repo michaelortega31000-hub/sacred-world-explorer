@@ -9,6 +9,10 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
+import nearbyBg from '@/assets/tabs/nearby-bg.jpg';
+import locationsBg from '@/assets/tabs/locations-bg.jpg';
+import challengesBg from '@/assets/tabs/challenges-bg.jpg';
+import rankingsBg from '@/assets/tabs/rankings-bg.jpg';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
@@ -29,21 +33,53 @@ const Explore = () => {
                 <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">Carte 3D</span>
               </TabsTrigger>
-              <TabsTrigger value="nearby" className="gap-2">
-                <Compass className="w-4 h-4" />
-                <span className="hidden sm:inline">Proche</span>
+              <TabsTrigger 
+                value="nearby" 
+                className="gap-2 relative overflow-hidden"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${nearbyBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                <Compass className="w-4 h-4 relative z-10" />
+                <span className="hidden sm:inline relative z-10">Proche</span>
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-2">
-                <MapPin className="w-4 h-4" />
-                <span className="hidden sm:inline">Lieux</span>
+              <TabsTrigger 
+                value="locations" 
+                className="gap-2 relative overflow-hidden"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${locationsBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                <MapPin className="w-4 h-4 relative z-10" />
+                <span className="hidden sm:inline relative z-10">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger value="challenges" className="gap-2">
-                <Target className="w-4 h-4" />
-                <span className="hidden sm:inline">Défis</span>
+              <TabsTrigger 
+                value="challenges" 
+                className="gap-2 relative overflow-hidden"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${challengesBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                <Target className="w-4 h-4 relative z-10" />
+                <span className="hidden sm:inline relative z-10">Défis</span>
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-2">
-                <Trophy className="w-4 h-4" />
-                <span className="hidden sm:inline">Classement</span>
+              <TabsTrigger 
+                value="rankings" 
+                className="gap-2 relative overflow-hidden"
+                style={{
+                  backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(${rankingsBg})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center'
+                }}
+              >
+                <Trophy className="w-4 h-4 relative z-10" />
+                <span className="hidden sm:inline relative z-10">Classement</span>
               </TabsTrigger>
             </TabsList>
 
