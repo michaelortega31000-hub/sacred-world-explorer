@@ -26,6 +26,7 @@ import { ProgressSection } from '@/components/profile/ProgressSection';
 import { LevelUpModal } from '@/components/profile/LevelUpModal';
 import { RewardsSection } from '@/components/profile/RewardsSection';
 import { AvatarGallery } from '@/components/profile/AvatarGallery';
+import { SocialShareButtons } from '@/components/profile/SocialShareButtons';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -429,7 +430,7 @@ const Profile = () => {
                     </div>
 
                     {isPublic && username && (
-                      <div className="pt-2 border-t border-border/50">
+                      <div className="pt-4 border-t border-border/50 space-y-3">
                         <Button
                           onClick={handleCopyShareLink}
                           variant="outline"
@@ -443,11 +444,17 @@ const Profile = () => {
                             </>
                           ) : (
                             <>
-                              <Share2 className="w-4 h-4 mr-2" />
-                              Partager mon profil
+                              <Copy className="w-4 h-4 mr-2" />
+                              Copier le lien
                             </>
                           )}
                         </Button>
+
+                        <SocialShareButtons
+                          username={username}
+                          profileUrl={`${window.location.origin}/u/${username}`}
+                          shareText={`Découvrez mon profil SacredWorld @${username} !`}
+                        />
                       </div>
                     )}
 
