@@ -15,6 +15,7 @@ import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { useApp } from '@/contexts/AppContext';
 import BottomNavigation from '@/components/BottomNavigation';
+import { LeaderboardSection } from '@/components/avatars/LeaderboardSection';
 
 interface DefaultAvatar {
   id: string;
@@ -347,6 +348,11 @@ const AvatarsGallery = () => {
               />
             </div>
           </Card>
+
+          {/* Leaderboard */}
+          <div className="mt-8">
+            <LeaderboardSection currentUserId={userId || undefined} />
+          </div>
         </main>
 
         <BottomNavigation />

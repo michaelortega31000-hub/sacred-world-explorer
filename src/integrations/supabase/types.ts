@@ -235,6 +235,13 @@ export type Database = {
             foreignKeyName: "forum_posts_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "forum_posts_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -297,6 +304,13 @@ export type Database = {
             foreignKeyName: "forum_topics_author_id_fkey"
             columns: ["author_id"]
             isOneToOne: false
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "forum_topics_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -346,6 +360,13 @@ export type Database = {
             foreignKeyName: "friendships_friend_id_fkey"
             columns: ["friend_id"]
             isOneToOne: false
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "friendships_friend_id_fkey"
+            columns: ["friend_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -362,6 +383,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "friendships_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "friendships_user_id_fkey"
@@ -497,6 +525,13 @@ export type Database = {
             foreignKeyName: "messages_receiver_id_fkey"
             columns: ["receiver_id"]
             isOneToOne: false
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "messages_receiver_id_fkey"
+            columns: ["receiver_id"]
+            isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
@@ -513,6 +548,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "user_profile"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
           },
           {
             foreignKeyName: "messages_sender_id_fkey"
@@ -668,6 +710,13 @@ export type Database = {
           username?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "public_profiles_store_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "public_profiles_store_id_fkey"
             columns: ["id"]
@@ -1294,6 +1343,20 @@ export type Database = {
       }
     }
     Views: {
+      avatar_collector_stats: {
+        Row: {
+          avatar_url: string | null
+          common_count: number | null
+          epic_count: number | null
+          last_unlock_at: string | null
+          legendary_count: number | null
+          rare_count: number | null
+          total_unlocked: number | null
+          user_id: string | null
+          username: string | null
+        }
+        Relationships: []
+      }
       public_profiles: {
         Row: {
           created_at: string | null
@@ -1311,6 +1374,13 @@ export type Database = {
           username?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "public_profiles_store_id_fkey"
+            columns: ["id"]
+            isOneToOne: true
+            referencedRelation: "avatar_collector_stats"
+            referencedColumns: ["user_id"]
+          },
           {
             foreignKeyName: "public_profiles_store_id_fkey"
             columns: ["id"]
