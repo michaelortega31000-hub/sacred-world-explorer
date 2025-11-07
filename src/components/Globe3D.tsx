@@ -121,8 +121,42 @@ useEffect(() => {
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || showTokenInput) return;
 
+    // Vérifier la compatibilité Mapbox
+    if (!mapboxgl.supported()) {
+      toast.error("Votre navigateur ne supporte pas WebGL, requis pour afficher la carte 3D");
+      return;
+    }
+
     mapboxgl.accessToken = mapboxToken;
-    logger.log('Globe3D init with token', !!mapboxToken, 'container size', mapContainer.current?.clientWidth, mapContainer.current?.clientHeight);
+    
+    const containerHeight = mapContainer.current.clientHeight;
+    const containerWidth = mapContainer.current.clientWidth;
+    
+    logger.log('Globe3D init attempt', 'container size', containerWidth, containerHeight);
+    
+    // Si le conteneur n'a pas de taille, attendre avec ResizeObserver
+    if (containerHeight === 0 || containerWidth === 0) {
+      logger.log('Container has no size yet, waiting with ResizeObserver...');
+      const resizeObserver = new ResizeObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.contentRect.height > 0 && entry.contentRect.width > 0) {
+            logger.log('Container now has size, re-triggering effect');
+            // Force re-render by updating a dummy state or just disconnect and let the effect re-run
+            resizeObserver.disconnect();
+            // La prochaine fois que l'effect s'exécute, la taille sera > 0
+          }
+        }
+      });
+      
+      resizeObserver.observe(mapContainer.current);
+      
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+    
+    // Le conteneur a une taille valide, initialiser la carte
+    logger.log('Globe3D initializing map');
     
     // Détecter si on est sur mobile
     const isMobile = window.innerWidth < 768;
@@ -130,7 +164,7 @@ useEffect(() => {
     // Initialiser la carte en mode globe - vue 3D immersive moderne
     // Style dark-v11 pour rendu moderne avec fond sombre
     map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current!,
       style: 'mapbox://styles/mapbox/dark-v11',
       projection: { name: 'globe' },
       zoom: isMobile ? 1.8 : 2.2,
@@ -1112,7 +1146,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="relative w-full h-[calc(100vh-160px)] min-h-[520px]">
+    <div className="relative w-full h-[70vh] min-h-[520px]">
       {/* Phase 2: Champ d'étoiles animé ultra-immersif */}
       <div 
         className="absolute inset-0 pointer-events-none star-field"

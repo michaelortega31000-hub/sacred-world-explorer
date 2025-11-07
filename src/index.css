@@ -373,15 +373,18 @@ All colors MUST be HSL.
 .globe-container {
   position: relative;
   overflow: hidden;
+  z-index: 2;
 }
 
 .star-field {
   z-index: 0;
+  pointer-events: none;
 }
 
 .aurora-effect {
   z-index: 1;
   mix-blend-mode: screen;
+  pointer-events: none;
 }
 
 .country-pulsing {
