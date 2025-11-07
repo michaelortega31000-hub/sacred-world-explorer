@@ -52,6 +52,7 @@ const MonumentFilter = ({ onFilterChange }: MonumentFilterProps) => {
       : [...selectedReligions, religion];
     
     setSelectedReligions(newReligions);
+    console.log('🎯 Religion filter changed:', { religions: newReligions, types: selectedTypes });
     onFilterChange({ religions: newReligions, types: selectedTypes });
   };
 
@@ -61,6 +62,7 @@ const MonumentFilter = ({ onFilterChange }: MonumentFilterProps) => {
       : [...selectedTypes, type];
     
     setSelectedTypes(newTypes);
+    console.log('🎯 Type filter changed:', { religions: selectedReligions, types: newTypes });
     onFilterChange({ religions: selectedReligions, types: newTypes });
   };
 
@@ -104,7 +106,7 @@ const MonumentFilter = ({ onFilterChange }: MonumentFilterProps) => {
       {/* Filter Panel */}
       {isOpen && (
         <div
-          className="fixed bottom-24 right-4 w-80 max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-fade-in z-50"
+          className="fixed top-16 left-2 sm:left-4 w-80 max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-fade-in z-50"
           style={{
             background: 'rgba(20, 43, 79, 0.98)',
             borderColor: 'rgba(52, 224, 161, 0.3)',

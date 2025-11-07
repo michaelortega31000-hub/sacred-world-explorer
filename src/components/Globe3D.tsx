@@ -850,9 +850,11 @@ useEffect(() => {
 
   // Effet séparé pour recharger les monuments sans réinitialiser la carte
   useEffect(() => {
+    console.log('🔍 useEffect monuments triggered', { showMonuments, filters });
     if (map.current && map.current.loaded()) {
       // Only reload on filter changes or first load, NOT on userPosition changes
       if (showMonuments) {
+        console.log('✅ Loading monuments with filters:', filters);
         
         // Sauvegarder la position actuelle de la caméra si géolocalisé
         if (geolocationEnabled && userPosition) {
