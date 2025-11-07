@@ -44,13 +44,14 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
   const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
+  const [containerReadyTick, setContainerReadyTick] = useState(0);
   const isStyleReadyRef = useRef(false);
   const pendingFlyTo = useRef<Array<{ lat: number; lng: number; zoom: number }>>([]);
   const hasLoadedMonuments = useRef(false);
   const hasShownLocationToast = useRef(false);
   const animationFrameId = useRef<number | null>(null);
   const hoveredCountryCache = useRef<string | null>(null);
-
+  const sizeObserverRef = useRef<ResizeObserver | null>(null);
   // Fonction pour voler vers des coordonnées spécifiques
   const handleFlyTo = (lat: number, lng: number, zoom: number = 15) => {
     if (map.current && isStyleReadyRef.current) {
@@ -127,16 +128,36 @@ useEffect(() => {
       return;
     }
 
+    const containerEl = mapContainer.current!;
+    const containerHeight = containerEl.clientHeight;
+    const containerWidth = containerEl.clientWidth;
+    logger.log('Globe3D init attempt', 'container size', containerWidth, containerHeight);
+
+    if (containerHeight === 0 || containerWidth === 0) {
+      logger.log('Container has no size yet, waiting with ResizeObserver...');
+      const resizeObserver = new ResizeObserver((entries) => {
+        const r = entries[0]?.contentRect as DOMRectReadOnly;
+        if (r && r.height > 0 && r.width > 0) {
+          resizeObserver.disconnect();
+          logger.log('Container now has size, re-triggering init');
+          setContainerReadyTick((v) => v + 1);
+        }
+      });
+      resizeObserver.observe(containerEl);
+      return () => {
+        resizeObserver.disconnect();
+      };
+    }
+
     mapboxgl.accessToken = mapboxToken;
-    logger.log('Globe3D init with token, container size:', mapContainer.current.clientWidth, 'x', mapContainer.current.clientHeight);
-    
-    // Détecter si on est sur mobile
+    logger.log('Globe3D initializing map');
+
     const isMobile = window.innerWidth < 768;
     
     // Initialiser la carte en mode globe - vue 3D immersive moderne
     // Style dark-v11 pour rendu moderne avec fond sombre
     map.current = new mapboxgl.Map({
-      container: mapContainer.current!,
+      container: containerEl,
       style: 'mapbox://styles/mapbox/dark-v11',
       projection: { name: 'globe' },
       zoom: isMobile ? 1.8 : 2.2,
@@ -146,6 +167,13 @@ useEffect(() => {
       maxPitch: 85,
       antialias: true, // Anti-aliasing pour qualité optimale
     });
+
+    // Observer les changements de taille après initialisation
+    sizeObserverRef.current?.disconnect();
+    sizeObserverRef.current = new ResizeObserver(() => {
+      map.current?.resize();
+    });
+    sizeObserverRef.current.observe(containerEl);
 
     // Contrôles de navigation désactivés (utilisateur zoom directement)
 
