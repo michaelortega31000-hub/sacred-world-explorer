@@ -20,7 +20,6 @@ import { cn } from '@/lib/utils';
 import type { SavedPOI } from '@/contexts/AppContext';
 import jsPDF from 'jspdf';
 import TripStatsDashboard from './TripStatsDashboard';
-import ThemedRouteSuggestions from './ThemedRouteSuggestions';
 import {
   Select,
   SelectContent,
@@ -961,13 +960,6 @@ const LocationsTab = () => {
                 </ScrollArea>
               )}
 
-              {/* Themed Route Suggestions */}
-              {mockPlaces.length > 0 && (
-                <ThemedRouteSuggestions
-                  availablePlaces={mockPlaces}
-                  onApplyRoute={applyThemedRoute}
-                />
-              )}
 
               {/* Route Optimizer Section */}
               {plannedPlaces.length >= 2 && (
