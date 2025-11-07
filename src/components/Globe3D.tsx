@@ -127,17 +127,18 @@ useEffect(() => {
     // Détecter si on est sur mobile
     const isMobile = window.innerWidth < 768;
     
-    // Initialiser la carte en mode globe - vue 3D immersive
-    // Vue plus proche et en perspective pour une meilleure immersion
+    // Initialiser la carte en mode globe - vue 3D immersive moderne
+    // Style dark-v11 pour rendu moderne avec fond sombre
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      style: 'mapbox://styles/mapbox/dark-v11',
       projection: { name: 'globe' },
-      zoom: isMobile ? 1.8 : 2.2, // Vue plus rapprochée pour voir les lieux
-      center: [10, 45], // Centré sur l'Europe avec meilleure perspective
-      pitch: isMobile ? 45 : 55, // Angle 3D immersif
-      bearing: -15, // Légère rotation pour dynamisme
+      zoom: isMobile ? 1.8 : 2.2,
+      center: [10, 45],
+      pitch: isMobile ? 45 : 55,
+      bearing: -15,
       maxPitch: 85,
+      antialias: true, // Anti-aliasing pour qualité optimale
     });
 
     // Contrôles de navigation désactivés (utilisateur zoom directement)
@@ -148,42 +149,53 @@ useEffect(() => {
       // Le style est prêt
       isStyleReadyRef.current = true;
       
-      // Fond spatial immersif (espace sombre conservé)
+      // Atmosphère spatiale améliorée avec couleurs plus riches
       map.current.setFog({
-        color: 'rgb(14, 27, 63)', // Deep space blue
-        'high-color': 'rgb(52, 224, 161)', // Turquoise glow
-        'horizon-blend': 0.1,
-        'space-color': 'rgb(14, 27, 63)',
-        'star-intensity': 0.6
+        color: 'rgb(8, 15, 35)', // Espace profond plus sombre
+        'high-color': 'rgb(52, 224, 161)', // Turquoise éclatant
+        'horizon-blend': 0.15, // Transition plus douce
+        'space-color': 'rgb(5, 10, 25)', // Noir spatial profond
+        'star-intensity': 0.85 // Plus d'étoiles
       });
 
-      // Teinte bleue sur les océans (sans modifier le fond)
+      // Amélioration des océans avec gradient de profondeur
       const labelBeforeId = map.current.getLayer('country-label') ? 'country-label' : undefined;
 
-      // 1) Recolorer la couche 'water' si présente (styles vectoriels)
+      // Océans avec gradient turquoise et reflets
       if (map.current.getLayer('water')) {
-        map.current.setPaintProperty('water', 'fill-color', '#2EA5FF');
-        map.current.setPaintProperty('water', 'fill-opacity', 0.5);
+        map.current.setPaintProperty('water', 'fill-color', [
+          'interpolate',
+          ['linear'],
+          ['zoom'],
+          0, '#1a3d5c', // Bleu profond au zoom éloigné
+          5, '#2EA5FF', // Turquoise au zoom proche
+          10, '#4ecdc4' // Cyan clair au zoom maximal
+        ]);
+        map.current.setPaintProperty('water', 'fill-opacity', 0.7);
       }
 
-      // 2) Ajouter une couche de teinte personnalisée au-dessus du satellite si nécessaire
-      if (!map.current.getLayer('custom-water-tint')) {
+      // Amélioration des terres - contraste accru
+      if (map.current.getLayer('land')) {
+        map.current.setPaintProperty('land', 'background-color', '#0a1628');
+      }
+      
+      // Layer de reflets sur l'eau (specular highlights)
+      if (!map.current.getLayer('ocean-specular')) {
         try {
-          map.current.addLayer(
-            {
-              id: 'custom-water-tint',
-              type: 'fill',
-              source: 'composite',
-              'source-layer': 'water',
-              paint: {
-                'fill-color': '#2EA5FF',
-                'fill-opacity': 0.45
-              }
-            } as any,
-            labelBeforeId
-          );
+          map.current.addLayer({
+            id: 'ocean-specular',
+            type: 'fill',
+            source: 'composite',
+            'source-layer': 'water',
+            paint: {
+              'fill-color': '#ffffff',
+              'fill-opacity': 0.08,
+              'fill-translate': [0, -2],
+              'fill-antialias': true
+            }
+          } as any, labelBeforeId);
         } catch (e) {
-          console.warn('Water tint layer add failed', e);
+          console.warn('Ocean specular layer failed', e);
         }
       }
 
@@ -195,7 +207,7 @@ useEffect(() => {
         } as any);
       }
 
-      // Ajouter une layer invisible pour les clics sur les pays
+      // Phase 3: Frontières interactives avec glow effect
       if (!map.current.getLayer('country-boundaries-fill')) {
         map.current.addLayer({
           id: 'country-boundaries-fill',
@@ -209,7 +221,37 @@ useEffect(() => {
         } as any);
       }
 
-      // Effets hover désactivés
+      // Layer de frontières avec effet glow
+      if (!map.current.getLayer('country-boundaries-glow')) {
+        map.current.addLayer({
+          id: 'country-boundaries-glow',
+          type: 'line',
+          source: 'country-boundaries',
+          'source-layer': 'country_boundaries',
+          paint: {
+            'line-color': '#34E0A1',
+            'line-width': 1.5,
+            'line-opacity': 0.3,
+            'line-blur': 2
+          }
+        } as any);
+      }
+
+      // Layer de highlight au hover (initialement invisible)
+      if (!map.current.getLayer('country-highlight')) {
+        map.current.addLayer({
+          id: 'country-highlight',
+          type: 'line',
+          source: 'country-boundaries',
+          'source-layer': 'country_boundaries',
+          paint: {
+            'line-color': '#F4C542',
+            'line-width': 3,
+            'line-opacity': 0
+          },
+          filter: ['==', 'iso_3166_1', '']
+        } as any);
+      }
 
       // Configurer la langue des labels selon la langue sélectionnée
       const langCode = i18n.language || 'fr';
@@ -582,25 +624,36 @@ useEffect(() => {
       }
     });
 
-    // Curseur pointer sur les pays - throttled pour optimisation
+    // Phase 3: Interaction hover améliorée avec pulsation
     const handleMouseMove = throttle((e: mapboxgl.MapMouseEvent) => {
       if (!map.current) return;
       
       const countryFeatures = map.current.queryRenderedFeatures(e.point, {
-        layers: map.current.getStyle().layers
-          ?.filter(layer => layer.id.includes('admin') || layer.id.includes('country'))
-          .map(layer => layer.id) || []
+        layers: ['country-boundaries-fill']
       });
       
       const hasCountry = countryFeatures && countryFeatures.length > 0;
-      const countryName = hasCountry ? (countryFeatures[0].properties?.name_en || '') : null;
+      const countryCode = hasCountry ? (countryFeatures[0].properties?.iso_3166_1 || '') : null;
       
-      // Only update cursor if hovered country changed
-      if (hoveredCountryCache.current !== countryName) {
-        hoveredCountryCache.current = countryName;
+      // Mise à jour du curseur et du highlight
+      if (hoveredCountryCache.current !== countryCode) {
+        hoveredCountryCache.current = countryCode;
         map.current.getCanvas().style.cursor = hasCountry ? 'pointer' : '';
+        
+        // Activer le highlight avec animation pulsante
+        if (hasCountry && countryCode) {
+          map.current.setFilter('country-highlight', ['==', 'iso_3166_1', countryCode]);
+          map.current.setPaintProperty('country-highlight', 'line-opacity', 0.8);
+          
+          // Ajouter classe CSS pour animation pulsante
+          map.current.getCanvas().classList.add('country-pulsing');
+        } else {
+          map.current.setFilter('country-highlight', ['==', 'iso_3166_1', '']);
+          map.current.setPaintProperty('country-highlight', 'line-opacity', 0);
+          map.current.getCanvas().classList.remove('country-pulsing');
+        }
       }
-    }, 100); // Max 10 calls per second
+    }, 100);
 
     map.current.on('mousemove', handleMouseMove);
 
@@ -893,29 +946,53 @@ useEffect(() => {
 
   return (
     <div className="relative w-full h-[calc(100vh-160px)] min-h-[520px]">
-      {/* Fond étoilé immersif */}
+      {/* Phase 2: Champ d'étoiles animé ultra-immersif */}
       <div 
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none star-field"
         style={{
-          background: 'radial-gradient(ellipse at center, rgba(14, 27, 63, 0.8) 0%, rgba(14, 27, 63, 1) 100%)',
-          backgroundImage: `radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.8), transparent),
-                           radial-gradient(1px 1px at 60% 70%, rgba(52, 224, 161, 0.6), transparent),
-                           radial-gradient(1px 1px at 50% 50%, rgba(244, 197, 66, 0.5), transparent),
-                           radial-gradient(2px 2px at 80% 10%, rgba(255,255,255,0.7), transparent),
-                           radial-gradient(1px 1px at 90% 60%, rgba(52, 224, 161, 0.5), transparent),
-                           radial-gradient(1px 1px at 33% 80%, rgba(255,255,255,0.6), transparent),
-                           radial-gradient(2px 2px at 15% 90%, rgba(244, 197, 66, 0.4), transparent)`,
+          background: 'radial-gradient(ellipse at center, rgba(5, 10, 25, 0.7) 0%, rgba(5, 10, 25, 1) 100%)',
+          backgroundImage: `
+            radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.9), transparent),
+            radial-gradient(1px 1px at 60% 70%, rgba(52, 224, 161, 0.8), transparent),
+            radial-gradient(1.5px 1.5px at 50% 50%, rgba(244, 197, 66, 0.7), transparent),
+            radial-gradient(2px 2px at 80% 10%, rgba(255,255,255,0.85), transparent),
+            radial-gradient(1px 1px at 90% 60%, rgba(52, 224, 161, 0.6), transparent),
+            radial-gradient(1px 1px at 33% 80%, rgba(255,255,255,0.75), transparent),
+            radial-gradient(2.5px 2.5px at 15% 90%, rgba(244, 197, 66, 0.5), transparent),
+            radial-gradient(1px 1px at 70% 20%, rgba(52, 224, 161, 0.7), transparent),
+            radial-gradient(1.5px 1.5px at 40% 60%, rgba(255,255,255,0.6), transparent),
+            radial-gradient(2px 2px at 85% 80%, rgba(244, 197, 66, 0.6), transparent)
+          `,
           backgroundSize: '200% 200%',
-          animation: 'twinkle 200s linear infinite',
+          animation: 'twinkle-stars 200s linear infinite',
+        }}
+      />
+
+      {/* Phase 2: Aurores boréales subtiles aux pôles */}
+      <div 
+        className="absolute inset-0 pointer-events-none aurora-effect"
+        style={{
+          background: `
+            radial-gradient(ellipse 80% 30% at 50% 0%, rgba(52, 224, 161, 0.15) 0%, transparent 50%),
+            radial-gradient(ellipse 80% 30% at 50% 100%, rgba(52, 224, 161, 0.12) 0%, transparent 50%)
+          `,
+          animation: 'aurora-wave 15s ease-in-out infinite',
         }}
       />
       
+      {/* Phase 2: Halo lumineux CSS autour du globe */}
       <div 
         ref={mapContainer} 
-        className="absolute inset-0"
+        className="absolute inset-0 globe-container"
         style={{ 
           background: 'transparent',
-          filter: 'brightness(0.9) contrast(1.1)'
+          filter: 'brightness(1) contrast(1.15) saturate(1.1)',
+          boxShadow: `
+            inset 0 0 100px rgba(52, 224, 161, 0.15),
+            0 0 150px rgba(52, 224, 161, 0.2),
+            0 0 200px rgba(244, 197, 66, 0.1)
+          `,
+          borderRadius: '50%'
         }}
       />
       

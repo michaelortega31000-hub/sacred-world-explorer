@@ -331,6 +331,63 @@ All colors MUST be HSL.
   }
 }
 
+/* Globe 3D - Modern Animations */
+@keyframes twinkle-stars {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes aurora-wave {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scaleY(1) translateY(0);
+  }
+  33% {
+    opacity: 0.7;
+    transform: scaleY(1.1) translateY(-5px);
+  }
+  66% {
+    opacity: 0.6;
+    transform: scaleY(0.95) translateY(5px);
+  }
+}
+
+@keyframes country-border-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
+}
+
+/* Globe container with cosmic effects */
+.globe-container {
+  position: relative;
+  overflow: hidden;
+}
+
+.star-field {
+  z-index: 0;
+}
+
+.aurora-effect {
+  z-index: 1;
+  mix-blend-mode: screen;
+}
+
+.country-pulsing {
+  animation: country-border-pulse 1.5s ease-in-out infinite;
+}
+
 @keyframes pulse-halo {
   0%, 100% {
     transform: scale(1);
