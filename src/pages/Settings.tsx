@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTranslation } from 'react-i18next';
 import { ImageBackground } from '@/components/ImageBackground';
@@ -390,6 +390,32 @@ const Settings = () => {
 
           {/* Event Reminders */}
           <EventReminderSettings />
+
+          {/* Test de Sécurité */}
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-success/10 rounded-full">
+                <Shield className="w-6 h-6 text-success" />
+              </div>
+              <div className="flex-1">
+                <Label className="text-lg font-semibold text-foreground mb-2 block">
+                  Test de Sécurité
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Vérifiez que vos données sont correctement protégées par les politiques de sécurité
+                </p>
+                <Button
+                  onClick={() => navigate('/security-test')}
+                  variant="outline"
+                  className="w-full"
+                  size="sm"
+                >
+                  <Shield className="w-4 h-4 mr-2" />
+                  Lancer les tests de sécurité
+                </Button>
+              </div>
+            </div>
+          </Card>
 
           {/* Déconnexion */}
           <Card className="p-6 bg-card border-border">
