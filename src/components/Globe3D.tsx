@@ -1285,14 +1285,14 @@ useEffect(() => {
       </div>
 
       {/* Monument Filter - positioned top right */}
-      <div className="absolute top-4 right-4">
+      <div className="absolute top-2 right-2 sm:top-4 sm:right-4 z-50">
         <MonumentFilter onFilterChange={setFilters} />
       </div>
 
       {/* Toggle monuments button - positioned bottom right */}
       <Button
         onClick={() => setShowMonuments(!showMonuments)}
-        className="absolute bottom-4 right-4 gap-2 backdrop-blur-md border-2 transition-all duration-300"
+        className="absolute bottom-4 right-4 gap-2 backdrop-blur-md border-2 transition-all duration-300 z-50"
         style={{
           background: showMonuments 
             ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' 
