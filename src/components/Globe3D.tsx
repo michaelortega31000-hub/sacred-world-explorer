@@ -405,12 +405,13 @@ useEffect(() => {
           filteredPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
             
-            // Déterminer la religion du lieu pour appliquer sa couleur
             const placeReligion = inferReligionFromPlace(place.type, place.name);
             const isVisited = userProgress.visitedPlaces.includes(place.id);
-            
-            // Utiliser la couleur de la religion du lieu (indépendant du parcours choisi)
             const markerColor = religionColors[placeReligion].marker;
+            
+            // Déterminer le niveau d'importance
+            const isMajorSite = place.points >= 150;
+            const isImportantSite = place.points >= 100;
             
             const popup = new mapboxgl.Popup({ 
               offset: 25, 
@@ -430,7 +431,6 @@ useEffect(() => {
                 </div>
               `);
 
-            // Ajouter l'event listener pour la navigation au clic sur l'image
             popup.on('open', () => {
               const container = popup.getElement();
               const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
@@ -442,27 +442,107 @@ useEffect(() => {
               }
             });
 
-            // Créer un élément personnalisé pour le marqueur avec effet subtil
+            // Marqueur ultra-moderne
             const el = document.createElement('div');
-            el.className = 'sacred-marker';
-            el.style.cssText = `
-              width: 14px;
-              height: 14px;
-              background: ${markerColor};
-              border: 2px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.3)'};
-              border-radius: 50%;
-              box-shadow: 0 0 8px ${isVisited ? 'rgba(244, 197, 66, 0.3)' : 'rgba(52, 224, 161, 0.2)'};
-              cursor: pointer;
-              transition: transform 0.2s ease;
+            el.className = `sacred-marker-3d ${isMajorSite ? 'major-site' : ''} ${isImportantSite ? 'important-site' : ''}`;
+            
+            const markerHTML = `
+              ${isMajorSite ? `
+                <div class="marker-beam" style="
+                  position: absolute;
+                  bottom: 100%;
+                  left: 50%;
+                  transform: translateX(-50%);
+                  width: 2px;
+                  height: 80px;
+                  background: linear-gradient(to top, ${markerColor}, transparent);
+                  opacity: 0.6;
+                  animation: beam-pulse 2s ease-in-out infinite;
+                "></div>
+              ` : ''}
+              
+              ${isImportantSite ? `
+                <div class="marker-particles">
+                  <div class="particle" style="--delay: 0s; --color: ${markerColor}"></div>
+                  <div class="particle" style="--delay: 0.5s; --color: ${markerColor}"></div>
+                  <div class="particle" style="--delay: 1s; --color: ${markerColor}"></div>
+                  <div class="particle" style="--delay: 1.5s; --color: ${markerColor}"></div>
+                </div>
+              ` : ''}
+              
+              <div class="marker-halo-outer" style="
+                position: absolute;
+                width: 40px;
+                height: 40px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border: 2px solid ${markerColor};
+                border-radius: 50%;
+                opacity: 0.3;
+                animation: halo-expand 3s ease-out infinite;
+              "></div>
+              
+              <div class="marker-halo-inner" style="
+                position: absolute;
+                width: 28px;
+                height: 28px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                border: 2px solid ${markerColor};
+                border-radius: 50%;
+                opacity: 0.5;
+                animation: halo-expand 2s ease-out infinite 0.5s;
+              "></div>
+              
+              <div class="marker-core" style="
+                position: relative;
+                width: 16px;
+                height: 16px;
+                background: ${markerColor};
+                border: 3px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.9)'};
+                border-radius: 50%;
+                box-shadow: 
+                  0 0 20px ${markerColor},
+                  0 0 40px ${markerColor}80,
+                  inset 0 0 10px ${markerColor};
+                animation: marker-pulse 2s ease-in-out infinite;
+                z-index: 10;
+              "></div>
+              
+              ${isVisited ? `
+                <div class="marker-checkmark" style="
+                  position: absolute;
+                  top: -8px;
+                  right: -8px;
+                  width: 18px;
+                  height: 18px;
+                  background: #F4C542;
+                  border: 2px solid #0E1B3F;
+                  border-radius: 50%;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 10px;
+                  font-weight: bold;
+                  color: #0E1B3F;
+                  z-index: 20;
+                  animation: checkmark-bounce 0.5s ease-out;
+                ">✓</div>
+              ` : ''}
             `;
             
-            el.addEventListener('mouseenter', () => {
-              el.style.transform = 'scale(1.2)';
-            });
-            
-            el.addEventListener('mouseleave', () => {
-              el.style.transform = 'scale(1)';
-            });
+            el.innerHTML = markerHTML;
+            el.style.cssText = `
+              position: relative;
+              width: 20px;
+              height: 20px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            `;
 
             const marker = new mapboxgl.Marker({ 
               element: el,
@@ -474,7 +554,6 @@ useEffect(() => {
               .setPopup(popup)
               .addTo(map.current!);
             
-            // Ouvrir le popup au clic ou au tap sur mobile
             el.addEventListener('click', (ev) => {
               ev.stopPropagation();
               marker.togglePopup();
@@ -735,6 +814,10 @@ useEffect(() => {
               const isVisited = userProgress.visitedPlaces.includes(place.id);
               const markerColor = religionColors[placeReligion].marker;
               
+              // Déterminer le niveau d'importance du site
+              const isMajorSite = place.points >= 150; // Sites majeurs (beams)
+              const isImportantSite = place.points >= 100; // Sites importants (particules)
+              
               const popup = new mapboxgl.Popup({ 
                 offset: 25, 
                 maxWidth: '320px',
@@ -753,7 +836,6 @@ useEffect(() => {
                   </div>
                 `);
 
-              // Ajouter l'event listener pour la navigation au clic sur l'image
               popup.on('open', () => {
                 const container = popup.getElement();
                 const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
@@ -765,26 +847,112 @@ useEffect(() => {
                 }
               });
 
+              // Phase 4: Créer marqueur ultra-moderne avec effets avancés
               const el = document.createElement('div');
-              el.className = 'sacred-marker';
-              el.style.cssText = `
-                width: 14px;
-                height: 14px;
-                background: ${markerColor};
-                border: 2px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.3)'};
-                border-radius: 50%;
-                box-shadow: 0 0 8px ${isVisited ? 'rgba(244, 197, 66, 0.3)' : 'rgba(52, 224, 161, 0.2)'};
-                cursor: pointer;
-                transition: transform 0.2s ease;
+              el.className = `sacred-marker-3d ${isMajorSite ? 'major-site' : ''} ${isImportantSite ? 'important-site' : ''}`;
+              
+              // Structure du marqueur avec couches multiples
+              const markerHTML = `
+                <!-- Beam vertical pour sites majeurs -->
+                ${isMajorSite ? `
+                  <div class="marker-beam" style="
+                    position: absolute;
+                    bottom: 100%;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    width: 2px;
+                    height: 80px;
+                    background: linear-gradient(to top, ${markerColor}, transparent);
+                    opacity: 0.6;
+                    animation: beam-pulse 2s ease-in-out infinite;
+                  "></div>
+                ` : ''}
+                
+                <!-- Particules pour sites importants -->
+                ${isImportantSite ? `
+                  <div class="marker-particles">
+                    <div class="particle" style="--delay: 0s; --color: ${markerColor}"></div>
+                    <div class="particle" style="--delay: 0.5s; --color: ${markerColor}"></div>
+                    <div class="particle" style="--delay: 1s; --color: ${markerColor}"></div>
+                    <div class="particle" style="--delay: 1.5s; --color: ${markerColor}"></div>
+                  </div>
+                ` : ''}
+                
+                <!-- Halos concentriques -->
+                <div class="marker-halo-outer" style="
+                  position: absolute;
+                  width: 40px;
+                  height: 40px;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  border: 2px solid ${markerColor};
+                  border-radius: 50%;
+                  opacity: 0.3;
+                  animation: halo-expand 3s ease-out infinite;
+                "></div>
+                
+                <div class="marker-halo-inner" style="
+                  position: absolute;
+                  width: 28px;
+                  height: 28px;
+                  top: 50%;
+                  left: 50%;
+                  transform: translate(-50%, -50%);
+                  border: 2px solid ${markerColor};
+                  border-radius: 50%;
+                  opacity: 0.5;
+                  animation: halo-expand 2s ease-out infinite 0.5s;
+                "></div>
+                
+                <!-- Point central avec pulsation -->
+                <div class="marker-core" style="
+                  position: relative;
+                  width: 16px;
+                  height: 16px;
+                  background: ${markerColor};
+                  border: 3px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.9)'};
+                  border-radius: 50%;
+                  box-shadow: 
+                    0 0 20px ${markerColor},
+                    0 0 40px ${markerColor}80,
+                    inset 0 0 10px ${markerColor};
+                  animation: marker-pulse 2s ease-in-out infinite;
+                  z-index: 10;
+                "></div>
+                
+                ${isVisited ? `
+                  <div class="marker-checkmark" style="
+                    position: absolute;
+                    top: -8px;
+                    right: -8px;
+                    width: 18px;
+                    height: 18px;
+                    background: #F4C542;
+                    border: 2px solid #0E1B3F;
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 10px;
+                    font-weight: bold;
+                    color: #0E1B3F;
+                    z-index: 20;
+                    animation: checkmark-bounce 0.5s ease-out;
+                  ">✓</div>
+                ` : ''}
               `;
               
-              el.addEventListener('mouseenter', () => {
-                el.style.transform = 'scale(1.2)';
-              });
-              
-              el.addEventListener('mouseleave', () => {
-                el.style.transform = 'scale(1)';
-              });
+              el.innerHTML = markerHTML;
+              el.style.cssText = `
+                position: relative;
+                width: 20px;
+                height: 20px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              `;
 
               const marker = new mapboxgl.Marker({ 
                 element: el,
@@ -796,7 +964,6 @@ useEffect(() => {
                 .setPopup(popup)
                 .addTo(map.current!);
               
-              // Ouvrir le popup au clic ou au tap sur mobile
               el.addEventListener('click', (ev) => {
                 ev.stopPropagation();
                 marker.togglePopup();
