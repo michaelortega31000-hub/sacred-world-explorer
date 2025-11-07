@@ -52,6 +52,11 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
   const animationFrameId = useRef<number | null>(null);
   const hoveredCountryCache = useRef<string | null>(null);
   const sizeObserverRef = useRef<ResizeObserver | null>(null);
+  
+  // Fonction helper pour normaliser les chaînes (sans accents, minuscules)
+  const normalize = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    
   // Fonction pour voler vers des coordonnées spécifiques
   const handleFlyTo = (lat: number, lng: number, zoom: number = 15) => {
     if (map.current && isStyleReadyRef.current) {
@@ -445,20 +450,21 @@ useEffect(() => {
           
           if (filters.religions.length > 0 || filters.types.length > 0) {
             filteredPlaces = mockPlaces.filter(place => {
-              const placeReligion = inferReligionFromPlace(place.type, place.name);
+              // Préférer place.religion explicite, sinon inférer
+              const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
               const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
               
               const typeSelected = filters.types;
-              const normalizedType = place.type.toLowerCase();
-              const textBlob = `${place.name} ${place.description ?? ''} ${place.type}`.toLowerCase();
+              const normalizedType = normalize(place.type);
+              const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
               const matchesType =
                 typeSelected.length === 0 ||
                 typeSelected.some(t => {
-                  const tLower = t.toLowerCase();
-                  if (tLower === 'pyramide') {
-                    return textBlob.includes('pyram');
+                  const tLower = normalize(t);
+                  if (tLower.includes('pyram')) {
+                    return textBlobNorm.includes('pyram');
                   }
-                  // Match partiel bilatéral pour gérer les variantes
+                  // Match partiel bilatéral pour gérer les variantes (église mémorial, etc.)
                   return normalizedType.includes(tLower) || tLower.includes(normalizedType);
                 });
               
@@ -636,6 +642,13 @@ useEffect(() => {
               lng = latRaw;
               lat = lngRaw;
             }
+            
+            // Vérification finale - si toujours invalide, skip ce point
+            if (isNaN(lng) || isNaN(lat) || lng === undefined || lat === undefined ||
+                Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+              console.warn('⚠️ Skipping invalid coordinates', place.id, { lng, lat });
+              return;
+            }
 
             const marker = new mapboxgl.Marker({ 
               element: el,
@@ -659,7 +672,10 @@ useEffect(() => {
             markers.current.push(marker);
           });
           
-          console.log('📍 Monuments affichés:', filteredPlaces.length, 'filtres:', filters);
+          console.log('📍 Monuments affichés:', filteredPlaces.length, 
+            'religions:', filters.religions, 
+            'types:', filters.types, 
+            'sample:', filteredPlaces.slice(0, 5).map(p => ({ id: p.id, name: p.name, type: p.type })));
         });
       }
     };
@@ -889,18 +905,19 @@ useEffect(() => {
             let filteredPlaces = mockPlaces;
             if (filters.religions.length > 0 || filters.types.length > 0) {
               filteredPlaces = mockPlaces.filter(place => {
-                const placeReligion = inferReligionFromPlace(place.type, place.name);
+                // Préférer place.religion explicite, sinon inférer
+                const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
                 const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
 
                 const typeSelected = filters.types;
-                const normalizedType = place.type.toLowerCase();
-                const textBlob = `${place.name} ${place.description ?? ''} ${place.type}`.toLowerCase();
+                const normalizedType = normalize(place.type);
+                const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
                 const matchesType =
                   typeSelected.length === 0 ||
                   typeSelected.some(t => {
-                    const tLower = t.toLowerCase();
-                    if (tLower === 'pyramide') {
-                      return textBlob.includes('pyram');
+                    const tLower = normalize(t);
+                    if (tLower.includes('pyram')) {
+                      return textBlobNorm.includes('pyram');
                     }
                     // Match partiel bilatéral pour gérer les variantes
                     return normalizedType.includes(tLower) || tLower.includes(normalizedType);
@@ -1065,6 +1082,13 @@ useEffect(() => {
                 lng = latRaw;
                 lat = lngRaw;
               }
+              
+              // Vérification finale - si toujours invalide, skip ce point
+              if (isNaN(lng) || isNaN(lat) || lng === undefined || lat === undefined ||
+                  Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+                console.warn('⚠️ Skipping invalid coordinates', place.id, { lng, lat });
+                return;
+              }
 
               const marker = new mapboxgl.Marker({ 
                 element: el,
@@ -1088,7 +1112,10 @@ useEffect(() => {
               markers.current.push(marker);
             });
             
-            console.log('📍 Monuments affichés:', filteredPlaces.length, 'filtres:', filters);
+            console.log('📍 Monuments affichés:', filteredPlaces.length, 
+              'religions:', filters.religions, 
+              'types:', filters.types, 
+              'sample:', filteredPlaces.slice(0, 5).map(p => ({ id: p.id, name: p.name, type: p.type })));
 
             // Restaurer la position de la caméra si elle avait été sauvegardée
             if (savedCameraPosition.current && geolocationEnabled) {
