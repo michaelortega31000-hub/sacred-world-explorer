@@ -45,6 +45,8 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
   const [containerReadyTick, setContainerReadyTick] = useState(0);
+  const [dayNightCycle, setDayNightCycle] = useState(12); // Heure du jour (0-24)
+  const dayNightAnimationRef = useRef<number | null>(null);
   const isStyleReadyRef = useRef(false);
   const pendingFlyTo = useRef<Array<{ lat: number; lng: number; zoom: number }>>([]);
   const hasLoadedMonuments = useRef(false);
@@ -189,14 +191,72 @@ useEffect(() => {
         logger.log('Globe3D: forced resize after style.load');
       }, 0);
       
-      // Atmosphère spatiale ultra-réaliste avec gradient bleu-cyan
-      map.current.setFog({
-        color: 'rgb(15, 30, 60)', // Bleu profond atmosphérique
-        'high-color': 'rgb(70, 200, 255)', // Cyan brillant horizion
-        'horizon-blend': 0.4, // Transition plus prononcée
-        'space-color': 'rgb(2, 5, 15)', // Noir spatial ultra-profond
-        'star-intensity': 0.95 // Étoiles plus visibles
-      });
+      // Fonction pour mettre à jour le cycle jour/nuit
+      const updateDayNightCycle = (hourOfDay: number) => {
+        if (!map.current) return;
+        
+        // Calculer la position du soleil (-180 à 180 degrés)
+        // À midi (12h), le soleil est à 0°, à minuit à 180°/-180°
+        const sunLongitude = (hourOfDay - 12) * 15; // 15° par heure
+        
+        // Intensité de la lumière selon l'heure
+        const isDay = hourOfDay >= 6 && hourOfDay <= 18;
+        const isDawn = hourOfDay >= 5 && hourOfDay < 7;
+        const isDusk = hourOfDay >= 17 && hourOfDay < 19;
+        const isNight = !isDay;
+        
+        // Calculer l'intensité des étoiles (plus visibles la nuit)
+        const starIntensity = isNight ? 0.95 : (isDawn || isDusk ? 0.5 : 0.2);
+        
+        // Couleurs atmosphère selon l'heure
+        let fogColor = 'rgb(15, 30, 60)';
+        let highColor = 'rgb(70, 200, 255)';
+        
+        if (isDawn || isDusk) {
+          fogColor = 'rgb(255, 120, 80)'; // Orange chaud
+          highColor = 'rgb(255, 180, 120)'; // Orange doux
+        } else if (isDay) {
+          fogColor = 'rgb(100, 150, 220)'; // Bleu ciel jour
+          highColor = 'rgb(150, 200, 255)'; // Cyan clair
+        }
+        
+        // Atmosphère spatiale dynamique selon l'heure
+        map.current.setFog({
+          color: fogColor,
+          'high-color': highColor,
+          'horizon-blend': 0.4,
+          'space-color': 'rgb(2, 5, 15)',
+          'star-intensity': starIntensity
+        });
+        
+        // Mettre à jour l'ombre de la nuit
+        if (map.current.getLayer('night-shadow')) {
+          map.current.setPaintProperty('night-shadow', 'fill-opacity', [
+            'interpolate',
+            ['linear'],
+            ['get', 'longitude'],
+            sunLongitude - 90, 0.7, // Côté nuit complet
+            sunLongitude - 45, 0.5, // Terminateur crépuscule
+            sunLongitude, 0, // Plein soleil
+            sunLongitude + 45, 0.5, // Terminateur aube
+            sunLongitude + 90, 0.7 // Côté nuit complet
+          ]);
+        }
+        
+        // Afficher/cacher les lumières des villes selon l'heure
+        if (map.current.getLayer('city-lights')) {
+          const cityLightsOpacity = isNight ? 0.9 : (isDawn || isDusk ? 0.4 : 0);
+          map.current.setPaintProperty('city-lights', 'circle-opacity', cityLightsOpacity);
+        }
+        
+        // Mettre à jour le gradient du terminateur
+        if (map.current.getLayer('terminator-gradient')) {
+          map.current.setPaintProperty('terminator-gradient', 'fill-opacity', isDay ? 0 : 0.3);
+        }
+      };
+      
+      // Atmosphère spatiale initiale
+      updateDayNightCycle(dayNightCycle);
 
       // Amélioration des océans avec gradient de profondeur
       const labelBeforeId = map.current.getLayer('country-label') ? 'country-label' : undefined;
@@ -217,6 +277,206 @@ useEffect(() => {
       // Amélioration des terres - contraste accru
       if (map.current.getLayer('land')) {
         map.current.setPaintProperty('land', 'background-color', '#0a1628');
+      }
+      
+      // === CYCLE JOUR/NUIT - LAYERS ===
+      
+      // 1. Créer une source GeoJSON pour l'ombre de la nuit (hémisphère)
+      if (!map.current.getSource('night-shadow-source')) {
+        // Créer un grand polygone qui couvre tout le globe
+        map.current.addSource('night-shadow-source', {
+          type: 'geojson',
+          data: {
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              type: 'Polygon',
+              coordinates: [[
+                [-180, -90], [180, -90], [180, 90], [-180, 90], [-180, -90]
+              ]]
+            }
+          }
+        });
+      }
+      
+      // Layer d'ombre de la nuit avec gradient basé sur longitude
+      if (!map.current.getLayer('night-shadow')) {
+        map.current.addLayer({
+          id: 'night-shadow',
+          type: 'fill',
+          source: 'night-shadow-source',
+          paint: {
+            'fill-color': '#000033',
+            'fill-opacity': 0.6
+          }
+        }, labelBeforeId);
+      }
+      
+      // 2. Lumières des villes (city lights) - points lumineux sur les grandes villes
+      if (!map.current.getSource('city-lights-source')) {
+        // Données de quelques grandes villes (on pourrait en ajouter plus)
+        const majorCities = [
+          { name: 'Tokyo', coordinates: [139.6917, 35.6895] },
+          { name: 'Delhi', coordinates: [77.1025, 28.7041] },
+          { name: 'Shanghai', coordinates: [121.4737, 31.2304] },
+          { name: 'São Paulo', coordinates: [-46.6333, -23.5505] },
+          { name: 'Mexico City', coordinates: [-99.1332, 19.4326] },
+          { name: 'Cairo', coordinates: [31.2357, 30.0444] },
+          { name: 'Mumbai', coordinates: [72.8777, 19.0760] },
+          { name: 'Beijing', coordinates: [116.4074, 39.9042] },
+          { name: 'Dhaka', coordinates: [90.4125, 23.8103] },
+          { name: 'Osaka', coordinates: [135.5023, 34.6937] },
+          { name: 'New York', coordinates: [-74.0060, 40.7128] },
+          { name: 'Karachi', coordinates: [67.0099, 24.8607] },
+          { name: 'Buenos Aires', coordinates: [-58.3816, -34.6037] },
+          { name: 'Istanbul', coordinates: [28.9784, 41.0082] },
+          { name: 'Kolkata', coordinates: [88.3639, 22.5726] },
+          { name: 'Manila', coordinates: [120.9842, 14.5995] },
+          { name: 'Lagos', coordinates: [3.3792, 6.5244] },
+          { name: 'Rio de Janeiro', coordinates: [-43.1729, -22.9068] },
+          { name: 'Tianjin', coordinates: [117.3616, 39.3434] },
+          { name: 'Kinshasa', coordinates: [15.2663, -4.4419] },
+          { name: 'Guangzhou', coordinates: [113.2644, 23.1291] },
+          { name: 'Los Angeles', coordinates: [-118.2437, 34.0522] },
+          { name: 'Moscow', coordinates: [37.6173, 55.7558] },
+          { name: 'Shenzhen', coordinates: [114.0579, 22.5431] },
+          { name: 'Lahore', coordinates: [74.3587, 31.5204] },
+          { name: 'Bangalore', coordinates: [77.5946, 12.9716] },
+          { name: 'Paris', coordinates: [2.3522, 48.8566] },
+          { name: 'Bogotá', coordinates: [-74.0721, 4.7110] },
+          { name: 'Jakarta', coordinates: [106.8650, -6.2088] },
+          { name: 'Chennai', coordinates: [80.2707, 13.0827] },
+          { name: 'Lima', coordinates: [-77.0428, -12.0464] },
+          { name: 'Bangkok', coordinates: [100.5018, 13.7563] },
+          { name: 'Seoul', coordinates: [126.9780, 37.5665] },
+          { name: 'Nagoya', coordinates: [136.9066, 35.1815] },
+          { name: 'Hyderabad', coordinates: [78.4867, 17.3850] },
+          { name: 'London', coordinates: [-0.1278, 51.5074] },
+          { name: 'Tehran', coordinates: [51.3890, 35.6892] },
+          { name: 'Chicago', coordinates: [-87.6298, 41.8781] },
+          { name: 'Chengdu', coordinates: [104.0665, 30.5728] },
+          { name: 'Nanjing', coordinates: [118.7969, 32.0603] },
+          { name: 'Wuhan', coordinates: [114.2734, 30.5928] },
+          { name: 'Ho Chi Minh City', coordinates: [106.6297, 10.8231] },
+          { name: 'Luanda', coordinates: [13.2343, -8.8383] },
+          { name: 'Ahmedabad', coordinates: [72.5714, 23.0225] },
+          { name: 'Kuala Lumpur', coordinates: [101.6869, 3.1390] },
+          { name: 'Xi\'an', coordinates: [108.9398, 34.3416] },
+          { name: 'Hong Kong', coordinates: [114.1095, 22.3964] },
+          { name: 'Dongguan', coordinates: [113.7518, 23.0209] },
+          { name: 'Hangzhou', coordinates: [120.1551, 30.2741] },
+          { name: 'Foshan', coordinates: [113.1220, 23.0218] },
+          { name: 'Shenyang', coordinates: [123.4328, 41.8057] },
+          { name: 'Riyadh', coordinates: [46.6753, 24.7136] },
+          { name: 'Baghdad', coordinates: [44.3661, 33.3152] },
+          { name: 'Santiago', coordinates: [-70.6693, -33.4489] },
+          { name: 'Surat', coordinates: [72.8311, 21.1702] },
+          { name: 'Madrid', coordinates: [-3.7038, 40.4168] },
+          { name: 'Suzhou', coordinates: [120.5954, 31.2989] },
+          { name: 'Pune', coordinates: [73.8567, 18.5204] },
+          { name: 'Harbin', coordinates: [126.5349, 45.8038] },
+          { name: 'Houston', coordinates: [-95.3698, 29.7604] },
+          { name: 'Dallas', coordinates: [-96.7970, 32.7767] },
+          { name: 'Toronto', coordinates: [-79.3832, 43.6532] },
+          { name: 'Dar es Salaam', coordinates: [39.2083, -6.7924] },
+          { name: 'Miami', coordinates: [-80.1918, 25.7617] },
+          { name: 'Belo Horizonte', coordinates: [-43.9378, -19.9167] },
+          { name: 'Singapore', coordinates: [103.8198, 1.3521] },
+          { name: 'Philadelphia', coordinates: [-75.1652, 39.9526] },
+          { name: 'Atlanta', coordinates: [-84.3880, 33.7490] },
+          { name: 'Fukuoka', coordinates: [130.4017, 33.5904] },
+          { name: 'Khartoum', coordinates: [32.5599, 15.5007] },
+          { name: 'Barcelona', coordinates: [2.1734, 41.3851] },
+          { name: 'Johannesburg', coordinates: [28.0473, -26.2041] },
+          { name: 'Saint Petersburg', coordinates: [30.3351, 59.9311] },
+          { name: 'Qingdao', coordinates: [120.3826, 36.0671] },
+          { name: 'Dalian', coordinates: [121.6147, 38.9140] },
+          { name: 'Washington D.C.', coordinates: [-77.0369, 38.9072] },
+          { name: 'Yangon', coordinates: [96.1951, 16.8661] },
+          { name: 'Alexandria', coordinates: [29.9187, 31.2001] },
+          { name: 'Jinan', coordinates: [117.0008, 36.6512] },
+          { name: 'Guadalajara', coordinates: [-103.3496, 20.6597] }
+        ];
+        
+        map.current.addSource('city-lights-source', {
+          type: 'geojson',
+          data: {
+            type: 'FeatureCollection',
+            features: majorCities.map(city => ({
+              type: 'Feature' as const,
+              properties: { name: city.name },
+              geometry: {
+                type: 'Point' as const,
+                coordinates: city.coordinates
+              }
+            }))
+          }
+        });
+      }
+      
+      // Layer de lumières des villes
+      if (!map.current.getLayer('city-lights')) {
+        map.current.addLayer({
+          id: 'city-lights',
+          type: 'circle',
+          source: 'city-lights-source',
+          paint: {
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              2, 2,
+              5, 4,
+              10, 8
+            ],
+            'circle-color': '#ffdd55',
+            'circle-opacity': 0.9,
+            'circle-blur': 0.5,
+            'circle-stroke-width': 1,
+            'circle-stroke-color': '#ffffff',
+            'circle-stroke-opacity': 0.8
+          }
+        });
+        
+        // Ajouter un halo autour des lumières
+        map.current.addLayer({
+          id: 'city-lights-halo',
+          type: 'circle',
+          source: 'city-lights-source',
+          paint: {
+            'circle-radius': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              2, 6,
+              5, 12,
+              10, 20
+            ],
+            'circle-color': '#ffaa00',
+            'circle-opacity': 0.3,
+            'circle-blur': 1
+          }
+        });
+      }
+      
+      // 3. Gradient du terminateur (ligne jour/nuit)
+      if (!map.current.getLayer('terminator-gradient')) {
+        map.current.addLayer({
+          id: 'terminator-gradient',
+          type: 'fill',
+          source: 'night-shadow-source',
+          paint: {
+            'fill-color': [
+              'interpolate',
+              ['linear'],
+              ['get', 'longitude'],
+              -90, '#ff6600',
+              0, '#ff9944',
+              90, '#ff6600'
+            ],
+            'fill-opacity': 0.3
+          }
+        }, 'night-shadow');
       }
       
       // Layer de reflets sur l'eau (specular highlights)
@@ -708,6 +968,16 @@ useEffect(() => {
     });
 
     spinGlobe();
+    
+    // Animation du cycle jour/nuit (1 jour complet = 2 minutes réelles)
+    const animateDayNight = () => {
+      setDayNightCycle(prev => {
+        const next = prev + 0.1; // Augmenter de 0.1 heure (6 minutes virtuelles)
+        return next >= 24 ? 0 : next;
+      });
+      dayNightAnimationRef.current = requestAnimationFrame(animateDayNight);
+    };
+    dayNightAnimationRef.current = requestAnimationFrame(animateDayNight);
 
     // Click sur un pays - amélioration de la zone cliquable avec animation zoom
     map.current.on('click', (e) => {
@@ -829,6 +1099,9 @@ useEffect(() => {
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
+      if (dayNightAnimationRef.current) {
+        cancelAnimationFrame(dayNightAnimationRef.current);
+      }
       markers.current.forEach(marker => marker.remove());
       map.current?.remove();
       map.current = null;
@@ -847,6 +1120,65 @@ useEffect(() => {
       map.current.getContainer().dispatchEvent(event);
     }
   }, [isPaused]);
+  
+  // Effect pour mettre à jour le cycle jour/nuit dynamiquement
+  useEffect(() => {
+    if (!map.current || !isStyleReadyRef.current) return;
+    
+    // Calculer la position du soleil
+    const sunLongitude = (dayNightCycle - 12) * 15;
+    
+    // Déterminer l'heure du jour
+    const isDay = dayNightCycle >= 6 && dayNightCycle <= 18;
+    const isDawn = dayNightCycle >= 5 && dayNightCycle < 7;
+    const isDusk = dayNightCycle >= 17 && dayNightCycle < 19;
+    const isNight = !isDay;
+    
+    // Intensité des étoiles
+    const starIntensity = isNight ? 0.95 : (isDawn || isDusk ? 0.5 : 0.2);
+    
+    // Couleurs atmosphère
+    let fogColor = 'rgb(15, 30, 60)';
+    let highColor = 'rgb(70, 200, 255)';
+    
+    if (isDawn || isDusk) {
+      fogColor = 'rgb(255, 120, 80)';
+      highColor = 'rgb(255, 180, 120)';
+    } else if (isDay) {
+      fogColor = 'rgb(100, 150, 220)';
+      highColor = 'rgb(150, 200, 255)';
+    }
+    
+    // Mettre à jour le fog
+    try {
+      map.current.setFog({
+        color: fogColor,
+        'high-color': highColor,
+        'horizon-blend': 0.4,
+        'space-color': 'rgb(2, 5, 15)',
+        'star-intensity': starIntensity
+      });
+    } catch (e) {
+      console.warn('Failed to update fog', e);
+    }
+    
+    // Mettre à jour les lumières des villes
+    if (map.current.getLayer('city-lights')) {
+      const cityLightsOpacity = isNight ? 0.9 : (isDawn || isDusk ? 0.4 : 0);
+      map.current.setPaintProperty('city-lights', 'circle-opacity', cityLightsOpacity);
+    }
+    
+    if (map.current.getLayer('city-lights-halo')) {
+      const haloOpacity = isNight ? 0.3 : (isDawn || isDusk ? 0.15 : 0);
+      map.current.setPaintProperty('city-lights-halo', 'circle-opacity', haloOpacity);
+    }
+    
+    // Mettre à jour l'ombre de la nuit (simuler la rotation)
+    if (map.current.getLayer('night-shadow')) {
+      const shadowOpacity = isNight ? 0.65 : (isDawn || isDusk ? 0.3 : 0);
+      map.current.setPaintProperty('night-shadow', 'fill-opacity', shadowOpacity);
+    }
+  }, [dayNightCycle]);
 
   // Effet séparé pour recharger les monuments sans réinitialiser la carte
   useEffect(() => {
@@ -1301,6 +1633,57 @@ useEffect(() => {
       {/* Monument Filter - positioned top right */}
       <div className="absolute top-4 right-4">
         <MonumentFilter onFilterChange={setFilters} />
+      </div>
+      
+      {/* Indicateur du cycle jour/nuit - positioned bottom right above toggle button */}
+      <div className="absolute bottom-20 right-4">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div 
+                className="backdrop-blur-md border-2 rounded-lg px-4 py-2 transition-all duration-300"
+                style={{
+                  background: 'rgba(20, 43, 79, 0.9)',
+                  borderColor: 'rgba(52, 224, 161, 0.3)',
+                  boxShadow: '0 0 15px rgba(244, 197, 66, 0.3)'
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  {/* Icône soleil/lune selon l'heure */}
+                  <div className="text-2xl">
+                    {dayNightCycle >= 6 && dayNightCycle < 18 ? '☀️' : '🌙'}
+                  </div>
+                  
+                  {/* Heure affichée */}
+                  <div className="flex flex-col">
+                    <span className="text-xs text-primary font-semibold">
+                      Cycle Jour/Nuit
+                    </span>
+                    <span className="text-sm font-bold text-foreground">
+                      {Math.floor(dayNightCycle)}:{String(Math.floor((dayNightCycle % 1) * 60)).padStart(2, '0')}
+                    </span>
+                  </div>
+                  
+                  {/* Barre de progression du jour */}
+                  <div className="w-20 h-2 bg-background/50 rounded-full overflow-hidden">
+                    <div 
+                      className="h-full transition-all duration-500"
+                      style={{
+                        width: `${(dayNightCycle / 24) * 100}%`,
+                        background: dayNightCycle >= 6 && dayNightCycle < 18 
+                          ? 'linear-gradient(90deg, #ffdd55, #ff9944)' 
+                          : 'linear-gradient(90deg, #4a5fce, #2ea5ff)'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>Cycle jour/nuit automatique (1 jour = 2 min réelles)</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       {/* Toggle monuments button - positioned bottom right */}

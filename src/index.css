@@ -521,6 +521,17 @@ All colors MUST be HSL.
   }
 }
 
+@keyframes city-light-pulse {
+  0%, 100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.2);
+  }
+}
+
 @keyframes checkmark-bounce {
   0% {
     transform: scale(0);
@@ -570,6 +581,23 @@ All colors MUST be HSL.
   animation: particle-float 2s ease-out infinite;
   animation-delay: var(--delay, 0s);
   box-shadow: 0 0 10px var(--color, #34E0A1);
+}
+
+/* Lumières des villes - animation pulsante */
+.mapboxgl-canvas-container {
+  cursor: default;
+}
+
+/* Animation des lumières des villes la nuit */
+@keyframes city-lights-glow {
+  0%, 100% {
+    opacity: 0.8;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.3);
+  }
 }
 
 .marker-particles .particle:nth-child(1) {
