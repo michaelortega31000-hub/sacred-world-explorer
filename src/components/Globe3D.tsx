@@ -189,13 +189,13 @@ useEffect(() => {
         logger.log('Globe3D: forced resize after style.load');
       }, 0);
       
-      // Atmosphère spatiale ultra-réaliste avec gradient bleu-cyan
+      // Atmosphère spatiale sobre et épurée
       map.current.setFog({
-        color: 'rgb(15, 30, 60)', // Bleu profond atmosphérique
-        'high-color': 'rgb(70, 200, 255)', // Cyan brillant horizion
-        'horizon-blend': 0.4, // Transition plus prononcée
-        'space-color': 'rgb(2, 5, 15)', // Noir spatial ultra-profond
-        'star-intensity': 0.95 // Étoiles plus visibles
+        color: 'rgb(20, 30, 50)', // Bleu neutre
+        'high-color': 'rgb(80, 100, 140)', // Gris-bleu sobre
+        'horizon-blend': 0.2, // Transition douce
+        'space-color': 'rgb(5, 10, 20)', // Noir spatial
+        'star-intensity': 0.8 // Étoiles visibles mais discrètes
       });
 
       // Amélioration des océans avec gradient de profondeur
@@ -661,7 +661,7 @@ useEffect(() => {
     // Animation de rotation automatique du globe - optimisée avec RAF
     let userInteracting = false;
     let isPausedLocal = isPaused;
-    const secondsPerRevolution = 240;
+    const secondsPerRevolution = 480; // Globe fait 1 tour en 8 minutes (2x plus lent)
     const maxSpinZoom = 3;
 
     function spinGlobe() {
@@ -1224,20 +1224,6 @@ useEffect(() => {
         }}
       />
 
-      {/* Phase 2: Aurores boréales subtiles aux pôles */}
-      <div 
-        className="absolute inset-0 pointer-events-none aurora-effect"
-        style={{
-          background: `
-            radial-gradient(ellipse 80% 30% at 50% 0%, rgba(70, 200, 255, 0.2) 0%, transparent 50%),
-            radial-gradient(ellipse 80% 30% at 50% 100%, rgba(123, 47, 247, 0.15) 0%, transparent 50%)
-          `,
-          animation: 'aurora-wave 15s ease-in-out infinite',
-        }}
-      />
-      
-      {/* Atmosphère radiale réaliste autour du globe */}
-      <div className="globe-atmosphere" />
       
       {/* Conteneur Mapbox */}
       <div 
