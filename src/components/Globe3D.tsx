@@ -128,35 +128,7 @@ useEffect(() => {
     }
 
     mapboxgl.accessToken = mapboxToken;
-    
-    const containerHeight = mapContainer.current.clientHeight;
-    const containerWidth = mapContainer.current.clientWidth;
-    
-    logger.log('Globe3D init attempt', 'container size', containerWidth, containerHeight);
-    
-    // Si le conteneur n'a pas de taille, attendre avec ResizeObserver
-    if (containerHeight === 0 || containerWidth === 0) {
-      logger.log('Container has no size yet, waiting with ResizeObserver...');
-      const resizeObserver = new ResizeObserver((entries) => {
-        for (const entry of entries) {
-          if (entry.contentRect.height > 0 && entry.contentRect.width > 0) {
-            logger.log('Container now has size, re-triggering effect');
-            // Force re-render by updating a dummy state or just disconnect and let the effect re-run
-            resizeObserver.disconnect();
-            // La prochaine fois que l'effect s'exécute, la taille sera > 0
-          }
-        }
-      });
-      
-      resizeObserver.observe(mapContainer.current);
-      
-      return () => {
-        resizeObserver.disconnect();
-      };
-    }
-    
-    // Le conteneur a une taille valide, initialiser la carte
-    logger.log('Globe3D initializing map');
+    logger.log('Globe3D init with token, container size:', mapContainer.current.clientWidth, 'x', mapContainer.current.clientHeight);
     
     // Détecter si on est sur mobile
     const isMobile = window.innerWidth < 768;
@@ -1146,7 +1118,7 @@ useEffect(() => {
   };
 
   return (
-    <div className="relative w-full h-[70vh] min-h-[520px]">
+    <div className="relative w-full h-[70vh] min-h-[520px] rounded-xl overflow-hidden">
       {/* Phase 2: Champ d'étoiles animé ultra-immersif */}
       <div 
         className="absolute inset-0 pointer-events-none star-field"
@@ -1181,19 +1153,10 @@ useEffect(() => {
         }}
       />
       
-      {/* Phase 2: Halo lumineux CSS autour du globe */}
+      {/* Conteneur Mapbox */}
       <div 
         ref={mapContainer} 
         className="absolute inset-0 globe-container"
-        style={{ 
-          background: 'transparent',
-          filter: 'brightness(1.05) contrast(1.1)',
-          boxShadow: `
-            0 0 80px rgba(52, 224, 161, 0.15),
-            0 0 120px rgba(244, 197, 66, 0.08)
-          `,
-          borderRadius: '12px'
-        }}
       />
       
       {/* Geolocation button - positioned top left */}
