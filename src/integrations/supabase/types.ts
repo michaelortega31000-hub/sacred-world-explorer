@@ -944,6 +944,48 @@ export type Database = {
         }
         Relationships: []
       }
+      security_logs: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          endpoint: string | null
+          event_type: string
+          id: string
+          ip_address: string | null
+          severity: string
+          status_code: number | null
+          user_agent: string | null
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          endpoint?: string | null
+          event_type: string
+          id?: string
+          ip_address?: string | null
+          severity: string
+          status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          endpoint?: string | null
+          event_type?: string
+          id?: string
+          ip_address?: string | null
+          severity?: string
+          status_code?: number | null
+          user_agent?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       subscription_tiers: {
         Row: {
           created_at: string
@@ -1507,6 +1549,16 @@ export type Database = {
     }
     Functions: {
       check_leaderboard_positions: { Args: never; Returns: undefined }
+      get_security_logs_by_day: {
+        Args: { days?: number }
+        Returns: {
+          critical: number
+          date: string
+          error: number
+          info: number
+          warning: number
+        }[]
+      }
       get_user_payment_info: {
         Args: { _user_id: string }
         Returns: {

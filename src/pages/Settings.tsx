@@ -10,8 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
@@ -23,6 +24,7 @@ const Settings = () => {
   const { toast } = useToast();
   const { i18n } = useTranslation();
   const { userProgress, updateLanguage } = useApp();
+  const { isAdmin } = useIsAdmin();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
@@ -416,6 +418,34 @@ const Settings = () => {
               </div>
             </div>
           </Card>
+
+          {/* Admin Dashboard */}
+          {isAdmin && (
+            <Card className="p-6 bg-card border-border">
+              <div className="flex items-start gap-4">
+                <div className="p-3 bg-primary/10 rounded-full">
+                  <BarChart3 className="w-6 h-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <Label className="text-lg font-semibold text-foreground mb-2 block">
+                    Administration
+                  </Label>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Accéder au tableau de bord administrateur pour surveiller la sécurité
+                  </p>
+                  <Button
+                    onClick={() => navigate('/admin/dashboard')}
+                    variant="outline"
+                    className="w-full"
+                    size="sm"
+                  >
+                    <BarChart3 className="w-4 h-4 mr-2" />
+                    Tableau de bord admin
+                  </Button>
+                </div>
+              </div>
+            </Card>
+          )}
 
           {/* Déconnexion */}
           <Card className="p-6 bg-card border-border">

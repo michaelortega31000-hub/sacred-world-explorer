@@ -28,6 +28,36 @@ function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c; // Distance in meters
 }
 
+async function logSecurityEvent(
+  supabaseClient: any,
+  userId: string | null,
+  eventType: string,
+  severity: string,
+  action: string,
+  details: any,
+  ipAddress: string,
+  userAgent: string,
+  statusCode: number
+) {
+  try {
+    await supabaseClient
+      .from('security_logs')
+      .insert({
+        user_id: userId,
+        event_type: eventType,
+        severity,
+        action,
+        details,
+        ip_address: ipAddress,
+        user_agent: userAgent,
+        endpoint: 'verify-visit',
+        status_code: statusCode
+      });
+  } catch (error) {
+    console.error('Failed to log security event:', error);
+  }
+}
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -110,6 +140,21 @@ serve(async (req) => {
       .maybeSingle();
 
     if (rateLimitData && rateLimitData.count >= 10) {
+      const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
+      const userAgent = req.headers.get('user-agent') || 'unknown';
+      
+      await logSecurityEvent(
+        supabaseClient,
+        user.id,
+        'rate_limit_exceeded',
+        'warning',
+        'visit_verification_rate_limit',
+        { current_count: rateLimitData.count, limit: 10 },
+        clientIp,
+        userAgent,
+        429
+      );
+
       return new Response(
         JSON.stringify({ error: 'Rate limit exceeded. Maximum 10 verifications per day.' }),
         { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -126,7 +171,25 @@ serve(async (req) => {
 
     // Log verification attempt (for fraud detection)
     const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
+    const userAgent = req.headers.get('user-agent') || 'unknown';
     console.log(`Verification attempt - User: ${user.id}, Place: ${placeId}, Distance: ${distance}m, IP: ${clientIp}`);
+
+    // Log security event
+    await logSecurityEvent(
+      supabaseClient,
+      user.id,
+      distance > 500 ? 'suspicious_activity' : 'info',
+      distance > 1000 ? 'warning' : 'info',
+      'visit_verification_attempt',
+      {
+        place_id: placeId,
+        distance_meters: Math.round(distance),
+        success: distance <= 500
+      },
+      clientIp,
+      userAgent,
+      distance > 500 ? 400 : 200
+    );
 
     // Check if within 500m
     if (distance > 500) {

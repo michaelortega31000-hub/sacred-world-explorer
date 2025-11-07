@@ -22,6 +22,7 @@ import UserProfile from "./pages/UserProfile";
 import AvatarsGallery from "./pages/AvatarsGallery";
 import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
+import AdminDashboard from "./pages/AdminDashboard";
 import Reminders from "./pages/Reminders";
 import SecurityTest from "./pages/SecurityTest";
 
@@ -50,6 +51,7 @@ const App = () => (
           <Route path="/country/:countryName" element={<Country />} />
           <Route path="/place/:placeId" element={<PlaceDetail />} />
           <Route path="/admin" element={<Admin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/reminders" element={<Reminders />} />
           <Route path="/security-test" element={<SecurityTest />} />
 
