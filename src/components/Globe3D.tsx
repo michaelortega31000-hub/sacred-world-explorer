@@ -1193,7 +1193,7 @@ useEffect(() => {
       {/* Conteneur Mapbox */}
       <div 
         ref={mapContainer} 
-        className="absolute inset-0 globe-container"
+        className="globe-container"
       />
       
       {/* Geolocation button - positioned top left */}

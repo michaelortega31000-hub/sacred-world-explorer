@@ -371,7 +371,10 @@ All colors MUST be HSL.
 
 /* Globe container with cosmic effects */
 .globe-container {
-  position: relative;
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow: hidden;
   z-index: 2;
 }
