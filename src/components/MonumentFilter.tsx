@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Filter, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,12 +13,21 @@ export interface FilterOptions {
 
 interface MonumentFilterProps {
   onFilterChange: (filters: FilterOptions) => void;
+  externalFilters?: FilterOptions;
 }
 
-const MonumentFilter = ({ onFilterChange }: MonumentFilterProps) => {
+const MonumentFilter = ({ onFilterChange, externalFilters }: MonumentFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedReligions, setSelectedReligions] = useState<Religion[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+
+  // Synchroniser avec des filtres externes (contrôle par le parent)
+  useEffect(() => {
+    if (externalFilters) {
+      setSelectedReligions(externalFilters.religions || []);
+      setSelectedTypes(externalFilters.types || []);
+    }
+  }, [externalFilters]);
 
   const religions: { id: Religion; name: string }[] = [
     { id: 'christianity', name: 'Christianisme' },

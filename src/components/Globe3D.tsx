@@ -1338,17 +1338,27 @@ useEffect(() => {
 
       {/* Monument Filter - positioned top left */}
       <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
-        <MonumentFilter onFilterChange={(f) => { 
-          setFilters(f); 
-          if (!showMonuments && (f.religions.length > 0 || f.types.length > 0)) {
-            setShowMonuments(true);
-          }
-        }} />
+        <MonumentFilter 
+          externalFilters={filters}
+          onFilterChange={(f) => { 
+            setFilters(f); 
+            if (!showMonuments && (f.religions.length > 0 || f.types.length > 0)) {
+              setShowMonuments(true);
+            }
+          }} 
+        />
       </div>
 
       {/* Toggle monuments button - positioned top right */}
       <Button
-        onClick={() => setShowMonuments(!showMonuments)}
+        onClick={() => {
+          const next = !showMonuments;
+          setShowMonuments(next);
+          // Quand on active l'affichage, on montre TOUS les points d'abord
+          if (next) {
+            setFilters({ religions: [], types: [] });
+          }
+        }}
         className="absolute top-2 right-2 sm:top-4 sm:right-4 gap-2 backdrop-blur-md border-2 transition-all duration-300 z-50"
         style={{
           background: showMonuments 
