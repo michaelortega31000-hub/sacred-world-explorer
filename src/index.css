@@ -334,12 +334,12 @@ All colors MUST be HSL.
 /* Globe 3D - Modern Animations */
 @keyframes twinkle-stars {
   0%, 100% {
-    opacity: 1;
+    opacity: 0.8;
     transform: scale(1);
   }
   50% {
-    opacity: 0.6;
-    transform: scale(1.05);
+    opacity: 0.5;
+    transform: scale(1.03);
   }
 }
 
@@ -402,13 +402,13 @@ All colors MUST be HSL.
   z-index: 0;
   pointer-events: none;
   background: 
-    radial-gradient(2px 2px at 20% 30%, white, transparent),
-    radial-gradient(2px 2px at 60% 70%, white, transparent),
-    radial-gradient(1px 1px at 50% 50%, white, transparent),
-    radial-gradient(1px 1px at 80% 10%, white, transparent),
-    radial-gradient(2px 2px at 90% 60%, white, transparent),
-    radial-gradient(1px 1px at 33% 90%, white, transparent),
-    radial-gradient(1px 1px at 15% 60%, white, transparent);
+    radial-gradient(2px 2px at 20% 30%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.5px 1.5px at 60% 70%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1px 1px at 50% 50%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1px 1px at 80% 10%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(2px 2px at 90% 60%, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1px 1px at 33% 90%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(1.5px 1.5px at 15% 60%, rgba(255, 255, 255, 0.7), transparent);
   background-size: 
     200% 200%,
     150% 150%,
