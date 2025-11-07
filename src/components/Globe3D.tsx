@@ -1153,13 +1153,12 @@ useEffect(() => {
         className="absolute inset-0 globe-container"
         style={{ 
           background: 'transparent',
-          filter: 'brightness(1) contrast(1.15) saturate(1.1)',
+          filter: 'brightness(1.05) contrast(1.1)',
           boxShadow: `
-            inset 0 0 100px rgba(52, 224, 161, 0.15),
-            0 0 150px rgba(52, 224, 161, 0.2),
-            0 0 200px rgba(244, 197, 66, 0.1)
+            0 0 80px rgba(52, 224, 161, 0.15),
+            0 0 120px rgba(244, 197, 66, 0.08)
           `,
-          borderRadius: '50%'
+          borderRadius: '12px'
         }}
       />
       
