@@ -90,6 +90,36 @@ serve(async (req) => {
       );
     }
 
+    // Check if user is banned
+    const { data: isBanned, error: banCheckError } = await supabaseClient
+      .rpc('is_user_banned', { p_user_id: user.id });
+
+    if (banCheckError) {
+      console.error('Error checking ban status:', banCheckError);
+    }
+
+    if (isBanned) {
+      const clientIp = req.headers.get('x-forwarded-for') || 'unknown';
+      const userAgent = req.headers.get('user-agent') || 'unknown';
+      
+      await logSecurityEvent(
+        supabaseClient,
+        user.id,
+        'unauthorized_access',
+        'error',
+        'banned_user_access_attempt',
+        { action: 'visit_verification' },
+        clientIp,
+        userAgent,
+        403
+      );
+
+      return new Response(
+        JSON.stringify({ error: 'Account suspended. Please contact support.' }),
+        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const body: VerifyVisitRequest = await req.json();
     const { placeId, placeCoordinates, userLat, userLon } = body;
 
@@ -190,6 +220,11 @@ serve(async (req) => {
       userAgent,
       distance > 500 ? 400 : 200
     );
+
+    // Check for auto-ban if suspicious activity
+    if (distance > 1000) {
+      await supabaseClient.rpc('check_and_ban_user', { p_user_id: user.id });
+    }
 
     // Check if within 500m
     if (distance > 500) {

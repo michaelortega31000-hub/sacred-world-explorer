@@ -1,12 +1,13 @@
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Shield, Activity, Users, Clock, BarChart3 } from 'lucide-react';
+import { Shield, Activity, Users, Clock, BarChart3, Ban } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import Header from '@/components/Header';
 import DashboardTab from '@/components/admin/DashboardTab';
 import SecurityLogsTab from '@/components/admin/SecurityLogsTab';
 import UsersManagementTab from '@/components/admin/UsersManagementTab';
 import RateLimitsTab from '@/components/admin/RateLimitsTab';
+import BansManagementTab from '@/components/admin/BansManagementTab';
 
 const AdminDashboard = () => {
   const { isAdmin, loading } = useIsAdmin();
@@ -39,7 +40,7 @@ const AdminDashboard = () => {
         </div>
 
         <Tabs defaultValue="dashboard" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
+          <TabsList className="grid w-full grid-cols-5 lg:w-auto lg:inline-grid">
             <TabsTrigger value="dashboard" className="gap-2">
               <BarChart3 className="h-4 w-4" />
               Dashboard
@@ -51,6 +52,10 @@ const AdminDashboard = () => {
             <TabsTrigger value="users" className="gap-2">
               <Users className="h-4 w-4" />
               Utilisateurs
+            </TabsTrigger>
+            <TabsTrigger value="bans" className="gap-2">
+              <Ban className="h-4 w-4" />
+              Bannissements
             </TabsTrigger>
             <TabsTrigger value="rate-limits" className="gap-2">
               <Clock className="h-4 w-4" />
@@ -68,6 +73,10 @@ const AdminDashboard = () => {
 
           <TabsContent value="users">
             <UsersManagementTab />
+          </TabsContent>
+
+          <TabsContent value="bans">
+            <BansManagementTab />
           </TabsContent>
 
           <TabsContent value="rate-limits">

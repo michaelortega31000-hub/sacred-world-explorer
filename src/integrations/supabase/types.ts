@@ -1055,6 +1055,48 @@ export type Database = {
         }
         Relationships: []
       }
+      user_bans: {
+        Row: {
+          ban_reason: string
+          banned_at: string
+          banned_by: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          strike_count: number
+          unban_reason: string | null
+          unbanned_at: string | null
+          unbanned_by: string | null
+          user_id: string
+        }
+        Insert: {
+          ban_reason: string
+          banned_at?: string
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          strike_count?: number
+          unban_reason?: string | null
+          unbanned_at?: string | null
+          unbanned_by?: string | null
+          user_id: string
+        }
+        Update: {
+          ban_reason?: string
+          banned_at?: string
+          banned_by?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          strike_count?: number
+          unban_reason?: string | null
+          unbanned_at?: string | null
+          unbanned_by?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_custom_avatars: {
         Row: {
           avatar_url: string
@@ -1548,6 +1590,7 @@ export type Database = {
       }
     }
     Functions: {
+      check_and_ban_user: { Args: { p_user_id: string }; Returns: undefined }
       check_leaderboard_positions: { Args: never; Returns: undefined }
       get_security_logs_by_day: {
         Args: { days?: number }
@@ -1575,6 +1618,7 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_user_banned: { Args: { p_user_id: string }; Returns: boolean }
       set_active_avatar: { Args: { p_avatar_id: string }; Returns: undefined }
       unlock_level_rewards: {
         Args: { p_new_level: number; p_user_id: string }
