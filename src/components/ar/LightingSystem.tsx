@@ -34,17 +34,17 @@ export const LightingSystem = ({ color, intensity, unlocked }: LightingSystemPro
   });
 
   const normalizedIntensity = intensity / 100;
-  const lightIntensity = unlocked ? normalizedIntensity * 2 : normalizedIntensity * 0.5;
+  const lightIntensity = unlocked ? normalizedIntensity * 3 : normalizedIntensity * 0.8;
 
   return (
     <>
       {/* Ambient light for base illumination */}
-      <ambientLight intensity={0.3} />
+      <ambientLight intensity={0.4} />
 
-      {/* Main directional light */}
+      {/* Main directional light - more intense */}
       <directionalLight
         position={[5, 5, 5]}
-        intensity={0.8}
+        intensity={1.2}
         color={color}
         castShadow
       />
@@ -75,13 +75,13 @@ export const LightingSystem = ({ color, intensity, unlocked }: LightingSystemPro
         decay={2}
       />
 
-      {/* Spotlight from above (only when unlocked) */}
+      {/* Spotlight from above (only when unlocked) - more dramatic */}
       {unlocked && (
         <spotLight
           position={[0, 8, 0]}
-          angle={0.3}
-          penumbra={0.5}
-          intensity={lightIntensity * 1.5}
+          angle={0.35}
+          penumbra={0.6}
+          intensity={lightIntensity * 2.5}
           color={color}
           castShadow
         />

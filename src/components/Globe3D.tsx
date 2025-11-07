@@ -155,10 +155,10 @@ useEffect(() => {
     const isMobile = window.innerWidth < 768;
     
     // Initialiser la carte en mode globe - vue 3D immersive moderne
-    // Style dark-v11 pour rendu moderne avec fond sombre
+    // Style satellite-streets-v12 pour texture réaliste de la Terre
     map.current = new mapboxgl.Map({
       container: containerEl,
-      style: 'mapbox://styles/mapbox/dark-v11',
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
       projection: { name: 'globe' },
       zoom: isMobile ? 1.8 : 2.2,
       center: [10, 45],
@@ -189,29 +189,29 @@ useEffect(() => {
         logger.log('Globe3D: forced resize after style.load');
       }, 0);
       
-      // Atmosphère spatiale améliorée avec couleurs plus riches
+      // Atmosphère spatiale ultra-réaliste avec gradient bleu-cyan
       map.current.setFog({
-        color: 'rgb(8, 15, 35)', // Espace profond plus sombre
-        'high-color': 'rgb(52, 224, 161)', // Turquoise éclatant
-        'horizon-blend': 0.15, // Transition plus douce
-        'space-color': 'rgb(5, 10, 25)', // Noir spatial profond
-        'star-intensity': 0.85 // Plus d'étoiles
+        color: 'rgb(15, 30, 60)', // Bleu profond atmosphérique
+        'high-color': 'rgb(70, 200, 255)', // Cyan brillant horizion
+        'horizon-blend': 0.4, // Transition plus prononcée
+        'space-color': 'rgb(2, 5, 15)', // Noir spatial ultra-profond
+        'star-intensity': 0.95 // Étoiles plus visibles
       });
 
       // Amélioration des océans avec gradient de profondeur
       const labelBeforeId = map.current.getLayer('country-label') ? 'country-label' : undefined;
 
-      // Océans avec gradient turquoise et reflets
+      // Océans avec shimmer et reflets dynamiques
       if (map.current.getLayer('water')) {
         map.current.setPaintProperty('water', 'fill-color', [
           'interpolate',
           ['linear'],
           ['zoom'],
-          0, '#1a3d5c', // Bleu profond au zoom éloigné
-          5, '#2EA5FF', // Turquoise au zoom proche
-          10, '#4ecdc4' // Cyan clair au zoom maximal
+          0, '#0a2540', // Bleu océan profond
+          5, '#1e5a8e', // Bleu marine
+          10, '#2ea5ff' // Cyan brillant
         ]);
-        map.current.setPaintProperty('water', 'fill-opacity', 0.7);
+        map.current.setPaintProperty('water', 'fill-opacity', 0.85);
       }
 
       // Amélioration des terres - contraste accru
@@ -261,7 +261,7 @@ useEffect(() => {
         } as any);
       }
 
-      // Layer de frontières avec effet glow
+      // Layer de frontières avec effet néon cyan-violet futuriste
       if (!map.current.getLayer('country-boundaries-glow')) {
         map.current.addLayer({
           id: 'country-boundaries-glow',
@@ -269,10 +269,33 @@ useEffect(() => {
           source: 'country-boundaries',
           'source-layer': 'country_boundaries',
           paint: {
-            'line-color': '#34E0A1',
-            'line-width': 1.5,
-            'line-opacity': 0.3,
-            'line-blur': 2
+            'line-color': [
+              'interpolate',
+              ['linear'],
+              ['zoom'],
+              0, '#46c8ff', // Cyan brillant de loin
+              5, '#7b2ff7', // Violet néon en zoom
+              10, '#ff00ff' // Magenta futuriste
+            ],
+            'line-width': 2,
+            'line-opacity': 0.5,
+            'line-blur': 5
+          }
+        } as any);
+      }
+      
+      // Seconde ligne interne plus fine et brillante
+      if (!map.current.getLayer('country-boundaries-inner')) {
+        map.current.addLayer({
+          id: 'country-boundaries-inner',
+          type: 'line',
+          source: 'country-boundaries',
+          'source-layer': 'country_boundaries',
+          paint: {
+            'line-color': '#ffffff',
+            'line-width': 0.5,
+            'line-opacity': 0.8,
+            'line-blur': 1
           }
         } as any);
       }
@@ -488,65 +511,84 @@ useEffect(() => {
             
             const markerHTML = `
               ${isMajorSite ? `
-                <div class="marker-beam" style="
+                <div class="marker-hologram-beam" style="
                   position: absolute;
                   bottom: 100%;
                   left: 50%;
                   transform: translateX(-50%);
-                  width: 2px;
-                  height: 80px;
+                  width: 3px;
+                  height: 120px;
                   background: linear-gradient(to top, ${markerColor}, transparent);
-                  opacity: 0.6;
+                  opacity: 0.8;
                   animation: beam-pulse 2s ease-in-out infinite;
+                  box-shadow: 0 0 15px ${markerColor}, 0 0 30px ${markerColor}80;
                 "></div>
               ` : ''}
               
               ${isImportantSite ? `
                 <div class="marker-particles">
-                  <div class="particle" style="--delay: 0s; --color: ${markerColor}"></div>
-                  <div class="particle" style="--delay: 0.5s; --color: ${markerColor}"></div>
-                  <div class="particle" style="--delay: 1s; --color: ${markerColor}"></div>
-                  <div class="particle" style="--delay: 1.5s; --color: ${markerColor}"></div>
+                  <div class="particle" style="--delay: 0s; --color: ${markerColor}; --x: 10px; --y: -25px"></div>
+                  <div class="particle" style="--delay: 0.4s; --color: ${markerColor}; --x: -12px; --y: -28px"></div>
+                  <div class="particle" style="--delay: 0.8s; --color: ${markerColor}; --x: 15px; --y: -30px"></div>
+                  <div class="particle" style="--delay: 1.2s; --color: ${markerColor}; --x: -8px; --y: -35px"></div>
+                  <div class="particle" style="--delay: 1.6s; --color: ${markerColor}; --x: 0px; --y: -40px"></div>
                 </div>
               ` : ''}
               
               <div class="marker-halo-outer" style="
                 position: absolute;
-                width: 40px;
-                height: 40px;
+                width: 50px;
+                height: 50px;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                border: 2px solid ${markerColor};
+                border: 3px solid ${markerColor};
                 border-radius: 50%;
-                opacity: 0.3;
+                opacity: 0.4;
                 animation: halo-expand 3s ease-out infinite;
+                box-shadow: 0 0 20px ${markerColor}80;
               "></div>
               
               <div class="marker-halo-inner" style="
                 position: absolute;
-                width: 28px;
-                height: 28px;
+                width: 32px;
+                height: 32px;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
                 border: 2px solid ${markerColor};
                 border-radius: 50%;
-                opacity: 0.5;
+                opacity: 0.6;
                 animation: halo-expand 2s ease-out infinite 0.5s;
+                box-shadow: 0 0 15px ${markerColor}CC;
+              "></div>
+              
+              <div class="marker-hologram" style="
+                position: absolute;
+                width: 24px;
+                height: 40px;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(180deg, transparent 0%, ${markerColor}40 30%, ${markerColor}90 50%, ${markerColor}40 70%, transparent 100%);
+                border-radius: 12px;
+                opacity: 0.7;
+                animation: hologram-pulse 3s ease-in-out infinite;
+                pointer-events: none;
               "></div>
               
               <div class="marker-core" style="
                 position: relative;
-                width: 16px;
-                height: 16px;
+                width: 18px;
+                height: 18px;
                 background: ${markerColor};
-                border: 3px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.9)'};
+                border: 3px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.95)'};
                 border-radius: 50%;
                 box-shadow: 
-                  0 0 20px ${markerColor},
-                  0 0 40px ${markerColor}80,
-                  inset 0 0 10px ${markerColor};
+                  0 0 25px ${markerColor},
+                  0 0 50px ${markerColor}90,
+                  inset 0 0 12px ${markerColor},
+                  0 0 80px ${markerColor}40;
                 animation: marker-pulse 2s ease-in-out infinite;
                 z-index: 10;
               "></div>
@@ -554,21 +596,22 @@ useEffect(() => {
               ${isVisited ? `
                 <div class="marker-checkmark" style="
                   position: absolute;
-                  top: -8px;
-                  right: -8px;
-                  width: 18px;
-                  height: 18px;
-                  background: #F4C542;
-                  border: 2px solid #0E1B3F;
+                  top: -10px;
+                  right: -10px;
+                  width: 20px;
+                  height: 20px;
+                  background: linear-gradient(135deg, #F4C542 0%, #ffdd77 100%);
+                  border: 3px solid #0E1B3F;
                   border-radius: 50%;
                   display: flex;
                   align-items: center;
                   justify-content: center;
-                  font-size: 10px;
+                  font-size: 11px;
                   font-weight: bold;
                   color: #0E1B3F;
                   z-index: 20;
                   animation: checkmark-bounce 0.5s ease-out;
+                  box-shadow: 0 0 15px #F4C542, 0 4px 10px rgba(0,0,0,0.3);
                 ">✓</div>
               ` : ''}
             `;
@@ -724,15 +767,18 @@ useEffect(() => {
           // Calculer le centre approximatif du pays depuis les coordonnées du clic
           const lngLat = e.lngLat;
           
-          // Animation de zoom vers le pays
+          // Animation de zoom vers le pays avec easing organique
           map.current.flyTo({
             center: [lngLat.lng, lngLat.lat],
             zoom: 5, // Zoom assez proche pour voir le pays
             pitch: 45, // Angle 3D
             bearing: 0,
-            duration: 1800, // Animation de 1.8 secondes
+            duration: 2200, // Animation fluide de 2.2 secondes
             essential: true,
-            easing: (t) => t * (2 - t) // Easing smooth (ease-out-quad)
+            easing: (t) => {
+              // Cubic bezier (0.25, 0.46, 0.45, 0.94) - ease-out-quad amélioré
+              return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+            }
           });
           
           // Attendre la fin de l'animation avant de naviguer
@@ -1183,12 +1229,15 @@ useEffect(() => {
         className="absolute inset-0 pointer-events-none aurora-effect"
         style={{
           background: `
-            radial-gradient(ellipse 80% 30% at 50% 0%, rgba(52, 224, 161, 0.15) 0%, transparent 50%),
-            radial-gradient(ellipse 80% 30% at 50% 100%, rgba(52, 224, 161, 0.12) 0%, transparent 50%)
+            radial-gradient(ellipse 80% 30% at 50% 0%, rgba(70, 200, 255, 0.2) 0%, transparent 50%),
+            radial-gradient(ellipse 80% 30% at 50% 100%, rgba(123, 47, 247, 0.15) 0%, transparent 50%)
           `,
           animation: 'aurora-wave 15s ease-in-out infinite',
         }}
       />
+      
+      {/* Atmosphère radiale réaliste autour du globe */}
+      <div className="globe-atmosphere" />
       
       {/* Conteneur Mapbox */}
       <div 

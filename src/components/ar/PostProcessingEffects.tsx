@@ -17,19 +17,19 @@ export const PostProcessingEffects = ({
   // Normalize intensity from 0-100 to 0-1
   const normalizedIntensity = intensity / 100;
   
-  // Stronger effects when unlocked
-  const bloomIntensity = unlocked ? normalizedIntensity * 1.5 : normalizedIntensity * 0.5;
-  const dofStrength = unlocked ? 0.02 : 0.01;
-  const chromaticAberrationStrength = unlocked ? 0.002 : 0.001;
+  // Stronger, more cinematic effects when unlocked
+  const bloomIntensity = unlocked ? normalizedIntensity * 2.5 : normalizedIntensity * 0.8;
+  const dofStrength = unlocked ? 0.03 : 0.015;
+  const chromaticAberrationStrength = unlocked ? 0.004 : 0.002;
 
   return (
     <EffectComposer multisampling={8}>
       {/* Bloom effect - creates glowing halos around bright areas */}
       <Bloom
         intensity={bloomIntensity}
-        luminanceThreshold={0.2}
-        luminanceSmoothing={0.9}
-        radius={0.8}
+        luminanceThreshold={0.15}
+        luminanceSmoothing={0.95}
+        radius={1.0}
         mipmapBlur
       />
       
