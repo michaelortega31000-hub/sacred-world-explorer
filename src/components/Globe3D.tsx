@@ -458,7 +458,8 @@ useEffect(() => {
                   if (tLower === 'pyramide') {
                     return textBlob.includes('pyram');
                   }
-                  return tLower === normalizedType;
+                  // Match partiel bilatéral pour gérer les variantes
+                  return normalizedType.includes(tLower) || tLower.includes(normalizedType);
                 });
               
               return matchesReligion && matchesType;
@@ -627,13 +628,22 @@ useEffect(() => {
               justify-content: center;
             `;
 
+            // Validation et correction des coordonnées si nécessaire
+            const [lngRaw, latRaw] = place.coordinates;
+            let lng = lngRaw, lat = latRaw;
+            if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) {
+              console.warn('⚠️ Invalid coord order, swapping', place.id, place.coordinates);
+              lng = latRaw;
+              lat = lngRaw;
+            }
+
             const marker = new mapboxgl.Marker({ 
               element: el,
               anchor: 'center',
               pitchAlignment: 'map',
               rotationAlignment: 'map'
             })
-              .setLngLat([place.coordinates[0], place.coordinates[1]])
+              .setLngLat([lng, lat])
               .setPopup(popup)
               .addTo(map.current!);
             
@@ -648,6 +658,8 @@ useEffect(() => {
             
             markers.current.push(marker);
           });
+          
+          console.log('📍 Monuments affichés:', filteredPlaces.length, 'filtres:', filters);
         });
       }
     };
@@ -890,7 +902,8 @@ useEffect(() => {
                     if (tLower === 'pyramide') {
                       return textBlob.includes('pyram');
                     }
-                    return tLower === normalizedType;
+                    // Match partiel bilatéral pour gérer les variantes
+                    return normalizedType.includes(tLower) || tLower.includes(normalizedType);
                   });
 
                 return matchesReligion && matchesType;
@@ -1044,13 +1057,22 @@ useEffect(() => {
                 justify-content: center;
               `;
 
+              // Validation et correction des coordonnées si nécessaire
+              const [lngRaw, latRaw] = place.coordinates;
+              let lng = lngRaw, lat = latRaw;
+              if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) {
+                console.warn('⚠️ Invalid coord order, swapping', place.id, place.coordinates);
+                lng = latRaw;
+                lat = lngRaw;
+              }
+
               const marker = new mapboxgl.Marker({ 
                 element: el,
                 anchor: 'center',
                 pitchAlignment: 'map',
                 rotationAlignment: 'map'
               })
-                .setLngLat([place.coordinates[0], place.coordinates[1]])
+                .setLngLat([lng, lat])
                 .setPopup(popup)
                 .addTo(map.current!);
               
@@ -1065,6 +1087,8 @@ useEffect(() => {
               
               markers.current.push(marker);
             });
+            
+            console.log('📍 Monuments affichés:', filteredPlaces.length, 'filtres:', filters);
 
             // Restaurer la position de la caméra si elle avait été sauvegardée
             if (savedCameraPosition.current && geolocationEnabled) {
@@ -1287,7 +1311,12 @@ useEffect(() => {
 
       {/* Monument Filter - positioned top left */}
       <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
-        <MonumentFilter onFilterChange={setFilters} />
+        <MonumentFilter onFilterChange={(f) => { 
+          setFilters(f); 
+          if (!showMonuments && (f.religions.length > 0 || f.types.length > 0)) {
+            setShowMonuments(true);
+          }
+        }} />
       </div>
 
       {/* Toggle monuments button - positioned top right */}
