@@ -90,18 +90,21 @@ useEffect(() => {
   }, [isPaused, onPausedChange]);
 
   useEffect(() => {
+    // Token par défaut mis à jour
+    const defaultToken = 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
+    
     // Essayer de récupérer depuis l'env
-    const envToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN;
+    const envToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || import.meta.env.VITE_MAPBOX_TOKEN;
     if (envToken) {
       setMapboxToken(envToken);
+      localStorage.setItem('mapbox_token', envToken);
     } else {
       // Vérifier le localStorage
       const savedToken = localStorage.getItem('mapbox_token');
       if (savedToken) {
         setMapboxToken(savedToken);
       } else {
-        // Token par défaut
-        const defaultToken = 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
+        // Utiliser et sauvegarder le token par défaut
         setMapboxToken(defaultToken);
         localStorage.setItem('mapbox_token', defaultToken);
       }

@@ -307,7 +307,10 @@ const LocationsTab = () => {
       return;
     }
 
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || 
+                          import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN ||
+                          localStorage.getItem('mapbox_token') ||
+                          'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
     if (!mapboxToken) {
       console.warn('Mapbox token not configured');
       return;
@@ -506,7 +509,10 @@ const LocationsTab = () => {
     
     setLoadingPOIs(true);
     const foundPOIs: POI[] = [];
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || 
+                        import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN ||
+                        localStorage.getItem('mapbox_token') ||
+                        'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
 
     if (!mapboxToken) {
       console.warn('Mapbox token not configured');

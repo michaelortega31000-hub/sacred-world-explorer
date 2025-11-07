@@ -14,7 +14,10 @@ const TripRouteMap = ({ places, savedPOIs = [], onMapReady }: TripRouteMapProps)
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const poiMarkers = useRef<mapboxgl.Marker[]>([]);
-  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN;
+  const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || 
+                      import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN ||
+                      localStorage.getItem('mapbox_token') ||
+                      'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
 
   // Helper to get POI icon SVG and color
   const getPOIIconConfig = (type: string) => {
