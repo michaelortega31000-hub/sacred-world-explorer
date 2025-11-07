@@ -183,6 +183,12 @@ useEffect(() => {
       // Le style est prêt
       isStyleReadyRef.current = true;
       
+      // Force un resize initial pour garantir le rendu
+      setTimeout(() => {
+        map.current?.resize();
+        logger.log('Globe3D: forced resize after style.load');
+      }, 0);
+      
       // Atmosphère spatiale améliorée avec couleurs plus riches
       map.current.setFog({
         color: 'rgb(8, 15, 35)', // Espace profond plus sombre
@@ -772,13 +778,16 @@ useEffect(() => {
 
     // Nettoyage
     return () => {
+      sizeObserverRef.current?.disconnect();
+      sizeObserverRef.current = null;
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
       }
       markers.current.forEach(marker => marker.remove());
       map.current?.remove();
+      map.current = null;
     };
-  }, [navigate, mapboxToken, showTokenInput, tripPlaces]); // Removed isPaused from deps
+  }, [navigate, mapboxToken, showTokenInput, tripPlaces, containerReadyTick]); // Removed isPaused from deps
 
   // Separate effect to handle isPaused changes without re-initializing the map
   useEffect(() => {
