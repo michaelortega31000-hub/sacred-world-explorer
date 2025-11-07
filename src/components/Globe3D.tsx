@@ -201,17 +201,17 @@ useEffect(() => {
       // Amélioration des océans avec gradient de profondeur
       const labelBeforeId = map.current.getLayer('country-label') ? 'country-label' : undefined;
 
-      // Océans avec shimmer et reflets dynamiques
+      // Océans équilibrés avec shimmer harmonieux
       if (map.current.getLayer('water')) {
         map.current.setPaintProperty('water', 'fill-color', [
           'interpolate',
           ['linear'],
           ['zoom'],
-          0, '#0a2540', // Bleu océan profond
-          5, '#1e5a8e', // Bleu marine
-          10, '#2ea5ff' // Cyan brillant
+          0, '#0d2d4a', // Bleu océan équilibré
+          5, '#1a4d7a', // Bleu marine modéré
+          10, '#2682c8' // Bleu-cyan harmonieux
         ]);
-        map.current.setPaintProperty('water', 'fill-opacity', 0.85);
+        map.current.setPaintProperty('water', 'fill-opacity', 0.75);
       }
 
       // Amélioration des terres - contraste accru
