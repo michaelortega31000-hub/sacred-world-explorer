@@ -4,12 +4,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Ban, UserX, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Ban, UserX, CheckCircle, AlertTriangle, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const BansManagementTab = () => {
   const { toast } = useToast();
@@ -19,7 +20,13 @@ const BansManagementTab = () => {
     banId: null,
     userId: null
   });
+  const [manualBanDialog, setManualBanDialog] = useState<{ open: boolean; userId: string | null }>({
+    open: false,
+    userId: null
+  });
   const [unbanReason, setUnbanReason] = useState('');
+  const [banReason, setBanReason] = useState('');
+  const [banDuration, setBanDuration] = useState<string>('24');
 
   const { data: bans, isLoading } = useQuery({
     queryKey: ['admin-bans'],
@@ -76,9 +83,78 @@ const BansManagementTab = () => {
     }
   });
 
+  const manualBanMutation = useMutation({
+    mutationFn: async ({ userId, reason, durationHours }: { userId: string; reason: string; durationHours: number | null }) => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('Not authenticated');
+
+      const expiresAt = durationHours ? new Date(Date.now() + durationHours * 60 * 60 * 1000).toISOString() : null;
+
+      const { error } = await supabase
+        .from('user_bans')
+        .insert({
+          user_id: userId,
+          ban_reason: reason,
+          strike_count: 0,
+          is_active: true,
+          banned_by: user.id,
+          ban_duration_hours: durationHours,
+          expires_at: expiresAt
+        });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-bans'] });
+      toast({
+        title: 'Utilisateur banni',
+        description: 'L\'utilisateur ne peut plus accéder à l\'application.'
+      });
+      setManualBanDialog({ open: false, userId: null });
+      setBanReason('');
+      setBanDuration('24');
+    },
+    onError: (error) => {
+      console.error('Ban error:', error);
+      toast({
+        title: 'Erreur',
+        description: 'Impossible de bannir l\'utilisateur.',
+        variant: 'destructive'
+      });
+    }
+  });
+
   const handleUnban = () => {
     if (!unbanDialog.banId || !unbanReason.trim()) return;
     unbanMutation.mutate({ banId: unbanDialog.banId, reason: unbanReason });
+  };
+
+  const handleManualBan = () => {
+    if (!manualBanDialog.userId || !banReason.trim()) return;
+    const durationHours = banDuration === 'permanent' ? null : parseInt(banDuration);
+    manualBanMutation.mutate({ 
+      userId: manualBanDialog.userId, 
+      reason: banReason,
+      durationHours
+    });
+  };
+
+  const getBanTypeLabel = (ban: any) => {
+    if (!ban.ban_duration_hours) {
+      return <Badge variant="destructive">Permanent</Badge>;
+    }
+    
+    if (ban.expires_at && new Date(ban.expires_at) > new Date()) {
+      const hoursLeft = Math.ceil((new Date(ban.expires_at).getTime() - Date.now()) / (1000 * 60 * 60));
+      return (
+        <Badge variant="secondary" className="gap-1">
+          <Clock className="h-3 w-3" />
+          {hoursLeft}h restantes
+        </Badge>
+      );
+    }
+    
+    return <Badge variant="outline">Expiré</Badge>;
   };
 
   return (
@@ -91,7 +167,7 @@ const BansManagementTab = () => {
           </CardTitle>
           <p className="text-sm text-muted-foreground mt-2">
             <AlertTriangle className="h-4 w-4 inline mr-1" />
-            Système automatique : 3 activités suspectes en 24h = bannissement
+            Système automatique : 3 strikes = 24h, 4 strikes = 7j, 5+ strikes = permanent
           </p>
         </CardHeader>
         <CardContent>
@@ -100,10 +176,11 @@ const BansManagementTab = () => {
               <TableHeader>
                 <TableRow>
                   <TableHead>Utilisateur</TableHead>
+                  <TableHead>Type</TableHead>
                   <TableHead>Raison</TableHead>
                   <TableHead>Strikes</TableHead>
                   <TableHead>Banni le</TableHead>
-                  <TableHead>Banni par</TableHead>
+                  <TableHead>Expire le</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Actions</TableHead>
                 </TableRow>
@@ -111,13 +188,13 @@ const BansManagementTab = () => {
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8">
+                    <TableCell colSpan={8} className="text-center py-8">
                       Chargement...
                     </TableCell>
                   </TableRow>
                 ) : bans?.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+                    <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
                       Aucun bannissement
                     </TableCell>
                   </TableRow>
@@ -133,6 +210,9 @@ const BansManagementTab = () => {
                             {ban.user_id.slice(0, 8)}...
                           </div>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                        {getBanTypeLabel(ban)}
                       </TableCell>
                       <TableCell className="max-w-xs">
                         <div className="text-sm">{ban.ban_reason}</div>
@@ -151,7 +231,13 @@ const BansManagementTab = () => {
                         {new Date(ban.banned_at).toLocaleString('fr-FR')}
                       </TableCell>
                       <TableCell className="text-sm">
-                        {ban.banned_by_profile?.username || 'Système'}
+                        {ban.expires_at ? (
+                          <span className={new Date(ban.expires_at) < new Date() ? 'text-muted-foreground' : 'text-warning'}>
+                            {new Date(ban.expires_at).toLocaleString('fr-FR')}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground">Jamais</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {ban.is_active ? (

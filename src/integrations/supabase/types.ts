@@ -1057,10 +1057,12 @@ export type Database = {
       }
       user_bans: {
         Row: {
+          ban_duration_hours: number | null
           ban_reason: string
           banned_at: string
           banned_by: string | null
           created_at: string
+          expires_at: string | null
           id: string
           is_active: boolean
           strike_count: number
@@ -1070,10 +1072,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ban_duration_hours?: number | null
           ban_reason: string
           banned_at?: string
           banned_by?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_active?: boolean
           strike_count?: number
@@ -1083,10 +1087,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ban_duration_hours?: number | null
           ban_reason?: string
           banned_at?: string
           banned_by?: string | null
           created_at?: string
+          expires_at?: string | null
           id?: string
           is_active?: boolean
           strike_count?: number
@@ -1619,6 +1625,7 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_user_banned: { Args: { p_user_id: string }; Returns: boolean }
+      process_expired_bans: { Args: never; Returns: number }
       set_active_avatar: { Args: { p_avatar_id: string }; Returns: undefined }
       unlock_level_rewards: {
         Args: { p_new_level: number; p_user_id: string }
