@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { BookHeart, User, Settings } from 'lucide-react';
+import { BookHeart, Calendar, User, Settings } from 'lucide-react';
 const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -7,6 +7,10 @@ const BottomNavigation = () => {
     icon: BookHeart,
     label: 'Journal',
     path: '/journal'
+  }, {
+    icon: Calendar,
+    label: 'Calendrier',
+    path: '/calendar'
   }, {
     icon: User,
     label: 'Profil',
@@ -33,7 +37,7 @@ const BottomNavigation = () => {
     boxShadow: '0 -4px 20px rgba(52, 224, 161, 0.1)'
   }}>
       <div className="max-w-7xl mx-auto px-4 py-3">
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-4 gap-2">
           {navItems.map(item => {
           const Icon = item.icon;
           const active = isActive(item.path);
