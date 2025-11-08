@@ -29,3 +29,9 @@ verify_jwt = true
 
 [functions.suggest-themed-routes]
 verify_jwt = true
+
+[functions.create-forum-topic]
+verify_jwt = true
+
+[functions.create-forum-post]
+verify_jwt = true

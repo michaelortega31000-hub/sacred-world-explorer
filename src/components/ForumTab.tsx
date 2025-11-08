@@ -283,19 +283,7 @@ const ForumTab = () => {
       return;
     }
 
-    // Check rate limit: 10 topics per day
-    const { allowed } = await checkRateLimit(session.user.id, {
-      action: 'forum_topic',
-      limit: 10,
-      windowMinutes: 1440 // 24 hours
-    });
-
-    if (!allowed) {
-      toast.error('Limite atteinte : 10 sujets maximum par jour');
-      return;
-    }
-
-    // Validate input
+    // Validate input client-side first (UX only)
     const validation = topicSchema.safeParse({
       title: newTopicTitle,
       description: newTopicDescription,
@@ -307,22 +295,33 @@ const ForumTab = () => {
       return;
     }
 
-    const { error } = await supabase
-      .from('forum_topics')
-      .insert({
-        title: validation.data.title,
-        description: validation.data.description,
-        author_id: session.user.id,
+    try {
+      // Call server-side edge function with rate limiting enforcement
+      const { data, error } = await supabase.functions.invoke('create-forum-topic', {
+        body: {
+          title: validation.data.title,
+          description: validation.data.description,
+        },
       });
 
-    if (error) {
-      toast.error('Erreur lors de la création du topic');
-    } else {
+      if (error) {
+        // Check if it's a rate limit error
+        if (error.message?.includes('429')) {
+          toast.error('Limite atteinte : 10 sujets maximum par jour');
+        } else {
+          toast.error(error.message || 'Erreur lors de la création du topic');
+        }
+        return;
+      }
+
       toast.success('Topic créé avec succès');
       setNewTopicTitle('');
       setNewTopicDescription('');
       setIsCreateDialogOpen(false);
       loadTopics();
+    } catch (err) {
+      console.error('Error creating topic:', err);
+      toast.error('Erreur lors de la création du topic');
     }
   };
 
@@ -332,19 +331,7 @@ const ForumTab = () => {
       return;
     }
 
-    // Check rate limit: 50 posts per day
-    const { allowed } = await checkRateLimit(session.user.id, {
-      action: 'forum_post',
-      limit: 50,
-      windowMinutes: 1440 // 24 hours
-    });
-
-    if (!allowed) {
-      toast.error('Limite atteinte : 50 messages maximum par jour');
-      return;
-    }
-
-    // Validate input
+    // Validate input client-side first (UX only)
     const validation = postSchema.safeParse({
       content: newPostContent,
     });
@@ -355,20 +342,31 @@ const ForumTab = () => {
       return;
     }
 
-    const { error } = await supabase
-      .from('forum_posts')
-      .insert({
-        topic_id: selectedTopic.id,
-        content: validation.data.content,
-        author_id: session.user.id,
+    try {
+      // Call server-side edge function with rate limiting enforcement
+      const { data, error } = await supabase.functions.invoke('create-forum-post', {
+        body: {
+          topicId: selectedTopic.id,
+          content: validation.data.content,
+        },
       });
 
-    if (error) {
-      toast.error('Erreur lors de l\'envoi du message');
-    } else {
+      if (error) {
+        // Check if it's a rate limit error
+        if (error.message?.includes('429')) {
+          toast.error('Limite atteinte : 50 messages maximum par jour');
+        } else {
+          toast.error(error.message || 'Erreur lors de l\'envoi du message');
+        }
+        return;
+      }
+
       setNewPostContent('');
       loadPosts(selectedTopic.id);
       loadTopics(); // Refresh to update post count
+    } catch (err) {
+      console.error('Error creating post:', err);
+      toast.error('Erreur lors de l\'envoi du message');
     }
   };
 
