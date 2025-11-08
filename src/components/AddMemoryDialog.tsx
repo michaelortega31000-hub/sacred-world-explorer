@@ -100,25 +100,49 @@ export const AddMemoryDialog = ({
         return;
       }
 
-      // Upload photos
-      const uploadedUrls: string[] = [];
+      // Upload photos using secure server-side validation
+      const uploadedPaths: string[] = [];
+      const { secureUpload } = await import('@/lib/secureUpload');
       
       for (const file of selectedFiles) {
+        // Client-side validation for UX (server will validate too)
+        if (file.size > 10 * 1024 * 1024) {
+          toast({
+            title: 'Fichier trop volumineux',
+            description: `${file.name} dépasse la limite de 10 MB`,
+            variant: 'destructive',
+          });
+          continue;
+        }
+
         const fileExt = file.name.split('.').pop();
         const fileName = `${user.id}/${placeId}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
         
-        const { error: uploadError, data } = await supabase.storage
-          .from('memory-photos')
-          .upload(fileName, file, {
-            contentType: file.type,
-            upsert: false
-          });
+        const uploadResult = await secureUpload({
+          bucket: 'memory-photos',
+          filePath: fileName,
+          file,
+          upsert: false,
+        });
 
-        if (uploadError) throw uploadError;
-        uploadedUrls.push(fileName);
+        if (!uploadResult.success || uploadResult.error) {
+          toast({
+            title: 'Erreur d\'upload',
+            description: `${file.name}: ${uploadResult.error}`,
+            variant: 'destructive',
+          });
+          continue;
+        }
+
+        uploadedPaths.push(uploadResult.path);
       }
 
-      // Create memory record
+      // Check if at least one file was uploaded
+      if (uploadedPaths.length === 0) {
+        throw new Error('Aucune photo n\'a pu être uploadée');
+      }
+
+      // Create memory record with uploaded photo paths
       const { error: insertError } = await supabase
         .from('memories')
         .insert({
@@ -126,7 +150,7 @@ export const AddMemoryDialog = ({
           place_id: placeId,
           title,
           content: content || null,
-          media_urls: uploadedUrls,
+          media_urls: uploadedPaths,
           is_public: isPublic,
           memory_type: 'photo'
         });

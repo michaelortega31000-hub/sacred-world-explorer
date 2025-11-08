@@ -198,19 +198,21 @@ export const AvatarGallery = ({ userId, currentAvatarUrl, onAvatarChange }: Avat
       
       const fileName = `${userId}/custom-${Date.now()}.${fileExt}`;
 
-      // Upload to storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(fileName, processedFile, {
-          cacheControl: '0'
-        });
+      // Use secure server-side upload with validation
+      const { secureUpload } = await import('@/lib/secureUpload');
+      const uploadResult = await secureUpload({
+        bucket: 'avatars',
+        filePath: fileName,
+        file: processedFile,
+        upsert: false,
+      });
 
-      if (uploadError) throw uploadError;
+      if (!uploadResult.success || uploadResult.error) {
+        throw new Error(uploadResult.error || 'Upload failed');
+      }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+      // Use the URL from upload result
+      const publicUrl = uploadResult.url;
 
       // Save to database with approved status (clean URL, no cache buster)
       const { error: dbError } = await supabase
