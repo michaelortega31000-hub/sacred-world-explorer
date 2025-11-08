@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { Filter, X } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { cn } from '@/lib/utils';
@@ -83,6 +84,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   };
 
   const hasActiveFilters = selectedReligions.length > 0 || selectedTypes.length > 0;
+  const activeFiltersCount = selectedReligions.length + selectedTypes.length;
 
   return (
     <div className="relative">
@@ -90,7 +92,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       <Button
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "gap-2 backdrop-blur-md border-2 transition-all duration-300",
+          "gap-2 backdrop-blur-md border-2 transition-all duration-300 relative",
           hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F]"
         )}
         style={{
@@ -106,8 +108,25 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       >
         <Filter className="w-4 h-4" />
         <span className="hidden sm:inline">Filtre</span>
+        
+        {/* Active Filters Count Badge */}
+        {hasActiveFilters && (
+          <Badge 
+            variant="secondary"
+            className="absolute -top-2 -right-2 h-5 w-5 flex items-center justify-center p-0 rounded-full bg-[#F4C542] text-[#0E1B3F] border-2 border-[#0E1B3F] text-xs font-bold"
+          >
+            {activeFiltersCount}
+          </Badge>
+        )}
+        
+        {/* Matching Count */}
         {matchingCount !== undefined && matchingCount >= 0 && (
-          <span className="text-xs bg-[#0E1B3F] text-[#34E0A1] px-2 py-0.5 rounded-full font-semibold min-w-[28px] text-center">
+          <span className={cn(
+            "text-xs px-2 py-0.5 rounded-full font-semibold min-w-[28px] text-center",
+            hasActiveFilters 
+              ? "bg-[#0E1B3F]/80 text-[#34E0A1]"
+              : "bg-[#34E0A1]/20 text-[#34E0A1]"
+          )}>
             {matchingCount}
           </span>
         )}
@@ -129,9 +148,19 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
             borderColor: 'rgba(52, 224, 161, 0.2)' 
           }}>
             <div className="flex items-center justify-between p-4">
-              <h3 className="text-lg font-semibold text-[#F5F5F5] font-playfair">
-                Filtres
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-[#F5F5F5] font-playfair">
+                  Filtres
+                </h3>
+                {hasActiveFilters && (
+                  <Badge 
+                    variant="secondary"
+                    className="bg-[#F4C542] text-[#0E1B3F] text-xs font-bold"
+                  >
+                    {activeFiltersCount}
+                  </Badge>
+                )}
+              </div>
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-[#EAD7B5] hover:text-[#34E0A1] transition-colors"
@@ -139,13 +168,20 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                 <X className="w-5 h-5" />
               </button>
             </div>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="w-full px-4 pb-3 text-sm text-[#34E0A1] hover:text-[#3ffab8] transition-colors text-left font-inter"
-              >
-                ✕ Effacer tous les filtres
-              </button>
+            
+            {/* Stats Row */}
+            {hasActiveFilters && matchingCount !== undefined && (
+              <div className="px-4 pb-3 flex items-center justify-between">
+                <span className="text-xs text-[#EAD7B5]">
+                  {matchingCount} monument{matchingCount !== 1 ? 's' : ''} trouvé{matchingCount !== 1 ? 's' : ''}
+                </span>
+                <button
+                  onClick={clearFilters}
+                  className="text-xs text-[#34E0A1] hover:text-[#3ffab8] transition-colors font-inter"
+                >
+                  ✕ Tout effacer
+                </button>
+              </div>
             )}
           </div>
 
