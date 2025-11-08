@@ -3,9 +3,8 @@ import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { MapPin, Calendar, Locate } from 'lucide-react';
+import { Calendar, Locate } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
@@ -14,9 +13,9 @@ import { inferReligionFromPlace } from '@/lib/religionHelper';
 import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { toast } from 'sonner';
-import { logger } from '@/lib/logger';
-import { playWhooshSound, resumeAudioContext } from '@/utils/audioEffects';
-import { throttle } from '@/lib/throttle';
+import { getMapboxToken } from '@/lib/mapboxHelper';
+import type { Religion } from '@/contexts/AppContext';
+
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
   onRecenterRef?: (fn: () => void) => void;
@@ -24,6 +23,31 @@ interface Globe3DProps {
   onPausedChange?: (paused: boolean) => void;
   tripPlaces?: string[];
 }
+
+interface PlaceFeature {
+  type: 'Feature';
+  geometry: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+  properties: {
+    id: string;
+    name: string;
+    type: string;
+    country: string;
+    points: number;
+    religion: string;
+    description?: string;
+    imageUrl?: string;
+    isVisited: boolean;
+  };
+}
+
+interface PlacesCollection {
+  type: 'FeatureCollection';
+  features: PlaceFeature[];
+}
+
 const Globe3D = ({
   onCountryClick,
   onRecenterRef,
@@ -33,25 +57,12 @@ const Globe3D = ({
 }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
-  const markers = useRef<mapboxgl.Marker[]>([]);
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
-  const recenterOnPosition = useRef(false);
-  const hasCenteredOnUser = useRef(false);
-  const savedCameraPosition = useRef<{
-    center: [number, number];
-    zoom: number;
-    pitch: number;
-  } | null>(null);
+  const currentPopup = useRef<mapboxgl.Popup | null>(null);
   const navigate = useNavigate();
-  const {
-    t,
-    i18n
-  } = useTranslation();
-  const {
-    userProgress
-  } = useApp();
-  const [mapboxToken, setMapboxToken] = useState('');
-  const [showTokenInput, setShowTokenInput] = useState(false);
+  const { t } = useTranslation();
+  const { userProgress } = useApp();
+  
   const [showMonuments, setShowMonuments] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
@@ -60,1075 +71,480 @@ const Globe3D = ({
   });
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
-  const {
-    position: userPosition,
-    error: geolocationError
-  } = useGeolocation(geolocationEnabled);
-  const [containerReadyTick, setContainerReadyTick] = useState(0);
-  const isStyleReadyRef = useRef(false);
-  const pendingFlyTo = useRef<Array<{
-    lat: number;
-    lng: number;
-    zoom: number;
-  }>>([]);
-  const hasLoadedMonuments = useRef(false);
-  const hasShownLocationToast = useRef(false);
-  const animationFrameId = useRef<number | null>(null);
-  const hoveredCountryCache = useRef<string | null>(null);
-  const sizeObserverRef = useRef<ResizeObserver | null>(null);
+  const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
+  
+  const isMapReadyRef = useRef(false);
+  const allPlacesRef = useRef<any[]>([]);
+  const pendingFlyTo = useRef<{ lat: number; lng: number; zoom: number } | null>(null);
 
-  // Fonction helper pour normaliser les chaînes (sans accents, minuscules)
+  // Normalize string helper
   const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
 
-  // Helpers de filtrage et rendu unifiés
-  const placesCacheRef = useRef<any[] | null>(null);
-
-  const getCanonReligion = (place: any) => (place.religion || inferReligionFromPlace(place.type, place.name));
-
-  const matchesFilters = (place: any) => {
-    const placeReligion = getCanonReligion(place) as string;
-    const matchesReligion = filters.religions.length === 0 || (filters.religions as unknown as string[]).includes(placeReligion);
-
-    const typeSelected = filters.types;
-    const normalizedType = normalize(place.type);
-    const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
-    const matchesType = typeSelected.length === 0 || typeSelected.some(t => {
-      const tLower = normalize(t);
-      if (tLower.includes('pyram')) {
-        return textBlobNorm.includes('pyram');
-      }
-      // Match partiel bilatéral pour gérer les variantes (église mémorial, etc.)
-      return normalizedType.includes(tLower) || tLower.includes(normalizedType);
-    });
-
-    return matchesReligion && matchesType;
+  // Sanitize coordinates: ensure [lng, lat] format and valid ranges
+  const sanitizeCoordinates = (coords: [number, number], placeId: string): [number, number] | null => {
+    let [first, second] = coords;
+    
+    // Swap if needed (detect lat/lng order)
+    if (Math.abs(first) > 90 && Math.abs(second) <= 90) {
+      [first, second] = [second, first];
+    }
+    
+    // Validate
+    if (isNaN(first) || isNaN(second) || Math.abs(second) > 90 || Math.abs(first) > 180) {
+      console.warn(`⚠️ Invalid coordinates for ${placeId}:`, coords);
+      return null;
+    }
+    
+    return [first, second]; // [lng, lat]
   };
 
-  const applyFiltersAndRender = async (autoFit: boolean = true) => {
-    if (!map.current) return;
+  // Build FeatureCollection from places with filters
+  const buildFeatureCollection = (places: any[], activeFilters: FilterOptions): PlacesCollection => {
+    const features: PlaceFeature[] = [];
+    
+    places.forEach(place => {
+      const coords = sanitizeCoordinates(place.coordinates, place.id);
+      if (!coords) return;
+      
+      const religion = (place.religion || inferReligionFromPlace(place.type, place.name)) as string;
+      const isVisited = userProgress.visitedPlaces.includes(place.id);
+      
+      // Apply filters
+      const matchesReligion = activeFilters.religions.length === 0 || 
+        activeFilters.religions.includes(religion as Religion);
+      
+      const normalizedType = normalize(place.type);
+      const textBlob = normalize(`${place.name} ${place.description || ''} ${place.type}`);
+      const matchesType = activeFilters.types.length === 0 || 
+        activeFilters.types.some(t => {
+          const tLower = normalize(t);
+          if (tLower.includes('pyram')) return textBlob.includes('pyram');
+          return normalizedType.includes(tLower) || tLower.includes(normalizedType);
+        });
+      
+      if (!matchesReligion || !matchesType) return;
+      
+      features.push({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: coords
+        },
+        properties: {
+          id: place.id,
+          name: place.name,
+          type: place.type,
+          country: place.country,
+          points: place.points,
+          religion,
+          description: place.description,
+          imageUrl: place.imageUrl,
+          isVisited
+        }
+      });
+    });
+    
+    return {
+      type: 'FeatureCollection',
+      features
+    };
+  };
 
-    // Sauvegarder la caméra si la géolocalisation est active
-    if (geolocationEnabled && userPosition) {
-      savedCameraPosition.current = {
-        center: [map.current.getCenter().lng, map.current.getCenter().lat],
-        zoom: map.current.getZoom(),
-        pitch: map.current.getPitch(),
-      };
-    }
-
-    // Nettoyer d'abord les anciens marqueurs (aggressif + logs)
-    const prevMarkers = markers.current.length;
-    markers.current.forEach(m => m.remove());
-    markers.current = [];
-    console.log('🧹 Cleared markers:', prevMarkers);
-
+  // Update map source with filtered data
+  const updateMapData = () => {
+    if (!map.current || !isMapReadyRef.current) return;
+    
     if (!showMonuments) {
+      // Clear data
+      const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
+      if (source) {
+        source.setData({ type: 'FeatureCollection', features: [] });
+      }
       setFilteredCount(0);
       return;
     }
-
-    if (!placesCacheRef.current) {
-      const { mockPlaces } = await import('@/data/placesData');
-      placesCacheRef.current = mockPlaces;
-    }
-    const mockPlaces = placesCacheRef.current!;
-
-    // Debug classification logs
-    try {
-      const sample = mockPlaces.slice(0, 20).map((p: any) => ({
-        id: p.id,
-        name: p.name,
-        type: p.type,
-        original: p.religion,
-        hasReligionField: !!p.religion,
-        inferred: inferReligionFromPlace(p.type, p.name),
-        final: getCanonReligion(p),
-      }));
-      console.log('🔎 Total places loaded:', mockPlaces.length);
-      console.log('🔎 Sample classification (first 20):', sample);
-    } catch (e) {
-      console.warn('Debug classification failed', e);
-    }
-
-    // Appliquer les filtres (ou tout afficher si aucun filtre)
-    let filteredPlaces = mockPlaces;
-    if (filters.religions.length > 0 || filters.types.length > 0) {
-      filteredPlaces = mockPlaces.filter(matchesFilters);
-    }
-
-    // Mettre à jour le compteur
-    setFilteredCount(filteredPlaces.length);
-
-    // Créer les marqueurs
-    filteredPlaces.forEach(place => {
-      const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
-      const placeReligion = getCanonReligion(place) as keyof typeof religionColors;
-      const isVisited = userProgress.visitedPlaces.includes(place.id);
-      const markerColor = religionColors[placeReligion].marker;
-
-      const isMajorSite = place.points >= 150; // Sites majeurs
-      const isImportantSite = place.points >= 100; // Sites importants
-
-      const popup = new mapboxgl.Popup({
-        offset: 25,
-        maxWidth: '320px',
-        className: 'sacred-popup'
-      }).setHTML(`
-          <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
-            <img src="${resolvedImageUrl || '/placeholder.svg'}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
-            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
-            <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
-            <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${(place.description || '').substring(0, 150)}...</p>
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-              <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${place.points} points</span>
-              ${isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
-            </div>
-          </div>
-        `);
-      popup.on('open', () => {
-        const container = popup.getElement();
-        const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
-        if (img) {
-          img.addEventListener('click', e => {
-            e.stopPropagation();
-            navigate(`/place/${place.id}`);
+    
+    const collection = buildFeatureCollection(allPlacesRef.current, filters);
+    const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
+    
+    if (source) {
+      source.setData(collection);
+      setFilteredCount(collection.features.length);
+      
+      // Debug logs
+      const byReligion = collection.features.reduce((acc, f) => {
+        const r = f.properties.religion;
+        acc[r] = (acc[r] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      
+      console.log('🗺️ Map updated:', {
+        total: collection.features.length,
+        filters: filters,
+        byReligion,
+        sample: collection.features.slice(0, 10).map(f => ({
+          name: f.properties.name,
+          religion: f.properties.religion,
+          coords: f.geometry.coordinates
+        }))
+      });
+      
+      // Fit bounds to visible features
+      if (collection.features.length > 0) {
+        const bounds = new mapboxgl.LngLatBounds();
+        collection.features.forEach(f => {
+          bounds.extend(f.geometry.coordinates as [number, number]);
+        });
+        
+        if (!bounds.isEmpty()) {
+          map.current.fitBounds(bounds, {
+            padding: { top: 80, bottom: 80, left: 80, right: 80 },
+            duration: 1000,
+            maxZoom: 5
           });
         }
-      });
-
-      const el = document.createElement('div');
-      el.className = `sacred-marker-3d ${isMajorSite ? 'major-site' : ''} ${isImportantSite ? 'important-site' : ''}`;
-      const markerHTML = `
-        ${isMajorSite ? `
-          <div class="marker-beam" style="
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 2px;
-            height: 80px;
-            background: linear-gradient(to top, ${markerColor}, transparent);
-            opacity: 0.6;
-            animation: beam-pulse 2s ease-in-out infinite;
-          "></div>
-        ` : ''}
-        ${isImportantSite ? `
-          <div class="marker-particles">
-            <div class="particle" style="--delay: 0s; --color: ${markerColor}"></div>
-            <div class="particle" style="--delay: 0.5s; --color: ${markerColor}"></div>
-            <div class="particle" style="--delay: 1s; --color: ${markerColor}"></div>
-            <div class="particle" style="--delay: 1.5s; --color: ${markerColor}"></div>
-          </div>
-        ` : ''}
-        <div class="marker-halo-outer" style="
-          position: absolute;
-          width: 40px;
-          height: 40px;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          border: 2px solid ${markerColor};
-          border-radius: 50%;
-          opacity: 0.3;
-          animation: halo-expand 3s ease-out infinite;
-        "></div>
-        <div class="marker-halo-inner" style="
-          position: absolute;
-          width: 28px;
-          height: 28px;
-          top: 50%;
-          left: 50%;
-          transform: translate(-50%, -50%);
-          border: 2px solid ${markerColor};
-          border-radius: 50%;
-          opacity: 0.5;
-          animation: halo-expand 2s ease-out infinite 0.5s;
-        "></div>
-        <div class="marker-core" style="
-          position: relative;
-          width: 16px;
-          height: 16px;
-          background: ${markerColor};
-          border: 3px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.9)'};
-          border-radius: 50%;
-          box-shadow: 
-            0 0 20px ${markerColor},
-            0 0 40px ${markerColor}80,
-            inset 0 0 10px ${markerColor};
-          animation: marker-pulse 2s ease-in-out infinite;
-          z-index: 10;
-        "></div>
-        ${isVisited ? `
-          <div class="marker-checkmark" style="
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            width: 18px;
-            height: 18px;
-            background: #F4C542;
-            border: 2px solid #0E1B3F;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            color: #0E1B3F;
-            z-index: 20;
-            animation: checkmark-bounce 0.5s ease-out;
-          ">✓</div>
-        ` : ''}
-      `;
-      el.innerHTML = markerHTML;
-      el.style.cssText = `
-        position: relative;
-        width: 20px;
-        height: 20px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-      `;
-
-      const [lngRaw, latRaw] = place.coordinates as [number, number];
-      let lng = lngRaw, lat = latRaw;
-      if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) {
-        console.warn('⚠️ Invalid coord order, swapping', place.id, place.coordinates);
-        lng = latRaw; lat = lngRaw;
       }
-      if (
-        isNaN(lng as any) || isNaN(lat as any) ||
-        lng === undefined || lat === undefined ||
-        Math.abs(lat) > 90 || Math.abs(lng) > 180
-      ) {
-        console.warn('⚠️ Skipping invalid coordinates', place.id, { lng, lat });
-        return;
-      }
-
-      console.log('🔵 Creating marker:', { id: place.id, name: place.name, religion: placeReligion, coords: [lng, lat] });
-      const marker = new mapboxgl.Marker({
-        element: el,
-        anchor: 'center',
-        pitchAlignment: 'map',
-        rotationAlignment: 'map'
-      }).setLngLat([lng, lat]).setPopup(popup).addTo(map.current!);
-      el.addEventListener('click', ev => { ev.stopPropagation(); marker.togglePopup(); });
-      el.addEventListener('touchend', ev => { ev.stopPropagation(); marker.togglePopup(); }, { passive: true });
-      markers.current.push(marker);
-    });
-
-    // Logs robustes
-    const coordSample = filteredPlaces.slice(0, 10).map(p => ({
-      id: p.id,
-      name: p.name,
-      type: p.type,
-      religion: getCanonReligion(p),
-      coords: p.coordinates,
-    }));
-    const byReligion = filteredPlaces.reduce((acc: Record<string, number>, p: any) => {
-      const r = getCanonReligion(p) as string;
-      acc[r] = (acc[r] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-
-    console.log('📍 Monuments affichés:', filteredPlaces.length, 'religions:', filters.religions, 'types:', filters.types);
-    console.log('📍 Répartition par religion:', byReligion);
-    console.log('📍 Échantillon (coords):', coordSample);
-    console.log('📍 Markers créés:', markers.current.length);
-
-    // Auto-fit sur les résultats (sauf si on doit restaurer une caméra géoloc)
-    if (autoFit && filteredPlaces.length > 0 && !(savedCameraPosition.current && geolocationEnabled)) {
-      const bounds = new mapboxgl.LngLatBounds();
-      filteredPlaces.forEach(p => {
-        const [lngRaw, latRaw] = p.coordinates as [number, number];
-        let lng = lngRaw, lat = latRaw;
-        if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) { lng = latRaw; lat = lngRaw; }
-        if (!isNaN(lng as any) && !isNaN(lat as any) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
-          bounds.extend([lng, lat]);
-        }
-      });
-      if (!bounds.isEmpty()) {
-        map.current.fitBounds(bounds, { padding: 60, duration: 800, maxZoom: 4 });
-      }
-    }
-
-    // Restaurer la caméra si nécessaire
-    if (savedCameraPosition.current && geolocationEnabled) {
-      map.current?.easeTo({
-        center: savedCameraPosition.current.center,
-        zoom: savedCameraPosition.current.zoom,
-        pitch: savedCameraPosition.current.pitch,
-        duration: 0,
-      });
     }
   };
 
-  // Fonction pour voler vers des coordonnées spécifiques
-  const handleFlyTo = (lat: number, lng: number, zoom: number = 15) => {
-    if (map.current && isStyleReadyRef.current) {
+  // Initialize map
+  useEffect(() => {
+    if (!mapContainer.current || map.current) return;
+
+    const token = getMapboxToken();
+    mapboxgl.accessToken = token;
+
+    if (!mapboxgl.supported()) {
+      toast.error("WebGL n'est pas supporté par votre navigateur");
+      return;
+    }
+
+    // Create map
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current,
+      style: 'mapbox://styles/mapbox/satellite-streets-v12',
+      projection: { name: 'globe' },
+      center: [15, 30],
+      zoom: 1.8,
+      pitch: 0,
+      bearing: 0
+    });
+
+    // Add navigation controls
+    map.current.addControl(
+      new mapboxgl.NavigationControl({ visualizePitch: true }),
+      'top-right'
+    );
+
+    // Disable scroll zoom for better UX
+    map.current.scrollZoom.disable();
+
+    // Wait for style to load
+    map.current.on('style.load', async () => {
+      if (!map.current) return;
+
+      // Add atmosphere
+      map.current.setFog({
+        color: 'rgb(186, 210, 235)',
+        'high-color': 'rgb(36, 92, 223)',
+        'horizon-blend': 0.02,
+        'space-color': 'rgb(11, 11, 25)',
+        'star-intensity': 0.6
+      });
+
+      // Load places data
+      const { mockPlaces } = await import('@/data/placesData');
+      allPlacesRef.current = mockPlaces;
+      
+      console.log('📦 Loaded places:', mockPlaces.length);
+      console.log('📦 Sample places:', mockPlaces.slice(0, 5).map(p => ({
+        id: p.id,
+        name: p.name,
+        coords: p.coordinates,
+        religion: p.religion || inferReligionFromPlace(p.type, p.name)
+      })));
+
+      // Add empty GeoJSON source
+      map.current.addSource('places', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+
+      // Add circle layer with religion-based colors
+      map.current.addLayer({
+        id: 'places-circles',
+        type: 'circle',
+        source: 'places',
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['get', 'points'],
+            0, 4,
+            50, 6,
+            100, 8,
+            150, 10
+          ],
+          'circle-color': [
+            'match',
+            ['get', 'religion'],
+            'christianity', religionColors.christianity.marker,
+            'islam', religionColors.islam.marker,
+            'judaism', religionColors.judaism.marker,
+            'buddhism', religionColors.buddhism.marker,
+            'hinduism', religionColors.hinduism.marker,
+            'astronomy', religionColors.astronomy.marker,
+            'traditional', religionColors.traditional.marker,
+            'atheism', religionColors.atheism.marker,
+            religionColors.traditional.marker
+          ],
+          'circle-stroke-color': [
+            'case',
+            ['get', 'isVisited'],
+            '#F4C542',
+            '#ffffff'
+          ],
+          'circle-stroke-width': 2,
+          'circle-opacity': 0.9,
+          'circle-stroke-opacity': 1
+        }
+      });
+
+      // Add hover effect
+      map.current.on('mouseenter', 'places-circles', () => {
+        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.current.on('mouseleave', 'places-circles', () => {
+        if (map.current) map.current.getCanvas().style.cursor = '';
+      });
+
+      // Add click handler for popups
+      map.current.on('click', 'places-circles', (e) => {
+        if (!e.features || e.features.length === 0) return;
+        
+        const feature = e.features[0];
+        const props = feature.properties as PlaceFeature['properties'];
+        const coords = (feature.geometry as any).coordinates as [number, number];
+        
+        // Close existing popup
+        if (currentPopup.current) {
+          currentPopup.current.remove();
+        }
+        
+        const imageUrl = props.imageUrl ? getImageUrl(props.imageUrl) : '/placeholder.svg';
+        
+        const popup = new mapboxgl.Popup({
+          offset: 15,
+          maxWidth: '320px',
+          className: 'sacred-popup'
+        })
+          .setLngLat(coords)
+          .setHTML(`
+            <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
+              <img 
+                src="${imageUrl}" 
+                alt="${props.name}" 
+                style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" 
+                onerror="this.src='/placeholder.svg';"
+                onclick="window.dispatchEvent(new CustomEvent('navigateToPlace', { detail: '${props.id}' }))"
+              />
+              <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${props.name}</h3>
+              <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${props.type} • ${props.country}</p>
+              ${props.description ? `<p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${props.description.substring(0, 150)}...</p>` : ''}
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${props.points} points</span>
+                ${props.isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
+              </div>
+            </div>
+          `)
+          .addTo(map.current!);
+        
+        currentPopup.current = popup;
+      });
+
+      // Listen for navigation events from popup
+      window.addEventListener('navigateToPlace', ((e: CustomEvent) => {
+        navigate(`/place/${e.detail}`);
+      }) as EventListener);
+
+      isMapReadyRef.current = true;
+      
+      // Execute pending fly-to if any
+      if (pendingFlyTo.current) {
+        const { lat, lng, zoom } = pendingFlyTo.current;
+        handleFlyTo(lat, lng, zoom);
+        pendingFlyTo.current = null;
+      }
+    });
+
+    // Cleanup
+    return () => {
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
+      isMapReadyRef.current = false;
+    };
+  }, []);
+
+  // Update data when filters or showMonuments change
+  useEffect(() => {
+    if (isMapReadyRef.current) {
+      updateMapData();
+    }
+  }, [filters, showMonuments, userProgress.visitedPlaces]);
+
+  // Handle geolocation
+  useEffect(() => {
+    if (!map.current || !geolocationEnabled) {
+      if (userLocationMarker.current) {
+        userLocationMarker.current.remove();
+        userLocationMarker.current = null;
+      }
+      return;
+    }
+
+    if (userPosition) {
+      const { latitude, longitude } = userPosition;
+      
+      if (!userLocationMarker.current) {
+        const el = document.createElement('div');
+        el.className = 'user-location-marker';
+        el.style.cssText = `
+          width: 20px;
+          height: 20px;
+          background: #34E0A1;
+          border: 3px solid white;
+          border-radius: 50%;
+          box-shadow: 0 0 10px rgba(52, 224, 161, 0.8);
+        `;
+        
+        userLocationMarker.current = new mapboxgl.Marker({ element: el })
+          .setLngLat([longitude, latitude])
+          .addTo(map.current);
+      } else {
+        userLocationMarker.current.setLngLat([longitude, latitude]);
+      }
+      
+      map.current.flyTo({
+        center: [longitude, latitude],
+        zoom: 12,
+        duration: 2000
+      });
+      
+      toast.success(t('location.enabled'));
+    }
+
+    if (geolocationError) {
+      toast.error(t('location.error'));
+      setGeolocationEnabled(false);
+    }
+  }, [userPosition, geolocationError, geolocationEnabled]);
+
+  // FlyTo function
+  const handleFlyTo = (lat: number, lng: number, zoom: number = 12) => {
+    if (map.current && isMapReadyRef.current) {
       setIsPaused(true);
       map.current.flyTo({
         center: [lng, lat],
         zoom: zoom,
         pitch: 0,
         bearing: 0,
-        duration: 2200,
+        duration: 2000,
         essential: true
       });
     } else {
-      // Carte pas prête: on met en file d'attente
-      pendingFlyTo.current.push({
-        lat,
-        lng,
-        zoom
-      });
+      pendingFlyTo.current = { lat, lng, zoom };
     }
   };
 
-  // Exposer la fonction de recentrage via callback
+  // Recenter function
+  const handleRecenter = () => {
+    setGeolocationEnabled(!geolocationEnabled);
+  };
+
+  // Expose functions via refs
+  useEffect(() => {
+    if (onFlyToRef) {
+      onFlyToRef(handleFlyTo);
+    }
+  }, [onFlyToRef]);
+
   useEffect(() => {
     if (onRecenterRef) {
-      onRecenterRef(() => handleRecenter());
+      onRecenterRef(handleRecenter);
     }
   }, [onRecenterRef]);
 
-  // Exposer la fonction flyTo via callback
-  useEffect(() => {
-    if (onFlyToRef) {
-      onFlyToRef((lat, lng, zoom) => handleFlyTo(lat, lng, zoom));
-    }
-  }, [onFlyToRef]);
   useEffect(() => {
     if (onPausedChange) {
       onPausedChange(isPaused);
     }
   }, [isPaused, onPausedChange]);
-  useEffect(() => {
-    // Token par défaut mis à jour
-    const defaultToken = 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
 
-    // Essayer de récupérer depuis l'env
-    const envToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || import.meta.env.VITE_MAPBOX_TOKEN;
-    if (envToken) {
-      setMapboxToken(envToken);
-      localStorage.setItem('mapbox_token', envToken);
-    } else {
-      // Vérifier le localStorage
-      const savedToken = localStorage.getItem('mapbox_token');
-      if (savedToken) {
-        setMapboxToken(savedToken);
-      } else {
-        // Utiliser et sauvegarder le token par défaut
-        setMapboxToken(defaultToken);
-        localStorage.setItem('mapbox_token', defaultToken);
-      }
-    }
-  }, []);
-  const handleTokenSubmit = () => {
-    if (mapboxToken) {
-      localStorage.setItem('mapbox_token', mapboxToken);
-      setShowTokenInput(false);
+  // Handle filter changes
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
+    if (newFilters.religions.length > 0 || newFilters.types.length > 0) {
+      setShowMonuments(true);
     }
   };
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken || showTokenInput) return;
 
-    // Vérifier la compatibilité Mapbox
-    if (!mapboxgl.supported()) {
-      toast.error("Votre navigateur ne supporte pas WebGL, requis pour afficher la carte 3D");
-      return;
-    }
-    const containerEl = mapContainer.current!;
-    const containerHeight = containerEl.clientHeight;
-    const containerWidth = containerEl.clientWidth;
-    logger.log('Globe3D init attempt', 'container size', containerWidth, containerHeight);
-    if (containerHeight === 0 || containerWidth === 0) {
-      logger.log('Container has no size yet, waiting with ResizeObserver...');
-      const resizeObserver = new ResizeObserver(entries => {
-        const r = entries[0]?.contentRect as DOMRectReadOnly;
-        if (r && r.height > 0 && r.width > 0) {
-          resizeObserver.disconnect();
-          logger.log('Container now has size, re-triggering init');
-          setContainerReadyTick(v => v + 1);
-        }
-      });
-      resizeObserver.observe(containerEl);
-      return () => {
-        resizeObserver.disconnect();
-      };
-    }
-    mapboxgl.accessToken = mapboxToken;
-    logger.log('Globe3D initializing map');
-    const isMobile = window.innerWidth < 768;
-
-    // Initialiser la carte en mode globe - vue 3D immersive moderne
-    // Style satellite-streets-v12 pour texture réaliste de la Terre
-    map.current = new mapboxgl.Map({
-      container: containerEl,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      projection: {
-        name: 'globe'
-      },
-      zoom: isMobile ? 1.8 : 2.2,
-      center: [10, 45],
-      pitch: isMobile ? 45 : 55,
-      bearing: -15,
-      maxPitch: 85,
-      antialias: true // Anti-aliasing pour qualité optimale
-    });
-
-    // Observer les changements de taille après initialisation
-    sizeObserverRef.current?.disconnect();
-    sizeObserverRef.current = new ResizeObserver(() => {
-      map.current?.resize();
-    });
-    sizeObserverRef.current.observe(containerEl);
-
-    // Contrôles de navigation désactivés (utilisateur zoom directement)
-
-    // Configuration de l'atmosphère et du fog immersif
-    map.current.on('style.load', () => {
-      if (!map.current) return;
-      // Le style est prêt
-      isStyleReadyRef.current = true;
-
-      // Force un resize initial pour garantir le rendu
-      setTimeout(() => {
-        map.current?.resize();
-        logger.log('Globe3D: forced resize after style.load');
-      }, 0);
-
-      // Atmosphère spatiale sobre et épurée
-      map.current.setFog({
-        color: 'rgb(20, 30, 50)',
-        // Bleu neutre
-        'high-color': 'rgb(80, 100, 140)',
-        // Gris-bleu sobre
-        'horizon-blend': 0.2,
-        // Transition douce
-        'space-color': 'rgb(5, 10, 20)',
-        // Noir spatial
-        'star-intensity': 0.8 // Étoiles visibles mais discrètes
-      });
-
-      // Amélioration des océans avec gradient de profondeur
-      const labelBeforeId = map.current.getLayer('country-label') ? 'country-label' : undefined;
-
-      // Océans équilibrés avec shimmer harmonieux
-      if (map.current.getLayer('water')) {
-        map.current.setPaintProperty('water', 'fill-color', ['interpolate', ['linear'], ['zoom'], 0, '#0d2d4a',
-        // Bleu océan équilibré
-        5, '#1a4d7a',
-        // Bleu marine modéré
-        10, '#2682c8' // Bleu-cyan harmonieux
-        ]);
-        map.current.setPaintProperty('water', 'fill-opacity', 0.75);
-      }
-
-      // Amélioration des terres - contraste accru
-      if (map.current.getLayer('land')) {
-        map.current.setPaintProperty('land', 'background-color', '#0a1628');
-      }
-
-      // Layer de reflets sur l'eau (specular highlights)
-      if (!map.current.getLayer('ocean-specular')) {
-        try {
-          map.current.addLayer({
-            id: 'ocean-specular',
-            type: 'fill',
-            source: 'composite',
-            'source-layer': 'water',
-            paint: {
-              'fill-color': '#ffffff',
-              'fill-opacity': 0.08,
-              'fill-translate': [0, -2],
-              'fill-antialias': true
-            }
-          } as any, labelBeforeId);
-        } catch (e) {
-          console.warn('Ocean specular layer failed', e);
-        }
-      }
-
-      // Source précise des frontières pays (meilleure détection clic)
-      if (!map.current.getSource('country-boundaries')) {
-        map.current.addSource('country-boundaries', {
-          type: 'vector',
-          url: 'mapbox://mapbox.country-boundaries-v1'
-        } as any);
-      }
-
-      // Phase 3: Frontières interactives avec glow effect
-      if (!map.current.getLayer('country-boundaries-fill')) {
-        map.current.addLayer({
-          id: 'country-boundaries-fill',
-          type: 'fill',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          paint: {
-            'fill-color': 'transparent',
-            'fill-opacity': 0
-          }
-        } as any);
-      }
-
-      // Layer de frontières avec effet néon cyan-violet futuriste
-      if (!map.current.getLayer('country-boundaries-glow')) {
-        map.current.addLayer({
-          id: 'country-boundaries-glow',
-          type: 'line',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          paint: {
-            'line-color': ['interpolate', ['linear'], ['zoom'], 0, '#46c8ff',
-            // Cyan brillant de loin
-            5, '#7b2ff7',
-            // Violet néon en zoom
-            10, '#ff00ff' // Magenta futuriste
-            ],
-            'line-width': 2,
-            'line-opacity': 0.5,
-            'line-blur': 5
-          }
-        } as any);
-      }
-
-      // Seconde ligne interne plus fine et brillante
-      if (!map.current.getLayer('country-boundaries-inner')) {
-        map.current.addLayer({
-          id: 'country-boundaries-inner',
-          type: 'line',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          paint: {
-            'line-color': '#ffffff',
-            'line-width': 0.5,
-            'line-opacity': 0.8,
-            'line-blur': 1
-          }
-        } as any);
-      }
-
-      // Layer de highlight au hover (initialement invisible)
-      if (!map.current.getLayer('country-highlight')) {
-        map.current.addLayer({
-          id: 'country-highlight',
-          type: 'line',
-          source: 'country-boundaries',
-          'source-layer': 'country_boundaries',
-          paint: {
-            'line-color': '#F4C542',
-            'line-width': 3,
-            'line-opacity': 0
-          },
-          filter: ['==', 'iso_3166_1', '']
-        } as any);
-      }
-
-      // Configurer la langue des labels selon la langue sélectionnée
-      const langCode = i18n.language || 'fr';
-      const mapboxLangMap: {
-        [key: string]: string;
-      } = {
-        'fr': 'fr',
-        'en': 'en',
-        'es': 'es',
-        'it': 'it',
-        'de': 'de',
-        'pt': 'pt',
-        'ar': 'ar'
-      };
-      const mapboxLang = mapboxLangMap[langCode] || 'en';
-
-      // Modifier les labels pour afficher dans la langue sélectionnée
-      if (map.current.getLayer('country-label')) {
-        map.current.setLayoutProperty('country-label', 'text-field', ['get', `name_${mapboxLang}`]);
-      }
-
-      // Charger les monuments
-      loadMonuments();
-
-      // Dessiner l'itinéraire du voyage
-      drawTripRoute();
-
-      // Exécuter les zooms en attente (si déclenchés avant que la carte soit prête)
-      if (pendingFlyTo.current.length > 0) {
-        const last = pendingFlyTo.current[pendingFlyTo.current.length - 1];
-        pendingFlyTo.current = [];
-        handleFlyTo(last.lat, last.lng, last.zoom);
-      }
-    });
-
-    // Fonction pour dessiner l'itinéraire du voyage
-    const drawTripRoute = () => {
-      if (!map.current || tripPlaces.length === 0) return;
-
-      // Supprimer l'ancienne source et couche si elles existent
-      if (map.current.getLayer('trip-route-glow')) {
-        map.current.removeLayer('trip-route-glow');
-      }
-      if (map.current.getLayer('trip-route')) {
-        map.current.removeLayer('trip-route');
-      }
-      if (map.current.getSource('trip-route')) {
-        map.current.removeSource('trip-route');
-      }
-
-      // Charger les données des lieux pour obtenir les coordonnées
-      import('@/data/placesData').then(({
-        mockPlaces
-      }) => {
-        if (!map.current) return;
-        const tripCoordinates = tripPlaces.map(placeId => {
-          const place = mockPlaces.find(p => p.id === placeId);
-          return place ? place.coordinates : null;
-        }).filter((coord): coord is [number, number] => coord !== null);
-        if (tripCoordinates.length < 2) return;
-
-        // Créer une ligne GeoJSON
-        const routeGeoJSON = {
-          type: 'Feature' as const,
-          properties: {},
-          geometry: {
-            type: 'LineString' as const,
-            coordinates: tripCoordinates
-          }
-        };
-
-        // Ajouter la source
-        map.current.addSource('trip-route', {
-          type: 'geojson',
-          data: routeGeoJSON
-        });
-
-        // Couche de halo (effet de lueur externe)
-        map.current.addLayer({
-          id: 'trip-route-glow',
-          type: 'line',
-          source: 'trip-route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#2EA5FF',
-            'line-width': 8,
-            'line-blur': 6,
-            'line-opacity': 0.6
-          }
-        });
-
-        // Couche principale (trait lumineux)
-        map.current.addLayer({
-          id: 'trip-route',
-          type: 'line',
-          source: 'trip-route',
-          layout: {
-            'line-join': 'round',
-            'line-cap': 'round'
-          },
-          paint: {
-            'line-color': '#5EC8FF',
-            'line-width': 3,
-            'line-opacity': 0.9
-          }
-        });
-      });
-    };
-
-    // Fonction pour charger les monuments
-    const loadMonuments = () => {
-      void applyFiltersAndRender();
-    };
-
-    // Recharger les monuments et l'itinéraire quand la carte est chargée
-    map.current.on('load', () => {
-      loadMonuments();
-      drawTripRoute();
-    });
-
-    // Animation de rotation automatique du globe - optimisée avec RAF
-    let userInteracting = false;
-    let isPausedLocal = isPaused;
-    const secondsPerRevolution = 480; // Globe fait 1 tour en 8 minutes (2x plus lent)
-    const maxSpinZoom = 3;
-    function spinGlobe() {
-      if (!map.current || isPausedLocal) {
-        if (animationFrameId.current) {
-          cancelAnimationFrame(animationFrameId.current);
-          animationFrameId.current = null;
-        }
-        return;
-      }
-      const zoom = map.current.getZoom();
-      if (!userInteracting && zoom < maxSpinZoom) {
-        const distancePerSecond = 360 / secondsPerRevolution;
-        const center = map.current.getCenter();
-        center.lng -= distancePerSecond / 60;
-        map.current.setCenter(center); // Use setCenter instead of easeTo for smoother performance
-      }
-      animationFrameId.current = requestAnimationFrame(spinGlobe);
-    }
-    map.current.on('mousedown', () => {
-      userInteracting = true;
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-        animationFrameId.current = null;
-      }
-    });
-    map.current.on('touchstart', () => {
-      userInteracting = true;
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-        animationFrameId.current = null;
-      }
-    });
-    map.current.on('mouseup', () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-    map.current.on('touchend', () => {
-      userInteracting = false;
-      spinGlobe();
-    });
-    spinGlobe();
-
-    // Click sur un pays - amélioration de la zone cliquable avec animation zoom
-    map.current.on('click', e => {
-      if (!map.current) return;
-
-      // Ignorer les clics sur un popup ou un marqueur
-      const target = (e.originalEvent && (e.originalEvent as any).target) as HTMLElement | null;
-      if (target && (target.closest('.mapboxgl-popup') || target.closest('.sacred-marker'))) {
-        return;
-      }
-
-      // Augmenter la zone de détection en utilisant un buffer de 20 pixels autour du clic
-      const bbox: [mapboxgl.PointLike, mapboxgl.PointLike] = [[e.point.x - 20, e.point.y - 20], [e.point.x + 20, e.point.y + 20]];
-
-      // Chercher dans les polygones des pays
-      let features = map.current.queryRenderedFeatures(bbox, {
-        layers: ['country-boundaries-fill']
-      });
-
-      // Si aucune feature trouvée avec country-boundaries, essayer avec les layers natives
-      if (!features || features.length === 0) {
-        features = map.current.queryRenderedFeatures(e.point, {
-          layers: map.current.getStyle().layers?.filter(layer => layer.id.includes('admin-0') || layer.id.includes('country') || layer.type === 'fill').map(layer => layer.id) || []
-        });
-      }
-      if (features && features.length > 0) {
-        // Récupérer le nom du pays dans différents formats possibles
-        const feature = features[0];
-        const countryName = feature.properties?.name_en || feature.properties?.name || feature.properties?.iso_3166_1 || feature.properties?.worldview;
-        if (countryName && map.current) {
-          logger.log('Country clicked:', countryName, 'from layer:', feature.layer?.id);
-
-          // Resume audio context if needed (browser requirement)
-          resumeAudioContext();
-
-          // Play whoosh sound effect
-          playWhooshSound();
-
-          // Pause la rotation du globe
-          setIsPaused(true);
-
-          // Calculer le centre approximatif du pays depuis les coordonnées du clic
-          const lngLat = e.lngLat;
-
-          // Animation de zoom vers le pays avec easing organique
-          map.current.flyTo({
-            center: [lngLat.lng, lngLat.lat],
-            zoom: 5,
-            // Zoom assez proche pour voir le pays
-            pitch: 45,
-            // Angle 3D
-            bearing: 0,
-            duration: 2200,
-            // Animation fluide de 2.2 secondes
-            essential: true,
-            easing: t => {
-              // Cubic bezier (0.25, 0.46, 0.45, 0.94) - ease-out-quad amélioré
-              return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-            }
-          });
-
-          // Attendre la fin de l'animation avant de naviguer
-          setTimeout(() => {
-            navigate(`/country/${countryName}`);
-          }, 1900); // Légèrement après l'animation pour un effet smooth
-        }
-      }
-    });
-
-    // Phase 3: Interaction hover améliorée avec pulsation
-    const handleMouseMove = throttle((e: mapboxgl.MapMouseEvent) => {
-      if (!map.current) return;
-      const countryFeatures = map.current.queryRenderedFeatures(e.point, {
-        layers: ['country-boundaries-fill']
-      });
-      const hasCountry = countryFeatures && countryFeatures.length > 0;
-      const countryCode = hasCountry ? countryFeatures[0].properties?.iso_3166_1 || '' : null;
-
-      // Mise à jour du curseur et du highlight
-      if (hoveredCountryCache.current !== countryCode) {
-        hoveredCountryCache.current = countryCode;
-        map.current.getCanvas().style.cursor = hasCountry ? 'pointer' : '';
-
-        // Activer le highlight avec animation pulsante
-        if (hasCountry && countryCode) {
-          map.current.setFilter('country-highlight', ['==', 'iso_3166_1', countryCode]);
-          map.current.setPaintProperty('country-highlight', 'line-opacity', 0.8);
-
-          // Ajouter classe CSS pour animation pulsante
-          map.current.getCanvas().classList.add('country-pulsing');
-        } else {
-          map.current.setFilter('country-highlight', ['==', 'iso_3166_1', '']);
-          map.current.setPaintProperty('country-highlight', 'line-opacity', 0);
-          map.current.getCanvas().classList.remove('country-pulsing');
-        }
-      }
-    }, 100);
-    map.current.on('mousemove', handleMouseMove);
-
-    // Nettoyage
-    return () => {
-      sizeObserverRef.current?.disconnect();
-      sizeObserverRef.current = null;
-      if (animationFrameId.current) {
-        cancelAnimationFrame(animationFrameId.current);
-      }
-      markers.current.forEach(marker => marker.remove());
-      map.current?.remove();
-      map.current = null;
-    };
-  }, [navigate, mapboxToken, showTokenInput, tripPlaces, containerReadyTick]); // Removed isPaused from deps
-
-  // Separate effect to handle isPaused changes without re-initializing the map
-  useEffect(() => {
-    if (!map.current) return;
-
-    // This will trigger the spinGlobe function to check isPaused state
-    // Force a re-evaluation of the rotation
-    if (!isPaused) {
-      // Resume spinning
-      const event = new CustomEvent('resume-spin');
-      map.current.getContainer().dispatchEvent(event);
-    }
-  }, [isPaused]);
-
-  // Effet séparé pour recharger les monuments - pipeline unifié
-  useEffect(() => {
-    if (map.current && map.current.loaded()) {
-      void applyFiltersAndRender();
-    }
-  }, [showMonuments, filters, userProgress.visitedPlaces]);
-
-  // Afficher la position de l'utilisateur sur la carte - optimisé
-  useEffect(() => {
-    if (!map.current || !map.current.loaded() || !userPosition) return;
-
-    // Si le marqueur existe déjà, juste mettre à jour sa position
-    if (userLocationMarker.current) {
-      userLocationMarker.current.setLngLat([userPosition.longitude, userPosition.latitude]);
-
-      // Update popup content
-      const popup = userLocationMarker.current.getPopup();
-      if (popup) {
-        popup.setHTML(`
-          <div style="padding: 12px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 8px; border: 1px solid rgba(46, 165, 255, 0.5);">
-            <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #2EA5FF;">📍 Votre position</h3>
-            <p style="margin: 0; font-size: 12px; color: #EAD7B5;">Précision: ~${Math.round(userPosition.accuracy)}m</p>
-          </div>
-        `);
-      }
-      return;
-    }
-
-    // Créer le marqueur seulement la première fois
-    const el = document.createElement('div');
-    el.className = 'user-location-marker';
-    el.style.cssText = `
-      width: 20px;
-      height: 20px;
-      background: #2EA5FF;
-      border: 3px solid #FFFFFF;
-      border-radius: 50%;
-      box-shadow: 0 0 15px rgba(46, 165, 255, 0.6), 0 0 30px rgba(46, 165, 255, 0.3);
-      cursor: pointer;
-      animation: pulse 2s infinite;
-    `;
-
-    // Ajouter une animation de pulsation (une seule fois)
-    if (!document.head.querySelector('style[data-user-marker]')) {
-      const style = document.createElement('style');
-      style.setAttribute('data-user-marker', 'true');
-      style.textContent = `
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    const popup = new mapboxgl.Popup({
-      offset: 25,
-      maxWidth: '250px',
-      className: 'user-location-popup'
-    }).setHTML(`
-        <div style="padding: 12px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 8px; border: 1px solid rgba(46, 165, 255, 0.5);">
-          <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #2EA5FF;">📍 Votre position</h3>
-          <p style="margin: 0; font-size: 12px; color: #EAD7B5;">Précision: ~${Math.round(userPosition.accuracy)}m</p>
-        </div>
-      `);
-    userLocationMarker.current = new mapboxgl.Marker({
-      element: el,
-      anchor: 'center'
-    }).setLngLat([userPosition.longitude, userPosition.latitude]).setPopup(popup).addTo(map.current);
-
-    // Afficher un message de succès seulement la première fois
-    if (!hasShownLocationToast.current) {
-      hasShownLocationToast.current = true;
-      toast.success('Position géolocalisée !');
-    }
-  }, [userPosition]);
-
-  // Recentrer automatiquement dès que la position est disponible si demandé
-  useEffect(() => {
-    if (!map.current || !userPosition || !isStyleReadyRef.current) return;
-    if (recenterOnPosition.current || !hasCenteredOnUser.current && geolocationEnabled) {
-      map.current.flyTo({
-        center: [userPosition.longitude, userPosition.latitude],
-        zoom: 15,
-        pitch: 60,
-        duration: 1200,
-        essential: true
-      });
-      hasCenteredOnUser.current = true;
-      recenterOnPosition.current = false;
-    }
-  }, [userPosition, geolocationEnabled]);
-  const handleRecenter = () => {
-    if (!map.current) return;
-
-    // Activer la géolocalisation si pas déjà active
-    if (!geolocationEnabled) {
-      setGeolocationEnabled(true);
-      recenterOnPosition.current = true;
-      toast.success('Géolocalisation activée');
-      return;
-    }
-
-    // Si on a une position géolocalisée, centrer dessus
-    if (userPosition) {
-      map.current.flyTo({
-        center: [userPosition.longitude, userPosition.latitude],
-        zoom: 15,
-        pitch: 60,
-        duration: 1200,
-        essential: true
-      });
-      toast.success('Carte recentrée sur votre position');
-    } else {
-      // Redemander la position
-      recenterOnPosition.current = true;
-      toast.info('Obtention de votre position...');
-    }
-  };
-  return <div className="relative w-full h-[70vh] min-h-[520px] rounded-xl overflow-hidden">
-      {/* Phase 2: Champ d'étoiles animé ultra-immersif */}
-      <div className="absolute inset-0 pointer-events-none star-field" style={{
-      background: 'radial-gradient(ellipse at center, rgba(5, 10, 25, 0.7) 0%, rgba(5, 10, 25, 1) 100%)',
-      backgroundImage: `
-            radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.9), transparent),
-            radial-gradient(1px 1px at 60% 70%, rgba(52, 224, 161, 0.8), transparent),
-            radial-gradient(1.5px 1.5px at 50% 50%, rgba(244, 197, 66, 0.7), transparent),
-            radial-gradient(2px 2px at 80% 10%, rgba(255,255,255,0.85), transparent),
-            radial-gradient(1px 1px at 90% 60%, rgba(52, 224, 161, 0.6), transparent),
-            radial-gradient(1px 1px at 33% 80%, rgba(255,255,255,0.75), transparent),
-            radial-gradient(2.5px 2.5px at 15% 90%, rgba(244, 197, 66, 0.5), transparent),
-            radial-gradient(1px 1px at 70% 20%, rgba(52, 224, 161, 0.7), transparent),
-            radial-gradient(1.5px 1.5px at 40% 60%, rgba(255,255,255,0.6), transparent),
-            radial-gradient(2px 2px at 85% 80%, rgba(244, 197, 66, 0.6), transparent)
-          `,
-      backgroundSize: '200% 200%',
-      animation: 'twinkle-stars 200s linear infinite'
-    }} />
-
+  return (
+    <div className="relative w-full h-full">
+      {/* Map container */}
+      <div ref={mapContainer} className="absolute inset-0" />
       
-      {/* Conteneur Mapbox */}
-      <div ref={mapContainer} className="globe-container" />
-      
-      {/* Geolocation button - positioned top left */}
-      <div className="absolute top-4 left-4">
+      {/* Geolocation button */}
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button onClick={handleRecenter} className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]" style={{
-              background: geolocationEnabled ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' : 'rgba(20, 43, 79, 0.8)',
-              color: geolocationEnabled ? '#0E1B3F' : '#F5F5F5',
-              borderColor: geolocationEnabled ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
-              boxShadow: geolocationEnabled ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 10px rgba(244, 197, 66, 0.2)'
-            }}>
-                <Locate className="w-5 h-5" />
+              <Button
+                variant={geolocationEnabled ? "default" : "secondary"}
+                size="icon"
+                onClick={handleRecenter}
+                className="rounded-full shadow-lg"
+              >
+                <Locate className="h-5 w-5" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{t('map.geolocation')}</p>
+              <p>{geolocationEnabled ? t('location.disable') : t('location.enable')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => navigate('/calendar')}
+                className="rounded-full shadow-lg"
+              >
+                <Calendar className="h-5 w-5" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('navigation.calendar')}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
       </div>
 
-      {/* Calendar button - positioned bottom left */}
-      <div className="absolute bottom-4 left-4">
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button onClick={() => navigate('/calendar')} className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]" style={{
-              background: 'rgba(20, 43, 79, 0.8)',
-              color: '#F5F5F5',
-              borderColor: 'rgba(52, 224, 161, 0.3)',
-              boxShadow: '0 0 10px rgba(244, 197, 66, 0.2)'
-            }}>
-                <Calendar className="w-5 h-5" />
-                <span className="hidden sm:inline">{t('calendar.button')}</span>
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('calendar.tooltip')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-      </div>
-
-      {/* Monument Filter - positioned top left */}
-      <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
-        <MonumentFilter 
-          externalFilters={filters} 
-          matchingCount={filteredCount}
-          onFilterChange={f => {
-            setFilters(f);
-            // Auto-show monuments when filters are active, hide when all filters cleared
-            const hasFilters = f.religions.length > 0 || f.types.length > 0;
-            setShowMonuments(hasFilters);
-          }} 
+      {/* Monument filter */}
+      <div className="absolute bottom-4 left-4 z-10">
+        <MonumentFilter
+          onFilterChange={handleFilterChange}
+          externalFilters={filters}
+          matchingCount={showMonuments ? filteredCount : undefined}
         />
       </div>
-
-      {/* Debug: Force clear markers */}
-      <div className="absolute top-14 left-2 sm:top-16 sm:left-4 z-50">
-        <Button variant="secondary" size="sm" onClick={() => {
-          const count = markers.current.length;
-          markers.current.forEach(m => m.remove());
-          markers.current = [];
-          console.log('🧹 Force clear markers clicked. Removed:', count);
-        }}>
-          Force Clear
-        </Button>
-      </div>
-      
-      {/* Toggle monuments button - positioned top right */}
-    </div>;
+    </div>
+  );
 };
+
 export default Globe3D;
