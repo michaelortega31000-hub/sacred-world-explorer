@@ -86,6 +86,7 @@ const Globe3D = ({
   const allPlacesRef = useRef<any[]>([]);
   const pendingFlyTo = useRef<{ lat: number; lng: number; zoom: number } | null>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const searchResultRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
   // Normalize string helper
   const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
@@ -530,7 +531,19 @@ const Globe3D = ({
     setSearchResults(results);
     setShowSearchResults(results.length > 0);
     setSelectedIndex(-1); // Reset selection when results change
+    searchResultRefs.current = []; // Reset refs array
   }, [searchTerm]);
+
+  // Scroll selected item into view
+  useEffect(() => {
+    if (selectedIndex >= 0 && searchResultRefs.current[selectedIndex]) {
+      searchResultRefs.current[selectedIndex]?.scrollIntoView({
+        behavior: 'smooth',
+        block: 'nearest',
+        inline: 'nearest'
+      });
+    }
+  }, [selectedIndex]);
 
   const handleSearchSelect = (place: any) => {
     const coords = sanitizeCoordinates(place.coordinates, place.id);
@@ -702,6 +715,7 @@ const Globe3D = ({
                     return (
                       <button
                         key={place.id}
+                        ref={(el) => (searchResultRefs.current[index] = el)}
                         onClick={() => handleSearchSelect(place)}
                         onMouseEnter={() => setSelectedIndex(index)}
                         className={cn(
