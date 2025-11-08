@@ -1,17 +1,26 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Filter, X, Search } from 'lucide-react';
+import { Filter, X, Search, Save, Trash2, Star } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { religionColors } from '@/config/religionColors';
 import { Religion } from '@/contexts/AppContext';
+import { useToast } from '@/hooks/use-toast';
 
 export interface FilterOptions {
   religions: Religion[];
   types: string[];
 }
+
+interface FilterPreset {
+  id: string;
+  name: string;
+  filters: FilterOptions;
+}
+
+const PRESETS_STORAGE_KEY = 'monument-filter-presets';
 
 interface MonumentFilterProps {
   onFilterChange: (filters: FilterOptions) => void;
@@ -24,6 +33,22 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const [selectedReligions, setSelectedReligions] = useState<Religion[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [presets, setPresets] = useState<FilterPreset[]>([]);
+  const [presetName, setPresetName] = useState('');
+  const [showSavePreset, setShowSavePreset] = useState(false);
+  const { toast } = useToast();
+
+  // Load presets from localStorage on mount
+  useEffect(() => {
+    const savedPresets = localStorage.getItem(PRESETS_STORAGE_KEY);
+    if (savedPresets) {
+      try {
+        setPresets(JSON.parse(savedPresets));
+      } catch (error) {
+        console.error('Failed to load presets:', error);
+      }
+    }
+  }, []);
 
   // Synchroniser avec des filtres externes (contrôle par le parent)
   useEffect(() => {
@@ -83,6 +108,69 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     setSelectedReligions([]);
     setSelectedTypes([]);
     onFilterChange({ religions: [], types: [] });
+  };
+
+  const savePreset = () => {
+    if (!presetName.trim()) {
+      toast({
+        title: "Nom requis",
+        description: "Veuillez entrer un nom pour ce préréglage",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!hasActiveFilters) {
+      toast({
+        title: "Aucun filtre actif",
+        description: "Veuillez sélectionner au moins un filtre avant de sauvegarder",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const newPreset: FilterPreset = {
+      id: Date.now().toString(),
+      name: presetName.trim(),
+      filters: {
+        religions: selectedReligions,
+        types: selectedTypes,
+      },
+    };
+
+    const updatedPresets = [...presets, newPreset];
+    setPresets(updatedPresets);
+    localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(updatedPresets));
+    
+    setPresetName('');
+    setShowSavePreset(false);
+    
+    toast({
+      title: "Préréglage sauvegardé",
+      description: `"${newPreset.name}" a été ajouté à vos préréglages`,
+    });
+  };
+
+  const loadPreset = (preset: FilterPreset) => {
+    setSelectedReligions(preset.filters.religions);
+    setSelectedTypes(preset.filters.types);
+    onFilterChange(preset.filters);
+    
+    toast({
+      title: "Préréglage appliqué",
+      description: `Filtres de "${preset.name}" appliqués`,
+    });
+  };
+
+  const deletePreset = (presetId: string) => {
+    const updatedPresets = presets.filter(p => p.id !== presetId);
+    setPresets(updatedPresets);
+    localStorage.setItem(PRESETS_STORAGE_KEY, JSON.stringify(updatedPresets));
+    
+    toast({
+      title: "Préréglage supprimé",
+      description: "Le préréglage a été supprimé",
+    });
   };
 
   const hasActiveFilters = selectedReligions.length > 0 || selectedTypes.length > 0;
@@ -205,20 +293,92 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
             </div>
             
             {/* Stats Row */}
-            {hasActiveFilters && matchingCount !== undefined && (
-              <div className="px-4 pb-3 flex items-center justify-between">
+            <div className="px-4 pb-3 flex items-center justify-between gap-2">
+              {hasActiveFilters && matchingCount !== undefined && (
                 <span className="text-xs text-[#EAD7B5]">
                   {matchingCount} monument{matchingCount !== 1 ? 's' : ''} trouvé{matchingCount !== 1 ? 's' : ''}
                 </span>
-                <button
-                  onClick={clearFilters}
-                  className="text-xs text-[#34E0A1] hover:text-[#3ffab8] transition-colors font-inter"
-                >
-                  ✕ Tout effacer
-                </button>
+              )}
+              <div className="flex gap-2 ml-auto">
+                {hasActiveFilters && (
+                  <>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => setShowSavePreset(!showSavePreset)}
+                      className="h-7 px-2 text-xs text-[#34E0A1] hover:text-[#3ffab8] hover:bg-[#34E0A1]/10"
+                    >
+                      <Save className="w-3 h-3 mr-1" />
+                      Sauver
+                    </Button>
+                    <button
+                      onClick={clearFilters}
+                      className="text-xs text-[#F4C542] hover:text-[#F4C542]/80 transition-colors font-inter"
+                    >
+                      ✕ Effacer
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+
+            {/* Save Preset Input */}
+            {showSavePreset && (
+              <div className="px-4 pb-3 animate-scale-in">
+                <div className="flex gap-2">
+                  <Input
+                    type="text"
+                    placeholder="Nom du préréglage..."
+                    value={presetName}
+                    onChange={(e) => setPresetName(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && savePreset()}
+                    className="h-8 text-sm bg-white/5 border-[#34E0A1]/30 text-[#F5F5F5] placeholder:text-[#EAD7B5]/50"
+                  />
+                  <Button
+                    size="sm"
+                    onClick={savePreset}
+                    className="h-8 px-3 bg-[#34E0A1] text-[#0E1B3F] hover:bg-[#3ffab8]"
+                  >
+                    <Save className="w-3 h-3" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>
+
+          {/* Saved Presets Section */}
+          {presets.length > 0 && (
+            <div className="px-4 py-3 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
+              <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter flex items-center gap-2">
+                <Star className="w-4 h-4 text-[#F4C542]" />
+                Préréglages ({presets.length})
+              </h4>
+              <div className="space-y-2">
+                {presets.map((preset) => (
+                  <div
+                    key={preset.id}
+                    className="flex items-center gap-2 p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-all"
+                  >
+                    <button
+                      onClick={() => loadPreset(preset)}
+                      className="flex-1 text-left text-sm text-[#F5F5F5] hover:text-[#34E0A1] transition-colors font-inter"
+                    >
+                      {preset.name}
+                      <span className="ml-2 text-xs text-[#EAD7B5]/60">
+                        ({preset.filters.religions.length + preset.filters.types.length})
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => deletePreset(preset.id)}
+                      className="text-[#F4C542]/60 hover:text-[#F4C542] transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Search Bar */}
           <div className="p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
