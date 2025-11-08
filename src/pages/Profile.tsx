@@ -188,7 +188,7 @@ const Profile = () => {
 
       const file = event.target.files[0];
       
-      // Validate file size (5MB limit for HEIC support)
+      // Client-side validation (UX only - server will validate too)
       const MAX_SIZE = 5 * 1024 * 1024; // 5MB
       if (file.size > MAX_SIZE) {
         toast({
@@ -248,20 +248,21 @@ const Profile = () => {
       
       const filePath = `${userId}/avatar.${fileExt}`;
 
-      // Upload image to storage
-      const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(filePath, processedFile, { 
-          upsert: true,
-          cacheControl: '0'
-        });
+      // Use secure server-side upload with validation
+      const { secureUpload } = await import('@/lib/secureUpload');
+      const uploadResult = await secureUpload({
+        bucket: 'avatars',
+        filePath,
+        file: processedFile,
+        upsert: true,
+      });
 
-      if (uploadError) throw uploadError;
+      if (!uploadResult.success || uploadResult.error) {
+        throw new Error(uploadResult.error || 'Upload failed');
+      }
 
-      // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(filePath);
+      // Use the URL from upload result (already contains public URL)
+      const publicUrl = uploadResult.url;
 
       // Update profile with clean URL (no cache buster in DB)
       const { error: updateError } = await supabase

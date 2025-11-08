@@ -52,7 +52,7 @@ export const captureARScene = async (
 };
 
 /**
- * Saves the captured image to Supabase Storage
+ * Saves the captured image to Supabase Storage with server-side validation
  * Returns a signed URL with 1-hour expiration for secure access
  */
 export const saveARCapture = async (
@@ -63,29 +63,25 @@ export const saveARCapture = async (
   const timestamp = Date.now();
   const fileName = `${userId}/${placeName}-${timestamp}.png`;
 
-  const { data, error } = await supabase.storage
-    .from('ar-captures')
-    .upload(fileName, blob, {
-      contentType: 'image/png',
-      upsert: false,
-    });
+  // Convert blob to file for upload
+  const file = new File([blob], 'ar-capture.png', { type: 'image/png' });
 
-  if (error) {
-    throw new Error(`Failed to upload AR capture: ${error.message}`);
-  }
+  // Use secure server-side upload with validation
+  const { secureUpload } = await import('@/lib/secureUpload');
+  const uploadResult = await secureUpload({
+    bucket: 'ar-captures',
+    filePath: fileName,
+    file,
+    upsert: false,
+  });
 
-  // Get signed URL with 1-hour expiration for secure access
-  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
-    .from('ar-captures')
-    .createSignedUrl(data.path, 3600); // 3600 seconds = 1 hour
-
-  if (signedUrlError || !signedUrlData) {
-    throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`);
+  if (!uploadResult.success || uploadResult.error) {
+    throw new Error(uploadResult.error || 'Failed to upload AR capture');
   }
 
   return {
-    url: signedUrlData.signedUrl,
-    path: data.path,
+    url: uploadResult.url,
+    path: uploadResult.path,
   };
 };
 
