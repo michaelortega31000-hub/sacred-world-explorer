@@ -275,16 +275,26 @@ const Globe3D = ({
       console.log('✅ Map style loaded successfully');
       setIsMapLoading(false);
 
-      // Add React control for MonumentFilter
+      // Add React control for MonumentFilter with responsive positioning
       try {
+        const isMobile = window.innerWidth < 640;
+        const position = isMobile ? 'top-left' : 'bottom-left';
+        
         class ReactControl {
           _container!: HTMLDivElement;
           onAdd() {
             this._container = document.createElement('div');
-            this._container.className = 'monument-filter-control pointer-events-auto relative';
+            this._container.className = 'mapboxgl-ctrl monument-filter-control pointer-events-auto relative';
             this._container.style.marginLeft = '8px';
-            this._container.style.marginBottom = 'calc(env(safe-area-inset-bottom, 0px) + 8px)';
-            this._container.style.zIndex = '60';
+            
+            // Responsive spacing
+            if (position === 'bottom-left') {
+              this._container.style.marginBottom = 'calc(env(safe-area-inset-bottom, 0px) + 76px)';
+            } else {
+              this._container.style.marginTop = '8px';
+            }
+            
+            this._container.style.zIndex = '200';
             return this._container;
           }
           onRemove() {
@@ -292,7 +302,7 @@ const Globe3D = ({
           }
         }
         const reactControl = new (ReactControl as any)();
-        map.current?.addControl(reactControl as any, 'bottom-left');
+        map.current?.addControl(reactControl as any, position);
         setFilterControlContainer((reactControl as any)._container);
       } catch (e) {
         console.warn('Failed to add filter control', e);
@@ -745,9 +755,18 @@ const Globe3D = ({
       </div>
 
       {/* Monument filter */}
-      {filterControlContainer && createPortal(
-        <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />,
-        filterControlContainer
+      {filterControlContainer ? (
+        createPortal(
+          <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />,
+          filterControlContainer
+        )
+      ) : (
+        // Fallback overlay if control not yet mounted
+        <div className="absolute inset-0 pointer-events-none flex items-start sm:items-end justify-start p-3 sm:p-4 z-[200]">
+          <div className="pointer-events-auto">
+            <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
+          </div>
+        </div>
       )}
     </div>;
 };
