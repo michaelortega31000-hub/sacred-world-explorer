@@ -95,8 +95,9 @@ const TripRouteMap = ({ places, savedPOIs = [], onMapReady }: TripRouteMapProps)
         },
       });
 
+      // Layer 1: Outer glow (wide halo)
       map.current.addLayer({
-        id: 'route',
+        id: 'route-glow-outer',
         type: 'line',
         source: 'route',
         layout: {
@@ -104,31 +105,115 @@ const TripRouteMap = ({ places, savedPOIs = [], onMapReady }: TripRouteMapProps)
           'line-cap': 'round',
         },
         paint: {
-          'line-color': 'hsl(var(--primary))',
-          'line-width': 4,
+          'line-color': 'hsl(43, 76%, 70%)', // sacred-gold
+          'line-width': 12,
+          'line-blur': 8,
+          'line-opacity': 0.3,
+        },
+      });
+
+      // Layer 2: Inner glow
+      map.current.addLayer({
+        id: 'route-glow-inner',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': 'hsl(43, 90%, 80%)',
+          'line-width': 8,
+          'line-blur': 4,
+          'line-opacity': 0.5,
+        },
+      });
+
+      // Layer 3: Main golden line
+      map.current.addLayer({
+        id: 'route-main',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': 'hsl(43, 76%, 70%)',
+          'line-width': 5,
+          'line-opacity': 0.95,
+        },
+      });
+
+      // Layer 4: Center highlight
+      map.current.addLayer({
+        id: 'route-highlight',
+        type: 'line',
+        source: 'route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': 'hsl(43, 100%, 90%)',
+          'line-width': 2,
           'line-opacity': 0.8,
         },
       });
+
+      // Add CSS animations
+      const style = document.createElement('style');
+      style.textContent = `
+        @keyframes pulse-gold {
+          0%, 100% {
+            box-shadow: 
+              0 0 0 2px hsl(43, 76%, 70%),
+              0 0 20px hsl(43, 76%, 70%, 0.6),
+              0 4px 12px rgba(0,0,0,0.3);
+            transform: scale(1);
+          }
+          50% {
+            box-shadow: 
+              0 0 0 2px hsl(43, 76%, 70%),
+              0 0 30px hsl(43, 76%, 70%, 0.8),
+              0 4px 16px rgba(0,0,0,0.4);
+            transform: scale(1.05);
+          }
+        }
+        .trip-marker {
+          animation: pulse-gold 2s ease-in-out infinite;
+        }
+        .trip-marker:hover {
+          animation: none;
+          transform: scale(1.15);
+        }
+      `;
+      document.head.appendChild(style);
 
       // Add markers for each place
       places.forEach((place, index) => {
         const el = document.createElement('div');
         el.className = 'trip-marker';
         el.style.cssText = `
-          width: 32px;
-          height: 32px;
+          width: 36px;
+          height: 36px;
           border-radius: 50%;
-          background: hsl(var(--primary));
-          color: hsl(var(--primary-foreground));
+          background: linear-gradient(135deg, hsl(43, 76%, 70%) 0%, hsl(43, 90%, 85%) 100%);
+          color: hsl(221, 75%, 15%);
           display: flex;
           align-items: center;
           justify-content: center;
           font-weight: bold;
-          font-size: 14px;
-          border: 3px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          font-size: 15px;
+          border: 3px solid hsl(43, 100%, 95%);
+          box-shadow: 
+            0 0 0 2px hsl(43, 76%, 70%),
+            0 0 20px hsl(43, 76%, 70%, 0.6),
+            0 4px 12px rgba(0,0,0,0.3);
           cursor: pointer;
           z-index: 10;
+          transition: all 0.3s ease;
+          will-change: transform;
         `;
         el.textContent = String(index + 1);
 
@@ -157,20 +242,40 @@ const TripRouteMap = ({ places, savedPOIs = [], onMapReady }: TripRouteMapProps)
         const el = document.createElement('div');
         el.className = 'poi-marker';
         el.style.cssText = `
-          width: 28px;
-          height: 28px;
+          width: 30px;
+          height: 30px;
           border-radius: 50%;
           background: ${config.color};
           color: white;
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 2px solid white;
-          box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+          border: 2px solid hsl(43, 76%, 70%);
+          box-shadow: 
+            0 0 0 1px hsl(43, 76%, 70%, 0.3),
+            0 2px 8px rgba(0,0,0,0.3);
           cursor: pointer;
           z-index: 5;
+          transition: all 0.3s ease;
         `;
         el.innerHTML = config.icon;
+        
+        // Add hover effect
+        el.addEventListener('mouseenter', () => {
+          el.style.transform = 'scale(1.15)';
+          el.style.boxShadow = `
+            0 0 0 1px hsl(43, 76%, 70%, 0.5),
+            0 0 15px hsl(43, 76%, 70%, 0.4),
+            0 4px 12px rgba(0,0,0,0.4)
+          `;
+        });
+        el.addEventListener('mouseleave', () => {
+          el.style.transform = 'scale(1)';
+          el.style.boxShadow = `
+            0 0 0 1px hsl(43, 76%, 70%, 0.3),
+            0 2px 8px rgba(0,0,0,0.3)
+          `;
+        });
 
         const popup = new mapboxgl.Popup({ 
           offset: 25,
