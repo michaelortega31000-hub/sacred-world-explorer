@@ -24,7 +24,7 @@ const Explore = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-6">
+            <TabsList className="grid w-full grid-cols-5 mb-2 sm:mb-4">
               <TabsTrigger value="map" className="gap-2">
                 <Globe className="w-4 h-4" />
                 <span className="hidden sm:inline">Carte 3D</span>
