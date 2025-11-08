@@ -29,7 +29,7 @@ const Explore = () => {
                 <Globe3D />
               </div>
               
-              <TabsList className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 grid grid-cols-5 bg-background/80 backdrop-blur-md shadow-lg border border-primary/20 p-2 sm:p-3 rounded-full sm:rounded-lg">
+              <TabsList className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 grid grid-cols-5 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-2 sm:p-3 rounded-full sm:rounded-lg">
                 <TabsTrigger value="map" className="gap-1 sm:gap-2">
                   <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">Carte 3D</span>
