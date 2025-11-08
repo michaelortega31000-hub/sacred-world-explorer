@@ -24,33 +24,34 @@ const Explore = () => {
           </div>
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-5 mb-2 sm:mb-4">
-              <TabsTrigger value="map" className="gap-1 sm:gap-2">
-                <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Carte 3D</span>
-              </TabsTrigger>
-              <TabsTrigger value="nearby" className="gap-1 sm:gap-2">
-                <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Proche</span>
-              </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-1 sm:gap-2">
-                <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Lieux</span>
-              </TabsTrigger>
-              <TabsTrigger value="challenges" className="gap-1 sm:gap-2">
-                <Target className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Défis</span>
-              </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-1 sm:gap-2">
-                <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
-                <span className="hidden sm:inline">Classement</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="map" className="space-y-2">
-              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl h-[calc(100vh-200px)] sm:h-[calc(100vh-220px)]">
+            <TabsContent value="map" className="relative space-y-2">
+              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]">
                 <Globe3D />
               </div>
+              
+              <TabsList className="absolute bottom-4 left-1/2 -translate-x-1/2 z-50 grid grid-cols-5 bg-background/80 backdrop-blur-md shadow-lg border border-primary/20 p-2 sm:p-3 rounded-full sm:rounded-lg">
+                <TabsTrigger value="map" className="gap-1 sm:gap-2">
+                  <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Carte 3D</span>
+                </TabsTrigger>
+                <TabsTrigger value="nearby" className="gap-1 sm:gap-2">
+                  <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Proche</span>
+                </TabsTrigger>
+                <TabsTrigger value="locations" className="gap-1 sm:gap-2">
+                  <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Lieux</span>
+                </TabsTrigger>
+                <TabsTrigger value="challenges" className="gap-1 sm:gap-2">
+                  <Target className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Défis</span>
+                </TabsTrigger>
+                <TabsTrigger value="rankings" className="gap-1 sm:gap-2">
+                  <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">Classement</span>
+                </TabsTrigger>
+              </TabsList>
+              
               <NearMeFeature />
             </TabsContent>
 
