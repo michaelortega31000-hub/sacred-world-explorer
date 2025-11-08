@@ -162,8 +162,12 @@ const Globe3D = ({
   // Update map source with filtered data
   const updateMapData = () => {
     if (!map.current || !isMapReadyRef.current) return;
-    if (!showMonuments) {
-      // Clear data
+    
+    // Only show monuments when filters are active
+    const hasActiveFilters = filters.religions.length > 0 || filters.types.length > 0;
+    
+    if (!showMonuments || !hasActiveFilters) {
+      // Clear data when no filters active
       const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
       if (source) {
         source.setData({
