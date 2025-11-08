@@ -116,9 +116,11 @@ const Globe3D = ({
       };
     }
 
-    // Nettoyer d'abord les anciens marqueurs
+    // Nettoyer d'abord les anciens marqueurs (aggressif + logs)
+    const prevMarkers = markers.current.length;
     markers.current.forEach(m => m.remove());
     markers.current = [];
+    console.log('🧹 Cleared markers:', prevMarkers);
 
     if (!showMonuments) {
       setFilteredCount(0);
@@ -130,6 +132,23 @@ const Globe3D = ({
       placesCacheRef.current = mockPlaces;
     }
     const mockPlaces = placesCacheRef.current!;
+
+    // Debug classification logs
+    try {
+      const sample = mockPlaces.slice(0, 20).map((p: any) => ({
+        id: p.id,
+        name: p.name,
+        type: p.type,
+        original: p.religion,
+        hasReligionField: !!p.religion,
+        inferred: inferReligionFromPlace(p.type, p.name),
+        final: getCanonReligion(p),
+      }));
+      console.log('🔎 Total places loaded:', mockPlaces.length);
+      console.log('🔎 Sample classification (first 20):', sample);
+    } catch (e) {
+      console.warn('Debug classification failed', e);
+    }
 
     // Appliquer les filtres (ou tout afficher si aucun filtre)
     let filteredPlaces = mockPlaces;
@@ -286,6 +305,7 @@ const Globe3D = ({
         return;
       }
 
+      console.log('🔵 Creating marker:', { id: place.id, name: place.name, religion: placeReligion, coords: [lng, lat] });
       const marker = new mapboxgl.Marker({
         element: el,
         anchor: 'center',
@@ -1096,8 +1116,19 @@ const Globe3D = ({
         />
       </div>
 
-      {/* Toggle monuments button - positioned top right */}
+      {/* Debug: Force clear markers */}
+      <div className="absolute top-14 left-2 sm:top-16 sm:left-4 z-50">
+        <Button variant="secondary" size="sm" onClick={() => {
+          const count = markers.current.length;
+          markers.current.forEach(m => m.remove());
+          markers.current = [];
+          console.log('🧹 Force clear markers clicked. Removed:', count);
+        }}>
+          Force Clear
+        </Button>
+      </div>
       
+      {/* Toggle monuments button - positioned top right */}
     </div>;
 };
 export default Globe3D;
