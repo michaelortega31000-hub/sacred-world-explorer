@@ -17,7 +17,6 @@ import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
 import { playWhooshSound, resumeAudioContext } from '@/utils/audioEffects';
 import { throttle } from '@/lib/throttle';
-
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
   onRecenterRef?: (fn: () => void) => void;
@@ -25,38 +24,61 @@ interface Globe3DProps {
   onPausedChange?: (paused: boolean) => void;
   tripPlaces?: string[];
 }
-
-const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tripPlaces = [] }: Globe3DProps) => {
+const Globe3D = ({
+  onCountryClick,
+  onRecenterRef,
+  onFlyToRef,
+  onPausedChange,
+  tripPlaces = []
+}: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
   const markers = useRef<mapboxgl.Marker[]>([]);
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
   const recenterOnPosition = useRef(false);
   const hasCenteredOnUser = useRef(false);
-  const savedCameraPosition = useRef<{ center: [number, number]; zoom: number; pitch: number } | null>(null);
+  const savedCameraPosition = useRef<{
+    center: [number, number];
+    zoom: number;
+    pitch: number;
+  } | null>(null);
   const navigate = useNavigate();
-  const { t, i18n } = useTranslation();
-  const { userProgress } = useApp();
+  const {
+    t,
+    i18n
+  } = useTranslation();
+  const {
+    userProgress
+  } = useApp();
   const [mapboxToken, setMapboxToken] = useState('');
   const [showTokenInput, setShowTokenInput] = useState(false);
   const [showMonuments, setShowMonuments] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
+  const [filters, setFilters] = useState<FilterOptions>({
+    religions: [],
+    types: []
+  });
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
-  const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
+  const {
+    position: userPosition,
+    error: geolocationError
+  } = useGeolocation(geolocationEnabled);
   const [containerReadyTick, setContainerReadyTick] = useState(0);
   const isStyleReadyRef = useRef(false);
-  const pendingFlyTo = useRef<Array<{ lat: number; lng: number; zoom: number }>>([]);
+  const pendingFlyTo = useRef<Array<{
+    lat: number;
+    lng: number;
+    zoom: number;
+  }>>([]);
   const hasLoadedMonuments = useRef(false);
   const hasShownLocationToast = useRef(false);
   const animationFrameId = useRef<number | null>(null);
   const hoveredCountryCache = useRef<string | null>(null);
   const sizeObserverRef = useRef<ResizeObserver | null>(null);
-  
+
   // Fonction helper pour normaliser les chaînes (sans accents, minuscules)
-  const normalize = (s: string) =>
-    s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
-    
+  const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+
   // Fonction pour voler vers des coordonnées spécifiques
   const handleFlyTo = (lat: number, lng: number, zoom: number = 15) => {
     if (map.current && isStyleReadyRef.current) {
@@ -71,34 +93,36 @@ const Globe3D = ({ onCountryClick, onRecenterRef, onFlyToRef, onPausedChange, tr
       });
     } else {
       // Carte pas prête: on met en file d'attente
-      pendingFlyTo.current.push({ lat, lng, zoom });
+      pendingFlyTo.current.push({
+        lat,
+        lng,
+        zoom
+      });
     }
   };
 
   // Exposer la fonction de recentrage via callback
-useEffect(() => {
-  if (onRecenterRef) {
-    onRecenterRef(() => handleRecenter());
-  }
-}, [onRecenterRef]);
+  useEffect(() => {
+    if (onRecenterRef) {
+      onRecenterRef(() => handleRecenter());
+    }
+  }, [onRecenterRef]);
 
   // Exposer la fonction flyTo via callback
-useEffect(() => {
-  if (onFlyToRef) {
-    onFlyToRef((lat, lng, zoom) => handleFlyTo(lat, lng, zoom));
-  }
-}, [onFlyToRef]);
-
+  useEffect(() => {
+    if (onFlyToRef) {
+      onFlyToRef((lat, lng, zoom) => handleFlyTo(lat, lng, zoom));
+    }
+  }, [onFlyToRef]);
   useEffect(() => {
     if (onPausedChange) {
       onPausedChange(isPaused);
     }
   }, [isPaused, onPausedChange]);
-
   useEffect(() => {
     // Token par défaut mis à jour
     const defaultToken = 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
-    
+
     // Essayer de récupérer depuis l'env
     const envToken = import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || import.meta.env.VITE_MAPBOX_TOKEN;
     if (envToken) {
@@ -116,14 +140,12 @@ useEffect(() => {
       }
     }
   }, []);
-
   const handleTokenSubmit = () => {
     if (mapboxToken) {
       localStorage.setItem('mapbox_token', mapboxToken);
       setShowTokenInput(false);
     }
   };
-
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken || showTokenInput) return;
 
@@ -132,20 +154,18 @@ useEffect(() => {
       toast.error("Votre navigateur ne supporte pas WebGL, requis pour afficher la carte 3D");
       return;
     }
-
     const containerEl = mapContainer.current!;
     const containerHeight = containerEl.clientHeight;
     const containerWidth = containerEl.clientWidth;
     logger.log('Globe3D init attempt', 'container size', containerWidth, containerHeight);
-
     if (containerHeight === 0 || containerWidth === 0) {
       logger.log('Container has no size yet, waiting with ResizeObserver...');
-      const resizeObserver = new ResizeObserver((entries) => {
+      const resizeObserver = new ResizeObserver(entries => {
         const r = entries[0]?.contentRect as DOMRectReadOnly;
         if (r && r.height > 0 && r.width > 0) {
           resizeObserver.disconnect();
           logger.log('Container now has size, re-triggering init');
-          setContainerReadyTick((v) => v + 1);
+          setContainerReadyTick(v => v + 1);
         }
       });
       resizeObserver.observe(containerEl);
@@ -153,24 +173,24 @@ useEffect(() => {
         resizeObserver.disconnect();
       };
     }
-
     mapboxgl.accessToken = mapboxToken;
     logger.log('Globe3D initializing map');
-
     const isMobile = window.innerWidth < 768;
-    
+
     // Initialiser la carte en mode globe - vue 3D immersive moderne
     // Style satellite-streets-v12 pour texture réaliste de la Terre
     map.current = new mapboxgl.Map({
       container: containerEl,
       style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      projection: { name: 'globe' },
+      projection: {
+        name: 'globe'
+      },
       zoom: isMobile ? 1.8 : 2.2,
       center: [10, 45],
       pitch: isMobile ? 45 : 55,
       bearing: -15,
       maxPitch: 85,
-      antialias: true, // Anti-aliasing pour qualité optimale
+      antialias: true // Anti-aliasing pour qualité optimale
     });
 
     // Observer les changements de taille après initialisation
@@ -187,19 +207,23 @@ useEffect(() => {
       if (!map.current) return;
       // Le style est prêt
       isStyleReadyRef.current = true;
-      
+
       // Force un resize initial pour garantir le rendu
       setTimeout(() => {
         map.current?.resize();
         logger.log('Globe3D: forced resize after style.load');
       }, 0);
-      
+
       // Atmosphère spatiale sobre et épurée
       map.current.setFog({
-        color: 'rgb(20, 30, 50)', // Bleu neutre
-        'high-color': 'rgb(80, 100, 140)', // Gris-bleu sobre
-        'horizon-blend': 0.2, // Transition douce
-        'space-color': 'rgb(5, 10, 20)', // Noir spatial
+        color: 'rgb(20, 30, 50)',
+        // Bleu neutre
+        'high-color': 'rgb(80, 100, 140)',
+        // Gris-bleu sobre
+        'horizon-blend': 0.2,
+        // Transition douce
+        'space-color': 'rgb(5, 10, 20)',
+        // Noir spatial
         'star-intensity': 0.8 // Étoiles visibles mais discrètes
       });
 
@@ -208,13 +232,11 @@ useEffect(() => {
 
       // Océans équilibrés avec shimmer harmonieux
       if (map.current.getLayer('water')) {
-        map.current.setPaintProperty('water', 'fill-color', [
-          'interpolate',
-          ['linear'],
-          ['zoom'],
-          0, '#0d2d4a', // Bleu océan équilibré
-          5, '#1a4d7a', // Bleu marine modéré
-          10, '#2682c8' // Bleu-cyan harmonieux
+        map.current.setPaintProperty('water', 'fill-color', ['interpolate', ['linear'], ['zoom'], 0, '#0d2d4a',
+        // Bleu océan équilibré
+        5, '#1a4d7a',
+        // Bleu marine modéré
+        10, '#2682c8' // Bleu-cyan harmonieux
         ]);
         map.current.setPaintProperty('water', 'fill-opacity', 0.75);
       }
@@ -223,7 +245,7 @@ useEffect(() => {
       if (map.current.getLayer('land')) {
         map.current.setPaintProperty('land', 'background-color', '#0a1628');
       }
-      
+
       // Layer de reflets sur l'eau (specular highlights)
       if (!map.current.getLayer('ocean-specular')) {
         try {
@@ -248,7 +270,7 @@ useEffect(() => {
       if (!map.current.getSource('country-boundaries')) {
         map.current.addSource('country-boundaries', {
           type: 'vector',
-          url: 'mapbox://mapbox.country-boundaries-v1',
+          url: 'mapbox://mapbox.country-boundaries-v1'
         } as any);
       }
 
@@ -274,13 +296,11 @@ useEffect(() => {
           source: 'country-boundaries',
           'source-layer': 'country_boundaries',
           paint: {
-            'line-color': [
-              'interpolate',
-              ['linear'],
-              ['zoom'],
-              0, '#46c8ff', // Cyan brillant de loin
-              5, '#7b2ff7', // Violet néon en zoom
-              10, '#ff00ff' // Magenta futuriste
+            'line-color': ['interpolate', ['linear'], ['zoom'], 0, '#46c8ff',
+            // Cyan brillant de loin
+            5, '#7b2ff7',
+            // Violet néon en zoom
+            10, '#ff00ff' // Magenta futuriste
             ],
             'line-width': 2,
             'line-opacity': 0.5,
@@ -288,7 +308,7 @@ useEffect(() => {
           }
         } as any);
       }
-      
+
       // Seconde ligne interne plus fine et brillante
       if (!map.current.getLayer('country-boundaries-inner')) {
         map.current.addLayer({
@@ -323,7 +343,9 @@ useEffect(() => {
 
       // Configurer la langue des labels selon la langue sélectionnée
       const langCode = i18n.language || 'fr';
-      const mapboxLangMap: { [key: string]: string } = {
+      const mapboxLangMap: {
+        [key: string]: string;
+      } = {
         'fr': 'fr',
         'en': 'en',
         'es': 'es',
@@ -341,7 +363,7 @@ useEffect(() => {
 
       // Charger les monuments
       loadMonuments();
-      
+
       // Dessiner l'itinéraire du voyage
       drawTripRoute();
 
@@ -369,16 +391,14 @@ useEffect(() => {
       }
 
       // Charger les données des lieux pour obtenir les coordonnées
-      import('@/data/placesData').then(({ mockPlaces }) => {
+      import('@/data/placesData').then(({
+        mockPlaces
+      }) => {
         if (!map.current) return;
-
-        const tripCoordinates = tripPlaces
-          .map(placeId => {
-            const place = mockPlaces.find(p => p.id === placeId);
-            return place ? place.coordinates : null;
-          })
-          .filter((coord): coord is [number, number] => coord !== null);
-
+        const tripCoordinates = tripPlaces.map(placeId => {
+          const place = mockPlaces.find(p => p.id === placeId);
+          return place ? place.coordinates : null;
+        }).filter((coord): coord is [number, number] => coord !== null);
         if (tripCoordinates.length < 2) return;
 
         // Créer une ligne GeoJSON
@@ -439,56 +459,48 @@ useEffect(() => {
       // Supprimer les anciens marqueurs
       markers.current.forEach(marker => marker.remove());
       markers.current = [];
-
       if (showMonuments) {
         // Charger les données des lieux
-        import('@/data/placesData').then(({ mockPlaces }) => {
+        import('@/data/placesData').then(({
+          mockPlaces
+        }) => {
           if (!map.current) return;
 
           // Filtrer les lieux selon les filtres actifs
           let filteredPlaces = mockPlaces;
-          
           if (filters.religions.length > 0 || filters.types.length > 0) {
             filteredPlaces = mockPlaces.filter(place => {
               // Préférer place.religion explicite, sinon inférer
               const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
               const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
-              
               const typeSelected = filters.types;
               const normalizedType = normalize(place.type);
               const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
-              const matchesType =
-                typeSelected.length === 0 ||
-                typeSelected.some(t => {
-                  const tLower = normalize(t);
-                  if (tLower.includes('pyram')) {
-                    return textBlobNorm.includes('pyram');
-                  }
-                  // Match partiel bilatéral pour gérer les variantes (église mémorial, etc.)
-                  return normalizedType.includes(tLower) || tLower.includes(normalizedType);
-                });
-              
+              const matchesType = typeSelected.length === 0 || typeSelected.some(t => {
+                const tLower = normalize(t);
+                if (tLower.includes('pyram')) {
+                  return textBlobNorm.includes('pyram');
+                }
+                // Match partiel bilatéral pour gérer les variantes (église mémorial, etc.)
+                return normalizedType.includes(tLower) || tLower.includes(normalizedType);
+              });
               return matchesReligion && matchesType;
             });
           }
-
           filteredPlaces.forEach(place => {
             const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
-            
             const placeReligion = inferReligionFromPlace(place.type, place.name);
             const isVisited = userProgress.visitedPlaces.includes(place.id);
             const markerColor = religionColors[placeReligion].marker;
-            
+
             // Déterminer le niveau d'importance
             const isMajorSite = place.points >= 150;
             const isImportantSite = place.points >= 100;
-            
-            const popup = new mapboxgl.Popup({ 
-              offset: 25, 
+            const popup = new mapboxgl.Popup({
+              offset: 25,
               maxWidth: '320px',
               className: 'sacred-popup'
-            })
-              .setHTML(`
+            }).setHTML(`
                 <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
                   <img src="${resolvedImageUrl || '/placeholder.svg'}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
                   <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
@@ -500,12 +512,11 @@ useEffect(() => {
                   </div>
                 </div>
               `);
-
             popup.on('open', () => {
               const container = popup.getElement();
               const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
               if (img) {
-                img.addEventListener('click', (e) => {
+                img.addEventListener('click', e => {
                   e.stopPropagation();
                   navigate(`/place/${place.id}`);
                 });
@@ -515,7 +526,6 @@ useEffect(() => {
             // Marqueur ultra-moderne
             const el = document.createElement('div');
             el.className = `sacred-marker-3d ${isMajorSite ? 'major-site' : ''} ${isImportantSite ? 'important-site' : ''}`;
-            
             const markerHTML = `
               ${isMajorSite ? `
                 <div class="marker-hologram-beam" style="
@@ -622,7 +632,6 @@ useEffect(() => {
                 ">✓</div>
               ` : ''}
             `;
-            
             el.innerHTML = markerHTML;
             el.style.cssText = `
               position: relative;
@@ -636,46 +645,45 @@ useEffect(() => {
 
             // Validation et correction des coordonnées si nécessaire
             const [lngRaw, latRaw] = place.coordinates;
-            let lng = lngRaw, lat = latRaw;
+            let lng = lngRaw,
+              lat = latRaw;
             if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) {
               console.warn('⚠️ Invalid coord order, swapping', place.id, place.coordinates);
               lng = latRaw;
               lat = lngRaw;
             }
-            
+
             // Vérification finale - si toujours invalide, skip ce point
-            if (isNaN(lng) || isNaN(lat) || lng === undefined || lat === undefined ||
-                Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-              console.warn('⚠️ Skipping invalid coordinates', place.id, { lng, lat });
+            if (isNaN(lng) || isNaN(lat) || lng === undefined || lat === undefined || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+              console.warn('⚠️ Skipping invalid coordinates', place.id, {
+                lng,
+                lat
+              });
               return;
             }
-
-            const marker = new mapboxgl.Marker({ 
+            const marker = new mapboxgl.Marker({
               element: el,
               anchor: 'center',
               pitchAlignment: 'map',
               rotationAlignment: 'map'
-            })
-              .setLngLat([lng, lat])
-              .setPopup(popup)
-              .addTo(map.current!);
-            
-            el.addEventListener('click', (ev) => {
+            }).setLngLat([lng, lat]).setPopup(popup).addTo(map.current!);
+            el.addEventListener('click', ev => {
               ev.stopPropagation();
               marker.togglePopup();
             });
-            el.addEventListener('touchend', (ev) => {
+            el.addEventListener('touchend', ev => {
               ev.stopPropagation();
               marker.togglePopup();
-            }, { passive: true });
-            
+            }, {
+              passive: true
+            });
             markers.current.push(marker);
           });
-          
-          console.log('📍 Monuments affichés:', filteredPlaces.length, 
-            'religions:', filters.religions, 
-            'types:', filters.types, 
-            'sample:', filteredPlaces.slice(0, 5).map(p => ({ id: p.id, name: p.name, type: p.type })));
+          console.log('📍 Monuments affichés:', filteredPlaces.length, 'religions:', filters.religions, 'types:', filters.types, 'sample:', filteredPlaces.slice(0, 5).map(p => ({
+            id: p.id,
+            name: p.name,
+            type: p.type
+          })));
         });
       }
     };
@@ -691,7 +699,6 @@ useEffect(() => {
     let isPausedLocal = isPaused;
     const secondsPerRevolution = 480; // Globe fait 1 tour en 8 minutes (2x plus lent)
     const maxSpinZoom = 3;
-
     function spinGlobe() {
       if (!map.current || isPausedLocal) {
         if (animationFrameId.current) {
@@ -700,7 +707,6 @@ useEffect(() => {
         }
         return;
       }
-      
       const zoom = map.current.getZoom();
       if (!userInteracting && zoom < maxSpinZoom) {
         const distancePerSecond = 360 / secondsPerRevolution;
@@ -708,107 +714,92 @@ useEffect(() => {
         center.lng -= distancePerSecond / 60;
         map.current.setCenter(center); // Use setCenter instead of easeTo for smoother performance
       }
-      
       animationFrameId.current = requestAnimationFrame(spinGlobe);
     }
-
-    map.current.on('mousedown', () => { 
-      userInteracting = true; 
+    map.current.on('mousedown', () => {
+      userInteracting = true;
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
         animationFrameId.current = null;
       }
     });
-    map.current.on('touchstart', () => { 
-      userInteracting = true; 
+    map.current.on('touchstart', () => {
+      userInteracting = true;
       if (animationFrameId.current) {
         cancelAnimationFrame(animationFrameId.current);
         animationFrameId.current = null;
       }
     });
-    map.current.on('mouseup', () => { 
-      userInteracting = false; 
-      spinGlobe(); 
+    map.current.on('mouseup', () => {
+      userInteracting = false;
+      spinGlobe();
     });
-    map.current.on('touchend', () => { 
-      userInteracting = false; 
-      spinGlobe(); 
+    map.current.on('touchend', () => {
+      userInteracting = false;
+      spinGlobe();
     });
-
     spinGlobe();
 
     // Click sur un pays - amélioration de la zone cliquable avec animation zoom
-    map.current.on('click', (e) => {
+    map.current.on('click', e => {
       if (!map.current) return;
-      
+
       // Ignorer les clics sur un popup ou un marqueur
       const target = (e.originalEvent && (e.originalEvent as any).target) as HTMLElement | null;
       if (target && (target.closest('.mapboxgl-popup') || target.closest('.sacred-marker'))) {
         return;
       }
-      
+
       // Augmenter la zone de détection en utilisant un buffer de 20 pixels autour du clic
-      const bbox: [mapboxgl.PointLike, mapboxgl.PointLike] = [
-        [e.point.x - 20, e.point.y - 20],
-        [e.point.x + 20, e.point.y + 20]
-      ];
-      
+      const bbox: [mapboxgl.PointLike, mapboxgl.PointLike] = [[e.point.x - 20, e.point.y - 20], [e.point.x + 20, e.point.y + 20]];
+
       // Chercher dans les polygones des pays
       let features = map.current.queryRenderedFeatures(bbox, {
         layers: ['country-boundaries-fill']
       });
-      
+
       // Si aucune feature trouvée avec country-boundaries, essayer avec les layers natives
       if (!features || features.length === 0) {
         features = map.current.queryRenderedFeatures(e.point, {
-          layers: map.current.getStyle().layers
-            ?.filter(layer => 
-              layer.id.includes('admin-0') || 
-              layer.id.includes('country') ||
-              layer.type === 'fill'
-            )
-            .map(layer => layer.id) || []
+          layers: map.current.getStyle().layers?.filter(layer => layer.id.includes('admin-0') || layer.id.includes('country') || layer.type === 'fill').map(layer => layer.id) || []
         });
       }
-      
       if (features && features.length > 0) {
         // Récupérer le nom du pays dans différents formats possibles
         const feature = features[0];
-        const countryName = 
-          feature.properties?.name_en || 
-          feature.properties?.name || 
-          feature.properties?.iso_3166_1 ||
-          feature.properties?.worldview;
-        
+        const countryName = feature.properties?.name_en || feature.properties?.name || feature.properties?.iso_3166_1 || feature.properties?.worldview;
         if (countryName && map.current) {
           logger.log('Country clicked:', countryName, 'from layer:', feature.layer?.id);
-          
+
           // Resume audio context if needed (browser requirement)
           resumeAudioContext();
-          
+
           // Play whoosh sound effect
           playWhooshSound();
-          
+
           // Pause la rotation du globe
           setIsPaused(true);
-          
+
           // Calculer le centre approximatif du pays depuis les coordonnées du clic
           const lngLat = e.lngLat;
-          
+
           // Animation de zoom vers le pays avec easing organique
           map.current.flyTo({
             center: [lngLat.lng, lngLat.lat],
-            zoom: 5, // Zoom assez proche pour voir le pays
-            pitch: 45, // Angle 3D
+            zoom: 5,
+            // Zoom assez proche pour voir le pays
+            pitch: 45,
+            // Angle 3D
             bearing: 0,
-            duration: 2200, // Animation fluide de 2.2 secondes
+            duration: 2200,
+            // Animation fluide de 2.2 secondes
             essential: true,
-            easing: (t) => {
+            easing: t => {
               // Cubic bezier (0.25, 0.46, 0.45, 0.94) - ease-out-quad amélioré
               return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
             }
           });
-          
+
           // Attendre la fin de l'animation avant de naviguer
           setTimeout(() => {
             navigate(`/country/${countryName}`);
@@ -820,24 +811,22 @@ useEffect(() => {
     // Phase 3: Interaction hover améliorée avec pulsation
     const handleMouseMove = throttle((e: mapboxgl.MapMouseEvent) => {
       if (!map.current) return;
-      
       const countryFeatures = map.current.queryRenderedFeatures(e.point, {
         layers: ['country-boundaries-fill']
       });
-      
       const hasCountry = countryFeatures && countryFeatures.length > 0;
-      const countryCode = hasCountry ? (countryFeatures[0].properties?.iso_3166_1 || '') : null;
-      
+      const countryCode = hasCountry ? countryFeatures[0].properties?.iso_3166_1 || '' : null;
+
       // Mise à jour du curseur et du highlight
       if (hoveredCountryCache.current !== countryCode) {
         hoveredCountryCache.current = countryCode;
         map.current.getCanvas().style.cursor = hasCountry ? 'pointer' : '';
-        
+
         // Activer le highlight avec animation pulsante
         if (hasCountry && countryCode) {
           map.current.setFilter('country-highlight', ['==', 'iso_3166_1', countryCode]);
           map.current.setPaintProperty('country-highlight', 'line-opacity', 0.8);
-          
+
           // Ajouter classe CSS pour animation pulsante
           map.current.getCanvas().classList.add('country-pulsing');
         } else {
@@ -847,7 +836,6 @@ useEffect(() => {
         }
       }
     }, 100);
-
     map.current.on('mousemove', handleMouseMove);
 
     // Nettoyage
@@ -866,7 +854,7 @@ useEffect(() => {
   // Separate effect to handle isPaused changes without re-initializing the map
   useEffect(() => {
     if (!map.current) return;
-    
+
     // This will trigger the spinGlobe function to check isPaused state
     // Force a re-evaluation of the rotation
     if (!isPaused) {
@@ -878,12 +866,15 @@ useEffect(() => {
 
   // Effet séparé pour recharger les monuments sans réinitialiser la carte
   useEffect(() => {
-    console.log('🔍 useEffect monuments triggered', { showMonuments, filters });
+    console.log('🔍 useEffect monuments triggered', {
+      showMonuments,
+      filters
+    });
     if (map.current && map.current.loaded()) {
       // Only reload on filter changes or first load, NOT on userPosition changes
       if (showMonuments) {
         console.log('✅ Loading monuments with filters:', filters);
-        
+
         // Sauvegarder la position actuelle de la caméra si géolocalisé
         if (geolocationEnabled && userPosition) {
           savedCameraPosition.current = {
@@ -896,10 +887,11 @@ useEffect(() => {
         // Supprimer les anciens marqueurs
         markers.current.forEach(marker => marker.remove());
         markers.current = [];
-
         if (showMonuments) {
           // Charger les données des lieux
-          import('@/data/placesData').then(({ mockPlaces }) => {
+          import('@/data/placesData').then(({
+            mockPlaces
+          }) => {
             if (!map.current) return;
             // Appliquer les filtres actifs
             let filteredPlaces = mockPlaces;
@@ -908,42 +900,35 @@ useEffect(() => {
                 // Préférer place.religion explicite, sinon inférer
                 const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
                 const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
-
                 const typeSelected = filters.types;
                 const normalizedType = normalize(place.type);
                 const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
-                const matchesType =
-                  typeSelected.length === 0 ||
-                  typeSelected.some(t => {
-                    const tLower = normalize(t);
-                    if (tLower.includes('pyram')) {
-                      return textBlobNorm.includes('pyram');
-                    }
-                    // Match partiel bilatéral pour gérer les variantes
-                    return normalizedType.includes(tLower) || tLower.includes(normalizedType);
-                  });
-
+                const matchesType = typeSelected.length === 0 || typeSelected.some(t => {
+                  const tLower = normalize(t);
+                  if (tLower.includes('pyram')) {
+                    return textBlobNorm.includes('pyram');
+                  }
+                  // Match partiel bilatéral pour gérer les variantes
+                  return normalizedType.includes(tLower) || tLower.includes(normalizedType);
+                });
                 return matchesReligion && matchesType;
               });
             }
-
             filteredPlaces.forEach(place => {
               const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
-              
               const placeReligion = inferReligionFromPlace(place.type, place.name);
               const isVisited = userProgress.visitedPlaces.includes(place.id);
               const markerColor = religionColors[placeReligion].marker;
-              
+
               // Déterminer le niveau d'importance du site
               const isMajorSite = place.points >= 150; // Sites majeurs (beams)
               const isImportantSite = place.points >= 100; // Sites importants (particules)
-              
-              const popup = new mapboxgl.Popup({ 
-                offset: 25, 
+
+              const popup = new mapboxgl.Popup({
+                offset: 25,
                 maxWidth: '320px',
                 className: 'sacred-popup'
-              })
-                .setHTML(`
+              }).setHTML(`
                   <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
                     <img src="${resolvedImageUrl || '/placeholder.svg'}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
                     <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
@@ -955,12 +940,11 @@ useEffect(() => {
                     </div>
                   </div>
                 `);
-
               popup.on('open', () => {
                 const container = popup.getElement();
                 const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
                 if (img) {
-                  img.addEventListener('click', (e) => {
+                  img.addEventListener('click', e => {
                     e.stopPropagation();
                     navigate(`/place/${place.id}`);
                   });
@@ -970,7 +954,7 @@ useEffect(() => {
               // Phase 4: Créer marqueur ultra-moderne avec effets avancés
               const el = document.createElement('div');
               el.className = `sacred-marker-3d ${isMajorSite ? 'major-site' : ''} ${isImportantSite ? 'important-site' : ''}`;
-              
+
               // Structure du marqueur avec couches multiples
               const markerHTML = `
                 <!-- Beam vertical pour sites majeurs -->
@@ -1062,7 +1046,6 @@ useEffect(() => {
                   ">✓</div>
                 ` : ''}
               `;
-              
               el.innerHTML = markerHTML;
               el.style.cssText = `
                 position: relative;
@@ -1076,46 +1059,45 @@ useEffect(() => {
 
               // Validation et correction des coordonnées si nécessaire
               const [lngRaw, latRaw] = place.coordinates;
-              let lng = lngRaw, lat = latRaw;
+              let lng = lngRaw,
+                lat = latRaw;
               if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) {
                 console.warn('⚠️ Invalid coord order, swapping', place.id, place.coordinates);
                 lng = latRaw;
                 lat = lngRaw;
               }
-              
+
               // Vérification finale - si toujours invalide, skip ce point
-              if (isNaN(lng) || isNaN(lat) || lng === undefined || lat === undefined ||
-                  Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-                console.warn('⚠️ Skipping invalid coordinates', place.id, { lng, lat });
+              if (isNaN(lng) || isNaN(lat) || lng === undefined || lat === undefined || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
+                console.warn('⚠️ Skipping invalid coordinates', place.id, {
+                  lng,
+                  lat
+                });
                 return;
               }
-
-              const marker = new mapboxgl.Marker({ 
+              const marker = new mapboxgl.Marker({
                 element: el,
                 anchor: 'center',
                 pitchAlignment: 'map',
                 rotationAlignment: 'map'
-              })
-                .setLngLat([lng, lat])
-                .setPopup(popup)
-                .addTo(map.current!);
-              
-              el.addEventListener('click', (ev) => {
+              }).setLngLat([lng, lat]).setPopup(popup).addTo(map.current!);
+              el.addEventListener('click', ev => {
                 ev.stopPropagation();
                 marker.togglePopup();
               });
-              el.addEventListener('touchend', (ev) => {
+              el.addEventListener('touchend', ev => {
                 ev.stopPropagation();
                 marker.togglePopup();
-              }, { passive: true });
-              
+              }, {
+                passive: true
+              });
               markers.current.push(marker);
             });
-            
-            console.log('📍 Monuments affichés:', filteredPlaces.length, 
-              'religions:', filters.religions, 
-              'types:', filters.types, 
-              'sample:', filteredPlaces.slice(0, 5).map(p => ({ id: p.id, name: p.name, type: p.type })));
+            console.log('📍 Monuments affichés:', filteredPlaces.length, 'religions:', filters.religions, 'types:', filters.types, 'sample:', filteredPlaces.slice(0, 5).map(p => ({
+              id: p.id,
+              name: p.name,
+              type: p.type
+            })));
 
             // Restaurer la position de la caméra si elle avait été sauvegardée
             if (savedCameraPosition.current && geolocationEnabled) {
@@ -1139,7 +1121,7 @@ useEffect(() => {
     // Si le marqueur existe déjà, juste mettre à jour sa position
     if (userLocationMarker.current) {
       userLocationMarker.current.setLngLat([userPosition.longitude, userPosition.latitude]);
-      
+
       // Update popup content
       const popup = userLocationMarker.current.getPopup();
       if (popup) {
@@ -1179,26 +1161,20 @@ useEffect(() => {
       `;
       document.head.appendChild(style);
     }
-
-    const popup = new mapboxgl.Popup({ 
+    const popup = new mapboxgl.Popup({
       offset: 25,
       maxWidth: '250px',
       className: 'user-location-popup'
-    })
-      .setHTML(`
+    }).setHTML(`
         <div style="padding: 12px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 8px; border: 1px solid rgba(46, 165, 255, 0.5);">
           <h3 style="margin: 0 0 8px 0; font-size: 14px; font-weight: 600; color: #2EA5FF;">📍 Votre position</h3>
           <p style="margin: 0; font-size: 12px; color: #EAD7B5;">Précision: ~${Math.round(userPosition.accuracy)}m</p>
         </div>
       `);
-
-    userLocationMarker.current = new mapboxgl.Marker({ 
+    userLocationMarker.current = new mapboxgl.Marker({
       element: el,
       anchor: 'center'
-    })
-      .setLngLat([userPosition.longitude, userPosition.latitude])
-      .setPopup(popup)
-      .addTo(map.current);
+    }).setLngLat([userPosition.longitude, userPosition.latitude]).setPopup(popup).addTo(map.current);
 
     // Afficher un message de succès seulement la première fois
     if (!hasShownLocationToast.current) {
@@ -1210,8 +1186,7 @@ useEffect(() => {
   // Recentrer automatiquement dès que la position est disponible si demandé
   useEffect(() => {
     if (!map.current || !userPosition || !isStyleReadyRef.current) return;
-
-    if (recenterOnPosition.current || (!hasCenteredOnUser.current && geolocationEnabled)) {
+    if (recenterOnPosition.current || !hasCenteredOnUser.current && geolocationEnabled) {
       map.current.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
         zoom: 15,
@@ -1223,10 +1198,9 @@ useEffect(() => {
       recenterOnPosition.current = false;
     }
   }, [userPosition, geolocationEnabled]);
-
   const handleRecenter = () => {
     if (!map.current) return;
-    
+
     // Activer la géolocalisation si pas déjà active
     if (!geolocationEnabled) {
       setGeolocationEnabled(true);
@@ -1234,7 +1208,7 @@ useEffect(() => {
       toast.success('Géolocalisation activée');
       return;
     }
-    
+
     // Si on a une position géolocalisée, centrer dessus
     if (userPosition) {
       map.current.flyTo({
@@ -1251,15 +1225,11 @@ useEffect(() => {
       toast.info('Obtention de votre position...');
     }
   };
-
-  return (
-    <div className="relative w-full h-[70vh] min-h-[520px] rounded-xl overflow-hidden">
+  return <div className="relative w-full h-[70vh] min-h-[520px] rounded-xl overflow-hidden">
       {/* Phase 2: Champ d'étoiles animé ultra-immersif */}
-      <div 
-        className="absolute inset-0 pointer-events-none star-field"
-        style={{
-          background: 'radial-gradient(ellipse at center, rgba(5, 10, 25, 0.7) 0%, rgba(5, 10, 25, 1) 100%)',
-          backgroundImage: `
+      <div className="absolute inset-0 pointer-events-none star-field" style={{
+      background: 'radial-gradient(ellipse at center, rgba(5, 10, 25, 0.7) 0%, rgba(5, 10, 25, 1) 100%)',
+      backgroundImage: `
             radial-gradient(2px 2px at 20% 30%, rgba(255,255,255,0.9), transparent),
             radial-gradient(1px 1px at 60% 70%, rgba(52, 224, 161, 0.8), transparent),
             radial-gradient(1.5px 1.5px at 50% 50%, rgba(244, 197, 66, 0.7), transparent),
@@ -1271,35 +1241,25 @@ useEffect(() => {
             radial-gradient(1.5px 1.5px at 40% 60%, rgba(255,255,255,0.6), transparent),
             radial-gradient(2px 2px at 85% 80%, rgba(244, 197, 66, 0.6), transparent)
           `,
-          backgroundSize: '200% 200%',
-          animation: 'twinkle-stars 200s linear infinite',
-        }}
-      />
+      backgroundSize: '200% 200%',
+      animation: 'twinkle-stars 200s linear infinite'
+    }} />
 
       
       {/* Conteneur Mapbox */}
-      <div 
-        ref={mapContainer} 
-        className="globe-container"
-      />
+      <div ref={mapContainer} className="globe-container" />
       
       {/* Geolocation button - positioned top left */}
       <div className="absolute top-4 left-4">
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                onClick={handleRecenter}
-                className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]"
-                style={{
-                  background: geolocationEnabled 
-                    ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' 
-                    : 'rgba(20, 43, 79, 0.8)',
-                  color: geolocationEnabled ? '#0E1B3F' : '#F5F5F5',
-                  borderColor: geolocationEnabled ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
-                  boxShadow: geolocationEnabled ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 10px rgba(244, 197, 66, 0.2)'
-                }}
-              >
+              <Button onClick={handleRecenter} className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]" style={{
+              background: geolocationEnabled ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' : 'rgba(20, 43, 79, 0.8)',
+              color: geolocationEnabled ? '#0E1B3F' : '#F5F5F5',
+              borderColor: geolocationEnabled ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
+              boxShadow: geolocationEnabled ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 10px rgba(244, 197, 66, 0.2)'
+            }}>
                 <Locate className="w-5 h-5" />
               </Button>
             </TooltipTrigger>
@@ -1315,16 +1275,12 @@ useEffect(() => {
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                onClick={() => navigate('/calendar')}
-                className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]"
-                style={{
-                  background: 'rgba(20, 43, 79, 0.8)',
-                  color: '#F5F5F5',
-                  borderColor: 'rgba(52, 224, 161, 0.3)',
-                  boxShadow: '0 0 10px rgba(244, 197, 66, 0.2)'
-                }}
-              >
+              <Button onClick={() => navigate('/calendar')} className="gap-2 backdrop-blur-md border-2 transition-all duration-300 min-h-[44px] min-w-[44px]" style={{
+              background: 'rgba(20, 43, 79, 0.8)',
+              color: '#F5F5F5',
+              borderColor: 'rgba(52, 224, 161, 0.3)',
+              boxShadow: '0 0 10px rgba(244, 197, 66, 0.2)'
+            }}>
                 <Calendar className="w-5 h-5" />
                 <span className="hidden sm:inline">{t('calendar.button')}</span>
               </Button>
@@ -1338,42 +1294,16 @@ useEffect(() => {
 
       {/* Monument Filter - positioned top left */}
       <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
-        <MonumentFilter 
-          externalFilters={filters}
-          onFilterChange={(f) => { 
-            setFilters(f); 
-            if (!showMonuments && (f.religions.length > 0 || f.types.length > 0)) {
-              setShowMonuments(true);
-            }
-          }} 
-        />
+        <MonumentFilter externalFilters={filters} onFilterChange={f => {
+        setFilters(f);
+        if (!showMonuments && (f.religions.length > 0 || f.types.length > 0)) {
+          setShowMonuments(true);
+        }
+      }} />
       </div>
 
       {/* Toggle monuments button - positioned top right */}
-      <Button
-        onClick={() => {
-          const next = !showMonuments;
-          setShowMonuments(next);
-          // Quand on active l'affichage, on montre TOUS les points d'abord
-          if (next) {
-            setFilters({ religions: [], types: [] });
-          }
-        }}
-        className="absolute top-2 right-2 sm:top-4 sm:right-4 gap-2 backdrop-blur-md border-2 transition-all duration-300 z-50"
-        style={{
-          background: showMonuments 
-            ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)' 
-            : 'rgba(20, 43, 79, 0.8)',
-          color: showMonuments ? '#0E1B3F' : '#F5F5F5',
-          borderColor: showMonuments ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
-          boxShadow: showMonuments ? '0 0 20px rgba(52, 224, 161, 0.4)' : '0 0 10px rgba(244, 197, 66, 0.2)'
-        }}
-      >
-        <MapPin className="w-4 h-4" />
-        <span className="hidden sm:inline">{showMonuments ? 'Masquer' : 'Afficher'}</span>
-      </Button>
-    </div>
-  );
+      
+    </div>;
 };
-
 export default Globe3D;
