@@ -189,10 +189,10 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     <div className="relative">
       {/* Filter Button */}
       <Button
-        size="lg"
+        size="sm"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "gap-3 backdrop-blur-md border-2 transition-all duration-300 relative h-14 px-6 text-base font-semibold shadow-xl",
+          "gap-2 backdrop-blur-md border-2 transition-all duration-300 relative h-10 px-4 text-sm font-semibold shadow-lg",
           hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F] animate-[glow_2s_ease-in-out_infinite]"
         )}
         style={{
