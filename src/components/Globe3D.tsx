@@ -252,8 +252,11 @@ const Globe3D = ({
       return;
     }
 
-    // Disable scroll zoom for better UX
-    map.current.scrollZoom.disable();
+    // Enable zoom controls for desktop and mobile
+    map.current.scrollZoom.enable(); // Mouse wheel zoom for desktop
+    map.current.touchZoomRotate.enable(); // Touch gestures for mobile/tablet
+    map.current.doubleClickZoom.enable(); // Double-click zoom
+    map.current.boxZoom.enable(); // Shift + drag to zoom
 
     // Map error handler
     map.current.on('error', (e) => {
