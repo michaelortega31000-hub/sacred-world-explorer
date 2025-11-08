@@ -920,7 +920,8 @@ const Globe3D = ({
             }
             filteredPlaces.forEach(place => {
               const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
-              const placeReligion = inferReligionFromPlace(place.type, place.name);
+              // FIXED: Use explicit religion if available, otherwise infer (consistent with filtering logic)
+              const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
               const isVisited = userProgress.visitedPlaces.includes(place.id);
               const markerColor = religionColors[placeReligion].marker;
 
@@ -1097,11 +1098,19 @@ const Globe3D = ({
               });
               markers.current.push(marker);
             });
-            console.log('📍 Monuments affichés:', filteredPlaces.length, 'religions:', filters.religions, 'types:', filters.types, 'sample:', filteredPlaces.slice(0, 5).map(p => ({
+            
+            // Enhanced debugging with geographic distribution
+            const coordSample = filteredPlaces.slice(0, 10).map(p => ({
               id: p.id,
               name: p.name,
-              type: p.type
-            })));
+              type: p.type,
+              religion: p.religion || inferReligionFromPlace(p.type, p.name),
+              coords: p.coordinates
+            }));
+            
+            console.log('📍 Monuments affichés:', filteredPlaces.length, 'religions:', filters.religions, 'types:', filters.types);
+            console.log('📍 Sample avec coordonnées:', coordSample);
+            console.log('📍 Markers créés et ajoutés à la carte:', markers.current.length);
 
             // Restaurer la position de la caméra si elle avait été sauvegardée
             if (savedCameraPosition.current && geolocationEnabled) {
