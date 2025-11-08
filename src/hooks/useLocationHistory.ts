@@ -10,7 +10,19 @@ interface LocationPoint {
   longitude: number;
   accuracy: number | null;
   recorded_at: string;
+  activity_type: 'walking' | 'cycling' | 'transport' | 'unknown';
+  speed: number | null;
 }
+
+type ActivityType = 'walking' | 'cycling' | 'transport' | 'unknown';
+
+// Determine activity type based on speed (km/h)
+const getActivityType = (speedKmh: number): ActivityType => {
+  if (speedKmh < 0) return 'unknown';
+  if (speedKmh <= 8) return 'walking';
+  if (speedKmh <= 30) return 'cycling';
+  return 'transport';
+};
 
 interface UseLocationHistoryProps {
   enabled: boolean;
@@ -60,7 +72,13 @@ export const useLocationHistory = ({ enabled, userPosition }: UseLocationHistory
 
       if (error) throw error;
 
-      setHistory(data || []);
+      // Cast activity_type to proper type
+      const typedData = (data || []).map(point => ({
+        ...point,
+        activity_type: (point.activity_type || 'unknown') as ActivityType,
+      }));
+
+      setHistory(typedData);
     } catch (error) {
       console.error('Error loading location history:', error);
     } finally {
@@ -75,18 +93,28 @@ export const useLocationHistory = ({ enabled, userPosition }: UseLocationHistory
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Check if user has moved at least 10 meters
+        let distance = 0;
+        let speed = 0;
+        let activityType: ActivityType = 'unknown';
+
+        // Calculate distance and speed if we have a previous position
         if (lastRecordedPosition.current) {
-          const distance = calculateDistance(
+          distance = calculateDistance(
             lastRecordedPosition.current.lat,
             lastRecordedPosition.current.lng,
             position.latitude,
             position.longitude
           );
 
+          // Don't record if moved less than 10m
           if (distance < 10) {
-            return; // Don't record if moved less than 10m
+            return;
           }
+
+          // Calculate speed (30 seconds between records)
+          const timeInHours = 30 / 3600; // 30 seconds in hours
+          speed = distance / 1000 / timeInHours; // Convert to km/h
+          activityType = getActivityType(speed);
         }
 
         const { error } = await supabase.from('location_history').insert({
@@ -95,6 +123,8 @@ export const useLocationHistory = ({ enabled, userPosition }: UseLocationHistory
           longitude: position.longitude,
           accuracy: position.accuracy,
           recorded_at: new Date(position.timestamp).toISOString(),
+          speed: speed > 0 ? speed : null,
+          activity_type: activityType,
         });
 
         if (error) throw error;

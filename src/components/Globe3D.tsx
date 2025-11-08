@@ -366,16 +366,12 @@ const Globe3D = ({
       map.current.addSource('location-trail', {
         type: 'geojson',
         data: {
-          type: 'Feature',
-          properties: {},
-          geometry: {
-            type: 'LineString',
-            coordinates: [],
-          },
+          type: 'FeatureCollection',
+          features: [],
         },
       });
 
-      // Add location trail layer (below places layer)
+      // Add location trail layer with activity-based colors (below places layer)
       map.current.addLayer({
         id: 'location-trail',
         type: 'line',
@@ -385,7 +381,14 @@ const Globe3D = ({
           'line-cap': 'round',
         },
         paint: {
-          'line-color': 'hsl(180, 100%, 50%)',
+          'line-color': [
+            'match',
+            ['get', 'activityType'],
+            'walking', 'hsl(142, 76%, 36%)', // Green for walking
+            'cycling', 'hsl(217, 91%, 60%)', // Blue for cycling
+            'transport', 'hsl(0, 84%, 60%)', // Red for transport
+            'hsl(210, 40%, 60%)', // Gray for unknown
+          ],
           'line-width': 4,
           'line-opacity': 0.8,
         },
@@ -486,23 +489,59 @@ const Globe3D = ({
     }
   }, [filters, showMonuments, userProgress.visitedPlaces]);
 
-  // Update location trail
+  // Update location trail with activity-based colors
   useEffect(() => {
     if (!map.current || !map.current.getSource('location-trail')) return;
 
-    const coordinates = locationHistory.map((point) => [
-      point.longitude,
-      point.latitude,
-    ]);
+    // Group consecutive points by activity type
+    const segments: Array<{
+      coordinates: [number, number][];
+      activityType: string;
+    }> = [];
+
+    let currentSegment: { coordinates: [number, number][]; activityType: string } | null = null;
+
+    locationHistory.forEach((point) => {
+      const coord: [number, number] = [point.longitude, point.latitude];
+      
+      if (!currentSegment || currentSegment.activityType !== point.activity_type) {
+        // Start new segment
+        if (currentSegment && currentSegment.coordinates.length > 0) {
+          // Add the first point of new segment to current segment for continuity
+          currentSegment.coordinates.push(coord);
+          segments.push(currentSegment);
+        }
+        currentSegment = {
+          coordinates: [coord],
+          activityType: point.activity_type,
+        };
+      } else {
+        // Continue current segment
+        currentSegment.coordinates.push(coord);
+      }
+    });
+
+    // Add the last segment
+    if (currentSegment && currentSegment.coordinates.length > 0) {
+      segments.push(currentSegment);
+    }
+
+    // Create a FeatureCollection with multiple LineStrings
+    const features = segments.map((segment) => ({
+      type: 'Feature' as const,
+      properties: {
+        activityType: segment.activityType,
+      },
+      geometry: {
+        type: 'LineString' as const,
+        coordinates: segment.coordinates,
+      },
+    }));
 
     const source = map.current.getSource('location-trail') as mapboxgl.GeoJSONSource;
     source.setData({
-      type: 'Feature',
-      properties: {},
-      geometry: {
-        type: 'LineString',
-        coordinates,
-      },
+      type: 'FeatureCollection',
+      features,
     });
   }, [locationHistory]);
 
@@ -887,6 +926,26 @@ const Globe3D = ({
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
+        )}
+
+        {/* Activity legend */}
+        {locationHistory.length > 0 && isRecording && (
+          <div className="bg-background/80 backdrop-blur-sm border border-border rounded-lg shadow-lg p-3 text-xs">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(142, 76%, 36%)' }} />
+                <span className="text-foreground">Marche</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(217, 91%, 60%)' }} />
+                <span className="text-foreground">Vélo</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(0, 84%, 60%)' }} />
+                <span className="text-foreground">Transport</span>
+              </div>
+            </div>
+          </div>
         )}
 
         <TooltipProvider>

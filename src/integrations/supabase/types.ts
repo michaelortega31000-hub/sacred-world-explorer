@@ -522,29 +522,35 @@ export type Database = {
       location_history: {
         Row: {
           accuracy: number | null
+          activity_type: string | null
           created_at: string
           id: string
           latitude: number
           longitude: number
           recorded_at: string
+          speed: number | null
           user_id: string
         }
         Insert: {
           accuracy?: number | null
+          activity_type?: string | null
           created_at?: string
           id?: string
           latitude: number
           longitude: number
           recorded_at?: string
+          speed?: number | null
           user_id: string
         }
         Update: {
           accuracy?: number | null
+          activity_type?: string | null
           created_at?: string
           id?: string
           latitude?: number
           longitude?: number
           recorded_at?: string
+          speed?: number | null
           user_id?: string
         }
         Relationships: []
