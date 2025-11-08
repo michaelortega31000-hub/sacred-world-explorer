@@ -22,6 +22,7 @@ interface FilterPreset {
 }
 
 const PRESETS_STORAGE_KEY = 'monument-filter-presets';
+const LAST_FILTERS_STORAGE_KEY = 'monument-last-filters';
 
 interface MonumentFilterProps {
   onFilterChange: (filters: FilterOptions) => void;
@@ -43,7 +44,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
 
-  // Load presets from localStorage on mount
+  // Load presets and last filters from localStorage on mount
   useEffect(() => {
     const savedPresets = localStorage.getItem(PRESETS_STORAGE_KEY);
     if (savedPresets) {
@@ -53,7 +54,36 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
         console.error('Failed to load presets:', error);
       }
     }
+
+    // Load and apply last used filters
+    const lastFilters = localStorage.getItem(LAST_FILTERS_STORAGE_KEY);
+    if (lastFilters && !externalFilters) {
+      try {
+        const parsed: FilterOptions = JSON.parse(lastFilters);
+        setSelectedReligions(parsed.religions || []);
+        setSelectedTypes(parsed.types || []);
+        onFilterChange(parsed);
+        
+        if ((parsed.religions?.length || 0) + (parsed.types?.length || 0) > 0) {
+          toast({
+            title: "Filtres restaurés",
+            description: "Vos derniers filtres ont été appliqués",
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load last filters:', error);
+      }
+    }
   }, []);
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    const filters: FilterOptions = {
+      religions: selectedReligions,
+      types: selectedTypes,
+    };
+    localStorage.setItem(LAST_FILTERS_STORAGE_KEY, JSON.stringify(filters));
+  }, [selectedReligions, selectedTypes]);
 
   // Synchroniser avec des filtres externes (contrôle par le parent)
   useEffect(() => {
