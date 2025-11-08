@@ -122,6 +122,28 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
         <Filter className="w-5 h-5" />
         <span className="hidden sm:inline">Filtre</span>
         
+        {/* Active Religion Color Dots */}
+        {selectedReligions.length > 0 && (
+          <div className="flex gap-1 items-center">
+            {selectedReligions.slice(0, 3).map((religionId) => {
+              const colorConfig = religionColors[religionId];
+              return (
+                <div
+                  key={religionId}
+                  className="w-2 h-2 rounded-full animate-pulse"
+                  style={{
+                    background: colorConfig.marker,
+                    boxShadow: `0 0 6px ${colorConfig.marker}`,
+                  }}
+                />
+              );
+            })}
+            {selectedReligions.length > 3 && (
+              <span className="text-xs font-bold">+{selectedReligions.length - 3}</span>
+            )}
+          </div>
+        )}
+        
         {/* Active Filters Count Badge */}
         {hasActiveFilters && (
           <Badge 
