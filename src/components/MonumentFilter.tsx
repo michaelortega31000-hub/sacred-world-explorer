@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,8 @@ import { cn } from '@/lib/utils';
 import { religionColors } from '@/config/religionColors';
 import { Religion } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
+import { mockPlaces } from '@/data/placesData';
+import { inferReligionFromPlace } from '@/lib/religionHelper';
 
 export interface FilterOptions {
   religions: Religion[];
@@ -43,6 +45,27 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
+
+  // Calculate religion counts from places data
+  const religionCounts = useMemo(() => {
+    const counts: Record<Religion, number> = {
+      christianity: 0,
+      islam: 0,
+      judaism: 0,
+      buddhism: 0,
+      hinduism: 0,
+      astronomy: 0,
+      traditional: 0,
+      atheism: 0,
+    };
+
+    mockPlaces.forEach(place => {
+      const religion = place.religion || inferReligionFromPlace(place.type, place.name);
+      counts[religion]++;
+    });
+
+    return counts;
+  }, []);
 
   // Load presets and last filters from localStorage on mount
   useEffect(() => {
@@ -416,6 +439,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
             {filteredReligions.map((religion) => {
             const isChecked = selectedReligions.includes(religion.id);
             const colorConfig = religionColors[religion.id];
+            const count = religionCounts[religion.id];
             
             return (
               <label
@@ -443,10 +467,13 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                   }}
                 />
                 <span className={cn(
-                  "text-sm font-medium font-inter transition-colors",
+                  "text-sm font-medium font-inter transition-colors flex-1",
                   isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
                 )}>
                   {religion.name}
+                </span>
+                <span className="text-xs text-[#EAD7B5]/60 font-inter">
+                  {count}
                 </span>
               </label>
             );
