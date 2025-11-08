@@ -67,6 +67,18 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     return counts;
   }, []);
 
+  // Calculate type counts from places data
+  const typeCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+
+    mockPlaces.forEach(place => {
+      const type = place.type;
+      counts[type] = (counts[type] || 0) + 1;
+    });
+
+    return counts;
+  }, []);
+
   // Load presets and last filters from localStorage on mount
   useEffect(() => {
     const savedPresets = localStorage.getItem(PRESETS_STORAGE_KEY);
@@ -495,6 +507,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
           <div className="space-y-2">
             {filteredMonumentTypes.map((type) => {
             const isChecked = selectedTypes.includes(type);
+            const count = typeCounts[type] || 0;
             
             return (
               <label
@@ -513,10 +526,13 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                   )}
                 />
                 <span className={cn(
-                  "text-sm font-medium font-inter transition-colors",
+                  "text-sm font-medium font-inter transition-colors flex-1",
                   isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
                 )}>
                   {type}
+                </span>
+                <span className="text-xs text-[#EAD7B5]/60 font-inter">
+                  {count}
                 </span>
               </label>
             );
