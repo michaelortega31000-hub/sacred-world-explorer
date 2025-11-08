@@ -606,7 +606,7 @@ const Globe3D = ({
       setShowMonuments(true);
     }
   };
-  return <div className="relative w-full" style={{
+  return <div className="relative w-full overflow-hidden" style={{
     height: '70vh',
     minHeight: '500px'
   }}>
@@ -716,13 +716,13 @@ const Globe3D = ({
       </div>
 
       {/* Monument filter */}
-      <div 
-        className="absolute left-4 z-[60] bottom-24 sm:bottom-6 pointer-events-auto"
-        style={{
-          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
-        }}
+      <div
+        className="absolute inset-0 z-[60] pointer-events-none flex items-end justify-start p-3 sm:p-4"
+        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
       >
-        <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
+        <div className="pointer-events-auto">
+          <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
+        </div>
       </div>
     </div>;
 };

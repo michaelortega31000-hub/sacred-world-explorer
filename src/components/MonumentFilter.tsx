@@ -193,7 +193,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "gap-2 backdrop-blur-md border-2 transition-all duration-300 relative h-10 px-4 text-sm font-semibold shadow-lg",
-          hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F] animate-[glow_2s_ease-in-out_infinite]"
+          hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F]"
         )}
         style={{
           background: hasActiveFilters
@@ -217,7 +217,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
               return (
                 <div
                   key={religionId}
-                  className="w-2 h-2 rounded-full animate-pulse"
+                  className="w-2 h-2 rounded-full"
                   style={{
                     background: colorConfig.marker,
                     boxShadow: `0 0 6px ${colorConfig.marker}`,
@@ -225,9 +225,6 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                 />
               );
             })}
-            {selectedReligions.length > 3 && (
-              <span className="text-xs font-bold">+{selectedReligions.length - 3}</span>
-            )}
           </div>
         )}
         
@@ -245,11 +242,12 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       {/* Filter Panel */}
       {isOpen && (
         <div
-          className="fixed left-2 sm:left-4 z-[70] bottom-28 sm:bottom-24 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in"
+          className="absolute left-0 z-[70] bottom-12 sm:bottom-14 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in"
           style={{
             background: 'rgba(20, 43, 79, 0.98)',
             borderColor: 'rgba(52, 224, 161, 0.4)',
             boxShadow: '0 8px 40px rgba(52, 224, 161, 0.3), 0 0 60px rgba(14, 27, 63, 0.6)',
+            marginBottom: 'env(safe-area-inset-bottom, 0px)',
           }}
         >
           {/* Header */}
