@@ -16,8 +16,8 @@ const Explore = () => {
   return <div className="min-h-screen bg-background pb-20">
     <Header />
       
-      <div className="container mx-auto px-4 py-2">
-        <div className="space-y-6">
+      <div className="container mx-auto px-2 py-1 sm:px-4 sm:py-2">
+        <div className="space-y-2">
           <div className="space-y-2">
             
             
@@ -47,8 +47,8 @@ const Explore = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="map" className="space-y-4">
-              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl h-[70vh]">
+            <TabsContent value="map" className="space-y-2">
+              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl h-[calc(100vh-200px)] sm:h-[calc(100vh-220px)]">
                 <Globe3D />
               </div>
               <NearMeFeature />
