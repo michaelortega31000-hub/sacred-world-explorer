@@ -1295,6 +1295,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_storage_quotas: {
+        Row: {
+          created_at: string
+          quota_bytes: number
+          updated_at: string
+          used_bytes: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          quota_bytes?: number
+          updated_at?: string
+          used_bytes?: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          quota_bytes?: number
+          updated_at?: string
+          used_bytes?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_subscriptions: {
         Row: {
           created_at: string
@@ -1608,6 +1632,10 @@ export type Database = {
           warning: number
         }[]
       }
+      get_storage_usage_percentage: {
+        Args: { p_user_id: string }
+        Returns: number
+      }
       get_user_payment_info: {
         Args: { _user_id: string }
         Returns: {
@@ -1622,6 +1650,22 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      initialize_user_storage_quota: {
+        Args: { p_user_id: string }
+        Returns: {
+          created_at: string
+          quota_bytes: number
+          updated_at: string
+          used_bytes: number
+          user_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "user_storage_quotas"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       is_admin: { Args: never; Returns: boolean }
       is_user_banned: { Args: { p_user_id: string }; Returns: boolean }

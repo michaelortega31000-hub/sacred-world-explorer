@@ -152,6 +152,49 @@ serve(async (req) => {
       );
     }
 
+    // Check user storage quota
+    let { data: quotaData, error: quotaError } = await supabaseClient
+      .from('user_storage_quotas')
+      .select('used_bytes, quota_bytes')
+      .eq('user_id', user.id)
+      .maybeSingle();
+
+    // Initialize quota if it doesn't exist
+    if (!quotaData) {
+      const { data: newQuota, error: initError } = await supabaseClient
+        .rpc('initialize_user_storage_quota', { p_user_id: user.id });
+      
+      if (initError) {
+        console.error(`[Upload] Failed to initialize quota for user ${user.id}:`, initError);
+        quotaData = { used_bytes: 0, quota_bytes: 104857600 }; // 100MB default
+      } else {
+        quotaData = newQuota;
+      }
+    }
+
+    const { used_bytes, quota_bytes } = quotaData;
+    const remainingBytes = quota_bytes - used_bytes;
+
+    // Check if user has enough quota
+    if (file.size > remainingBytes) {
+      const usedMB = (used_bytes / (1024 * 1024)).toFixed(2);
+      const quotaMB = (quota_bytes / (1024 * 1024)).toFixed(0);
+      const fileSizeMB = (file.size / (1024 * 1024)).toFixed(2);
+      
+      console.log(`[Upload] Quota exceeded for user ${user.id}: ${usedMB}/${quotaMB}MB used, attempting to upload ${fileSizeMB}MB`);
+      
+      return new Response(
+        JSON.stringify({ 
+          error: `Quota de stockage dépassé. Utilisé: ${usedMB}MB / ${quotaMB}MB. Ce fichier nécessite ${fileSizeMB}MB supplémentaires.`,
+          usedBytes: used_bytes,
+          quotaBytes: quota_bytes,
+          fileSize: file.size,
+          remainingBytes
+        }),
+        { status: 507, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Upload file to storage
     const { data, error: uploadError } = await supabaseClient.storage
       .from(bucket)
@@ -170,6 +213,25 @@ serve(async (req) => {
     }
 
     console.log(`[Upload] File uploaded successfully by user ${user.id}: ${bucket}/${filePath}`);
+
+    // Update user storage quota
+    const newUsedBytes = used_bytes + file.size;
+    const { error: updateQuotaError } = await supabaseClient
+      .from('user_storage_quotas')
+      .upsert({
+        user_id: user.id,
+        used_bytes: newUsedBytes,
+        updated_at: new Date().toISOString()
+      }, {
+        onConflict: 'user_id'
+      });
+
+    if (updateQuotaError) {
+      console.error(`[Upload] Failed to update quota for user ${user.id}:`, updateQuotaError);
+      // Don't fail the upload, just log the error
+    } else {
+      console.log(`[Upload] Updated storage quota for user ${user.id}: ${newUsedBytes}/${quota_bytes} bytes`);
+    }
 
     // Get the URL based on bucket type
     let fileUrl: string;
@@ -202,7 +264,13 @@ serve(async (req) => {
         path: data.path,
         url: fileUrl,
         size: file.size,
-        type: file.type
+        type: file.type,
+        quota: {
+          used: newUsedBytes,
+          total: quota_bytes,
+          remaining: quota_bytes - newUsedBytes,
+          percentageUsed: Math.round((newUsedBytes / quota_bytes) * 100)
+        }
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
