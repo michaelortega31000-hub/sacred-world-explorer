@@ -25,23 +25,23 @@ const Explore = () => {
 
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-5 mb-2 sm:mb-4">
-              <TabsTrigger value="map" className="gap-2">
+              <TabsTrigger value="map" className="gap-1 sm:gap-2">
                 <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Carte 3D</span>
               </TabsTrigger>
-              <TabsTrigger value="nearby" className="gap-2">
+              <TabsTrigger value="nearby" className="gap-1 sm:gap-2">
                 <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Proche</span>
               </TabsTrigger>
-              <TabsTrigger value="locations" className="gap-2">
+              <TabsTrigger value="locations" className="gap-1 sm:gap-2">
                 <MapPin className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Lieux</span>
               </TabsTrigger>
-              <TabsTrigger value="challenges" className="gap-2">
+              <TabsTrigger value="challenges" className="gap-1 sm:gap-2">
                 <Target className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Défis</span>
               </TabsTrigger>
-              <TabsTrigger value="rankings" className="gap-2">
+              <TabsTrigger value="rankings" className="gap-1 sm:gap-2">
                 <Trophy className="w-3 h-3 sm:w-4 sm:h-4" />
                 <span className="hidden sm:inline">Classement</span>
               </TabsTrigger>
