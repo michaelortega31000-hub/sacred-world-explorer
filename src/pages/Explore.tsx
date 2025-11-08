@@ -48,7 +48,7 @@ const Explore = () => {
             </TabsList>
 
             <TabsContent value="map" className="space-y-4">
-              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl min-h-[70vh]">
+              <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl h-[70vh]">
                 <Globe3D />
               </div>
               <NearMeFeature />

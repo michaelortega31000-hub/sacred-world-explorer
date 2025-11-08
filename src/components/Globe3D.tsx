@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Locate, Search, X } from 'lucide-react';
+import { Calendar, Locate, Search, X, Loader2, AlertCircle } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
@@ -77,6 +77,8 @@ const Globe3D = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [isMapLoading, setIsMapLoading] = useState(true);
+  const [mapError, setMapError] = useState<string | null>(null);
   
   const isMapReadyRef = useRef(false);
   const allPlacesRef = useRef<any[]>([]);
@@ -218,23 +220,34 @@ const Globe3D = ({
     if (!mapContainer.current || map.current) return;
 
     const token = getMapboxToken();
+    console.log('🗺️ Initializing Mapbox with token:', token.substring(0, 20) + '...');
     mapboxgl.accessToken = token;
 
     if (!mapboxgl.supported()) {
-      toast.error("WebGL n'est pas supporté par votre navigateur");
+      const error = "WebGL n'est pas supporté par votre navigateur";
+      setMapError(error);
+      setIsMapLoading(false);
+      toast.error(error);
       return;
     }
 
-    // Create map
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/satellite-streets-v12',
-      projection: { name: 'globe' },
-      center: [15, 30],
-      zoom: 1.8,
-      pitch: 0,
-      bearing: 0
-    });
+    try {
+      // Create map
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        projection: { name: 'globe' },
+        center: [15, 30],
+        zoom: 1.8,
+        pitch: 0,
+        bearing: 0
+      });
+    } catch (error) {
+      console.error('❌ Map initialization error:', error);
+      setMapError('Échec de l\'initialisation de la carte: ' + (error as Error).message);
+      setIsMapLoading(false);
+      return;
+    }
 
     // Add navigation controls
     map.current.addControl(
@@ -245,9 +258,19 @@ const Globe3D = ({
     // Disable scroll zoom for better UX
     map.current.scrollZoom.disable();
 
+    // Map error handler
+    map.current.on('error', (e) => {
+      console.error('❌ Map error:', e);
+      setMapError('Échec du chargement de la carte. Vérifiez votre connexion.');
+      setIsMapLoading(false);
+    });
+
     // Wait for style to load
     map.current.on('style.load', async () => {
       if (!map.current) return;
+      
+      console.log('✅ Map style loaded successfully');
+      setIsMapLoading(false);
 
       // Add atmosphere
       map.current.setFog({
@@ -574,9 +597,35 @@ const Globe3D = ({
   };
 
   return (
-    <div className="relative w-full h-full">
+    <div className="relative w-full" style={{ height: '70vh', minHeight: '500px' }}>
+      {/* Loading overlay */}
+      {isMapLoading && !mapError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-20">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-2 text-primary" />
+            <p className="text-sm text-muted-foreground">Chargement du globe...</p>
+          </div>
+        </div>
+      )}
+      
+      {/* Error state */}
+      {mapError && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/50 backdrop-blur-sm z-20">
+          <div className="text-center p-6">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-3" />
+            <h3 className="text-lg font-semibold mb-2">Impossible de charger la carte</h3>
+            <p className="text-sm text-muted-foreground mb-4">{mapError}</p>
+            <Button onClick={() => window.location.reload()}>Recharger</Button>
+          </div>
+        </div>
+      )}
+      
       {/* Map container */}
-      <div ref={mapContainer} className="absolute inset-0" />
+      <div 
+        ref={mapContainer} 
+        className="absolute inset-0"
+        style={{ width: '100%', height: '100%' }}
+      />
       
       {/* Search bar */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-full max-w-md px-4">
