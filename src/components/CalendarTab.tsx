@@ -21,6 +21,7 @@ import EventNotificationBanner from '@/components/EventNotificationBanner';
 import CalendarLegend from '@/components/calendar/CalendarLegend';
 import UpcomingEventsWeek from '@/components/calendar/UpcomingEventsWeek';
 import CalendarDayCell from '@/components/calendar/CalendarDayCell';
+import MonthlyEventSummary from '@/components/calendar/MonthlyEventSummary';
 
 interface VisitEvent {
   date: Date;
@@ -210,6 +211,16 @@ const CalendarTab = () => {
           traditionColors={traditionColors}
           traditionLabels={traditionLabels}
         />
+
+        {/* Monthly Event Summary */}
+        {selectedDate && (
+          <MonthlyEventSummary 
+            selectedDate={selectedDate}
+            events={filteredReligiousEvents}
+            traditionColors={traditionColors}
+            traditionLabels={traditionLabels}
+          />
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Calendrier Views */}
