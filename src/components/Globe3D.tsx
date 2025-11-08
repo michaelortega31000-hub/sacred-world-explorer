@@ -17,6 +17,7 @@ import { toast } from 'sonner';
 import { getMapboxToken } from '@/lib/mapboxHelper';
 import type { Religion } from '@/contexts/AppContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { cn } from '@/lib/utils';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -77,6 +78,7 @@ const Globe3D = ({
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
+  const [selectedIndex, setSelectedIndex] = useState(-1);
   const [isMapLoading, setIsMapLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
   
@@ -517,6 +519,7 @@ const Globe3D = ({
     if (searchTerm.trim().length < 2) {
       setSearchResults([]);
       setShowSearchResults(false);
+      setSelectedIndex(-1);
       return;
     }
 
@@ -532,6 +535,7 @@ const Globe3D = ({
     
     setSearchResults(results);
     setShowSearchResults(results.length > 0);
+    setSelectedIndex(-1); // Reset selection when results change
   }, [searchTerm]);
 
   const handleSearchSelect = (place: any) => {
@@ -540,6 +544,7 @@ const Globe3D = ({
       handleFlyTo(coords[1], coords[0], 12);
       setSearchTerm('');
       setShowSearchResults(false);
+      setSelectedIndex(-1);
       setShowMonuments(true);
       
       // Highlight the selected place by temporarily filtering to show only it
@@ -585,6 +590,38 @@ const Globe3D = ({
           }
         }
       }, 2000);
+    }
+  };
+
+  // Handle keyboard navigation
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!showSearchResults || searchResults.length === 0) return;
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev < searchResults.length - 1 ? prev + 1 : 0
+        );
+        break;
+      case 'ArrowUp':
+        e.preventDefault();
+        setSelectedIndex(prev => 
+          prev > 0 ? prev - 1 : searchResults.length - 1
+        );
+        break;
+      case 'Enter':
+        e.preventDefault();
+        if (selectedIndex >= 0 && selectedIndex < searchResults.length) {
+          handleSearchSelect(searchResults[selectedIndex]);
+        }
+        break;
+      case 'Escape':
+        e.preventDefault();
+        setShowSearchResults(false);
+        setSelectedIndex(-1);
+        searchInputRef.current?.blur();
+        break;
     }
   };
 
@@ -638,17 +675,19 @@ const Globe3D = ({
               placeholder={t('search.monuments') || 'Search monuments...'}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleKeyDown}
               onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
               className="pl-10 pr-10 bg-background/95 backdrop-blur-sm shadow-lg border-border/50"
             />
             {searchTerm && (
-              <Button
+                <Button
                 variant="ghost"
                 size="icon"
                 className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
                 onClick={() => {
                   setSearchTerm('');
                   setShowSearchResults(false);
+                  setSelectedIndex(-1);
                 }}
               >
                 <X className="h-4 w-4" />
@@ -661,15 +700,20 @@ const Globe3D = ({
             <div className="absolute top-full mt-2 w-full bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg shadow-xl overflow-hidden">
               <ScrollArea className="max-h-[400px]">
                 <div className="p-2">
-                  {searchResults.map((place) => {
+                  {searchResults.map((place, index) => {
                     const religion = (place.religion || inferReligionFromPlace(place.type, place.name)) as keyof typeof religionColors;
                     const isVisited = userProgress.visitedPlaces.includes(place.id);
+                    const isSelected = index === selectedIndex;
                     
                     return (
                       <button
                         key={place.id}
                         onClick={() => handleSearchSelect(place)}
-                        className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors text-left"
+                        onMouseEnter={() => setSelectedIndex(index)}
+                        className={cn(
+                          "w-full flex items-start gap-3 p-3 rounded-lg transition-colors text-left",
+                          isSelected ? "bg-accent" : "hover:bg-accent/50"
+                        )}
                       >
                         <div
                           className="w-12 h-12 rounded-lg flex-shrink-0 bg-cover bg-center"
