@@ -65,7 +65,7 @@ const Globe3D = ({
   const {
     userProgress
   } = useApp();
-  const [showMonuments, setShowMonuments] = useState(false);
+  const [showMonuments, setShowMonuments] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     religions: [],
@@ -717,7 +717,7 @@ const Globe3D = ({
 
       {/* Monument filter */}
       <div className="absolute bottom-4 left-4 z-10">
-        <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} matchingCount={showMonuments ? filteredCount : undefined} />
+        <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} matchingCount={filteredCount} />
       </div>
     </div>;
 };
