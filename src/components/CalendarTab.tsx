@@ -20,7 +20,7 @@ import EventDetailEnriched from '@/components/calendar/EventDetailEnriched';
 import EventNotificationBanner from '@/components/EventNotificationBanner';
 import CalendarLegend from '@/components/calendar/CalendarLegend';
 import UpcomingEventsWeek from '@/components/calendar/UpcomingEventsWeek';
-import { CalendarMultiDots } from '@/components/calendar/CalendarMultiDots';
+import CalendarDayCell from '@/components/calendar/CalendarDayCell';
 
 interface VisitEvent {
   date: Date;
@@ -228,27 +228,27 @@ const CalendarTab = () => {
             </CardHeader>
             <CardContent className="flex justify-center">
               {calendarView === 'month' && (
-                <>
-                  <Calendar 
-                    mode="single" 
-                    selected={selectedDate} 
-                    onSelect={setSelectedDate} 
-                    locale={fr} 
-                    className={cn("rounded-md border pointer-events-auto")} 
-                    modifiers={{
-                      hasPersonalEvent: daysWithPersonalEvents,
-                      hasReligiousEvent: daysWithReligiousEvents
-                    }} 
-                    modifiersClassNames={{
-                      hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
-                      hasReligiousEvent: 'has-religious-event'
-                    }}
-                  />
-                  <CalendarMultiDots 
-                    eventsByDay={eventsByDay}
-                    traditionColors={traditionColors}
-                  />
-                </>
+                <Calendar 
+                  mode="single" 
+                  selected={selectedDate} 
+                  onSelect={setSelectedDate} 
+                  locale={fr} 
+                  className={cn("rounded-md border pointer-events-auto")} 
+                  modifiers={{
+                    hasPersonalEvent: daysWithPersonalEvents,
+                  }} 
+                  modifiersClassNames={{
+                    hasPersonalEvent: 'font-bold bg-primary/20 rounded-full',
+                  }}
+                  components={{
+                    DayContent: (props) => (
+                      <CalendarDayCell 
+                        {...props} 
+                        events={filteredReligiousEvents}
+                      />
+                    ),
+                  }}
+                />
               )}
               
               {calendarView === 'week' && (

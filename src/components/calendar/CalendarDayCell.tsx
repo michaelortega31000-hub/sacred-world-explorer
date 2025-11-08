@@ -2,87 +2,72 @@ import { isSameDay } from 'date-fns';
 import { ReligiousEvent } from '@/data/religiousEvents';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Badge } from '@/components/ui/badge';
+import { DayProps } from 'react-day-picker';
 
-interface CalendarDayCellProps {
-  day: Date;
+interface CalendarDayCellProps extends DayProps {
   events: ReligiousEvent[];
-  isSelected?: boolean;
-  isToday?: boolean;
-  onClick?: () => void;
 }
 
-const CalendarDayCell = ({ day, events, isSelected, isToday, onClick }: CalendarDayCellProps) => {
-  const dayEvents = events.filter(event => isSameDay(event.date, day));
+const CalendarDayCell = ({ date, displayMonth, events }: CalendarDayCellProps) => {
+  const dayEvents = events.filter(event => isSameDay(event.date, date));
   const hasEvents = dayEvents.length > 0;
   const displayDots = dayEvents.slice(0, 3);
   const remainingCount = dayEvents.length > 3 ? dayEvents.length - 3 : 0;
+  const isToday = isSameDay(date, new Date());
+
+  if (!hasEvents) {
+    return <>{date.getDate()}</>;
+  }
 
   const DayContent = (
     <div
-      onClick={onClick}
       className={cn(
-        "relative h-9 w-9 p-0 font-normal flex items-center justify-center rounded-md cursor-pointer transition-all duration-200",
-        isToday && "bg-accent text-accent-foreground font-bold",
-        isSelected && "bg-primary text-primary-foreground",
-        hasEvents && "calendar-day-with-events hover:scale-110",
-        !hasEvents && "hover:bg-accent/50"
+        "relative w-full h-full flex items-center justify-center transition-all duration-200",
+        hasEvents && "calendar-day-with-events hover:scale-110"
       )}
-      style={
-        hasEvents
-          ? {
-              background: `radial-gradient(circle at center, ${displayDots[0]?.color}15 0%, transparent 70%)`,
-            }
-          : undefined
-      }
+      style={{
+        background: `radial-gradient(circle at center, ${displayDots[0]?.color}15 0%, transparent 70%)`,
+      }}
     >
       {/* Badge de comptage si plus de 3 événements */}
       {remainingCount > 0 && (
-        <span className="absolute top-0 right-0 flex items-center justify-center w-4 h-4 text-[8px] font-bold text-white bg-primary rounded-full shadow-md animate-pulse-gentle z-10">
+        <span className="absolute -top-1 -right-1 flex items-center justify-center w-4 h-4 text-[8px] font-bold text-white bg-primary rounded-full shadow-md animate-pulse-gentle z-10">
           {remainingCount}+
         </span>
       )}
 
       {/* Numéro du jour */}
-      <span className="relative z-10">{day.getDate()}</span>
+      <span className="relative z-10 font-semibold">{date.getDate()}</span>
 
       {/* Dots colorés pour chaque événement */}
-      {hasEvents && (
-        <div className="absolute bottom-0.5 left-1/2 -translate-x-1/2 flex gap-0.5 z-10">
-          {displayDots.map((event, idx) => (
-            <div
-              key={idx}
-              className="w-1.5 h-1.5 rounded-full animate-pulse-subtle"
-              style={{
-                backgroundColor: event.color,
-                boxShadow: `0 0 6px ${event.color}`,
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-0.5 z-10">
+        {displayDots.map((event, idx) => (
+          <div
+            key={idx}
+            className="w-1.5 h-1.5 rounded-full animate-pulse-subtle"
+            style={{
+              backgroundColor: event.color,
+              boxShadow: `0 0 6px ${event.color}`,
+            }}
+          />
+        ))}
+      </div>
 
       {/* Glow effect au survol */}
-      {hasEvents && (
-        <div
-          className="absolute inset-0 rounded-md opacity-0 hover:opacity-20 transition-opacity pointer-events-none"
-          style={{
-            boxShadow: `0 0 20px ${displayDots[0]?.color}`,
-          }}
-        />
-      )}
+      <div
+        className="absolute inset-0 rounded-md opacity-0 hover:opacity-20 transition-opacity pointer-events-none"
+        style={{
+          boxShadow: `0 0 20px ${displayDots[0]?.color}`,
+        }}
+      />
     </div>
   );
-
-  if (!hasEvents) {
-    return DayContent;
-  }
 
   return (
     <TooltipProvider delayDuration={200}>
       <Tooltip>
         <TooltipTrigger asChild>
-          {DayContent}
+          <div className="w-full h-full">{DayContent}</div>
         </TooltipTrigger>
         <TooltipContent side="top" className="max-w-xs p-3">
           <div className="space-y-2">
