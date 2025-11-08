@@ -21,16 +21,7 @@ import type { Religion } from '@/contexts/AppContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
   onRecenterRef?: (fn: () => void) => void;
@@ -91,7 +82,7 @@ const Globe3D = ({
     position: userPosition,
     error: geolocationError
   } = useGeolocation(geolocationEnabled);
-  
+
   // Location history tracking
   const {
     history: locationHistory,
@@ -99,10 +90,10 @@ const Globe3D = ({
     loading: historyLoading,
     startRecording,
     stopRecording,
-    clearHistory,
+    clearHistory
   } = useLocationHistory({
     enabled: geolocationEnabled,
-    userPosition,
+    userPosition
   });
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
@@ -367,8 +358,8 @@ const Globe3D = ({
         type: 'geojson',
         data: {
           type: 'FeatureCollection',
-          features: [],
-        },
+          features: []
+        }
       });
 
       // Add location trail layer with activity-based colors (below places layer)
@@ -378,20 +369,20 @@ const Globe3D = ({
         source: 'location-trail',
         layout: {
           'line-join': 'round',
-          'line-cap': 'round',
+          'line-cap': 'round'
         },
         paint: {
-          'line-color': [
-            'match',
-            ['get', 'activityType'],
-            'walking', 'hsl(142, 76%, 36%)', // Green for walking
-            'cycling', 'hsl(217, 91%, 60%)', // Blue for cycling
-            'transport', 'hsl(0, 84%, 60%)', // Red for transport
-            'hsl(210, 40%, 60%)', // Gray for unknown
+          'line-color': ['match', ['get', 'activityType'], 'walking', 'hsl(142, 76%, 36%)',
+          // Green for walking
+          'cycling', 'hsl(217, 91%, 60%)',
+          // Blue for cycling
+          'transport', 'hsl(0, 84%, 60%)',
+          // Red for transport
+          'hsl(210, 40%, 60%)' // Gray for unknown
           ],
           'line-width': 4,
-          'line-opacity': 0.8,
-        },
+          'line-opacity': 0.8
+        }
       });
 
       // Add circle layer with religion-based colors
@@ -498,12 +489,12 @@ const Globe3D = ({
       coordinates: [number, number][];
       activityType: string;
     }> = [];
-
-    let currentSegment: { coordinates: [number, number][]; activityType: string } | null = null;
-
-    locationHistory.forEach((point) => {
+    let currentSegment: {
+      coordinates: [number, number][];
+      activityType: string;
+    } | null = null;
+    locationHistory.forEach(point => {
       const coord: [number, number] = [point.longitude, point.latitude];
-      
       if (!currentSegment || currentSegment.activityType !== point.activity_type) {
         // Start new segment
         if (currentSegment && currentSegment.coordinates.length > 0) {
@@ -513,7 +504,7 @@ const Globe3D = ({
         }
         currentSegment = {
           coordinates: [coord],
-          activityType: point.activity_type,
+          activityType: point.activity_type
         };
       } else {
         // Continue current segment
@@ -527,21 +518,20 @@ const Globe3D = ({
     }
 
     // Create a FeatureCollection with multiple LineStrings
-    const features = segments.map((segment) => ({
+    const features = segments.map(segment => ({
       type: 'Feature' as const,
       properties: {
-        activityType: segment.activityType,
+        activityType: segment.activityType
       },
       geometry: {
         type: 'LineString' as const,
-        coordinates: segment.coordinates,
-      },
+        coordinates: segment.coordinates
+      }
     }));
-
     const source = map.current.getSource('location-trail') as mapboxgl.GeoJSONSource;
     source.setData({
       type: 'FeatureCollection',
-      features,
+      features
     });
   }, [locationHistory]);
 
@@ -767,7 +757,6 @@ const Globe3D = ({
       setShowMonuments(true);
     }
   };
-
   const handleToggleTracking = () => {
     if (isRecording) {
       stopRecording();
@@ -778,7 +767,6 @@ const Globe3D = ({
       startRecording();
     }
   };
-
   const handleClearHistory = () => {
     clearHistory();
     setShowClearDialog(false);
@@ -884,22 +872,7 @@ const Globe3D = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button
-                variant={isRecording ? "default" : "secondary"}
-                size="icon"
-                onClick={handleToggleTracking}
-                className="relative rounded-full shadow-lg"
-              >
-                <Route className={`h-5 w-5 ${isRecording ? 'animate-pulse' : ''}`} />
-                {locationHistory.length > 0 && (
-                  <Badge
-                    variant="secondary"
-                    className="absolute -top-2 -right-2 h-5 min-w-5 flex items-center justify-center text-xs px-1 bg-primary text-primary-foreground"
-                  >
-                    {locationHistory.length}
-                  </Badge>
-                )}
-              </Button>
+              
             </TooltipTrigger>
             <TooltipContent>
               <p>{isRecording ? 'Arrêter l\'enregistrement' : 'Enregistrer mon parcours'}</p>
@@ -908,16 +881,10 @@ const Globe3D = ({
         </TooltipProvider>
 
         {/* Clear history button */}
-        {locationHistory.length > 0 && (
-          <TooltipProvider>
+        {locationHistory.length > 0 && <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button
-                  variant="destructive"
-                  size="icon"
-                  onClick={() => setShowClearDialog(true)}
-                  className="rounded-full shadow-lg"
-                >
+                <Button variant="destructive" size="icon" onClick={() => setShowClearDialog(true)} className="rounded-full shadow-lg">
                   <Trash2 className="h-5 w-5" />
                 </Button>
               </TooltipTrigger>
@@ -925,28 +892,31 @@ const Globe3D = ({
                 <p>Effacer l'historique</p>
               </TooltipContent>
             </Tooltip>
-          </TooltipProvider>
-        )}
+          </TooltipProvider>}
 
         {/* Activity legend */}
-        {locationHistory.length > 0 && isRecording && (
-          <div className="bg-background/80 backdrop-blur-sm border border-border rounded-lg shadow-lg p-3 text-xs">
+        {locationHistory.length > 0 && isRecording && <div className="bg-background/80 backdrop-blur-sm border border-border rounded-lg shadow-lg p-3 text-xs">
             <div className="space-y-1.5">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(142, 76%, 36%)' }} />
+                <div className="w-3 h-3 rounded-full" style={{
+              backgroundColor: 'hsl(142, 76%, 36%)'
+            }} />
                 <span className="text-foreground">Marche</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(217, 91%, 60%)' }} />
+                <div className="w-3 h-3 rounded-full" style={{
+              backgroundColor: 'hsl(217, 91%, 60%)'
+            }} />
                 <span className="text-foreground">Vélo</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: 'hsl(0, 84%, 60%)' }} />
+                <div className="w-3 h-3 rounded-full" style={{
+              backgroundColor: 'hsl(0, 84%, 60%)'
+            }} />
                 <span className="text-foreground">Transport</span>
               </div>
             </div>
-          </div>
-        )}
+          </div>}
 
         <TooltipProvider>
           <Tooltip>
