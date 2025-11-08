@@ -4,7 +4,8 @@ import 'mapbox-gl/dist/mapbox-gl.css';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { Calendar, Locate } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Calendar, Locate, Search, X } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
@@ -15,6 +16,7 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { toast } from 'sonner';
 import { getMapboxToken } from '@/lib/mapboxHelper';
 import type { Religion } from '@/contexts/AppContext';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -72,10 +74,14 @@ const Globe3D = ({
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const { position: userPosition, error: geolocationError } = useGeolocation(geolocationEnabled);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+  const [showSearchResults, setShowSearchResults] = useState(false);
   
   const isMapReadyRef = useRef(false);
   const allPlacesRef = useRef<any[]>([]);
   const pendingFlyTo = useRef<{ lat: number; lng: number; zoom: number } | null>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Normalize string helper
   const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
@@ -483,6 +489,82 @@ const Globe3D = ({
     }
   }, [isPaused, onPausedChange]);
 
+  // Handle search
+  useEffect(() => {
+    if (searchTerm.trim().length < 2) {
+      setSearchResults([]);
+      setShowSearchResults(false);
+      return;
+    }
+
+    const term = normalize(searchTerm);
+    const results = allPlacesRef.current
+      .filter(place => {
+        const placeName = normalize(place.name);
+        const placeCountry = normalize(place.country);
+        const placeType = normalize(place.type);
+        return placeName.includes(term) || placeCountry.includes(term) || placeType.includes(term);
+      })
+      .slice(0, 8); // Limit to 8 results
+    
+    setSearchResults(results);
+    setShowSearchResults(results.length > 0);
+  }, [searchTerm]);
+
+  const handleSearchSelect = (place: any) => {
+    const coords = sanitizeCoordinates(place.coordinates, place.id);
+    if (coords) {
+      handleFlyTo(coords[1], coords[0], 12);
+      setSearchTerm('');
+      setShowSearchResults(false);
+      setShowMonuments(true);
+      
+      // Highlight the selected place by temporarily filtering to show only it
+      setTimeout(() => {
+        if (map.current && isMapReadyRef.current) {
+          const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
+          if (source) {
+            const feature: PlaceFeature = {
+              type: 'Feature',
+              geometry: {
+                type: 'Point',
+                coordinates: coords
+              },
+              properties: {
+                id: place.id,
+                name: place.name,
+                type: place.type,
+                country: place.country,
+                points: place.points,
+                religion: place.religion || inferReligionFromPlace(place.type, place.name),
+                description: place.description,
+                imageUrl: place.imageUrl,
+                isVisited: userProgress.visitedPlaces.includes(place.id)
+              }
+            };
+            
+            // Show only this place temporarily
+            source.setData({ type: 'FeatureCollection', features: [feature] });
+            
+            // Click on it to show popup
+            setTimeout(() => {
+              const features = map.current?.queryRenderedFeatures(undefined, {
+                layers: ['places-circles']
+              });
+              if (features && features.length > 0) {
+                const clickEvent = {
+                  features: [features[0]],
+                  preventDefault: () => {}
+                };
+                map.current?.fire('click', clickEvent as any);
+              }
+            }, 500);
+          }
+        }
+      }, 2000);
+    }
+  };
+
   // Handle filter changes
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
@@ -495,6 +577,90 @@ const Globe3D = ({
     <div className="relative w-full h-full">
       {/* Map container */}
       <div ref={mapContainer} className="absolute inset-0" />
+      
+      {/* Search bar */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-full max-w-md px-4">
+        <div className="relative">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              ref={searchInputRef}
+              type="text"
+              placeholder={t('search.monuments') || 'Search monuments...'}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              onFocus={() => searchResults.length > 0 && setShowSearchResults(true)}
+              className="pl-10 pr-10 bg-background/95 backdrop-blur-sm shadow-lg border-border/50"
+            />
+            {searchTerm && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                onClick={() => {
+                  setSearchTerm('');
+                  setShowSearchResults(false);
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          
+          {/* Search results dropdown */}
+          {showSearchResults && searchResults.length > 0 && (
+            <div className="absolute top-full mt-2 w-full bg-background/95 backdrop-blur-sm border border-border/50 rounded-lg shadow-xl overflow-hidden">
+              <ScrollArea className="max-h-[400px]">
+                <div className="p-2">
+                  {searchResults.map((place) => {
+                    const religion = (place.religion || inferReligionFromPlace(place.type, place.name)) as keyof typeof religionColors;
+                    const isVisited = userProgress.visitedPlaces.includes(place.id);
+                    
+                    return (
+                      <button
+                        key={place.id}
+                        onClick={() => handleSearchSelect(place)}
+                        className="w-full flex items-start gap-3 p-3 rounded-lg hover:bg-accent/50 transition-colors text-left"
+                      >
+                        <div
+                          className="w-12 h-12 rounded-lg flex-shrink-0 bg-cover bg-center"
+                          style={{
+                            backgroundImage: place.imageUrl 
+                              ? `url(${getImageUrl(place.imageUrl)})` 
+                              : 'url(/placeholder.svg)'
+                          }}
+                        />
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-start justify-between gap-2">
+                            <h4 className="font-semibold text-sm text-foreground truncate">
+                              {place.name}
+                            </h4>
+                            {isVisited && (
+                              <span className="text-xs text-green-500 flex-shrink-0">✓</span>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {place.type} • {place.country}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span
+                              className="w-2 h-2 rounded-full flex-shrink-0"
+                              style={{ backgroundColor: religionColors[religion]?.marker || religionColors.traditional.marker }}
+                            />
+                            <span className="text-xs text-muted-foreground">
+                              {place.points} points
+                            </span>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+        </div>
+      </div>
       
       {/* Geolocation button */}
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
