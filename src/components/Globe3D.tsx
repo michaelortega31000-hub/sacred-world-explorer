@@ -162,10 +162,9 @@ const Globe3D = ({
   // Update map source with filtered data
   const updateMapData = () => {
     if (!map.current || !isMapReadyRef.current) return;
-    
+
     // Only show monuments when filters are active
     const hasActiveFilters = filters.religions.length > 0 || filters.types.length > 0;
-    
     if (!showMonuments || !hasActiveFilters) {
       // Clear data when no filters active
       const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
@@ -279,21 +278,19 @@ const Globe3D = ({
       try {
         const isMobile = window.innerWidth < 640;
         const position = isMobile ? 'top-left' : 'bottom-left';
-        
         class ReactControl {
           _container!: HTMLDivElement;
           onAdd() {
             this._container = document.createElement('div');
             this._container.className = 'mapboxgl-ctrl monument-filter-control pointer-events-auto relative';
             this._container.style.marginLeft = '8px';
-            
+
             // Responsive spacing
             if (position === 'bottom-left') {
               this._container.style.marginBottom = 'calc(env(safe-area-inset-bottom, 0px) + 76px)';
             } else {
               this._container.style.marginTop = '8px';
             }
-            
             this._container.style.zIndex = '200';
             return this._container;
           }
@@ -678,7 +675,7 @@ const Globe3D = ({
         <div className="relative">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input ref={searchInputRef} type="text" placeholder={t('search.monuments') || 'Search monuments...'} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} onKeyDown={handleKeyDown} onFocus={() => searchResults.length > 0 && setShowSearchResults(true)} className="pl-10 pr-10 bg-background/95 backdrop-blur-sm shadow-lg border-border/50" />
+            
             {searchTerm && <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => {
             setSearchTerm('');
             setShowSearchResults(false);
@@ -755,19 +752,13 @@ const Globe3D = ({
       </div>
 
       {/* Monument filter */}
-      {filterControlContainer ? (
-        createPortal(
-          <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />,
-          filterControlContainer
-        )
-      ) : (
-        // Fallback overlay if control not yet mounted
-        <div className="absolute inset-0 pointer-events-none flex items-start sm:items-end justify-start p-3 sm:p-4 z-[200]">
+      {filterControlContainer ? createPortal(<MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />, filterControlContainer) :
+    // Fallback overlay if control not yet mounted
+    <div className="absolute inset-0 pointer-events-none flex items-start sm:items-end justify-start p-3 sm:p-4 z-[200]">
           <div className="pointer-events-auto">
             <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
           </div>
-        </div>
-      )}
+        </div>}
     </div>;
 };
 export default Globe3D;
