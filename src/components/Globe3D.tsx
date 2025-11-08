@@ -893,13 +893,17 @@ const Globe3D = ({
             mockPlaces
           }) => {
             if (!map.current) return;
-            // Appliquer les filtres actifs
+            // Appliquer les filtres actifs - show all if no filters, otherwise filter
             let filteredPlaces = mockPlaces;
             if (filters.religions.length > 0 || filters.types.length > 0) {
               filteredPlaces = mockPlaces.filter(place => {
-                // Préférer place.religion explicite, sinon inférer
+                // Infer religion from place type and name
                 const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
+                
+                // Match religion filter (if any religions selected)
                 const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
+                
+                // Match type filter (if any types selected) - flexible matching for variations
                 const typeSelected = filters.types;
                 const normalizedType = normalize(place.type);
                 const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
@@ -1296,9 +1300,9 @@ const Globe3D = ({
       <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
         <MonumentFilter externalFilters={filters} onFilterChange={f => {
         setFilters(f);
-        if (!showMonuments && (f.religions.length > 0 || f.types.length > 0)) {
-          setShowMonuments(true);
-        }
+        // Auto-show monuments when filters are active, hide when all filters cleared
+        const hasFilters = f.religions.length > 0 || f.types.length > 0;
+        setShowMonuments(hasFilters);
       }} />
       </div>
 
