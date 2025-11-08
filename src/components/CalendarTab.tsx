@@ -213,19 +213,6 @@ const CalendarTab = () => {
           traditionLabels={traditionLabels}
         />
 
-        {/* User Reminders */}
-        <UserReminders />
-
-        {/* Monthly Event Summary */}
-        {selectedDate && (
-          <MonthlyEventSummary 
-            selectedDate={selectedDate}
-            events={filteredReligiousEvents}
-            traditionColors={traditionColors}
-            traditionLabels={traditionLabels}
-          />
-        )}
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Calendrier Views */}
           <Card className="border-border bg-card shadow-lg">
@@ -355,65 +342,6 @@ const CalendarTab = () => {
                       </div>)}
                   </div>}
               </ScrollArea>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Statistiques */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <Card className="border-border bg-card shadow-lg">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Lieux visités</p>
-                  <p className="text-3xl font-bold text-primary">
-                    {userProgress.visitedPlaces.length}
-                  </p>
-                </div>
-                <CheckCircle2 className="w-8 h-8 opacity-50 text-primary" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border bg-card shadow-lg">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Lieux planifiés</p>
-                  <p className="text-3xl font-bold text-accent">
-                    {userProgress.tripPlaces.length}
-                  </p>
-                </div>
-                <Clock className="w-8 h-8 opacity-50 text-accent" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border bg-card shadow-lg">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Événements 2025</p>
-                  <p className="text-3xl font-bold text-foreground">
-                    {filteredReligiousEvents.length}
-                  </p>
-                </div>
-                <Sparkles className="w-8 h-8 opacity-50 text-accent" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="border-border bg-card shadow-lg">
-            <CardContent className="pt-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">Traditions</p>
-                  <p className="text-3xl font-bold text-foreground">
-                    6
-                  </p>
-                </div>
-                <Globe className="w-8 h-8 opacity-50 text-primary" />
-              </div>
             </CardContent>
           </Card>
         </div>
