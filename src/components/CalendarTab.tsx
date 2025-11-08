@@ -22,6 +22,7 @@ import CalendarLegend from '@/components/calendar/CalendarLegend';
 import UpcomingEventsWeek from '@/components/calendar/UpcomingEventsWeek';
 import CalendarDayCell from '@/components/calendar/CalendarDayCell';
 import MonthlyEventSummary from '@/components/calendar/MonthlyEventSummary';
+import UserReminders from '@/components/calendar/UserReminders';
 
 interface VisitEvent {
   date: Date;
@@ -211,6 +212,9 @@ const CalendarTab = () => {
           traditionColors={traditionColors}
           traditionLabels={traditionLabels}
         />
+
+        {/* User Reminders */}
+        <UserReminders />
 
         {/* Monthly Event Summary */}
         {selectedDate && (

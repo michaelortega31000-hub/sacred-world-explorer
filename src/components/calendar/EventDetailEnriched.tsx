@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { ReligiousEvent } from "@/data/religiousEvents";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
@@ -9,6 +10,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import SetReminderDialog from "./SetReminderDialog";
 
 interface EventDetailEnrichedProps {
   event: ReligiousEvent | null;
@@ -18,6 +20,7 @@ interface EventDetailEnrichedProps {
 
 const EventDetailEnriched = ({ event, open, onOpenChange }: EventDetailEnrichedProps) => {
   const navigate = useNavigate();
+  const [showReminderDialog, setShowReminderDialog] = useState(false);
 
   if (!event) return null;
 
@@ -30,9 +33,7 @@ const EventDetailEnriched = ({ event, open, onOpenChange }: EventDetailEnrichedP
   };
 
   const handleAddReminder = () => {
-    toast.success("Rappel ajouté !", {
-      description: `Vous serez notifié 1 jour avant ${event.nameFr}`
-    });
+    setShowReminderDialog(true);
   };
 
   const handleShare = () => {
@@ -198,6 +199,13 @@ const EventDetailEnriched = ({ event, open, onOpenChange }: EventDetailEnrichedP
           </div>
         </ScrollArea>
       </DialogContent>
+
+      {/* Set Reminder Dialog */}
+      <SetReminderDialog 
+        event={event}
+        open={showReminderDialog}
+        onOpenChange={setShowReminderDialog}
+      />
     </Dialog>
   );
 };
