@@ -258,7 +258,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       {/* Filter Panel */}
       {isOpen && (
         <div
-          className="fixed bottom-20 left-2 sm:left-4 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in z-50"
+          className="fixed left-2 sm:left-4 z-[70] bottom-28 sm:bottom-24 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in"
           style={{
             background: 'rgba(20, 43, 79, 0.98)',
             borderColor: 'rgba(52, 224, 161, 0.4)',

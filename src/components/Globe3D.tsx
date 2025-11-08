@@ -716,7 +716,7 @@ const Globe3D = ({
       </div>
 
       {/* Monument filter */}
-      <div className="absolute bottom-4 left-4 z-10">
+      <div className="absolute left-4 z-[60] bottom-24 sm:bottom-6 pointer-events-auto">
         <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} matchingCount={filteredCount} />
       </div>
     </div>;
