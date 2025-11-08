@@ -498,7 +498,18 @@ const Globe3D = ({
 
   // Recenter function
   const handleRecenter = () => {
-    setGeolocationEnabled(!geolocationEnabled);
+    if (geolocationEnabled && userPosition) {
+      // If already enabled and we have a position, just zoom to it
+      map.current?.flyTo({
+        center: [userPosition.longitude, userPosition.latitude],
+        zoom: 12,
+        duration: 2000
+      });
+      toast.success(t('location.enabled'));
+    } else {
+      // Enable geolocation (will trigger zoom in useEffect)
+      setGeolocationEnabled(true);
+    }
   };
 
   // Expose functions via refs
