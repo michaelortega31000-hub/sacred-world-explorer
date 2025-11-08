@@ -193,8 +193,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "gap-3 backdrop-blur-md border-2 transition-all duration-300 relative h-14 px-6 text-base font-semibold shadow-xl",
-          hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F]",
-          !hasActiveFilters && "animate-pulse"
+          hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F]"
         )}
         style={{
           background: hasActiveFilters
@@ -240,18 +239,6 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
           >
             {activeFiltersCount}
           </Badge>
-        )}
-        
-        {/* Matching Count */}
-        {matchingCount !== undefined && matchingCount >= 0 && (
-          <span className={cn(
-            "text-xs px-2 py-0.5 rounded-full font-semibold min-w-[28px] text-center",
-            hasActiveFilters 
-              ? "bg-[#0E1B3F]/80 text-[#34E0A1]"
-              : "bg-[#34E0A1]/20 text-[#34E0A1]"
-          )}>
-            {matchingCount}
-          </span>
         )}
       </Button>
 

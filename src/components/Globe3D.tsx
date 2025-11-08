@@ -716,8 +716,13 @@ const Globe3D = ({
       </div>
 
       {/* Monument filter */}
-      <div className="absolute left-4 z-[60] bottom-24 sm:bottom-6 pointer-events-auto">
-        <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} matchingCount={filteredCount} />
+      <div 
+        className="absolute left-4 z-[60] bottom-24 sm:bottom-6 pointer-events-auto"
+        style={{
+          paddingBottom: 'env(safe-area-inset-bottom, 0px)'
+        }}
+      >
+        <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
       </div>
     </div>;
 };
