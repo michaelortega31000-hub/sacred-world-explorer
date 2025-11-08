@@ -79,6 +79,263 @@ const Globe3D = ({
   // Fonction helper pour normaliser les chaînes (sans accents, minuscules)
   const normalize = (s: string) => s.toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
 
+  // Helpers de filtrage et rendu unifiés
+  const placesCacheRef = useRef<any[] | null>(null);
+
+  const getCanonReligion = (place: any) => (place.religion || inferReligionFromPlace(place.type, place.name));
+
+  const matchesFilters = (place: any) => {
+    const placeReligion = getCanonReligion(place) as string;
+    const matchesReligion = filters.religions.length === 0 || (filters.religions as unknown as string[]).includes(placeReligion);
+
+    const typeSelected = filters.types;
+    const normalizedType = normalize(place.type);
+    const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
+    const matchesType = typeSelected.length === 0 || typeSelected.some(t => {
+      const tLower = normalize(t);
+      if (tLower.includes('pyram')) {
+        return textBlobNorm.includes('pyram');
+      }
+      // Match partiel bilatéral pour gérer les variantes (église mémorial, etc.)
+      return normalizedType.includes(tLower) || tLower.includes(normalizedType);
+    });
+
+    return matchesReligion && matchesType;
+  };
+
+  const applyFiltersAndRender = async (autoFit: boolean = true) => {
+    if (!map.current) return;
+
+    // Sauvegarder la caméra si la géolocalisation est active
+    if (geolocationEnabled && userPosition) {
+      savedCameraPosition.current = {
+        center: [map.current.getCenter().lng, map.current.getCenter().lat],
+        zoom: map.current.getZoom(),
+        pitch: map.current.getPitch(),
+      };
+    }
+
+    // Nettoyer d'abord les anciens marqueurs
+    markers.current.forEach(m => m.remove());
+    markers.current = [];
+
+    if (!showMonuments) return;
+
+    if (!placesCacheRef.current) {
+      const { mockPlaces } = await import('@/data/placesData');
+      placesCacheRef.current = mockPlaces;
+    }
+    const mockPlaces = placesCacheRef.current!;
+
+    // Appliquer les filtres (ou tout afficher si aucun filtre)
+    let filteredPlaces = mockPlaces;
+    if (filters.religions.length > 0 || filters.types.length > 0) {
+      filteredPlaces = mockPlaces.filter(matchesFilters);
+    }
+
+    // Créer les marqueurs
+    filteredPlaces.forEach(place => {
+      const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
+      const placeReligion = getCanonReligion(place) as keyof typeof religionColors;
+      const isVisited = userProgress.visitedPlaces.includes(place.id);
+      const markerColor = religionColors[placeReligion].marker;
+
+      const isMajorSite = place.points >= 150; // Sites majeurs
+      const isImportantSite = place.points >= 100; // Sites importants
+
+      const popup = new mapboxgl.Popup({
+        offset: 25,
+        maxWidth: '320px',
+        className: 'sacred-popup'
+      }).setHTML(`
+          <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
+            <img src="${resolvedImageUrl || '/placeholder.svg'}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
+            <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
+            <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${(place.description || '').substring(0, 150)}...</p>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${place.points} points</span>
+              ${isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
+            </div>
+          </div>
+        `);
+      popup.on('open', () => {
+        const container = popup.getElement();
+        const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
+        if (img) {
+          img.addEventListener('click', e => {
+            e.stopPropagation();
+            navigate(`/place/${place.id}`);
+          });
+        }
+      });
+
+      const el = document.createElement('div');
+      el.className = `sacred-marker-3d ${isMajorSite ? 'major-site' : ''} ${isImportantSite ? 'important-site' : ''}`;
+      const markerHTML = `
+        ${isMajorSite ? `
+          <div class="marker-beam" style="
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 2px;
+            height: 80px;
+            background: linear-gradient(to top, ${markerColor}, transparent);
+            opacity: 0.6;
+            animation: beam-pulse 2s ease-in-out infinite;
+          "></div>
+        ` : ''}
+        ${isImportantSite ? `
+          <div class="marker-particles">
+            <div class="particle" style="--delay: 0s; --color: ${markerColor}"></div>
+            <div class="particle" style="--delay: 0.5s; --color: ${markerColor}"></div>
+            <div class="particle" style="--delay: 1s; --color: ${markerColor}"></div>
+            <div class="particle" style="--delay: 1.5s; --color: ${markerColor}"></div>
+          </div>
+        ` : ''}
+        <div class="marker-halo-outer" style="
+          position: absolute;
+          width: 40px;
+          height: 40px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          border: 2px solid ${markerColor};
+          border-radius: 50%;
+          opacity: 0.3;
+          animation: halo-expand 3s ease-out infinite;
+        "></div>
+        <div class="marker-halo-inner" style="
+          position: absolute;
+          width: 28px;
+          height: 28px;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          border: 2px solid ${markerColor};
+          border-radius: 50%;
+          opacity: 0.5;
+          animation: halo-expand 2s ease-out infinite 0.5s;
+        "></div>
+        <div class="marker-core" style="
+          position: relative;
+          width: 16px;
+          height: 16px;
+          background: ${markerColor};
+          border: 3px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.9)'};
+          border-radius: 50%;
+          box-shadow: 
+            0 0 20px ${markerColor},
+            0 0 40px ${markerColor}80,
+            inset 0 0 10px ${markerColor};
+          animation: marker-pulse 2s ease-in-out infinite;
+          z-index: 10;
+        "></div>
+        ${isVisited ? `
+          <div class="marker-checkmark" style="
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 18px;
+            height: 18px;
+            background: #F4C542;
+            border: 2px solid #0E1B3F;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #0E1B3F;
+            z-index: 20;
+            animation: checkmark-bounce 0.5s ease-out;
+          ">✓</div>
+        ` : ''}
+      `;
+      el.innerHTML = markerHTML;
+      el.style.cssText = `
+        position: relative;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+
+      const [lngRaw, latRaw] = place.coordinates as [number, number];
+      let lng = lngRaw, lat = latRaw;
+      if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) {
+        console.warn('⚠️ Invalid coord order, swapping', place.id, place.coordinates);
+        lng = latRaw; lat = lngRaw;
+      }
+      if (
+        isNaN(lng as any) || isNaN(lat as any) ||
+        lng === undefined || lat === undefined ||
+        Math.abs(lat) > 90 || Math.abs(lng) > 180
+      ) {
+        console.warn('⚠️ Skipping invalid coordinates', place.id, { lng, lat });
+        return;
+      }
+
+      const marker = new mapboxgl.Marker({
+        element: el,
+        anchor: 'center',
+        pitchAlignment: 'map',
+        rotationAlignment: 'map'
+      }).setLngLat([lng, lat]).setPopup(popup).addTo(map.current!);
+      el.addEventListener('click', ev => { ev.stopPropagation(); marker.togglePopup(); });
+      el.addEventListener('touchend', ev => { ev.stopPropagation(); marker.togglePopup(); }, { passive: true });
+      markers.current.push(marker);
+    });
+
+    // Logs robustes
+    const coordSample = filteredPlaces.slice(0, 10).map(p => ({
+      id: p.id,
+      name: p.name,
+      type: p.type,
+      religion: getCanonReligion(p),
+      coords: p.coordinates,
+    }));
+    const byReligion = filteredPlaces.reduce((acc: Record<string, number>, p: any) => {
+      const r = getCanonReligion(p) as string;
+      acc[r] = (acc[r] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+
+    console.log('📍 Monuments affichés:', filteredPlaces.length, 'religions:', filters.religions, 'types:', filters.types);
+    console.log('📍 Répartition par religion:', byReligion);
+    console.log('📍 Échantillon (coords):', coordSample);
+    console.log('📍 Markers créés:', markers.current.length);
+
+    // Auto-fit sur les résultats (sauf si on doit restaurer une caméra géoloc)
+    if (autoFit && filteredPlaces.length > 0 && !(savedCameraPosition.current && geolocationEnabled)) {
+      const bounds = new mapboxgl.LngLatBounds();
+      filteredPlaces.forEach(p => {
+        const [lngRaw, latRaw] = p.coordinates as [number, number];
+        let lng = lngRaw, lat = latRaw;
+        if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) { lng = latRaw; lat = lngRaw; }
+        if (!isNaN(lng as any) && !isNaN(lat as any) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+          bounds.extend([lng, lat]);
+        }
+      });
+      if (!bounds.isEmpty()) {
+        map.current.fitBounds(bounds, { padding: 60, duration: 800, maxZoom: 4 });
+      }
+    }
+
+    // Restaurer la caméra si nécessaire
+    if (savedCameraPosition.current && geolocationEnabled) {
+      map.current?.easeTo({
+        center: savedCameraPosition.current.center,
+        zoom: savedCameraPosition.current.zoom,
+        pitch: savedCameraPosition.current.pitch,
+        duration: 0,
+      });
+    }
+  };
+
   // Fonction pour voler vers des coordonnées spécifiques
   const handleFlyTo = (lat: number, lng: number, zoom: number = 15) => {
     if (map.current && isStyleReadyRef.current) {
@@ -454,238 +711,7 @@ const Globe3D = ({
 
     // Fonction pour charger les monuments
     const loadMonuments = () => {
-      if (!map.current) return;
-
-      // Supprimer les anciens marqueurs
-      markers.current.forEach(marker => marker.remove());
-      markers.current = [];
-      if (showMonuments) {
-        // Charger les données des lieux
-        import('@/data/placesData').then(({
-          mockPlaces
-        }) => {
-          if (!map.current) return;
-
-          // Filtrer les lieux selon les filtres actifs
-          let filteredPlaces = mockPlaces;
-          if (filters.religions.length > 0 || filters.types.length > 0) {
-            filteredPlaces = mockPlaces.filter(place => {
-              // Préférer place.religion explicite, sinon inférer
-              const placeReligion = place.religion || inferReligionFromPlace(place.type, place.name);
-              const matchesReligion = filters.religions.length === 0 || filters.religions.includes(placeReligion);
-              const typeSelected = filters.types;
-              const normalizedType = normalize(place.type);
-              const textBlobNorm = normalize(`${place.name} ${place.description ?? ''} ${place.type}`);
-              const matchesType = typeSelected.length === 0 || typeSelected.some(t => {
-                const tLower = normalize(t);
-                if (tLower.includes('pyram')) {
-                  return textBlobNorm.includes('pyram');
-                }
-                // Match partiel bilatéral pour gérer les variantes (église mémorial, etc.)
-                return normalizedType.includes(tLower) || tLower.includes(normalizedType);
-              });
-              return matchesReligion && matchesType;
-            });
-          }
-          filteredPlaces.forEach(place => {
-            const resolvedImageUrl = place.imageUrl ? getImageUrl(place.imageUrl) : undefined;
-            const placeReligion = inferReligionFromPlace(place.type, place.name);
-            const isVisited = userProgress.visitedPlaces.includes(place.id);
-            const markerColor = religionColors[placeReligion].marker;
-
-            // Déterminer le niveau d'importance
-            const isMajorSite = place.points >= 150;
-            const isImportantSite = place.points >= 100;
-            const popup = new mapboxgl.Popup({
-              offset: 25,
-              maxWidth: '320px',
-              className: 'sacred-popup'
-            }).setHTML(`
-                <div style="padding: 16px; background: rgba(20, 43, 79, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 1px solid rgba(52, 224, 161, 0.3);">
-                  <img src="${resolvedImageUrl || '/placeholder.svg'}" alt="${place.name}" data-place-id="${place.id}" style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer; transition: transform 0.2s ease;" onerror="this.src='/placeholder.svg';" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'" />
-                  <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${place.name}</h3>
-                  <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${place.type} • ${place.country}</p>
-                  <p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${(place.description || '').substring(0, 150)}...</p>
-                  <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${place.points} points</span>
-                    ${isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
-                  </div>
-                </div>
-              `);
-            popup.on('open', () => {
-              const container = popup.getElement();
-              const img = container?.querySelector(`img[data-place-id="${place.id}"]`) as HTMLImageElement | null;
-              if (img) {
-                img.addEventListener('click', e => {
-                  e.stopPropagation();
-                  navigate(`/place/${place.id}`);
-                });
-              }
-            });
-
-            // Marqueur ultra-moderne
-            const el = document.createElement('div');
-            el.className = `sacred-marker-3d ${isMajorSite ? 'major-site' : ''} ${isImportantSite ? 'important-site' : ''}`;
-            const markerHTML = `
-              ${isMajorSite ? `
-                <div class="marker-hologram-beam" style="
-                  position: absolute;
-                  bottom: 100%;
-                  left: 50%;
-                  transform: translateX(-50%);
-                  width: 3px;
-                  height: 120px;
-                  background: linear-gradient(to top, ${markerColor}, transparent);
-                  opacity: 0.8;
-                  animation: beam-pulse 2s ease-in-out infinite;
-                  box-shadow: 0 0 15px ${markerColor}, 0 0 30px ${markerColor}80;
-                "></div>
-              ` : ''}
-              
-              ${isImportantSite ? `
-                <div class="marker-particles">
-                  <div class="particle" style="--delay: 0s; --color: ${markerColor}; --x: 10px; --y: -25px"></div>
-                  <div class="particle" style="--delay: 0.4s; --color: ${markerColor}; --x: -12px; --y: -28px"></div>
-                  <div class="particle" style="--delay: 0.8s; --color: ${markerColor}; --x: 15px; --y: -30px"></div>
-                  <div class="particle" style="--delay: 1.2s; --color: ${markerColor}; --x: -8px; --y: -35px"></div>
-                  <div class="particle" style="--delay: 1.6s; --color: ${markerColor}; --x: 0px; --y: -40px"></div>
-                </div>
-              ` : ''}
-              
-              <div class="marker-halo-outer" style="
-                position: absolute;
-                width: 50px;
-                height: 50px;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                border: 3px solid ${markerColor};
-                border-radius: 50%;
-                opacity: 0.4;
-                animation: halo-expand 3s ease-out infinite;
-                box-shadow: 0 0 20px ${markerColor}80;
-              "></div>
-              
-              <div class="marker-halo-inner" style="
-                position: absolute;
-                width: 32px;
-                height: 32px;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                border: 2px solid ${markerColor};
-                border-radius: 50%;
-                opacity: 0.6;
-                animation: halo-expand 2s ease-out infinite 0.5s;
-                box-shadow: 0 0 15px ${markerColor}CC;
-              "></div>
-              
-              <div class="marker-hologram" style="
-                position: absolute;
-                width: 24px;
-                height: 40px;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                background: linear-gradient(180deg, transparent 0%, ${markerColor}40 30%, ${markerColor}90 50%, ${markerColor}40 70%, transparent 100%);
-                border-radius: 12px;
-                opacity: 0.7;
-                animation: hologram-pulse 3s ease-in-out infinite;
-                pointer-events: none;
-              "></div>
-              
-              <div class="marker-core" style="
-                position: relative;
-                width: 18px;
-                height: 18px;
-                background: ${markerColor};
-                border: 3px solid ${isVisited ? '#F4C542' : 'rgba(255,255,255,0.95)'};
-                border-radius: 50%;
-                box-shadow: 
-                  0 0 25px ${markerColor},
-                  0 0 50px ${markerColor}90,
-                  inset 0 0 12px ${markerColor},
-                  0 0 80px ${markerColor}40;
-                animation: marker-pulse 2s ease-in-out infinite;
-                z-index: 10;
-              "></div>
-              
-              ${isVisited ? `
-                <div class="marker-checkmark" style="
-                  position: absolute;
-                  top: -10px;
-                  right: -10px;
-                  width: 20px;
-                  height: 20px;
-                  background: linear-gradient(135deg, #F4C542 0%, #ffdd77 100%);
-                  border: 3px solid #0E1B3F;
-                  border-radius: 50%;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-size: 11px;
-                  font-weight: bold;
-                  color: #0E1B3F;
-                  z-index: 20;
-                  animation: checkmark-bounce 0.5s ease-out;
-                  box-shadow: 0 0 15px #F4C542, 0 4px 10px rgba(0,0,0,0.3);
-                ">✓</div>
-              ` : ''}
-            `;
-            el.innerHTML = markerHTML;
-            el.style.cssText = `
-              position: relative;
-              width: 20px;
-              height: 20px;
-              cursor: pointer;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-            `;
-
-            // Validation et correction des coordonnées si nécessaire
-            const [lngRaw, latRaw] = place.coordinates;
-            let lng = lngRaw,
-              lat = latRaw;
-            if (Math.abs(latRaw) > 90 || Math.abs(lngRaw) > 180) {
-              console.warn('⚠️ Invalid coord order, swapping', place.id, place.coordinates);
-              lng = latRaw;
-              lat = lngRaw;
-            }
-
-            // Vérification finale - si toujours invalide, skip ce point
-            if (isNaN(lng) || isNaN(lat) || lng === undefined || lat === undefined || Math.abs(lat) > 90 || Math.abs(lng) > 180) {
-              console.warn('⚠️ Skipping invalid coordinates', place.id, {
-                lng,
-                lat
-              });
-              return;
-            }
-            const marker = new mapboxgl.Marker({
-              element: el,
-              anchor: 'center',
-              pitchAlignment: 'map',
-              rotationAlignment: 'map'
-            }).setLngLat([lng, lat]).setPopup(popup).addTo(map.current!);
-            el.addEventListener('click', ev => {
-              ev.stopPropagation();
-              marker.togglePopup();
-            });
-            el.addEventListener('touchend', ev => {
-              ev.stopPropagation();
-              marker.togglePopup();
-            }, {
-              passive: true
-            });
-            markers.current.push(marker);
-          });
-          console.log('📍 Monuments affichés:', filteredPlaces.length, 'religions:', filters.religions, 'types:', filters.types, 'sample:', filteredPlaces.slice(0, 5).map(p => ({
-            id: p.id,
-            name: p.name,
-            type: p.type
-          })));
-        });
-      }
+      void applyFiltersAndRender();
     };
 
     // Recharger les monuments et l'itinéraire quand la carte est chargée
