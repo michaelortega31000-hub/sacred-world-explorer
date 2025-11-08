@@ -519,6 +519,36 @@ export type Database = {
         }
         Relationships: []
       }
+      location_history: {
+        Row: {
+          accuracy: number | null
+          created_at: string
+          id: string
+          latitude: number
+          longitude: number
+          recorded_at: string
+          user_id: string
+        }
+        Insert: {
+          accuracy?: number | null
+          created_at?: string
+          id?: string
+          latitude: number
+          longitude: number
+          recorded_at?: string
+          user_id: string
+        }
+        Update: {
+          accuracy?: number | null
+          created_at?: string
+          id?: string
+          latitude?: number
+          longitude?: number
+          recorded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       memories: {
         Row: {
           content: string | null
@@ -1622,6 +1652,7 @@ export type Database = {
     Functions: {
       check_and_ban_user: { Args: { p_user_id: string }; Returns: undefined }
       check_leaderboard_positions: { Args: never; Returns: undefined }
+      cleanup_old_location_history: { Args: never; Returns: undefined }
       get_security_logs_by_day: {
         Args: { days?: number }
         Returns: {

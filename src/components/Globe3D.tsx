@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Locate, Search, X, Loader2, AlertCircle } from 'lucide-react';
+import { Calendar, Locate, Search, X, Loader2, AlertCircle, Route, Trash2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
@@ -14,11 +14,23 @@ import { religionColors } from '@/config/religionColors';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
 import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
 import { useGeolocation } from '@/hooks/useGeolocation';
+import { useLocationHistory } from '@/hooks/useLocationHistory';
 import { toast } from 'sonner';
 import { getMapboxToken } from '@/lib/mapboxHelper';
 import type { Religion } from '@/contexts/AppContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { Badge } from '@/components/ui/badge';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
   onRecenterRef?: (fn: () => void) => void;
@@ -74,10 +86,24 @@ const Globe3D = ({
   });
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
   const {
     position: userPosition,
     error: geolocationError
   } = useGeolocation(geolocationEnabled);
+  
+  // Location history tracking
+  const {
+    history: locationHistory,
+    isRecording,
+    loading: historyLoading,
+    startRecording,
+    stopRecording,
+    clearHistory,
+  } = useLocationHistory({
+    enabled: geolocationEnabled,
+    userPosition,
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [showSearchResults, setShowSearchResults] = useState(false);
@@ -336,6 +362,35 @@ const Globe3D = ({
         }
       });
 
+      // Add location trail source
+      map.current.addSource('location-trail', {
+        type: 'geojson',
+        data: {
+          type: 'Feature',
+          properties: {},
+          geometry: {
+            type: 'LineString',
+            coordinates: [],
+          },
+        },
+      });
+
+      // Add location trail layer (below places layer)
+      map.current.addLayer({
+        id: 'location-trail',
+        type: 'line',
+        source: 'location-trail',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round',
+        },
+        paint: {
+          'line-color': 'hsl(180, 100%, 50%)',
+          'line-width': 4,
+          'line-opacity': 0.8,
+        },
+      });
+
       // Add circle layer with religion-based colors
       map.current.addLayer({
         id: 'places-circles',
@@ -430,6 +485,26 @@ const Globe3D = ({
       updateMapData();
     }
   }, [filters, showMonuments, userProgress.visitedPlaces]);
+
+  // Update location trail
+  useEffect(() => {
+    if (!map.current || !map.current.getSource('location-trail')) return;
+
+    const coordinates = locationHistory.map((point) => [
+      point.longitude,
+      point.latitude,
+    ]);
+
+    const source = map.current.getSource('location-trail') as mapboxgl.GeoJSONSource;
+    source.setData({
+      type: 'Feature',
+      properties: {},
+      geometry: {
+        type: 'LineString',
+        coordinates,
+      },
+    });
+  }, [locationHistory]);
 
   // Handle geolocation
   useEffect(() => {
@@ -653,6 +728,22 @@ const Globe3D = ({
       setShowMonuments(true);
     }
   };
+
+  const handleToggleTracking = () => {
+    if (isRecording) {
+      stopRecording();
+    } else {
+      if (!geolocationEnabled) {
+        setGeolocationEnabled(true);
+      }
+      startRecording();
+    }
+  };
+
+  const handleClearHistory = () => {
+    clearHistory();
+    setShowClearDialog(false);
+  };
   return <div className="relative w-full overflow-hidden" style={{
     height: '70vh',
     minHeight: '500px'
@@ -750,6 +841,54 @@ const Globe3D = ({
           </Tooltip>
         </TooltipProvider>
 
+        {/* Location tracking controls */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant={isRecording ? "default" : "secondary"}
+                size="icon"
+                onClick={handleToggleTracking}
+                className="relative rounded-full shadow-lg"
+              >
+                <Route className={`h-5 w-5 ${isRecording ? 'animate-pulse' : ''}`} />
+                {locationHistory.length > 0 && (
+                  <Badge
+                    variant="secondary"
+                    className="absolute -top-2 -right-2 h-5 min-w-5 flex items-center justify-center text-xs px-1 bg-primary text-primary-foreground"
+                  >
+                    {locationHistory.length}
+                  </Badge>
+                )}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isRecording ? 'Arrêter l\'enregistrement' : 'Enregistrer mon parcours'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Clear history button */}
+        {locationHistory.length > 0 && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => setShowClearDialog(true)}
+                  className="rounded-full shadow-lg"
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Effacer l'historique</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
@@ -770,6 +909,25 @@ const Globe3D = ({
             <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
           </div>
         </div>}
+
+      {/* Clear history confirmation dialog */}
+      <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Effacer l'historique ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action supprimera définitivement tous les {locationHistory.length} points
+              enregistrés de votre parcours. Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleClearHistory} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>;
 };
 export default Globe3D;
