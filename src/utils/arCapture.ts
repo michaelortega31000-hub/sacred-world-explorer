@@ -53,6 +53,7 @@ export const captureARScene = async (
 
 /**
  * Saves the captured image to Supabase Storage
+ * Returns a signed URL with 1-hour expiration for secure access
  */
 export const saveARCapture = async (
   blob: Blob,
@@ -73,13 +74,17 @@ export const saveARCapture = async (
     throw new Error(`Failed to upload AR capture: ${error.message}`);
   }
 
-  // Get public URL
-  const { data: urlData } = supabase.storage
+  // Get signed URL with 1-hour expiration for secure access
+  const { data: signedUrlData, error: signedUrlError } = await supabase.storage
     .from('ar-captures')
-    .getPublicUrl(data.path);
+    .createSignedUrl(data.path, 3600); // 3600 seconds = 1 hour
+
+  if (signedUrlError || !signedUrlData) {
+    throw new Error(`Failed to create signed URL: ${signedUrlError?.message}`);
+  }
 
   return {
-    url: urlData.publicUrl,
+    url: signedUrlData.signedUrl,
     path: data.path,
   };
 };
