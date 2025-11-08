@@ -79,6 +79,12 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     return counts;
   }, []);
 
+  // Dynamically extract available monument types from places data
+  const availableTypes = useMemo(() => {
+    const typesSet = new Set(mockPlaces.map(place => place.type));
+    return Array.from(typesSet).sort((a, b) => a.localeCompare(b));
+  }, []);
+
   // Load presets and last filters from localStorage on mount
   useEffect(() => {
     const savedPresets = localStorage.getItem(PRESETS_STORAGE_KEY);
@@ -169,22 +175,6 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     { id: 'traditional', name: 'Traditions' },
   ];
 
-  const monumentTypes = [
-    'Cathédrale',
-    'Basilique',
-    'Église',
-    'Abbaye',
-    'Chapelle',
-    'Mosquée',
-    'Synagogue',
-    'Temple',
-    'Pagode',
-    'Monastère',
-    'Sanctuaire',
-    'Pyramide',
-    'Site archéologique',
-    'Monument',
-  ];
 
   const handleReligionToggle = (religion: Religion) => {
     const newReligions = selectedReligions.includes(religion)
@@ -283,7 +273,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     religion.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredMonumentTypes = monumentTypes.filter(type =>
+  const filteredMonumentTypes = availableTypes.filter(type =>
     type.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -497,7 +487,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       {/* Monument Types Section */}
       <div className="p-4">
         <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter">
-          Par Type de Monument {filteredMonumentTypes.length < monumentTypes.length && (
+          Par Type de Monument {filteredMonumentTypes.length < availableTypes.length && (
             <span className="text-xs text-[#EAD7B5]/60">({filteredMonumentTypes.length})</span>
           )}
         </h4>
