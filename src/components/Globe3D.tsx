@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
@@ -85,6 +86,7 @@ const Globe3D = ({
   const [mapError, setMapError] = useState<string | null>(null);
   const isMapReadyRef = useRef(false);
   const allPlacesRef = useRef<any[]>([]);
+  const [filterControlContainer, setFilterControlContainer] = useState<HTMLDivElement | null>(null);
   const pendingFlyTo = useRef<{
     lat: number;
     lng: number;
@@ -268,6 +270,29 @@ const Globe3D = ({
       if (!map.current) return;
       console.log('✅ Map style loaded successfully');
       setIsMapLoading(false);
+
+      // Add React control for MonumentFilter
+      try {
+        class ReactControl {
+          _container!: HTMLDivElement;
+          onAdd() {
+            this._container = document.createElement('div');
+            this._container.className = 'monument-filter-control pointer-events-auto relative';
+            this._container.style.marginLeft = '8px';
+            this._container.style.marginBottom = 'calc(env(safe-area-inset-bottom, 0px) + 8px)';
+            this._container.style.zIndex = '60';
+            return this._container;
+          }
+          onRemove() {
+            this._container?.remove();
+          }
+        }
+        const reactControl = new (ReactControl as any)();
+        map.current?.addControl(reactControl as any, 'bottom-left');
+        setFilterControlContainer((reactControl as any)._container);
+      } catch (e) {
+        console.warn('Failed to add filter control', e);
+      }
 
       // Add atmosphere
       map.current.setFog({
@@ -716,14 +741,10 @@ const Globe3D = ({
       </div>
 
       {/* Monument filter */}
-      <div
-        className="absolute inset-0 z-[60] pointer-events-none flex items-end justify-start p-3 sm:p-4"
-        style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)' }}
-      >
-        <div className="pointer-events-auto">
-          <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
-        </div>
-      </div>
+      {filterControlContainer && createPortal(
+        <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />,
+        filterControlContainer
+      )}
     </div>;
 };
 export default Globe3D;
