@@ -58,6 +58,7 @@ const Globe3D = ({
     religions: [],
     types: []
   });
+  const [filteredCount, setFilteredCount] = useState<number>(0);
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const {
     position: userPosition,
@@ -119,7 +120,10 @@ const Globe3D = ({
     markers.current.forEach(m => m.remove());
     markers.current = [];
 
-    if (!showMonuments) return;
+    if (!showMonuments) {
+      setFilteredCount(0);
+      return;
+    }
 
     if (!placesCacheRef.current) {
       const { mockPlaces } = await import('@/data/placesData');
@@ -132,6 +136,9 @@ const Globe3D = ({
     if (filters.religions.length > 0 || filters.types.length > 0) {
       filteredPlaces = mockPlaces.filter(matchesFilters);
     }
+
+    // Mettre à jour le compteur
+    setFilteredCount(filteredPlaces.length);
 
     // Créer les marqueurs
     filteredPlaces.forEach(place => {
@@ -1077,12 +1084,16 @@ const Globe3D = ({
 
       {/* Monument Filter - positioned top left */}
       <div className="absolute top-2 left-2 sm:top-4 sm:left-4 z-50">
-        <MonumentFilter externalFilters={filters} onFilterChange={f => {
-        setFilters(f);
-        // Auto-show monuments when filters are active, hide when all filters cleared
-        const hasFilters = f.religions.length > 0 || f.types.length > 0;
-        setShowMonuments(hasFilters);
-      }} />
+        <MonumentFilter 
+          externalFilters={filters} 
+          matchingCount={filteredCount}
+          onFilterChange={f => {
+            setFilters(f);
+            // Auto-show monuments when filters are active, hide when all filters cleared
+            const hasFilters = f.religions.length > 0 || f.types.length > 0;
+            setShowMonuments(hasFilters);
+          }} 
+        />
       </div>
 
       {/* Toggle monuments button - positioned top right */}

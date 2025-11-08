@@ -14,9 +14,10 @@ export interface FilterOptions {
 interface MonumentFilterProps {
   onFilterChange: (filters: FilterOptions) => void;
   externalFilters?: FilterOptions;
+  matchingCount?: number;
 }
 
-const MonumentFilter = ({ onFilterChange, externalFilters }: MonumentFilterProps) => {
+const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: MonumentFilterProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedReligions, setSelectedReligions] = useState<Religion[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
@@ -105,9 +106,9 @@ const MonumentFilter = ({ onFilterChange, externalFilters }: MonumentFilterProps
       >
         <Filter className="w-4 h-4" />
         <span className="hidden sm:inline">Filtre</span>
-        {hasActiveFilters && (
-          <span className="text-xs bg-[#0E1B3F] text-[#34E0A1] px-1.5 py-0.5 rounded-full font-semibold">
-            {selectedReligions.length + selectedTypes.length}
+        {matchingCount !== undefined && matchingCount >= 0 && (
+          <span className="text-xs bg-[#0E1B3F] text-[#34E0A1] px-2 py-0.5 rounded-full font-semibold min-w-[28px] text-center">
+            {matchingCount}
           </span>
         )}
       </Button>
