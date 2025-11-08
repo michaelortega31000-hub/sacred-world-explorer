@@ -251,12 +251,6 @@ const Globe3D = ({
       return;
     }
 
-    // Add navigation controls
-    map.current.addControl(
-      new mapboxgl.NavigationControl({ visualizePitch: true }),
-      'top-right'
-    );
-
     // Disable scroll zoom for better UX
     map.current.scrollZoom.disable();
 
