@@ -90,23 +90,25 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     <div className="relative">
       {/* Filter Button */}
       <Button
+        size="lg"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "gap-2 backdrop-blur-md border-2 transition-all duration-300 relative",
-          hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F]"
+          "gap-3 backdrop-blur-md border-2 transition-all duration-300 relative h-14 px-6 text-base font-semibold shadow-xl",
+          hasActiveFilters && "ring-2 ring-[#34E0A1] ring-offset-2 ring-offset-[#0E1B3F]",
+          !hasActiveFilters && "animate-pulse"
         )}
         style={{
           background: hasActiveFilters
-            ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.9) 0%, rgba(52, 224, 161, 0.7) 100%)'
-            : 'rgba(20, 43, 79, 0.8)',
+            ? 'linear-gradient(135deg, rgba(52, 224, 161, 0.95) 0%, rgba(52, 224, 161, 0.8) 100%)'
+            : 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.9) 100%)',
           color: hasActiveFilters ? '#0E1B3F' : '#F5F5F5',
-          borderColor: hasActiveFilters ? '#34E0A1' : 'rgba(52, 224, 161, 0.3)',
+          borderColor: hasActiveFilters ? '#34E0A1' : 'rgba(52, 224, 161, 0.4)',
           boxShadow: hasActiveFilters
-            ? '0 0 20px rgba(52, 224, 161, 0.4)'
-            : '0 0 10px rgba(244, 197, 66, 0.2)',
+            ? '0 8px 32px rgba(52, 224, 161, 0.5), 0 0 20px rgba(52, 224, 161, 0.3)'
+            : '0 8px 24px rgba(20, 43, 79, 0.6), 0 0 15px rgba(244, 197, 66, 0.2)',
         }}
       >
-        <Filter className="w-4 h-4" />
+        <Filter className="w-5 h-5" />
         <span className="hidden sm:inline">Filtre</span>
         
         {/* Active Filters Count Badge */}
@@ -135,11 +137,11 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       {/* Filter Panel */}
       {isOpen && (
         <div
-          className="fixed top-16 left-2 sm:left-4 w-80 max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-fade-in z-50"
+          className="fixed bottom-20 left-2 sm:left-4 w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in z-50"
           style={{
             background: 'rgba(20, 43, 79, 0.98)',
-            borderColor: 'rgba(52, 224, 161, 0.3)',
-            boxShadow: '0 0 30px rgba(52, 224, 161, 0.2)',
+            borderColor: 'rgba(52, 224, 161, 0.4)',
+            boxShadow: '0 8px 40px rgba(52, 224, 161, 0.3), 0 0 60px rgba(14, 27, 63, 0.6)',
           }}
         >
           {/* Header */}
