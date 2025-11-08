@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Filter, X } from 'lucide-react';
+import { Filter, X, Search } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { religionColors } from '@/config/religionColors';
 import { Religion } from '@/contexts/AppContext';
@@ -22,6 +23,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const [isOpen, setIsOpen] = useState(false);
   const [selectedReligions, setSelectedReligions] = useState<Religion[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Synchroniser avec des filtres externes (contrôle par le parent)
   useEffect(() => {
@@ -85,6 +87,15 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
 
   const hasActiveFilters = selectedReligions.length > 0 || selectedTypes.length > 0;
   const activeFiltersCount = selectedReligions.length + selectedTypes.length;
+
+  // Filter religions and types based on search query
+  const filteredReligions = religions.filter(religion =>
+    religion.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredMonumentTypes = monumentTypes.filter(type =>
+    type.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="relative">
@@ -187,13 +198,40 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
             )}
           </div>
 
+          {/* Search Bar */}
+          <div className="p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#EAD7B5]/60" />
+              <Input
+                type="text"
+                placeholder="Rechercher..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 bg-white/5 border-[#34E0A1]/30 text-[#F5F5F5] placeholder:text-[#EAD7B5]/50 focus:border-[#34E0A1] focus:ring-[#34E0A1]/30"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#EAD7B5]/60 hover:text-[#34E0A1] transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* Religions Section */}
           <div className="p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
             <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter">
-              Par Religion
+              Par Religion {filteredReligions.length < religions.length && (
+                <span className="text-xs text-[#EAD7B5]/60">({filteredReligions.length})</span>
+              )}
             </h4>
-            <div className="space-y-2">
-              {religions.map((religion) => {
+            {filteredReligions.length === 0 ? (
+              <p className="text-sm text-[#EAD7B5]/60 py-4 text-center">Aucune religion trouvée</p>
+            ) : (
+              <div className="space-y-2">
+                {filteredReligions.map((religion) => {
                 const isChecked = selectedReligions.includes(religion.id);
                 const colorConfig = religionColors[religion.id];
                 
@@ -230,17 +268,23 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                     </span>
                   </label>
                 );
-              })}
-            </div>
+                })}
+              </div>
+            )}
           </div>
 
           {/* Monument Types Section */}
           <div className="p-4">
             <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter">
-              Par Type de Monument
+              Par Type de Monument {filteredMonumentTypes.length < monumentTypes.length && (
+                <span className="text-xs text-[#EAD7B5]/60">({filteredMonumentTypes.length})</span>
+              )}
             </h4>
-            <div className="space-y-2">
-              {monumentTypes.map((type) => {
+            {filteredMonumentTypes.length === 0 ? (
+              <p className="text-sm text-[#EAD7B5]/60 py-4 text-center">Aucun type trouvé</p>
+            ) : (
+              <div className="space-y-2">
+                {filteredMonumentTypes.map((type) => {
                 const isChecked = selectedTypes.includes(type);
                 
                 return (
@@ -269,8 +313,9 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                     </span>
                   </label>
                 );
-              })}
-            </div>
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
