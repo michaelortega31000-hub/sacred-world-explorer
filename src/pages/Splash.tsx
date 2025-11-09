@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import splashHero from '@/assets/splash-hero.webp';
+import splashHeroMobile from '@/assets/splash-hero-mobile.webp';
+import splashHeroTablet from '@/assets/splash-hero-tablet.webp';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Check, WifiOff, BookOpen, MapPin, Award, Users, X } from 'lucide-react';
@@ -112,9 +114,13 @@ const Splash = () => {
     >
       {/* Background image */}
       <img 
-        src={splashHero} 
+        src={splashHero}
+        srcSet={`${splashHeroMobile} 640w, ${splashHeroTablet} 1024w, ${splashHero} 1920w`}
+        sizes="100vw"
         alt="SacredWorld" 
         className="w-full h-full object-contain"
+        loading="eager"
+        fetchPriority="high"
       />
       
       {/* Boutons Mode hors ligne et Tutoriel - En bas avec espacement mobile optimisé */}
