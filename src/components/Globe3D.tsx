@@ -176,6 +176,86 @@ const Globe3D = ({
     };
   };
 
+  // Function to update trip places on map
+  const updateTripPlaces = () => {
+    if (!map.current || !isMapReadyRef.current) return;
+    
+    if (!tripPlaces || tripPlaces.length === 0) {
+      // Clear trip data when empty
+      const source = map.current.getSource('trip-places') as mapboxgl.GeoJSONSource;
+      const routeSource = map.current.getSource('trip-route') as mapboxgl.GeoJSONSource;
+      if (source) {
+        source.setData({ type: 'FeatureCollection', features: [] });
+      }
+      if (routeSource) {
+        routeSource.setData({ type: 'FeatureCollection', features: [] });
+      }
+      return;
+    }
+
+    // Build features for trip places
+    const tripFeatures: PlaceFeature[] = [];
+    const routeCoordinates: [number, number][] = [];
+
+    allPlacesRef.current.forEach(place => {
+      if (!tripPlaces.includes(place.id)) return;
+      
+      const coords = sanitizeCoordinates(place.coordinates, place.id);
+      if (!coords) return;
+
+      const religion = (place.religion || inferReligionFromPlace(place.type, place.name)) as string;
+      const isVisited = userProgress.visitedPlaces.includes(place.id);
+
+      tripFeatures.push({
+        type: 'Feature',
+        geometry: {
+          type: 'Point',
+          coordinates: coords
+        },
+        properties: {
+          id: place.id,
+          name: place.name,
+          type: place.type,
+          country: place.country,
+          points: place.points,
+          religion,
+          description: place.description,
+          imageUrl: place.imageUrl,
+          isVisited
+        }
+      });
+
+      routeCoordinates.push(coords);
+    });
+
+    // Update trip places source
+    const source = map.current.getSource('trip-places') as mapboxgl.GeoJSONSource;
+    if (source) {
+      source.setData({
+        type: 'FeatureCollection',
+        features: tripFeatures
+      });
+    }
+
+    // Update route line
+    const routeSource = map.current.getSource('trip-route') as mapboxgl.GeoJSONSource;
+    if (routeSource && routeCoordinates.length > 1) {
+      routeSource.setData({
+        type: 'Feature',
+        geometry: {
+          type: 'LineString',
+          coordinates: routeCoordinates
+        },
+        properties: {}
+      } as any);
+    }
+
+    console.log('🗺️ Trip places updated:', {
+      count: tripFeatures.length,
+      places: tripFeatures.map(f => f.properties.name)
+    });
+  };
+
   // Update map source with filtered data
   const updateMapData = () => {
     if (!map.current || !isMapReadyRef.current) return;
@@ -353,6 +433,24 @@ const Globe3D = ({
         }
       });
 
+      // Add trip places source (separate layer for better visibility)
+      map.current.addSource('trip-places', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: []
+        }
+      });
+
+      // Add trip route source
+      map.current.addSource('trip-route', {
+        type: 'geojson',
+        data: {
+          type: 'FeatureCollection',
+          features: []
+        }
+      });
+
       // Add location trail source
       map.current.addSource('location-trail', {
         type: 'geojson',
@@ -385,6 +483,19 @@ const Globe3D = ({
         }
       });
 
+      // Add trip route line (rendered FIRST, below everything)
+      map.current.addLayer({
+        id: 'trip-route-line',
+        type: 'line',
+        source: 'trip-route',
+        paint: {
+          'line-color': '#F4C542',
+          'line-width': 3,
+          'line-opacity': 0.6,
+          'line-dasharray': [2, 2]
+        }
+      });
+
       // Add circle layer with religion-based colors
       map.current.addLayer({
         id: 'places-circles',
@@ -400,12 +511,106 @@ const Globe3D = ({
         }
       });
 
+      // Add trip places layers (rendered ABOVE normal places)
+      // 1. Pulsing circle layer for trip places
+      map.current.addLayer({
+        id: 'trip-places-pulse',
+        type: 'circle',
+        source: 'trip-places',
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['get', 'points'],
+            0, 12,
+            50, 16,
+            100, 20,
+            150, 24
+          ],
+          'circle-color': '#F4C542',
+          'circle-opacity': 0.3,
+          'circle-blur': 0.8
+        }
+      });
+
+      // 2. Main circle for trip places
+      map.current.addLayer({
+        id: 'trip-places-circles',
+        type: 'circle',
+        source: 'trip-places',
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['get', 'points'],
+            0, 8,
+            50, 10,
+            100, 12,
+            150, 14
+          ],
+          'circle-color': '#F4C542',
+          'circle-stroke-color': '#FFFFFF',
+          'circle-stroke-width': 3,
+          'circle-opacity': 1,
+          'circle-stroke-opacity': 1
+        }
+      });
+
       // Add hover effect
       map.current.on('mouseenter', 'places-circles', () => {
         if (map.current) map.current.getCanvas().style.cursor = 'pointer';
       });
       map.current.on('mouseleave', 'places-circles', () => {
         if (map.current) map.current.getCanvas().style.cursor = '';
+      });
+
+      // Hover and click handlers for trip places
+      map.current.on('mouseenter', 'trip-places-circles', () => {
+        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+      });
+
+      map.current.on('mouseleave', 'trip-places-circles', () => {
+        if (map.current) map.current.getCanvas().style.cursor = '';
+      });
+
+      map.current.on('click', 'trip-places-circles', e => {
+        if (!e.features || e.features.length === 0) return;
+        const feature = e.features[0];
+        const props = feature.properties as PlaceFeature['properties'];
+        const coords = (feature.geometry as any).coordinates as [number, number];
+
+        if (currentPopup.current) {
+          currentPopup.current.remove();
+        }
+
+        const imageUrl = props.imageUrl ? getImageUrl(props.imageUrl) : '/placeholder.svg';
+        const popup = new mapboxgl.Popup({
+          offset: 15,
+          maxWidth: '320px',
+          className: 'sacred-popup'
+        }).setLngLat(coords).setHTML(`
+          <div style="padding: 16px; background: rgba(244, 197, 66, 0.95); backdrop-filter: blur(10px); border-radius: 12px; border: 2px solid #F4C542;">
+            <div style="background: #F4C542; color: #142B4F; padding: 4px 12px; border-radius: 6px; margin-bottom: 12px; text-align: center; font-weight: 600; font-size: 12px;">
+              ✈️ DANS VOTRE ITINÉRAIRE
+            </div>
+            <img 
+              src="${imageUrl}" 
+              alt="${props.name}" 
+              style="width: 100%; height: 160px; object-fit: cover; border-radius: 8px; margin-bottom: 12px; cursor: pointer;" 
+              onerror="this.src='/placeholder.svg';"
+              onclick="window.dispatchEvent(new CustomEvent('navigateToPlace', { detail: '${props.id}' }))"
+            />
+            <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #142B4F;">${props.name}</h3>
+            <p style="margin: 0 0 12px 0; font-size: 13px; color: #142B4F;">${props.type} • ${props.country}</p>
+            ${props.description ? `<p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #142B4F;">${props.description.substring(0, 150)}...</p>` : ''}
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 13px; font-weight: 600; color: #142B4F;">✨ ${props.points} points</span>
+              ${props.isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
+            </div>
+          </div>
+        `).addTo(map.current!);
+
+        currentPopup.current = popup;
       });
 
       // Add click handler for popups
@@ -477,8 +682,9 @@ const Globe3D = ({
   useEffect(() => {
     if (isMapReadyRef.current) {
       updateMapData();
+      updateTripPlaces();
     }
-  }, [filters, showMonuments, userProgress.visitedPlaces]);
+  }, [filters, showMonuments, userProgress.visitedPlaces, tripPlaces]);
 
   // Update location trail with activity-based colors
   useEffect(() => {

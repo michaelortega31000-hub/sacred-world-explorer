@@ -10,9 +10,11 @@ import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
+import { useApp } from '@/contexts/AppContext';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
+  const { userProgress } = useApp();
   
   return <div className="min-h-screen bg-background pb-20">
     <Header />
@@ -27,7 +29,7 @@ const Explore = () => {
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsContent value="map" className="relative space-y-2">
               <div className="rounded-xl overflow-hidden border border-border/50 shadow-2xl h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]">
-                <Globe3D />
+                <Globe3D tripPlaces={userProgress.tripPlaces} />
               </div>
               
               <TabsList className="absolute bottom-4 left-4 right-4 z-50 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-2 sm:p-3 rounded-lg">
