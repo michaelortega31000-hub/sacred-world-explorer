@@ -68,19 +68,13 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
   const browser = getBrowser();
 
   const requestCameraAccess = async () => {
+    console.log('🎥 Requesting camera access...');
     setLoading(true);
     setError(null);
     
     try {
-      const state = await checkPermissionState();
-      setPermissionState(state);
-      
-      if (state === 'denied') {
-        setError('denied');
-        setLoading(false);
-        return;
-      }
-      
+      // ✅ Call getUserMedia IMMEDIATELY without any async checks before
+      console.log('📸 Calling getUserMedia directly...');
       const mediaStream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'environment',
@@ -90,6 +84,9 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
         audio: false,
       });
       
+      console.log('✅ Camera access granted!', mediaStream);
+      
+      // Success: setup the stream
       setStream(mediaStream);
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
@@ -97,11 +94,19 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
       setShowExplainer(false);
       setLoading(false);
       setPermissionState('granted');
+      
     } catch (err: any) {
+      // Failed: analyze error and check state AFTER
+      console.error('❌ Camera access error:', err.name, err.message);
       setLoading(false);
+      
+      // NOW check permission state to display proper instructions
+      const state = await checkPermissionState();
+      setPermissionState(state);
+      
+      // Determine error type
       if (err.name === 'NotAllowedError') {
         setError('denied');
-        setPermissionState('denied');
       } else if (err.name === 'NotFoundError') {
         setError('notfound');
       } else if (err.name === 'NotReadableError') {
@@ -154,10 +159,23 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
     <div className="relative w-full h-full bg-background overflow-hidden">
       {/* Explainer screen */}
       {showExplainer && (
-        <CameraPermissionExplainer
-          onActivate={requestCameraAccess}
-          onCancel={onClose}
-        />
+        <>
+          <CameraPermissionExplainer
+            onActivate={requestCameraAccess}
+            onCancel={onClose}
+          />
+          {/* Fallback X button on explainer */}
+          {!loading && (
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 z-50 text-foreground"
+              onClick={onClose}
+            >
+              <X className="w-6 h-6" />
+            </Button>
+          )}
+        </>
       )}
 
       {/* Video feed */}
