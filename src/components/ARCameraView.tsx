@@ -6,6 +6,7 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { mockPlaces } from '@/data/placesData';
 import CameraPermissionExplainer from '@/components/ar/CameraPermissionExplainer';
 import CameraPermissionInstructions from '@/components/ar/CameraPermissionInstructions';
+import ARDirectionalGuide from '@/components/ar/ARDirectionalGuide';
 
 interface ARCameraViewProps {
   onClose: () => void;
@@ -199,27 +200,27 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
         </div>
       )}
 
-      {/* 3D Symbol overlay */}
-      {!loading && !error && nearbyPlace && (
+      {/* AR Directional Guide & 3D Symbol */}
+      {!loading && !error && nearbyPlace && position && (
         <>
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <div className="w-64 h-64 sm:w-96 sm:h-96">
-              <ReligiousSymbol3D
-                religion={nearbyPlace.religion}
-                unlocked={true}
-                size="lg"
-                intensity={0.8}
-              />
-            </div>
-          </div>
+          {/* Directional Guide Compass */}
+          <ARDirectionalGuide
+            targetLat={nearbyPlace.coordinates[1]}
+            targetLon={nearbyPlace.coordinates[0]}
+            userLat={position.latitude}
+            userLon={position.longitude}
+            placeName={nearbyPlace.name}
+            distance={nearbyPlace.distance}
+          />
 
-          {/* Place info at bottom */}
-          <div className="absolute bottom-20 left-4 right-4 bg-background/80 backdrop-blur-md rounded-xl p-4 border border-border/50 shadow-xl">
-            <h3 className="text-foreground font-bold text-lg mb-1">{nearbyPlace.name}</h3>
-            <p className="text-muted-foreground text-sm mb-2">{nearbyPlace.type}</p>
-            <p className="text-muted-foreground text-xs">
-              Distance: {(nearbyPlace.distance / 1000).toFixed(2)} km
-            </p>
+          {/* 3D Symbol at center */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 pointer-events-none">
+            <ReligiousSymbol3D
+              religion={nearbyPlace.religion}
+              unlocked={true}
+              size="lg"
+              intensity={0.6}
+            />
           </div>
         </>
       )}
