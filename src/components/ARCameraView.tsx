@@ -1,13 +1,43 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { X, Camera, AlertTriangle } from 'lucide-react';
+import { X, Camera } from 'lucide-react';
 import { ReligiousSymbol3D } from '@/components/ReligiousSymbol3D';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { mockPlaces } from '@/data/placesData';
+import CameraPermissionExplainer from '@/components/ar/CameraPermissionExplainer';
+import CameraPermissionInstructions from '@/components/ar/CameraPermissionInstructions';
 
 interface ARCameraViewProps {
   onClose: () => void;
 }
+
+type PermissionState = 'checking' | 'prompt' | 'denied' | 'granted';
+type Platform = 'ios' | 'android' | 'desktop';
+type Browser = 'safari' | 'chrome' | 'firefox' | 'unknown';
+
+const getPlatform = (): Platform => {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/iphone|ipad|ipod/.test(ua)) return 'ios';
+  if (/android/.test(ua)) return 'android';
+  return 'desktop';
+};
+
+const getBrowser = (): Browser => {
+  const ua = navigator.userAgent.toLowerCase();
+  if (/safari/.test(ua) && !/chrome/.test(ua)) return 'safari';
+  if (/chrome/.test(ua)) return 'chrome';
+  if (/firefox/.test(ua)) return 'firefox';
+  return 'unknown';
+};
+
+const checkPermissionState = async (): Promise<PermissionState> => {
+  try {
+    const result = await navigator.permissions.query({ name: 'camera' as PermissionName });
+    return result.state === 'granted' ? 'granted' : result.state === 'denied' ? 'denied' : 'prompt';
+  } catch {
+    return 'prompt';
+  }
+};
 
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371e3; // Earth radius in meters
@@ -28,50 +58,68 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [showExplainer, setShowExplainer] = useState(true);
+  const [permissionState, setPermissionState] = useState<PermissionState>('checking');
   const [nearbyPlace, setNearbyPlace] = useState<any>(null);
   const { position, error: geoError } = useGeolocation(true);
+  
+  const platform = getPlatform();
+  const browser = getBrowser();
 
-  // Start camera
-  useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const mediaStream = await navigator.mediaDevices.getUserMedia({
-          video: { 
-            facingMode: 'environment',
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-          },
-          audio: false,
-        });
-        setStream(mediaStream);
-        if (videoRef.current) {
-          videoRef.current.srcObject = mediaStream;
-        }
+  const requestCameraAccess = async () => {
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const state = await checkPermissionState();
+      setPermissionState(state);
+      
+      if (state === 'denied') {
+        setError('denied');
         setLoading(false);
-      } catch (err: any) {
-        setLoading(false);
-        if (err.name === 'NotAllowedError') {
-          setError('Accès à la caméra refusé. Autorisez l\'accès dans les paramètres.');
-        } else if (err.name === 'NotFoundError') {
-          setError('Aucune caméra détectée sur cet appareil.');
-        } else if (err.name === 'NotReadableError') {
-          setError('La caméra est déjà utilisée par une autre application.');
-        } else {
-          setError('Erreur lors de l\'accès à la caméra.');
-        }
+        return;
       }
-    };
+      
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false,
+      });
+      
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+      setShowExplainer(false);
+      setLoading(false);
+      setPermissionState('granted');
+    } catch (err: any) {
+      setLoading(false);
+      if (err.name === 'NotAllowedError') {
+        setError('denied');
+        setPermissionState('denied');
+      } else if (err.name === 'NotFoundError') {
+        setError('notfound');
+      } else if (err.name === 'NotReadableError') {
+        setError('inuse');
+      } else {
+        setError('unknown');
+      }
+    }
+  };
 
-    startCamera();
-
-    // Cleanup: stop camera
+  // Cleanup: stop camera
+  useEffect(() => {
     return () => {
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, []);
+  }, [stream]);
 
   // Find nearby place
   useEffect(() => {
@@ -104,17 +152,27 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
 
   return (
     <div className="relative w-full h-full bg-background overflow-hidden">
+      {/* Explainer screen */}
+      {showExplainer && (
+        <CameraPermissionExplainer
+          onActivate={requestCameraAccess}
+          onCancel={onClose}
+        />
+      )}
+
       {/* Video feed */}
-      <video
-        ref={videoRef}
-        autoPlay
-        playsInline
-        muted
-        className="absolute inset-0 w-full h-full object-cover"
-      />
+      {!showExplainer && (
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+      )}
 
       {/* Loading state */}
-      {loading && (
+      {loading && !showExplainer && (
         <div className="absolute inset-0 flex items-center justify-center bg-background/90 backdrop-blur-sm">
           <div className="text-center">
             <Camera className="w-16 h-16 text-primary mx-auto mb-4 animate-pulse" />
@@ -186,14 +244,64 @@ const ARCameraView = ({ onClose }: ARCameraViewProps) => {
       </Button>
 
       {/* Error state */}
-      {error && (
-        <div className="absolute inset-0 flex items-center justify-center bg-background/95 backdrop-blur-sm">
-          <div className="text-center p-6 max-w-md">
-            <AlertTriangle className="w-16 h-16 text-destructive mx-auto mb-4" />
-            <p className="text-foreground mb-6 text-lg">{error}</p>
-            <Button onClick={handleClose} size="lg">
-              Retour à la carte
-            </Button>
+      {error && !showExplainer && (
+        <div className="absolute inset-0 flex items-center justify-center bg-background/98 backdrop-blur-md">
+          <div className="text-center p-8 max-w-lg mx-4">
+            {/* Icon */}
+            <div className="relative mb-6">
+              <Camera className="w-20 h-20 text-primary mx-auto animate-pulse" />
+              <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+            </div>
+
+            {/* Title */}
+            <h2 className="text-2xl font-bold text-foreground mb-3">
+              Accès caméra nécessaire
+            </h2>
+
+            {/* Description */}
+            <p className="text-muted-foreground mb-6">
+              L'AR utilise votre caméra pour superposer des symboles religieux sur votre environnement réel.
+            </p>
+
+            {/* Error-specific message */}
+            {error === 'notfound' && (
+              <p className="text-destructive mb-6">
+                Aucune caméra détectée sur cet appareil.
+              </p>
+            )}
+            {error === 'inuse' && (
+              <p className="text-destructive mb-6">
+                La caméra est déjà utilisée par une autre application.
+              </p>
+            )}
+
+            {/* Instructions */}
+            {error === 'denied' && (
+              <CameraPermissionInstructions
+                platform={platform}
+                browser={browser}
+                errorType={permissionState}
+              />
+            )}
+
+            {/* Buttons */}
+            <div className="flex flex-col gap-3 mt-8">
+              {error === 'denied' && (
+                <Button onClick={requestCameraAccess} size="lg" className="w-full">
+                  🔄 Réessayer
+                </Button>
+              )}
+              <Button onClick={handleClose} variant="outline" size="lg" className="w-full">
+                Retour à la carte
+              </Button>
+            </div>
+
+            {/* Help link */}
+            {error === 'denied' && (
+              <p className="text-xs text-muted-foreground mt-6">
+                Les instructions ne fonctionnent pas ? Contactez le support.
+              </p>
+            )}
           </div>
         </div>
       )}
