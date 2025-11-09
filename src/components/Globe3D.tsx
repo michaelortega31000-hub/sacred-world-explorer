@@ -178,9 +178,18 @@ const Globe3D = ({
 
   // Function to update trip places on map
   const updateTripPlaces = () => {
-    if (!map.current || !isMapReadyRef.current) return;
+    if (!map.current || !isMapReadyRef.current) {
+      console.log('⚠️ Trip places update skipped - map not ready');
+      return;
+    }
+    
+    console.log('🗺️ === TRIP PLACES UPDATE START ===');
+    console.log('📍 Trip places IDs received:', tripPlaces);
+    console.log('📦 Total places in allPlacesRef:', allPlacesRef.current.length);
+    console.log('📦 Sample place IDs:', allPlacesRef.current.slice(0, 10).map(p => p.id));
     
     if (!tripPlaces || tripPlaces.length === 0) {
+      console.log('⚠️ No trip places - clearing sources');
       // Clear trip data when empty
       const source = map.current.getSource('trip-places') as mapboxgl.GeoJSONSource;
       const routeSource = map.current.getSource('trip-route') as mapboxgl.GeoJSONSource;
@@ -196,12 +205,33 @@ const Globe3D = ({
     // Build features for trip places
     const tripFeatures: PlaceFeature[] = [];
     const routeCoordinates: [number, number][] = [];
+    const notFound: string[] = [];
 
-    allPlacesRef.current.forEach(place => {
-      if (!tripPlaces.includes(place.id)) return;
+    tripPlaces.forEach(tripPlaceId => {
+      console.log(`🔍 Looking for trip place: ${tripPlaceId}`);
+      
+      const place = allPlacesRef.current.find(p => p.id === tripPlaceId);
+      
+      if (!place) {
+        console.warn(`❌ Trip place NOT FOUND in allPlaces: ${tripPlaceId}`);
+        notFound.push(tripPlaceId);
+        return;
+      }
+
+      console.log(`✅ Found place:`, {
+        id: place.id,
+        name: place.name,
+        rawCoords: place.coordinates,
+        country: place.country
+      });
       
       const coords = sanitizeCoordinates(place.coordinates, place.id);
-      if (!coords) return;
+      if (!coords) {
+        console.error(`❌ Invalid coordinates for ${place.id}:`, place.coordinates);
+        return;
+      }
+
+      console.log(`✅ Sanitized coords for ${place.name}:`, coords, '[lng, lat]');
 
       const religion = (place.religion || inferReligionFromPlace(place.type, place.name)) as string;
       const isVisited = userProgress.visitedPlaces.includes(place.id);
@@ -228,18 +258,31 @@ const Globe3D = ({
       routeCoordinates.push(coords);
     });
 
+    console.log('📊 Trip places processing summary:');
+    console.log(`  - Requested: ${tripPlaces.length}`);
+    console.log(`  - Found: ${tripFeatures.length}`);
+    console.log(`  - Not found: ${notFound.length}`, notFound);
+    console.log(`  - Places:`, tripFeatures.map(f => ({
+      name: f.properties.name,
+      coords: f.geometry.coordinates
+    })));
+
     // Update trip places source
     const source = map.current.getSource('trip-places') as mapboxgl.GeoJSONSource;
     if (source) {
+      console.log('✅ Updating trip-places source with', tripFeatures.length, 'features');
       source.setData({
         type: 'FeatureCollection',
         features: tripFeatures
       });
+    } else {
+      console.error('❌ trip-places source not found!');
     }
 
     // Update route line
     const routeSource = map.current.getSource('trip-route') as mapboxgl.GeoJSONSource;
     if (routeSource && routeCoordinates.length > 1) {
+      console.log('✅ Updating trip-route with', routeCoordinates.length, 'points');
       routeSource.setData({
         type: 'Feature',
         geometry: {
@@ -248,12 +291,13 @@ const Globe3D = ({
         },
         properties: {}
       } as any);
+    } else if (!routeSource) {
+      console.error('❌ trip-route source not found!');
+    } else {
+      console.log('⚠️ Not enough coordinates for route line:', routeCoordinates.length);
     }
 
-    console.log('🗺️ Trip places updated:', {
-      count: tripFeatures.length,
-      places: tripFeatures.map(f => f.properties.name)
-    });
+    console.log('🗺️ === TRIP PLACES UPDATE COMPLETE ===\n');
   };
 
   // Update map source with filtered data
@@ -423,6 +467,15 @@ const Globe3D = ({
         coords: p.coordinates,
         religion: p.religion || inferReligionFromPlace(p.type, p.name)
       })));
+      
+      // Search for trip place IDs specifically
+      if (tripPlaces && tripPlaces.length > 0) {
+        console.log('🔍 Searching for trip places in loaded data:');
+        tripPlaces.forEach(id => {
+          const found = mockPlaces.find(p => p.id === id);
+          console.log(`  ${id}:`, found ? `✅ ${found.name}` : '❌ NOT FOUND');
+        });
+      }
 
       // Add empty GeoJSON source
       map.current.addSource('places', {
@@ -680,6 +733,7 @@ const Globe3D = ({
 
   // Update data when filters or showMonuments change
   useEffect(() => {
+    console.log('🔄 Effect triggered - isMapReady:', isMapReadyRef.current, 'tripPlaces:', tripPlaces);
     if (isMapReadyRef.current) {
       updateMapData();
       updateTripPlaces();

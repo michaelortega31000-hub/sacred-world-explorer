@@ -16,6 +16,8 @@ const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
   const { userProgress } = useApp();
   
+  console.log('🌍 Explore Page - userProgress.tripPlaces:', userProgress.tripPlaces);
+  
   return <div className="min-h-screen bg-background pb-20">
     <Header />
       
