@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import splashHero from '@/assets/splash-hero.png';
+import splashHero from '@/assets/splash-hero.webp';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Check, WifiOff, BookOpen, MapPin, Award, Users, X } from 'lucide-react';
