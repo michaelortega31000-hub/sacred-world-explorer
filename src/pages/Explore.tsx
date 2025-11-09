@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Globe, MapPin, Trophy, Target, Compass } from 'lucide-react';
+import { Globe, MapPin, Trophy, Target, Compass, Camera } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import Globe3D from '@/components/Globe3D';
@@ -9,6 +9,7 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
+import ARCameraView from '@/components/ARCameraView';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
@@ -29,10 +30,14 @@ const Explore = () => {
                 <Globe3D />
               </div>
               
-              <TabsList className="absolute bottom-4 left-4 right-4 z-50 grid grid-cols-5 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-2 sm:p-3 rounded-lg">
+              <TabsList className="absolute bottom-4 left-4 right-4 z-50 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-2 sm:p-3 rounded-lg">
                 <TabsTrigger value="map" className="gap-1 sm:gap-2">
                   <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">Carte 3D</span>
+                </TabsTrigger>
+                <TabsTrigger value="ar" className="gap-1 sm:gap-2">
+                  <Camera className="w-3 h-3 sm:w-4 sm:h-4" />
+                  <span className="hidden sm:inline">AR</span>
                 </TabsTrigger>
                 <TabsTrigger value="nearby" className="gap-1 sm:gap-2">
                   <Compass className="w-3 h-3 sm:w-4 sm:h-4" />
@@ -53,6 +58,10 @@ const Explore = () => {
               </TabsList>
               
               <NearMeFeature />
+            </TabsContent>
+
+            <TabsContent value="ar" className="h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]">
+              <ARCameraView onClose={() => setActiveTab('map')} />
             </TabsContent>
 
             <TabsContent value="nearby">
