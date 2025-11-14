@@ -45,6 +45,9 @@ interface PlaceFeature {
     description?: string;
     imageUrl?: string;
     isVisited: boolean;
+    order?: number;
+    isStart?: boolean;
+    isEnd?: boolean;
   };
 }
 interface PlacesCollection {
@@ -235,60 +238,64 @@ const Globe3D = ({
     }
 
     // Build features for trip places
-    const tripFeatures: PlaceFeature[] = [];
-    const routeCoordinates: [number, number][] = [];
+    let tripFeatures: PlaceFeature[] = [];
+    let routeCoordinates: [number, number][] = [];
     const notFound: string[] = [];
+
+    const foundPlaces: { place: any; coords: [number, number] }[] = [];
 
     tripPlaces.forEach(tripPlaceId => {
       console.log(`🔍 Looking for trip place: ${tripPlaceId}`);
-      
       const place = allPlacesRef.current.find(p => p.id === tripPlaceId);
-      
       if (!place) {
         console.warn(`❌ Trip place NOT FOUND in allPlaces: ${tripPlaceId}`);
         notFound.push(tripPlaceId);
         return;
       }
-
-      console.log(`✅ Found place:`, {
-        id: place.id,
-        name: place.name,
-        rawCoords: place.coordinates,
-        country: place.country
-      });
-      
       const coords = sanitizeCoordinates(place.coordinates, place.id);
-      if (!coords) {
-        console.error(`❌ Invalid coordinates for ${place.id}:`, place.coordinates);
-        return;
-      }
-
-      console.log(`✅ Sanitized coords for ${place.name}:`, coords, '[lng, lat]');
-
-      const religion = (place.religion || inferReligionFromPlace(place.type, place.name)) as string;
-      const isVisited = userProgress.visitedPlaces.includes(place.id);
-
-      tripFeatures.push({
-        type: 'Feature',
-        geometry: {
-          type: 'Point',
-          coordinates: coords
-        },
-        properties: {
-          id: place.id,
-          name: place.name,
-          type: place.type,
-          country: place.country,
-          points: place.points,
-          religion,
-          description: place.description,
-          imageUrl: place.imageUrl,
-          isVisited
-        }
-      });
-
-      routeCoordinates.push(coords);
+      if (!coords) return;
+      foundPlaces.push({ place, coords });
     });
+
+    // Reorder to start at Spain and end in Australia if both present
+    const hasSpain = foundPlaces.some(fp => (fp.place.country || '').toLowerCase() === 'spain' || String(fp.place.id).startsWith('esp-'));
+    const hasAustralia = foundPlaces.some(fp => (fp.place.country || '').toLowerCase() === 'australia' || String(fp.place.id).startsWith('aus-'));
+    if (hasSpain && hasAustralia) {
+      const startIdx = foundPlaces.findIndex(fp => (fp.place.country || '').toLowerCase() === 'spain' || String(fp.place.id).startsWith('esp-'));
+      let endIdx = -1;
+      for (let i = foundPlaces.length - 1; i >= 0; i--) {
+        const fp = foundPlaces[i];
+        if ((fp.place.country || '').toLowerCase() === 'australia' || String(fp.place.id).startsWith('aus-')) { endIdx = i; break; }
+      }
+      if (startIdx !== -1 && endIdx !== -1) {
+        const middle = foundPlaces.filter((_, i) => i !== startIdx && i !== endIdx);
+        const reordered = [foundPlaces[startIdx], ...middle, foundPlaces[endIdx]];
+        foundPlaces.length = 0; foundPlaces.push(...reordered);
+      }
+    }
+
+    // Build features with order/isStart/isEnd properties
+    tripFeatures = foundPlaces.map((fp, idx) => ({
+      type: 'Feature',
+      geometry: { type: 'Point', coordinates: fp.coords },
+      properties: {
+        id: fp.place.id,
+        name: fp.place.name,
+        type: fp.place.type,
+        country: fp.place.country,
+        points: fp.place.points,
+        religion: (fp.place.religion || inferReligionFromPlace(fp.place.type, fp.place.name)) as string,
+        description: fp.place.description,
+        imageUrl: fp.place.imageUrl,
+        isVisited: userProgress.visitedPlaces.includes(fp.place.id),
+        order: idx + 1,
+        isStart: idx === 0,
+        isEnd: idx === foundPlaces.length - 1
+      }
+    }));
+
+    routeCoordinates = tripFeatures.map(f => f.geometry.coordinates as [number, number]);
+
 
     console.log('📊 Trip places processing summary:');
     console.log(`  - Requested: ${tripPlaces.length}`);
@@ -327,59 +334,17 @@ const Globe3D = ({
       // Animate the line drawing
       animateRouteLine();
 
-      // Add numbered markers for each point in the trip
-      // Clear any pending timeout for end marker
+      // Clear any pending timeout and remove any legacy HTML markers (we use map layer labels now)
       if (endMarkerTimeout.current) {
         clearTimeout(endMarkerTimeout.current);
         endMarkerTimeout.current = null;
       }
-
-      // Remove all existing markers completely
-      tripMarkers.current.forEach(marker => marker.remove());
+      tripMarkers.current.forEach(m => m.remove());
       tripMarkers.current = [];
-      
-      if (tripStartMarker.current) {
-        tripStartMarker.current.remove();
-        tripStartMarker.current = null;
-      }
-      if (tripEndMarker.current) {
-        tripEndMarker.current.remove();
-        tripEndMarker.current = null;
-      }
+      if (tripStartMarker.current) { tripStartMarker.current.remove(); tripStartMarker.current = null; }
+      if (tripEndMarker.current) { tripEndMarker.current.remove(); tripEndMarker.current = null; }
 
-      // Create numbered markers for ALL trip places
-      routeCoordinates.forEach((coord, index) => {
-        const markerEl = document.createElement('div');
-        markerEl.className = 'trip-marker-numbered';
-        
-        // Different style for first, last, and intermediate points
-        const isFirst = index === 0;
-        const isLast = index === routeCoordinates.length - 1;
-        
-        markerEl.innerHTML = `
-          <div class="trip-marker-pulse ${isFirst ? 'trip-marker-first' : isLast ? 'trip-marker-last' : 'trip-marker-intermediate'}"></div>
-          <div class="trip-marker-number">${index + 1}</div>
-        `;
-        
-        const marker = new mapboxgl.Marker({
-          element: markerEl,
-          anchor: 'center'
-        })
-          .setLngLat(coord)
-          .addTo(map.current);
-        
-        // Store all markers for cleanup
-        tripMarkers.current.push(marker);
-        
-        // Also store first and last markers in refs for backward compatibility
-        if (isFirst) {
-          tripStartMarker.current = marker;
-        } else if (isLast) {
-          tripEndMarker.current = marker;
-        }
-      });
-
-      console.log(`✅ Added ${routeCoordinates.length} numbered markers for trip`);
+      console.log(`✅ Trip source updated with ${routeCoordinates.length} points (labels rendered via symbol layer)`);
     } else if (!routeSource) {
       console.error('❌ trip-route source not found!');
     } else {
@@ -886,7 +851,11 @@ const Globe3D = ({
             100, 12,
             150, 14
           ],
-          'circle-color': '#F4C542',
+          'circle-color': ['case',
+            ['to-boolean', ['get', 'isStart']], 'hsl(142, 76%, 45%)',
+            ['to-boolean', ['get', 'isEnd']], 'hsl(0, 84%, 60%)',
+            '#F4C542'
+          ],
           'circle-stroke-color': '#FFFFFF',
           'circle-stroke-width': 3,
           'circle-opacity': 1,
