@@ -113,15 +113,8 @@ const Header = ({
               <img src={logo} alt="SacredWorld Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
             </div>
             
-            {/* Droite : Commande vocale + Quête + Messages */}
+            {/* Droite : Mail + Retour */}
             <div className="flex items-center gap-1 sm:gap-2">
-              {showExploreControls && <VoiceCommand />}
-              
-              <Button variant="ghost" size="sm" onClick={() => navigate('/world?tab=quest')} className="hidden sm:flex gap-2 text-muted-foreground hover:text-foreground hover:bg-primary/10">
-                <Target className="w-4 h-4" />
-                Quête
-              </Button>
-              
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -141,6 +134,10 @@ const Header = ({
                   )}
                 </Tooltip>
               </TooltipProvider>
+
+              <Button variant="ghost" size="sm" onClick={() => navigate('/explore')} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Retour" title="Retour">
+                <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+              </Button>
             </div>
           </div> :
       // Header normal pour les autres pages
