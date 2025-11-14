@@ -62,6 +62,8 @@ const Globe3D = ({
   const map = useRef<mapboxgl.Map | null>(null);
   const userLocationMarker = useRef<mapboxgl.Marker | null>(null);
   const currentPopup = useRef<mapboxgl.Popup | null>(null);
+  const tripStartMarker = useRef<mapboxgl.Marker | null>(null);
+  const tripEndMarker = useRef<mapboxgl.Marker | null>(null);
   const navigate = useNavigate();
   const {
     t
@@ -291,10 +293,58 @@ const Globe3D = ({
         },
         properties: {}
       } as any);
+
+      // Add animated markers at start and end
+      // Remove existing markers
+      if (tripStartMarker.current) {
+        tripStartMarker.current.remove();
+      }
+      if (tripEndMarker.current) {
+        tripEndMarker.current.remove();
+      }
+
+      // Create start marker (green pulsing)
+      const startEl = document.createElement('div');
+      startEl.className = 'trip-marker-start';
+      startEl.innerHTML = `
+        <div class="trip-marker-pulse"></div>
+        <div class="trip-marker-dot"></div>
+      `;
+      tripStartMarker.current = new mapboxgl.Marker({
+        element: startEl,
+        anchor: 'center'
+      })
+        .setLngLat(routeCoordinates[0])
+        .addTo(map.current);
+
+      // Create end marker (red pulsing)
+      const endEl = document.createElement('div');
+      endEl.className = 'trip-marker-end';
+      endEl.innerHTML = `
+        <div class="trip-marker-pulse"></div>
+        <div class="trip-marker-dot"></div>
+      `;
+      tripEndMarker.current = new mapboxgl.Marker({
+        element: endEl,
+        anchor: 'center'
+      })
+        .setLngLat(routeCoordinates[routeCoordinates.length - 1])
+        .addTo(map.current);
+
+      console.log('✅ Added start/end markers');
     } else if (!routeSource) {
       console.error('❌ trip-route source not found!');
     } else {
       console.log('⚠️ Not enough coordinates for route line:', routeCoordinates.length);
+      // Clear markers if no route
+      if (tripStartMarker.current) {
+        tripStartMarker.current.remove();
+        tripStartMarker.current = null;
+      }
+      if (tripEndMarker.current) {
+        tripEndMarker.current.remove();
+        tripEndMarker.current = null;
+      }
     }
 
     console.log('🗺️ === TRIP PLACES UPDATE COMPLETE ===\n');
