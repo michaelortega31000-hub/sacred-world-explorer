@@ -1119,17 +1119,24 @@ const Globe3D = ({
   }, [userPosition, geolocationError, geolocationEnabled]);
 
   // FlyTo function
-  const handleFlyTo = (lat: number, lng: number, zoom: number = 12) => {
+  const handleFlyTo = (lat: number, lng: number, zoom: number = 12, preserveView: boolean = false) => {
     if (map.current && isMapReadyRef.current) {
       setIsPaused(true);
-      map.current.flyTo({
+      
+      const flyToOptions: any = {
         center: [lng, lat],
         zoom: zoom,
-        pitch: 0,
-        bearing: 0,
-        duration: 2000,
+        duration: 1000, // Réduit de 2000ms à 1000ms
         essential: true
-      });
+      };
+      
+      // Ne réinitialiser pitch/bearing QUE si preserveView est false
+      if (!preserveView) {
+        flyToOptions.pitch = 0;
+        flyToOptions.bearing = 0;
+      }
+      
+      map.current.flyTo(flyToOptions);
     } else {
       pendingFlyTo.current = {
         lat,

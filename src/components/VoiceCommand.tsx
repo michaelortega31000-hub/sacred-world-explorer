@@ -15,6 +15,9 @@ interface SpeechRecognitionErrorEvent extends Event {
   error: string;
 }
 
+// Cache de géocodage pour éviter les appels répétés
+const geocodeCache = new Map<string, { lat: number; lng: number; name?: string }>();
+
 const VoiceCommand = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -76,23 +79,84 @@ const VoiceCommand = () => {
     );
   };
 
-  // Géocodage Mapbox pour retrouver n'importe quelle ville
-  const geocodeCity = async (query: string): Promise<{ lat: number; lng: number; name?: string } | null> => {
+  // Géocodage Mapbox avec timeout et cache
+  const geocodeCity = async (query: string, timeoutMs = 2000): Promise<{ lat: number; lng: number; name?: string } | null> => {
+    const normalizedQuery = normalizeText(query);
+    
+    // Vérifier le cache d'abord
+    if (geocodeCache.has(normalizedQuery)) {
+      console.log('🎯 Résultat trouvé dans le cache:', normalizedQuery);
+      return geocodeCache.get(normalizedQuery)!;
+    }
+    
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+    
     try {
       const token = getMapboxToken();
       const url = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?types=place,locality&language=fr&limit=1&access_token=${token}`;
-      const res = await fetch(url);
+      const res = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+      
       if (!res.ok) return null;
       const data = await res.json();
       const feature = data.features?.[0];
       if (!feature?.center) return null;
       const [lng, lat] = feature.center;
       const name = feature.text_fr || feature.text || feature.place_name_fr || feature.place_name;
-      return { lat, lng, name };
+      
+      const result = { lat, lng, name };
+      geocodeCache.set(normalizedQuery, result);
+      return result;
     } catch (e) {
-      console.error('Geocoding error', e);
+      clearTimeout(timeoutId);
+      if ((e as any).name === 'AbortError') {
+        console.log('⏱️ Geocoding timeout après 2 secondes');
+        toast({
+          title: 'Timeout',
+          description: 'La recherche a pris trop de temps',
+          variant: 'destructive',
+        });
+      } else {
+        console.error('Geocoding error', e);
+      }
       return null;
     }
+  };
+
+  // Détermine le zoom selon le type de lieu
+  const getAdaptiveZoom = (place: any): number => {
+    const type = normalizeText(place.type);
+    
+    // Monuments/Sites très larges - Vue plus éloignée
+    if (type.includes('pyramide') || 
+        type.includes('site') || 
+        type.includes('cite') ||
+        type.includes('complexe') ||
+        type.includes('ruines')) {
+      return 13;
+    }
+    
+    // Grandes structures religieuses - Vue moyenne
+    if (type.includes('cathedrale') || 
+        type.includes('basilique') || 
+        type.includes('mosquee') ||
+        type.includes('temple') ||
+        type.includes('abbaye')) {
+      return 15;
+    }
+    
+    // Petites structures ou sanctuaires - Vue plus proche
+    if (type.includes('chapelle') || 
+        type.includes('eglise') || 
+        type.includes('synagogue') ||
+        type.includes('sanctuaire') ||
+        type.includes('monastere')) {
+      return 16;
+    }
+    
+    // Vue par défaut pour les villes ou lieux inconnus
+    return 12;
   };
   // Initialiser Web Speech API
   useEffect(() => {
@@ -166,13 +230,15 @@ const VoiceCommand = () => {
 
         if (place) {
           const [lng, lat] = place.coordinates;
-          if (location.pathname !== '/world') {
-            navigate('/world');
+          const adaptiveZoom = getAdaptiveZoom(place);
+          
+          if (location.pathname !== '/explore') {
+            navigate('/explore');
             setTimeout(() => {
-              flyToLocation(lat, lng, 15);
-            }, 350);
+              flyToLocation(lat, lng, adaptiveZoom, true); // preserveView = true
+            }, 100);
           } else {
-            flyToLocation(lat, lng, 15);
+            flyToLocation(lat, lng, adaptiveZoom, true);
           }
           toast({
             title: '🎯 Destination trouvée !',
@@ -184,13 +250,13 @@ const VoiceCommand = () => {
         // 2) Fallback: géocoder n'importe quelle ville (ex: Tokyo)
         const geo = await geocodeCity(locationName);
         if (geo) {
-          if (location.pathname !== '/world') {
-            navigate('/world');
+          if (location.pathname !== '/explore') {
+            navigate('/explore');
             setTimeout(() => {
-              flyToLocation(geo.lat, geo.lng, 15);
-            }, 350);
+              flyToLocation(geo.lat, geo.lng, 12, true); // Zoom 12 pour les villes, preserveView = true
+            }, 100);
           } else {
-            flyToLocation(geo.lat, geo.lng, 15);
+            flyToLocation(geo.lat, geo.lng, 12, true);
           }
           toast({
             title: '🎯 Destination trouvée !',

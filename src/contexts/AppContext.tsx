@@ -73,8 +73,8 @@ interface AppContextType {
   updatePlannedRoute: (startCity: string, showRoute: boolean) => void;
   userLocation: UserGeolocation | null;
   geolocationError: string | null;
-  flyToLocation: (lat: number, lng: number, zoom?: number) => void;
-  setFlyToFunction: (fn: (lat: number, lng: number, zoom?: number) => void) => void;
+  flyToLocation: (lat: number, lng: number, zoom?: number, preserveView?: boolean) => void;
+  setFlyToFunction: (fn: (lat: number, lng: number, zoom?: number, preserveView?: boolean) => void) => void;
   updateStreak: () => void;
   getStreakBonus: () => number;
   awardQuestBadge: (questId: string, questName: string, questDescription: string, questIcon: string) => Promise<boolean>;
@@ -86,7 +86,7 @@ const STORAGE_KEY = 'sacredworld_progress';
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
-  const [flyToFn, setFlyToFn] = useState<((lat: number, lng: number, zoom?: number) => void) | null>(null);
+  const [flyToFn, setFlyToFn] = useState<((lat: number, lng: number, zoom?: number, preserveView?: boolean) => void) | null>(null);
   const [pendingFlyTo, setPendingFlyTo] = useState<{ lat: number; lng: number; zoom: number } | null>(null);
   const [userProgress, setUserProgress] = useState<UserProgress>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
