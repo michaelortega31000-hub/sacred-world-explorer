@@ -123,16 +123,24 @@ const Globe3D = ({
   const sanitizeCoordinates = (coords: [number, number], placeId: string): [number, number] | null => {
     let [first, second] = coords;
 
-    // Swap if needed (detect lat/lng order)
-    if (Math.abs(first) > 90 && Math.abs(second) <= 90) {
+    // Check if coordinates need swapping
+    // Mapbox expects [longitude, latitude] where:
+    // - longitude: -180 to 180
+    // - latitude: -90 to 90
+    // If first value looks like latitude (|first| <= 90) and second looks like longitude (|second| > 90),
+    // then swap them
+    if (Math.abs(first) <= 90 && Math.abs(second) > 90) {
+      console.log(`🔄 Swapping coords for ${placeId}: [${first}, ${second}] -> [${second}, ${first}]`);
       [first, second] = [second, first];
     }
 
-    // Validate
+    // Validate final coordinates
     if (isNaN(first) || isNaN(second) || Math.abs(second) > 90 || Math.abs(first) > 180) {
-      console.warn(`⚠️ Invalid coordinates for ${placeId}:`, coords);
+      console.error(`❌ Invalid coordinates for ${placeId}:`, coords, '-> After processing:', [first, second]);
       return null;
     }
+    
+    console.log(`✅ Valid coords for ${placeId}: [lng=${first}, lat=${second}]`);
     return [first, second]; // [lng, lat]
   };
 
