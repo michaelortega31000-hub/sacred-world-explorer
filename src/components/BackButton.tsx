@@ -14,7 +14,7 @@ export const BackButton = ({ to = '/world' }: BackButtonProps) => {
   };
 
   return (
-    <div className="fixed top-6 right-6 z-50">
+    <div className="fixed top-6 right-6 z-[60]">
       <Button
         variant="ghost"
         size="icon"
