@@ -13,6 +13,7 @@ import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
+import { normalizeCountryName } from '@/lib/countryNameMapping';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
@@ -20,8 +21,10 @@ const Explore = () => {
   const navigate = useNavigate();
   
   const handleCountryClick = (countryName: string) => {
-    toast.info(`Navigation vers ${countryName}...`);
-    navigate(`/country/${countryName}`);
+    const normalizedName = normalizeCountryName(countryName);
+    console.log('🌍 Country clicked:', countryName, '→ normalized:', normalizedName);
+    toast.info(`Navigation vers ${normalizedName}...`);
+    navigate(`/country/${encodeURIComponent(normalizedName)}`);
   };
   
   console.log('🌍 Explore Page - userProgress.tripPlaces:', userProgress.tripPlaces);

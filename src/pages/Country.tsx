@@ -52,6 +52,19 @@ const Country = () => {
     return nameA.localeCompare(nameB);
   });
 
+  // Avertir si aucun monument trouvé
+  useEffect(() => {
+    if (country && places.length === 0) {
+      console.warn(`⚠️ Aucun monument trouvé pour le pays: "${country}"`);
+      console.log('💡 Pays disponibles dans la base:', getAllCountries());
+      
+      toast.error(
+        `Aucun monument trouvé pour "${country}". Vérifiez le nom du pays.`,
+        { duration: 5000 }
+      );
+    }
+  }, [country, places.length]);
+
   // Group places by city
   const citiesByLetter = Object.entries(
     places.reduce((acc, place) => {
