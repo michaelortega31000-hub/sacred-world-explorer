@@ -113,8 +113,10 @@ const Header = ({
               <img src={logo} alt="SacredWorld Logo" className="h-8 w-8 sm:h-10 sm:w-10 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
             </div>
             
-            {/* Droite : Mail + Retour */}
+            {/* Droite : Micro + Mail + Retour */}
             <div className="flex items-center gap-1 sm:gap-2">
+              {showExploreControls && <VoiceCommand />}
+
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger asChild>
