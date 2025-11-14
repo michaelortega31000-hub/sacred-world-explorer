@@ -5,7 +5,9 @@ import splashHeroMobile from '@/assets/splash-hero-mobile.webp';
 import splashHeroTablet from '@/assets/splash-hero-tablet.webp';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Check, WifiOff, BookOpen, MapPin, Award, Users, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
+import { WifiOff, BookOpen, Globe, Camera, Trophy, Calendar, CheckCircle, MapPin, Compass, Award, Target, TrendingUp, Heart, Users, Route, Settings, Check, LucideIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const languages = [
@@ -19,26 +21,144 @@ const languages = [
   { code: 'zh', name: '中文', flag: '🇨🇳' },
 ];
 
-const tutorialSteps = [
+interface TutorialStep {
+  category: 'discovery' | 'gamification' | 'social' | 'calendar' | 'personalization';
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  categoryColor: string;
+  categoryLabel: string;
+}
+
+const tutorialSteps: TutorialStep[] = [
+  // Catégorie 1: Découverte & Exploration (Turquoise)
   {
+    category: 'discovery',
+    icon: Globe,
+    title: "Bienvenue dans SacredWorld",
+    description: "Partez à la découverte des lieux sacrés et monuments culturels les plus emblématiques du monde entier. Une aventure spirituelle et culturelle vous attend !",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration"
+  },
+  {
+    category: 'discovery',
+    icon: Globe,
+    title: "Explorez le Globe 3D Interactif",
+    description: "Faites tourner le globe 3D pour découvrir des milliers de lieux. Cliquez sur un pays pour voir tous ses monuments sacrés et planifier votre itinéraire.",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration"
+  },
+  {
+    category: 'discovery',
+    icon: Camera,
+    title: "Expérience en Réalité Augmentée",
+    description: "Pointez votre caméra vers des monuments pour obtenir des informations en temps réel avec des superpositions immersives et des symboles religieux animés.",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration"
+  },
+  {
+    category: 'discovery',
+    icon: Compass,
+    title: "Découvrez les Lieux Près de Chez Vous",
+    description: "Activez la géolocalisation pour découvrir tous les lieux sacrés dans un rayon de 10 km. Obtenez des directions et des informations de distance.",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration"
+  },
+  {
+    category: 'discovery',
     icon: MapPin,
-    title: 'Explorez le monde sacré',
-    description: 'Découvrez des milliers de lieux sacrés à travers le monde entier. Naviguez sur le globe interactif et explorez des monuments emblématiques de toutes les religions.',
+    title: "Parcourez Tous les Lieux",
+    description: "Filtrez par religion, pays ou type de monument. Recherchez des lieux spécifiques et ajoutez vos favoris à votre itinéraire.",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration"
+  },
+  
+  // Catégorie 2: Gamification & Progression (Doré)
+  {
+    category: 'gamification',
+    icon: CheckCircle,
+    title: "Visitez et Vérifiez Vos Visites",
+    description: "Visitez des lieux en personne, prenez une photo et vérifiez votre visite par GPS + IA. Gagnez des points pour chaque visite physique validée !",
+    categoryColor: "hsl(45 93% 47%)",
+    categoryLabel: "Gamification & Progression"
   },
   {
+    category: 'gamification',
+    icon: Trophy,
+    title: "Collectez des Points et Montez de Niveau",
+    description: "Système XP : 100 points = 1 niveau. Visites physiques valent 10 points, visites virtuelles 1 point. Débloquez des récompenses à chaque niveau !",
+    categoryColor: "hsl(45 93% 47%)",
+    categoryLabel: "Gamification & Progression"
+  },
+  {
+    category: 'gamification',
     icon: Award,
-    title: 'Collectez des points',
-    description: 'Visitez des lieux en personne ou virtuellement pour gagner des points. Plus vous explorez, plus vous débloquez de badges et gravissez les classements.',
+    title: "Débloquez des Badges Exclusifs",
+    description: "Gagnez des badges pour 10, 25, 50, 100, 250 visites et plus. Badges spéciaux pour lieux iconiques. Admirez-les en 3D dans votre profil !",
+    categoryColor: "hsl(45 93% 47%)",
+    categoryLabel: "Gamification & Progression"
   },
   {
+    category: 'gamification',
+    icon: Target,
+    title: "Relevez des Défis Quotidiens",
+    description: "Quêtes hebdomadaires, défis quotidiens et challenges thématiques. Terminez-les pour gagner des badges rares et des bonus de points !",
+    categoryColor: "hsl(45 93% 47%)",
+    categoryLabel: "Gamification & Progression"
+  },
+  {
+    category: 'gamification',
+    icon: TrendingUp,
+    title: "Grimpez dans les Classements",
+    description: "Classements mondiaux, par pays et par religion. Comparez-vous aux autres explorateurs et gagnez des récompenses de classement chaque semaine !",
+    categoryColor: "hsl(45 93% 47%)",
+    categoryLabel: "Gamification & Progression"
+  },
+  
+  // Catégorie 3: Social & Communauté (Violet)
+  {
+    category: 'social',
+    icon: Heart,
+    title: "Créez Vos Souvenirs de Voyage",
+    description: "Uploadez vos photos de visites, écrivez vos réflexions personnelles et recommandez des restaurants et hébergements près des monuments.",
+    categoryColor: "hsl(270 60% 60%)",
+    categoryLabel: "Social & Communauté"
+  },
+  {
+    category: 'social',
     icon: Users,
-    title: 'Partagez vos découvertes',
-    description: 'Rejoignez une communauté de passionnés. Partagez vos photos, créez des voyages personnalisés et échangez avec d\'autres explorateurs.',
+    title: "Rejoignez la Communauté",
+    description: "Partagez vos vœux, photos et citations inspirantes. Participez aux discussions du forum, ajoutez des amis et échangez par messages privés.",
+    categoryColor: "hsl(270 60% 60%)",
+    categoryLabel: "Social & Communauté"
   },
   {
-    icon: BookOpen,
-    title: 'Apprenez et découvrez',
-    description: 'Chaque lieu raconte une histoire. Plongez dans la richesse culturelle et historique des monuments avec des descriptions détaillées et du contenu immersif (à venir : audio et vidéo).',
+    category: 'social',
+    icon: Route,
+    title: "Planifiez Vos Voyages",
+    description: "Créez des itinéraires personnalisés avec optimisation de route. Ajoutez jusqu'à 10 lieux, sauvegardez vos voyages et partagez-les avec la communauté.",
+    categoryColor: "hsl(270 60% 60%)",
+    categoryLabel: "Social & Communauté"
+  },
+  
+  // Catégorie 4: Calendrier & Événements (Bleu)
+  {
+    category: 'calendar',
+    icon: Calendar,
+    title: "Calendrier Multi-Religieux",
+    description: "Consultez les événements religieux de toutes les traditions. Notifications push, rappels personnalisables et vues année/mois/semaine/jour.",
+    categoryColor: "hsl(217 91% 60%)",
+    categoryLabel: "Calendrier & Événements"
+  },
+  
+  // Catégorie 5: Personnalisation (Vert)
+  {
+    category: 'personalization',
+    icon: Settings,
+    title: "Personnalisez Votre Expérience",
+    description: "Choisissez votre avatar, configurez votre profil public/privé, sélectionnez votre langue parmi 8 disponibles et gérez vos notifications.",
+    categoryColor: "hsl(142 71% 45%)",
+    categoryLabel: "Personnalisation"
   },
 ];
 
@@ -48,6 +168,12 @@ const Splash = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  
+  // Charger la progression du tutoriel depuis localStorage
+  const [tutorialProgress, setTutorialProgress] = useState(() => {
+    const saved = localStorage.getItem('tutorialProgress');
+    return saved ? parseInt(saved, 10) : 0;
+  });
 
   useEffect(() => {
     // Vérifier si l'utilisateur est déjà connecté
@@ -87,18 +213,31 @@ const Splash = () => {
   };
 
   const handleTutorialNext = () => {
-    if (tutorialStep < tutorialSteps.length - 1) {
-      setTutorialStep(prev => prev + 1);
+    const nextStep = tutorialStep + 1;
+    if (nextStep < tutorialSteps.length) {
+      setTutorialStep(nextStep);
+      // Sauvegarder la progression
+      const newProgress = Math.max(tutorialProgress, nextStep + 1);
+      setTutorialProgress(newProgress);
+      localStorage.setItem('tutorialProgress', newProgress.toString());
     } else {
+      // Tutoriel terminé
       setShowTutorial(false);
       setTutorialStep(0);
+      localStorage.setItem('tutorialCompleted', 'true');
+      localStorage.setItem('tutorialProgress', tutorialSteps.length.toString());
     }
   };
 
   const handleTutorialPrev = () => {
     if (tutorialStep > 0) {
-      setTutorialStep(prev => prev - 1);
+      setTutorialStep(tutorialStep - 1);
     }
+  };
+
+  const handleSkipTutorial = () => {
+    setShowTutorial(false);
+    setTutorialStep(0);
   };
 
   const currentStep = tutorialSteps[tutorialStep];
@@ -203,73 +342,98 @@ const Splash = () => {
 
       {/* Tutorial Dialog */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-        <DialogContent className="max-w-lg p-0 overflow-hidden bg-card border-primary/20">
-          <div className="relative">
-            {/* Close button */}
-            <button
-              onClick={() => setShowTutorial(false)}
-              className="absolute top-4 right-4 z-10 w-8 h-8 flex items-center justify-center rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-
-            {/* Step indicator */}
-            <div className="absolute top-4 left-4 z-10 flex gap-2">
-              {tutorialSteps.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-1 w-8 rounded-full transition-all duration-300 ${
-                    index === tutorialStep ? 'bg-primary' : 'bg-muted'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Content */}
-            <div className="p-12 pt-16 text-center min-h-[400px] flex flex-col items-center justify-center">
-              {StepIcon && (
-                <div className="mb-6 w-20 h-20 rounded-full bg-primary/10 flex items-center justify-center animate-scale-in">
-                  <StepIcon className="w-10 h-10 text-primary" strokeWidth={2} />
-                </div>
-              )}
-
-              <h3 className="text-2xl font-bold text-foreground mb-4 animate-fade-in">
-                {currentStep.title}
-              </h3>
-
-              <p className="text-lg text-muted-foreground leading-relaxed animate-fade-in" style={{ animationDelay: '100ms' }}>
-                {currentStep.description}
-              </p>
-
-              {/* Placeholder for future video */}
-              {tutorialStep === 0 && (
-                <div className="mt-6 w-full aspect-video bg-muted/20 rounded-lg flex items-center justify-center border-2 border-dashed border-muted">
-                  <p className="text-sm text-muted-foreground">Vidéo à venir</p>
-                </div>
-              )}
-            </div>
-
-            {/* Navigation */}
-            <div className="p-6 border-t border-border flex justify-between items-center gap-4">
-              <Button
-                onClick={handleTutorialPrev}
-                variant="ghost"
-                disabled={tutorialStep === 0}
-                className="disabled:opacity-50"
+        <DialogContent className="sm:max-w-[650px] bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-xl border-primary/20">
+          <DialogHeader>
+            <div className="flex items-center justify-between mb-4">
+              <Badge 
+                className="text-xs px-3 py-1"
+                style={{ 
+                  backgroundColor: tutorialSteps[tutorialStep].categoryColor,
+                  color: 'white'
+                }}
               >
-                Précédent
-              </Button>
-
-              <span className="text-sm text-muted-foreground">
-                {tutorialStep + 1} / {tutorialSteps.length}
+                {tutorialSteps[tutorialStep].categoryLabel}
+              </Badge>
+              <span className="text-sm text-muted-foreground font-medium">
+                Étape {tutorialStep + 1} sur {tutorialSteps.length}
               </span>
-
+            </div>
+            
+            <DialogTitle className="text-2xl font-cinzel text-center">
+              {tutorialSteps[tutorialStep].title}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="flex flex-col items-center gap-6 py-4">
+            <div className="relative">
+              <div 
+                className="absolute inset-0 rounded-full blur-xl animate-pulse" 
+                style={{ backgroundColor: tutorialSteps[tutorialStep].categoryColor, opacity: 0.2 }}
+              />
+              {StepIcon && (
+                <StepIcon 
+                  className="w-20 h-20 relative z-10" 
+                  style={{ color: tutorialSteps[tutorialStep].categoryColor }}
+                />
+              )}
+            </div>
+            
+            <p className="text-center text-muted-foreground text-base leading-relaxed px-4">
+              {tutorialSteps[tutorialStep].description}
+            </p>
+            
+            {/* Barre de progression */}
+            <div className="w-full px-4 space-y-2">
+              <Progress 
+                value={(tutorialStep + 1) / tutorialSteps.length * 100} 
+                className="h-2"
+              />
+              <div className="flex items-center gap-1 justify-center">
+                {tutorialSteps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`h-1.5 rounded-full transition-all ${
+                      index === tutorialStep
+                        ? "w-6 bg-primary"
+                        : index < tutorialStep
+                        ? "w-1.5 bg-primary/60"
+                        : "w-1.5 bg-primary/20"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+            
+            {/* Navigation */}
+            <div className="flex flex-col gap-3 w-full px-4 mt-2">
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={handleTutorialPrev}
+                  disabled={tutorialStep === 0}
+                  className="flex-1"
+                >
+                  ← Précédent
+                </Button>
+                
+                <Button
+                  onClick={handleTutorialNext}
+                  className="flex-1"
+                  style={{
+                    backgroundColor: tutorialSteps[tutorialStep].categoryColor,
+                    color: 'white'
+                  }}
+                >
+                  {tutorialStep === tutorialSteps.length - 1 ? "Terminer ✓" : "Suivant →"}
+                </Button>
+              </div>
+              
               <Button
-                onClick={handleTutorialNext}
+                variant="ghost"
+                onClick={handleSkipTutorial}
+                className="w-full text-sm text-muted-foreground hover:text-foreground"
               >
-                {tutorialStep === tutorialSteps.length - 1 
-                  ? 'Terminer' 
-                  : 'Suivant'}
+                Passer le tutoriel
               </Button>
             </div>
           </div>
