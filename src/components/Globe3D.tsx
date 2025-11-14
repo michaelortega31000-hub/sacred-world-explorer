@@ -707,6 +707,78 @@ const Globe3D = ({
       window.addEventListener('navigateToPlace', ((e: CustomEvent) => {
         navigate(`/place/${e.detail}`);
       }) as EventListener);
+      
+      // Country hover effect
+      map.current.on('mousemove', (e) => {
+        if (!map.current) return;
+        
+        // First check if hovering over place markers (higher priority)
+        const placeFeatures = map.current.queryRenderedFeatures(e.point, {
+          layers: ['places-circles', 'trip-places-circles']
+        });
+        
+        if (placeFeatures.length > 0) {
+          return; // Let place hover handler manage cursor
+        }
+        
+        // Query for country polygons/fills at cursor position
+        const countryFeatures = map.current.queryRenderedFeatures(e.point, {
+          layers: ['admin-0-boundary', 'admin-0-boundary-bg', 'country-label']
+        });
+        
+        if (countryFeatures.length > 0) {
+          map.current.getCanvas().style.cursor = 'pointer';
+        } else {
+          map.current.getCanvas().style.cursor = '';
+        }
+      });
+      
+      // Country click handler
+      map.current.on('click', (e) => {
+        if (!map.current || !onCountryClick) return;
+        
+        // First check if clicking on a place marker (higher priority)
+        const placeFeatures = map.current.queryRenderedFeatures(e.point, {
+          layers: ['places-circles', 'trip-places-circles']
+        });
+        
+        // If clicking on a place, let the place handler deal with it
+        if (placeFeatures.length > 0) {
+          return;
+        }
+        
+        // Query for country features at click position
+        const countryLayers = [
+          'admin-0-boundary',
+          'admin-0-boundary-bg',
+          'country-label',
+          'admin-0-boundary-disputed'
+        ];
+        
+        const countryFeatures = map.current.queryRenderedFeatures(e.point, {
+          layers: countryLayers
+        });
+        
+        if (countryFeatures.length > 0) {
+          const feature = countryFeatures[0];
+          
+          // Extract country name from Mapbox properties
+          const countryName = 
+            feature.properties?.name ||
+            feature.properties?.name_en ||
+            feature.properties?.name_fr ||
+            feature.properties?.iso_3166_1 ||
+            feature.properties?.worldview;
+          
+          if (countryName) {
+            console.log('🌍 Country clicked:', countryName);
+            onCountryClick(countryName);
+          } else {
+            console.warn('⚠️ Country feature found but no name property:', feature.properties);
+          }
+        }
+      });
+      
       isMapReadyRef.current = true;
 
       // Execute pending fly-to if any
