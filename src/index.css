@@ -1072,7 +1072,7 @@ All colors MUST be HSL.
   }
 }
 
-/* Trip Markers - Animated Start/End Points */
+/* Trip Markers - Numbered Markers for Itinerary */
 @keyframes trip-marker-pulse {
   0% {
     transform: scale(1);
@@ -1088,11 +1088,10 @@ All colors MUST be HSL.
   }
 }
 
-.trip-marker-start,
-.trip-marker-end {
+.trip-marker-numbered {
   position: relative;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1106,12 +1105,69 @@ All colors MUST be HSL.
   animation: trip-marker-pulse 2s ease-out infinite;
 }
 
+/* First point - Green */
+.trip-marker-first {
+  background: hsl(142, 76%, 45%);
+}
+
+/* Last point - Red */
+.trip-marker-last {
+  background: hsl(0, 84%, 60%);
+}
+
+/* Intermediate points - Golden */
+.trip-marker-intermediate {
+  background: hsl(43, 76%, 55%);
+}
+
+.trip-marker-number {
+  position: relative;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 3px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: white;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.trip-marker-first + .trip-marker-number {
+  background: hsl(142, 76%, 45%);
+  box-shadow: 0 0 16px hsl(142, 76%, 45% / 0.8), 0 0 32px hsl(142, 76%, 45% / 0.5);
+}
+
+.trip-marker-last + .trip-marker-number {
+  background: hsl(0, 84%, 60%);
+  box-shadow: 0 0 16px hsl(0, 84%, 60% / 0.8), 0 0 32px hsl(0, 84%, 60% / 0.5);
+}
+
+.trip-marker-intermediate + .trip-marker-number {
+  background: hsl(43, 76%, 55%);
+  box-shadow: 0 0 16px hsl(43, 76%, 55% / 0.8), 0 0 32px hsl(43, 76%, 55% / 0.5);
+}
+
+/* Legacy support - keeping old classes for backward compatibility */
+.trip-marker-start,
+.trip-marker-end {
+  position: relative;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .trip-marker-start .trip-marker-pulse {
-  background: hsl(142, 76%, 45%); /* Green */
+  background: hsl(142, 76%, 45%);
 }
 
 .trip-marker-end .trip-marker-pulse {
-  background: hsl(0, 84%, 60%); /* Red */
+  background: hsl(0, 84%, 60%);
 }
 
 .trip-marker-dot {
