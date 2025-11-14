@@ -275,9 +275,6 @@ const Country = () => {
               ))}
             </SelectContent>
           </Select>
-          <div className="text-sm text-muted-foreground">
-            <span className="font-semibold text-foreground">{userProgress.totalPoints}</span> {t('country.points')}
-          </div>
         </div>
       </div>
 
