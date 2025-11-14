@@ -294,6 +294,9 @@ const Globe3D = ({
         properties: {}
       } as any);
 
+      // Animate the line drawing
+      animateRouteLine();
+
       // Add animated markers at start and end
       // Remove existing markers
       if (tripStartMarker.current) {
@@ -317,19 +320,21 @@ const Globe3D = ({
         .setLngLat(routeCoordinates[0])
         .addTo(map.current);
 
-      // Create end marker (red pulsing)
-      const endEl = document.createElement('div');
-      endEl.className = 'trip-marker-end';
-      endEl.innerHTML = `
-        <div class="trip-marker-pulse"></div>
-        <div class="trip-marker-dot"></div>
-      `;
-      tripEndMarker.current = new mapboxgl.Marker({
-        element: endEl,
-        anchor: 'center'
-      })
-        .setLngLat(routeCoordinates[routeCoordinates.length - 1])
-        .addTo(map.current);
+      // Create end marker (red pulsing) - add it at the end of animation
+      setTimeout(() => {
+        const endEl = document.createElement('div');
+        endEl.className = 'trip-marker-end';
+        endEl.innerHTML = `
+          <div class="trip-marker-pulse"></div>
+          <div class="trip-marker-dot"></div>
+        `;
+        tripEndMarker.current = new mapboxgl.Marker({
+          element: endEl,
+          anchor: 'center'
+        })
+          .setLngLat(routeCoordinates[routeCoordinates.length - 1])
+          .addTo(map.current!);
+      }, 2000); // Delay to sync with line animation
 
       console.log('✅ Added start/end markers');
     } else if (!routeSource) {
@@ -348,6 +353,72 @@ const Globe3D = ({
     }
 
     console.log('🗺️ === TRIP PLACES UPDATE COMPLETE ===\n');
+  };
+
+  // Function to animate route line drawing
+  const animateRouteLine = () => {
+    if (!map.current) return;
+
+    const duration = 2000; // 2 seconds animation
+    const startTime = Date.now();
+
+    const animate = () => {
+      if (!map.current) return;
+
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      // Update line-gradient for all route layers
+      const layerIds = [
+        'trip-route-glow-outer',
+        'trip-route-glow-inner',
+        'trip-route-main',
+        'trip-route-highlight'
+      ];
+
+      layerIds.forEach(layerId => {
+        if (map.current!.getLayer(layerId)) {
+          map.current!.setPaintProperty(layerId, 'line-gradient', [
+            'interpolate',
+            ['linear'],
+            ['line-progress'],
+            0,
+            'transparent',
+            progress,
+            layerId.includes('highlight') 
+              ? 'hsl(48, 95%, 85%)' 
+              : 'hsl(43, 76%, 70%)',
+            1,
+            'transparent'
+          ]);
+        }
+      });
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        // Animation complete - set final gradient to full visibility
+        layerIds.forEach(layerId => {
+          if (map.current!.getLayer(layerId)) {
+            map.current!.setPaintProperty(layerId, 'line-gradient', [
+              'interpolate',
+              ['linear'],
+              ['line-progress'],
+              0,
+              layerId.includes('highlight') 
+                ? 'hsl(48, 95%, 85%)' 
+                : 'hsl(43, 76%, 70%)',
+              1,
+              layerId.includes('highlight') 
+                ? 'hsl(48, 95%, 85%)' 
+                : 'hsl(43, 76%, 70%)'
+            ]);
+          }
+        });
+      }
+    };
+
+    animate();
   };
 
   // Update map source with filtered data
@@ -598,7 +669,13 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': 'hsl(43, 76%, 70%)', // sacred-gold
+          'line-gradient': [
+            'interpolate',
+            ['linear'],
+            ['line-progress'],
+            0, 'transparent',
+            1, 'transparent'
+          ],
           'line-width': 12,
           'line-blur': 8,
           'line-opacity': 0.3
@@ -615,7 +692,13 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': 'hsl(43, 76%, 70%)',
+          'line-gradient': [
+            'interpolate',
+            ['linear'],
+            ['line-progress'],
+            0, 'transparent',
+            1, 'transparent'
+          ],
           'line-width': 8,
           'line-blur': 4,
           'line-opacity': 0.5
@@ -632,7 +715,13 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': 'hsl(43, 76%, 70%)',
+          'line-gradient': [
+            'interpolate',
+            ['linear'],
+            ['line-progress'],
+            0, 'transparent',
+            1, 'transparent'
+          ],
           'line-width': 5,
           'line-opacity': 0.95
         }
@@ -648,7 +737,13 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-color': 'hsl(48, 95%, 85%)', // Brighter gold for highlight
+          'line-gradient': [
+            'interpolate',
+            ['linear'],
+            ['line-progress'],
+            0, 'transparent',
+            1, 'transparent'
+          ],
           'line-width': 2,
           'line-opacity': 1
         }
