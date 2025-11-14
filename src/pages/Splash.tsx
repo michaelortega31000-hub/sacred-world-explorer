@@ -247,11 +247,25 @@ const Splash = () => {
   const handleTutorialNext = () => {
     const nextStep = tutorialStep + 1;
     if (nextStep < tutorialSteps.length) {
-      setTutorialStep(nextStep);
-      // Sauvegarder la progression
-      const newProgress = Math.max(tutorialProgress, nextStep + 1);
-      setTutorialProgress(newProgress);
-      localStorage.setItem('tutorialProgress', newProgress.toString());
+      // Animation de sortie puis entrée
+      const content = document.querySelector('.tutorial-content');
+      if (content) {
+        content.classList.add('animate-fade-out');
+        setTimeout(() => {
+          setTutorialStep(nextStep);
+          // Sauvegarder la progression
+          const newProgress = Math.max(tutorialProgress, nextStep + 1);
+          setTutorialProgress(newProgress);
+          localStorage.setItem('tutorialProgress', newProgress.toString());
+          content.classList.remove('animate-fade-out');
+          content.classList.add('animate-fade-in');
+        }, 200);
+      } else {
+        setTutorialStep(nextStep);
+        const newProgress = Math.max(tutorialProgress, nextStep + 1);
+        setTutorialProgress(newProgress);
+        localStorage.setItem('tutorialProgress', newProgress.toString());
+      }
     } else {
       // Tutoriel terminé
       setShowTutorial(false);
@@ -263,7 +277,17 @@ const Splash = () => {
 
   const handleTutorialPrev = () => {
     if (tutorialStep > 0) {
-      setTutorialStep(tutorialStep - 1);
+      const content = document.querySelector('.tutorial-content');
+      if (content) {
+        content.classList.add('animate-fade-out');
+        setTimeout(() => {
+          setTutorialStep(tutorialStep - 1);
+          content.classList.remove('animate-fade-out');
+          content.classList.add('animate-fade-in');
+        }, 200);
+      } else {
+        setTutorialStep(tutorialStep - 1);
+      }
     }
   };
 
@@ -374,11 +398,11 @@ const Splash = () => {
 
       {/* Tutorial Dialog */}
       <Dialog open={showTutorial} onOpenChange={setShowTutorial}>
-        <DialogContent className="sm:max-w-[650px] bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-xl border-primary/20">
+        <DialogContent className="sm:max-w-[650px] bg-gradient-to-br from-background/95 to-background/90 backdrop-blur-xl border-primary/20 animate-fade-in">
           <DialogHeader>
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-4 animate-fade-in">
               <Badge 
-                className="text-xs px-3 py-1"
+                className="text-xs px-3 py-1 transition-all duration-300"
                 style={{ 
                   backgroundColor: tutorialSteps[tutorialStep].categoryColor,
                   color: 'white'
@@ -386,74 +410,97 @@ const Splash = () => {
               >
                 {tutorialSteps[tutorialStep].categoryLabel}
               </Badge>
-              <span className="text-sm text-muted-foreground font-medium">
+              <span className="text-sm text-muted-foreground font-medium animate-fade-in">
                 Étape {tutorialStep + 1} sur {tutorialSteps.length}
               </span>
             </div>
             
-            <DialogTitle className="text-2xl font-cinzel text-center">
+            <DialogTitle className="text-2xl font-cinzel text-center animate-fade-in" style={{ animationDelay: '100ms' }}>
               {tutorialSteps[tutorialStep].title}
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex flex-col items-center gap-6 py-4">
-            <div className="relative">
+          <div className="flex flex-col items-center gap-6 py-4 tutorial-content">
+            <div className="relative animate-scale-in" style={{ animationDelay: '200ms' }}>
+              {/* Glow pulsant en arrière-plan */}
+              <div 
+                className="absolute inset-0 rounded-full blur-2xl animate-pulse" 
+                style={{ 
+                  backgroundColor: tutorialSteps[tutorialStep].categoryColor, 
+                  opacity: 0.3,
+                  animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                }}
+              />
+              {/* Second glow pour effet plus fort */}
               <div 
                 className="absolute inset-0 rounded-full blur-xl animate-pulse" 
-                style={{ backgroundColor: tutorialSteps[tutorialStep].categoryColor, opacity: 0.2 }}
+                style={{ 
+                  backgroundColor: tutorialSteps[tutorialStep].categoryColor, 
+                  opacity: 0.2,
+                  animation: 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+                }}
               />
               {StepIcon && (
                 <StepIcon 
-                  className="w-20 h-20 relative z-10" 
-                  style={{ color: tutorialSteps[tutorialStep].categoryColor }}
+                  className="w-20 h-20 relative z-10 transition-all duration-500 drop-shadow-2xl" 
+                  style={{ 
+                    color: tutorialSteps[tutorialStep].categoryColor,
+                    filter: `drop-shadow(0 0 20px ${tutorialSteps[tutorialStep].categoryColor}40)`
+                  }}
                 />
               )}
             </div>
             
-            <p className="text-center text-muted-foreground text-base leading-relaxed px-4">
+            <p className="text-center text-muted-foreground text-base leading-relaxed px-4 animate-fade-in" style={{ animationDelay: '300ms' }}>
               {tutorialSteps[tutorialStep].description}
             </p>
             
             {/* Barre de progression */}
-            <div className="w-full px-4 space-y-2">
+            <div className="w-full px-4 space-y-2 animate-fade-in" style={{ animationDelay: '400ms' }}>
               <Progress 
                 value={(tutorialStep + 1) / tutorialSteps.length * 100} 
-                className="h-2"
+                className="h-2 transition-all duration-500"
               />
               <div className="flex items-center gap-1 justify-center">
                 {tutorialSteps.map((_, index) => (
                   <div
                     key={index}
-                    className={`h-1.5 rounded-full transition-all ${
+                    className={`h-1.5 rounded-full transition-all duration-500 ${
                       index === tutorialStep
-                        ? "w-6 bg-primary"
+                        ? "w-6 bg-primary scale-110"
                         : index < tutorialStep
                         ? "w-1.5 bg-primary/60"
                         : "w-1.5 bg-primary/20"
                     }`}
+                    style={{
+                      boxShadow: index === tutorialStep 
+                        ? `0 0 10px ${tutorialSteps[tutorialStep].categoryColor}` 
+                        : 'none'
+                    }}
                   />
                 ))}
               </div>
             </div>
             
             {/* Navigation */}
-            <div className="flex flex-col gap-3 w-full px-4 mt-2">
+            <div className="flex flex-col gap-3 w-full px-4 mt-2 animate-fade-in" style={{ animationDelay: '500ms' }}>
               <div className="flex gap-3">
                 <Button
                   variant="outline"
                   onClick={handleTutorialPrev}
                   disabled={tutorialStep === 0}
-                  className="flex-1"
+                  className="flex-1 transition-all duration-300 hover:scale-105 disabled:opacity-50 disabled:hover:scale-100"
                 >
                   ← Précédent
                 </Button>
                 
                 <Button
                   onClick={handleTutorialNext}
-                  className="flex-1"
+                  className="flex-1 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   style={{
                     backgroundColor: tutorialSteps[tutorialStep].categoryColor,
-                    color: 'white'
+                    color: 'white',
+                    boxShadow: `0 4px 20px ${tutorialSteps[tutorialStep].categoryColor}40`
                   }}
                 >
                   {tutorialStep === tutorialSteps.length - 1 ? "Terminer ✓" : "Suivant →"}
@@ -468,10 +515,11 @@ const Splash = () => {
                     navigate(currentStep.ctaLink!);
                   }}
                   variant="outline"
-                  className="w-full border-2"
+                  className="w-full border-2 transition-all duration-300 hover:scale-105 hover:shadow-lg"
                   style={{
                     borderColor: tutorialSteps[tutorialStep].categoryColor,
-                    color: tutorialSteps[tutorialStep].categoryColor
+                    color: tutorialSteps[tutorialStep].categoryColor,
+                    boxShadow: `0 0 15px ${tutorialSteps[tutorialStep].categoryColor}20`
                   }}
                 >
                   {currentStep.ctaText || "Essayer Maintenant"} →
@@ -481,7 +529,7 @@ const Splash = () => {
               <Button
                 variant="ghost"
                 onClick={handleSkipTutorial}
-                className="w-full text-sm text-muted-foreground hover:text-foreground"
+                className="w-full text-sm text-muted-foreground hover:text-foreground transition-all duration-300"
               >
                 Passer le tutoriel
               </Button>
