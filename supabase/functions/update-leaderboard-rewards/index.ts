@@ -2,8 +2,12 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-function-secret',
 };
+
+// Rate limiting: Track last execution time
+let lastExecutionTime = 0;
+const MIN_INTERVAL_MS = 60000; // 1 minute cooldown
 
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
@@ -11,6 +15,36 @@ Deno.serve(async (req) => {
     return new Response('ok', { headers: corsHeaders });
   }
 
+  // Cooldown protection: Prevent rapid repeated calls
+  const now = Date.now();
+  if (lastExecutionTime > 0 && (now - lastExecutionTime) < MIN_INTERVAL_MS) {
+    console.log('Rate limit: Function called too soon');
+    return new Response(
+      JSON.stringify({ error: 'Rate limit exceeded. Please wait before calling again.' }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 429,
+      }
+    );
+  }
+
+  // Secret-based authentication for manual triggers (optional for scheduled tasks)
+  const secretHeader = req.headers.get('x-function-secret');
+  const expectedSecret = Deno.env.get('FUNCTION_SECRET');
+  
+  // If secret is configured and provided, validate it
+  if (expectedSecret && secretHeader && secretHeader !== expectedSecret) {
+    console.log('Unauthorized: Invalid function secret');
+    return new Response(
+      JSON.stringify({ error: 'Unauthorized' }),
+      {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      }
+    );
+  }
+
+  lastExecutionTime = now;
   console.log('Starting leaderboard rewards update...');
 
   try {
