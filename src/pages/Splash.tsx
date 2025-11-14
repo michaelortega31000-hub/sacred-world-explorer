@@ -28,6 +28,8 @@ interface TutorialStep {
   description: string;
   categoryColor: string;
   categoryLabel: string;
+  ctaText?: string;
+  ctaLink?: string;
 }
 
 const tutorialSteps: TutorialStep[] = [
@@ -38,7 +40,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Bienvenue dans SacredWorld",
     description: "Partez à la découverte des lieux sacrés et monuments culturels les plus emblématiques du monde entier. Une aventure spirituelle et culturelle vous attend !",
     categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration"
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Commencer l'Exploration",
+    ctaLink: "/welcome"
   },
   {
     category: 'discovery',
@@ -46,7 +50,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Explorez le Globe 3D Interactif",
     description: "Faites tourner le globe 3D pour découvrir des milliers de lieux. Cliquez sur un pays pour voir tous ses monuments sacrés et planifier votre itinéraire.",
     categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration"
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Voir le Globe 3D",
+    ctaLink: "/worldmap"
   },
   {
     category: 'discovery',
@@ -54,7 +60,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Expérience en Réalité Augmentée",
     description: "Pointez votre caméra vers des monuments pour obtenir des informations en temps réel avec des superpositions immersives et des symboles religieux animés.",
     categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration"
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Essayer la Caméra AR",
+    ctaLink: "/explore"
   },
   {
     category: 'discovery',
@@ -62,7 +70,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Découvrez les Lieux Près de Chez Vous",
     description: "Activez la géolocalisation pour découvrir tous les lieux sacrés dans un rayon de 10 km. Obtenez des directions et des informations de distance.",
     categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration"
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Trouver des Lieux",
+    ctaLink: "/explore"
   },
   {
     category: 'discovery',
@@ -70,7 +80,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Parcourez Tous les Lieux",
     description: "Filtrez par religion, pays ou type de monument. Recherchez des lieux spécifiques et ajoutez vos favoris à votre itinéraire.",
     categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration"
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Explorer les Lieux",
+    ctaLink: "/explore"
   },
   
   // Catégorie 2: Gamification & Progression (Doré)
@@ -80,7 +92,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Visitez et Vérifiez Vos Visites",
     description: "Visitez des lieux en personne, prenez une photo et vérifiez votre visite par GPS + IA. Gagnez des points pour chaque visite physique validée !",
     categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression"
+    categoryLabel: "Gamification & Progression",
+    ctaText: "Voir Comment",
+    ctaLink: "/explore"
   },
   {
     category: 'gamification',
@@ -88,7 +102,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Collectez des Points et Montez de Niveau",
     description: "Système XP : 100 points = 1 niveau. Visites physiques valent 10 points, visites virtuelles 1 point. Débloquez des récompenses à chaque niveau !",
     categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression"
+    categoryLabel: "Gamification & Progression",
+    ctaText: "Voir Mon Profil",
+    ctaLink: "/profile"
   },
   {
     category: 'gamification',
@@ -96,7 +112,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Débloquez des Badges Exclusifs",
     description: "Gagnez des badges pour 10, 25, 50, 100, 250 visites et plus. Badges spéciaux pour lieux iconiques. Admirez-les en 3D dans votre profil !",
     categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression"
+    categoryLabel: "Gamification & Progression",
+    ctaText: "Voir Mes Badges",
+    ctaLink: "/badges"
   },
   {
     category: 'gamification',
@@ -104,7 +122,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Relevez des Défis Quotidiens",
     description: "Quêtes hebdomadaires, défis quotidiens et challenges thématiques. Terminez-les pour gagner des badges rares et des bonus de points !",
     categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression"
+    categoryLabel: "Gamification & Progression",
+    ctaText: "Voir les Défis",
+    ctaLink: "/profile"
   },
   {
     category: 'gamification',
@@ -112,7 +132,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Grimpez dans les Classements",
     description: "Classements mondiaux, par pays et par religion. Comparez-vous aux autres explorateurs et gagnez des récompenses de classement chaque semaine !",
     categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression"
+    categoryLabel: "Gamification & Progression",
+    ctaText: "Voir les Classements",
+    ctaLink: "/profile"
   },
   
   // Catégorie 3: Social & Communauté (Violet)
@@ -122,7 +144,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Créez Vos Souvenirs de Voyage",
     description: "Uploadez vos photos de visites, écrivez vos réflexions personnelles et recommandez des restaurants et hébergements près des monuments.",
     categoryColor: "hsl(270 60% 60%)",
-    categoryLabel: "Social & Communauté"
+    categoryLabel: "Social & Communauté",
+    ctaText: "Ouvrir Mon Journal",
+    ctaLink: "/journal"
   },
   {
     category: 'social',
@@ -130,7 +154,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Rejoignez la Communauté",
     description: "Partagez vos vœux, photos et citations inspirantes. Participez aux discussions du forum, ajoutez des amis et échangez par messages privés.",
     categoryColor: "hsl(270 60% 60%)",
-    categoryLabel: "Social & Communauté"
+    categoryLabel: "Social & Communauté",
+    ctaText: "Voir la Communauté",
+    ctaLink: "/community"
   },
   {
     category: 'social',
@@ -138,7 +164,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Planifiez Vos Voyages",
     description: "Créez des itinéraires personnalisés avec optimisation de route. Ajoutez jusqu'à 10 lieux, sauvegardez vos voyages et partagez-les avec la communauté.",
     categoryColor: "hsl(270 60% 60%)",
-    categoryLabel: "Social & Communauté"
+    categoryLabel: "Social & Communauté",
+    ctaText: "Planifier un Voyage",
+    ctaLink: "/profile"
   },
   
   // Catégorie 4: Calendrier & Événements (Bleu)
@@ -148,7 +176,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Calendrier Multi-Religieux",
     description: "Consultez les événements religieux de toutes les traditions. Notifications push, rappels personnalisables et vues année/mois/semaine/jour.",
     categoryColor: "hsl(217 91% 60%)",
-    categoryLabel: "Calendrier & Événements"
+    categoryLabel: "Calendrier & Événements",
+    ctaText: "Voir le Calendrier",
+    ctaLink: "/calendar"
   },
   
   // Catégorie 5: Personnalisation (Vert)
@@ -158,7 +188,9 @@ const tutorialSteps: TutorialStep[] = [
     title: "Personnalisez Votre Expérience",
     description: "Choisissez votre avatar, configurez votre profil public/privé, sélectionnez votre langue parmi 8 disponibles et gérez vos notifications.",
     categoryColor: "hsl(142 71% 45%)",
-    categoryLabel: "Personnalisation"
+    categoryLabel: "Personnalisation",
+    ctaText: "Ouvrir les Paramètres",
+    ctaLink: "/settings"
   },
 ];
 
@@ -427,6 +459,24 @@ const Splash = () => {
                   {tutorialStep === tutorialSteps.length - 1 ? "Terminer ✓" : "Suivant →"}
                 </Button>
               </div>
+              
+              {/* Bouton Essayer Maintenant */}
+              {currentStep.ctaLink && (
+                <Button
+                  onClick={() => {
+                    setShowTutorial(false);
+                    navigate(currentStep.ctaLink!);
+                  }}
+                  variant="outline"
+                  className="w-full border-2"
+                  style={{
+                    borderColor: tutorialSteps[tutorialStep].categoryColor,
+                    color: tutorialSteps[tutorialStep].categoryColor
+                  }}
+                >
+                  {currentStep.ctaText || "Essayer Maintenant"} →
+                </Button>
+              )}
               
               <Button
                 variant="ghost"
