@@ -523,15 +523,54 @@ const Globe3D = ({
     map.current.doubleClickZoom.enable(); // Double-click zoom
     map.current.boxZoom.enable(); // Shift + drag to zoom
 
-    // Map error handler
+    // Map error handler with filtering for non-critical errors
     map.current.on('error', e => {
-      console.error('❌ Map error:', e);
+      if (!map.current) return;
+      
+      const errorMsg = (e?.error?.message || '').toLowerCase();
+      
+      // List of non-critical errors to ignore
+      const nonFatalPatterns = [
+        'events.mapbox.com',     // Tracking blocked by ad blockers
+        'glyph',                  // Font loading issues
+        'sprite',                 // Icon sprite loading
+        'tile',                   // Tile loading (often temporary)
+        'not found',              // 404 errors
+        'forbidden',              // 403 errors
+        'rate limit',             // Rate limiting (handled differently)
+        'networkerror'            // Temporary network issues
+      ];
+      
+      const isNonFatal = nonFatalPatterns.some(pattern => errorMsg.includes(pattern));
+      
+      // Only show error overlay if map hasn't loaded AND error is critical
+      if (isNonFatal || map.current.isStyleLoaded() || isMapReadyRef.current) {
+        console.warn('⚠️ Non-critical map error (ignored):', errorMsg);
+        return;
+      }
+      
+      console.error('❌ Critical map error:', e);
       setMapError('Échec du chargement de la carte. Vérifiez votre connexion.');
       setIsMapLoading(false);
     });
 
+    // Watchdog: if style doesn't load within 5 seconds, try fallback
+    const styleLoadTimeout = setTimeout(() => {
+      if (!map.current || isMapReadyRef.current || map.current.isStyleLoaded()) return;
+      
+      console.warn('⏱️ Style load timeout - attempting fallback to streets style');
+      try {
+        map.current.setStyle('mapbox://styles/mapbox/streets-v12');
+      } catch (err) {
+        console.error('❌ Fallback style failed:', err);
+        setMapError('Impossible de charger la carte. Vérifiez votre connexion.');
+        setIsMapLoading(false);
+      }
+    }, 5000);
+
     // Wait for style to load
     map.current.on('style.load', async () => {
+      clearTimeout(styleLoadTimeout);
       if (!map.current) return;
       console.log('✅ Map style loaded successfully');
       setIsMapLoading(false);
@@ -1335,7 +1374,44 @@ const Globe3D = ({
             <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-3" />
             <h3 className="text-lg font-semibold mb-2">Impossible de charger la carte</h3>
             <p className="text-sm text-muted-foreground mb-4">{mapError}</p>
-            <Button onClick={() => window.location.reload()}>Recharger</Button>
+            <Button onClick={() => {
+              if (!map.current) {
+                window.location.reload();
+                return;
+              }
+              
+              // Reset error state and try reloading the style
+              setMapError(null);
+              setIsMapLoading(true);
+              
+              console.log('🔄 Attempting to reload map style...');
+              
+              try {
+                // First try satellite-streets again
+                map.current.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
+                
+                // If satellite fails, the error handler will catch it
+                // and we can fallback to streets
+                const fallbackTimeout = setTimeout(() => {
+                  if (map.current && !map.current.isStyleLoaded()) {
+                    console.log('🔄 Satellite style failed, trying streets fallback...');
+                    map.current.setStyle('mapbox://styles/mapbox/streets-v12');
+                  }
+                }, 3000);
+                
+                // Clear timeout once style loads
+                const cleanup = () => {
+                  clearTimeout(fallbackTimeout);
+                  map.current?.off('style.load', cleanup);
+                };
+                map.current.once('style.load', cleanup);
+                
+              } catch (err) {
+                console.error('❌ Style reload failed:', err);
+                setMapError('Échec du rechargement. Veuillez réessayer.');
+                setIsMapLoading(false);
+              }
+            }}>Recharger</Button>
           </div>
         </div>}
       
