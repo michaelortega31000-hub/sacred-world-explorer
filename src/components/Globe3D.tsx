@@ -495,9 +495,10 @@ const Globe3D = ({
         }
       });
 
-      // Add trip route source
+      // Add trip route source with lineMetrics for gradient effects
       map.current.addSource('trip-route', {
         type: 'geojson',
+        lineMetrics: true,
         data: {
           type: 'FeatureCollection',
           features: []
@@ -536,16 +537,70 @@ const Globe3D = ({
         }
       });
 
-      // Add trip route line (rendered FIRST, below everything)
+      // Add trip route layers with golden glow effect (4 layers for cinematic effect)
+      // Layer 1: Outer glow (widest, most transparent)
       map.current.addLayer({
-        id: 'trip-route-line',
+        id: 'trip-route-glow-outer',
         type: 'line',
         source: 'trip-route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
         paint: {
-          'line-color': '#F4C542',
-          'line-width': 3,
-          'line-opacity': 0.6,
-          'line-dasharray': [2, 2]
+          'line-color': 'hsl(43, 76%, 70%)', // sacred-gold
+          'line-width': 12,
+          'line-blur': 8,
+          'line-opacity': 0.3
+        }
+      });
+
+      // Layer 2: Inner glow
+      map.current.addLayer({
+        id: 'trip-route-glow-inner',
+        type: 'line',
+        source: 'trip-route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': 'hsl(43, 76%, 70%)',
+          'line-width': 8,
+          'line-blur': 4,
+          'line-opacity': 0.5
+        }
+      });
+
+      // Layer 3: Main line
+      map.current.addLayer({
+        id: 'trip-route-main',
+        type: 'line',
+        source: 'trip-route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': 'hsl(43, 76%, 70%)',
+          'line-width': 5,
+          'line-opacity': 0.95
+        }
+      });
+
+      // Layer 4: Highlight line (center, brightest)
+      map.current.addLayer({
+        id: 'trip-route-highlight',
+        type: 'line',
+        source: 'trip-route',
+        layout: {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        paint: {
+          'line-color': 'hsl(48, 95%, 85%)', // Brighter gold for highlight
+          'line-width': 2,
+          'line-opacity': 1
         }
       });
 
