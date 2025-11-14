@@ -3069,7 +3069,27 @@ export const mockPlaces: Place[] = [
 ];
 
 export const getPlacesByCountry = (country: string): Place[] => {
-  return mockPlaces.filter(place => place.country === country);
+  // Normaliser le nom du pays reçu
+  const normalizedCountry = country;
+  
+  // Filtrer avec plusieurs méthodes de comparaison
+  const places = mockPlaces.filter(place => {
+    // Comparaison exacte d'abord
+    if (place.country === normalizedCountry) return true;
+    
+    // Comparaison insensible à la casse
+    if (place.country.toLowerCase() === normalizedCountry.toLowerCase()) return true;
+    
+    return false;
+  });
+  
+  console.log(`📍 getPlacesByCountry("${country}") → found ${places.length} places`);
+  
+  if (places.length === 0) {
+    console.warn(`⚠️ No places found for country: "${country}". Try checking country name.`);
+  }
+  
+  return places;
 };
 
 export const getAllPlaces = (): Place[] => {

@@ -771,7 +771,14 @@ const Globe3D = ({
             feature.properties?.worldview;
           
           if (countryName) {
-            console.log('🌍 Country clicked:', countryName);
+            console.log('🌍 Country clicked (raw from Mapbox):', {
+              name: feature.properties?.name,
+              name_en: feature.properties?.name_en,
+              name_fr: feature.properties?.name_fr,
+              iso_3166_1: feature.properties?.iso_3166_1,
+              worldview: feature.properties?.worldview,
+              selected: countryName
+            });
             onCountryClick(countryName);
           } else {
             console.warn('⚠️ Country feature found but no name property:', feature.properties);
