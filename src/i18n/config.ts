@@ -32,7 +32,15 @@ const resources = {
           },
           prev: 'Précédent',
           next: 'Suivant',
-          finish: 'Commencer'
+          finish: 'Commencer',
+          skip: 'Passer le tutoriel',
+          categories: {
+            discovery: "Découverte & Exploration",
+            gamification: "Gamification & Progression",
+            social: "Social & Communauté",
+            calendar: "Calendrier & Événements",
+            personalization: "Personnalisation"
+          }
         }
       },
       selection: {
