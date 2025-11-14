@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3 } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,8 @@ import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import EventReminderSettings from '@/components/EventReminderSettings';
 import { logger } from '@/lib/logger';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Progress } from '@/components/ui/progress';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -33,6 +35,8 @@ const Settings = () => {
   const [username, setUsername] = useState('');
   const [userId, setUserId] = useState<string | null>(null);
   const [isUpdatingUsername, setIsUpdatingUsername] = useState(false);
+  const [tutorialProgress, setTutorialProgress] = useState(0);
+  const [showResetDialog, setShowResetDialog] = useState(false);
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -71,6 +75,12 @@ const Settings = () => {
     if (savedColorTheme) {
       setColorTheme(savedColorTheme);
       document.documentElement.setAttribute('data-theme', savedColorTheme);
+    }
+
+    // Load tutorial progress
+    const savedProgress = localStorage.getItem('tutorialProgress');
+    if (savedProgress) {
+      setTutorialProgress(parseInt(savedProgress, 10));
     }
   }, [navigate]);
 
@@ -211,6 +221,28 @@ const Settings = () => {
     } finally {
       setIsUpdatingUsername(false);
     }
+  };
+
+  const handleReviewTutorial = () => {
+    navigate('/');
+    // Trigger tutorial after navigation
+    setTimeout(() => {
+      const tutorialButton = document.querySelector('[aria-label="Tutoriel"]') as HTMLButtonElement;
+      if (tutorialButton) {
+        tutorialButton.click();
+      }
+    }, 500);
+  };
+
+  const handleResetTutorial = () => {
+    localStorage.removeItem('tutorialProgress');
+    localStorage.removeItem('tutorialCompleted');
+    setTutorialProgress(0);
+    setShowResetDialog(false);
+    toast({
+      title: 'Tutoriel réinitialisé',
+      description: 'La progression du tutoriel a été effacée',
+    });
   };
 
   return (
@@ -393,6 +425,44 @@ const Settings = () => {
           {/* Event Reminders */}
           <EventReminderSettings />
 
+          {/* Tutoriel */}
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <BookOpen className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <Label className="text-lg font-semibold text-foreground mb-2 block">
+                  Tutoriel
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Progression : {tutorialProgress}/15 étapes complétées
+                </p>
+                <Progress value={(tutorialProgress / 15) * 100} className="mb-4" />
+                <div className="flex flex-col gap-2">
+                  <Button
+                    onClick={handleReviewTutorial}
+                    variant="outline"
+                    className="w-full"
+                    size="sm"
+                  >
+                    <BookOpen className="w-4 h-4 mr-2" />
+                    Revoir le tutoriel
+                  </Button>
+                  <Button
+                    onClick={() => setShowResetDialog(true)}
+                    variant="outline"
+                    className="w-full"
+                    size="sm"
+                  >
+                    <RotateCcw className="w-4 h-4 mr-2" />
+                    Réinitialiser la progression
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </Card>
+
           {/* Test de Sécurité */}
           <Card className="p-6 bg-card border-border">
             <div className="flex items-start gap-4">
@@ -461,6 +531,32 @@ const Settings = () => {
       </main>
       
       <BottomNavigation />
+
+      {/* Dialog de confirmation de réinitialisation */}
+      <Dialog open={showResetDialog} onOpenChange={setShowResetDialog}>
+        <DialogContent className="bg-card border-border">
+          <DialogHeader>
+            <DialogTitle className="text-foreground">Réinitialiser le tutoriel ?</DialogTitle>
+            <DialogDescription className="text-muted-foreground">
+              Cette action effacera toute votre progression dans le tutoriel. Vous pourrez le recommencer depuis le début.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setShowResetDialog(false)}
+            >
+              Annuler
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleResetTutorial}
+            >
+              Réinitialiser
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   </ImageBackground>
   );
