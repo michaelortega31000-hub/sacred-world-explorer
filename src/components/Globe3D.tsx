@@ -64,6 +64,7 @@ const Globe3D = ({
   const currentPopup = useRef<mapboxgl.Popup | null>(null);
   const tripStartMarker = useRef<mapboxgl.Marker | null>(null);
   const tripEndMarker = useRef<mapboxgl.Marker | null>(null);
+  const tripMarkers = useRef<mapboxgl.Marker[]>([]);
   const endMarkerTimeout = useRef<NodeJS.Timeout | null>(null);
   const navigate = useNavigate();
   const {
@@ -209,7 +210,10 @@ const Globe3D = ({
         endMarkerTimeout.current = null;
       }
       
-      // Remove markers
+      // Remove all trip markers
+      tripMarkers.current.forEach(marker => marker.remove());
+      tripMarkers.current = [];
+      
       if (tripStartMarker.current) {
         tripStartMarker.current.remove();
         tripStartMarker.current = null;
@@ -315,14 +319,17 @@ const Globe3D = ({
       // Animate the line drawing
       animateRouteLine();
 
-      // Add animated markers at start and end
+      // Add numbered markers for each point in the trip
       // Clear any pending timeout for end marker
       if (endMarkerTimeout.current) {
         clearTimeout(endMarkerTimeout.current);
         endMarkerTimeout.current = null;
       }
 
-      // Remove existing markers completely
+      // Remove all existing markers completely
+      tripMarkers.current.forEach(marker => marker.remove());
+      tripMarkers.current = [];
+      
       if (tripStartMarker.current) {
         tripStartMarker.current.remove();
         tripStartMarker.current = null;
@@ -332,53 +339,47 @@ const Globe3D = ({
         tripEndMarker.current = null;
       }
 
-      // Only create markers if we have a valid route
-      if (routeCoordinates.length > 0) {
-        // Create start marker (green pulsing) immediately
-        const startEl = document.createElement('div');
-        startEl.className = 'trip-marker-start';
-        startEl.innerHTML = `
-          <div class="trip-marker-pulse"></div>
-          <div class="trip-marker-dot"></div>
+      // Create numbered markers for ALL trip places
+      routeCoordinates.forEach((coord, index) => {
+        const markerEl = document.createElement('div');
+        markerEl.className = 'trip-marker-numbered';
+        
+        // Different style for first, last, and intermediate points
+        const isFirst = index === 0;
+        const isLast = index === routeCoordinates.length - 1;
+        
+        markerEl.innerHTML = `
+          <div class="trip-marker-pulse ${isFirst ? 'trip-marker-first' : isLast ? 'trip-marker-last' : 'trip-marker-intermediate'}"></div>
+          <div class="trip-marker-number">${index + 1}</div>
         `;
-        tripStartMarker.current = new mapboxgl.Marker({
-          element: startEl,
+        
+        const marker = new mapboxgl.Marker({
+          element: markerEl,
           anchor: 'center'
         })
-          .setLngLat(routeCoordinates[0])
+          .setLngLat(coord)
           .addTo(map.current);
+        
+        // Store all markers for cleanup
+        tripMarkers.current.push(marker);
+        
+        // Also store first and last markers in refs for backward compatibility
+        if (isFirst) {
+          tripStartMarker.current = marker;
+        } else if (isLast) {
+          tripEndMarker.current = marker;
+        }
+      });
 
-        // Create end marker (red pulsing) after animation
-        endMarkerTimeout.current = setTimeout(() => {
-          // Double-check that we don't already have an end marker
-          if (tripEndMarker.current) {
-            tripEndMarker.current.remove();
-            tripEndMarker.current = null;
-          }
-
-          const endEl = document.createElement('div');
-          endEl.className = 'trip-marker-end';
-          endEl.innerHTML = `
-            <div class="trip-marker-pulse"></div>
-            <div class="trip-marker-dot"></div>
-          `;
-          tripEndMarker.current = new mapboxgl.Marker({
-            element: endEl,
-            anchor: 'center'
-          })
-            .setLngLat(routeCoordinates[routeCoordinates.length - 1])
-            .addTo(map.current!);
-          
-          endMarkerTimeout.current = null;
-        }, 2000); // Delay to sync with line animation
-      }
-
-      console.log('✅ Added start/end markers');
+      console.log(`✅ Added ${routeCoordinates.length} numbered markers for trip`);
     } else if (!routeSource) {
       console.error('❌ trip-route source not found!');
     } else {
       console.log('⚠️ Not enough coordinates for route line:', routeCoordinates.length);
-      // Clear markers if no route
+      // Clear all markers if no route
+      tripMarkers.current.forEach(marker => marker.remove());
+      tripMarkers.current = [];
+      
       if (tripStartMarker.current) {
         tripStartMarker.current.remove();
         tripStartMarker.current = null;
@@ -1083,6 +1084,10 @@ const Globe3D = ({
         clearTimeout(endMarkerTimeout.current);
         endMarkerTimeout.current = null;
       }
+      
+      // Remove all trip markers
+      tripMarkers.current.forEach(marker => marker.remove());
+      tripMarkers.current = [];
       
       // Remove trip markers
       if (tripStartMarker.current) {
