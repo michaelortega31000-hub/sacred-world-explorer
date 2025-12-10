@@ -211,6 +211,7 @@ const CalendarTab = () => {
           events={filteredReligiousEvents}
           traditionColors={traditionColors}
           traditionLabels={traditionLabels}
+          onEventClick={setSelectedEvent}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
