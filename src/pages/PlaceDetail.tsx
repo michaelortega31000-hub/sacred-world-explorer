@@ -69,7 +69,6 @@ const PlaceDetail = () => {
   const [communityPhotos, setCommunityPhotos] = useState<any[]>([]);
   const [loadingPhotos, setLoadingPhotos] = useState(true);
   const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
-  const [hasRestaurants, setHasRestaurants] = useState(false);
   const [isAddMemoryOpen, setIsAddMemoryOpen] = useState(false);
   const [badgeUnlockData, setBadgeUnlockData] = useState<{
     isOpen: boolean;
@@ -119,27 +118,8 @@ const PlaceDetail = () => {
       navigate('/world');
     } else {
       fetchCommunityPhotos();
-      checkRestaurantsAvailability();
     }
   }, [place, navigate]);
-
-  const checkRestaurantsAvailability = async () => {
-    if (!place?.city) return;
-    
-    try {
-      const { count, error } = await supabase
-        .from('restaurants')
-        .select('id', { count: 'exact', head: true })
-        .eq('verified', true)
-        .eq('city', place.city);
-
-      if (!error && count !== null) {
-        setHasRestaurants(count > 0);
-      }
-    } catch (error) {
-      logger.error('Error checking restaurants:', error);
-    }
-  };
 
   const fetchCommunityPhotos = async () => {
     if (!placeId) return;
@@ -600,24 +580,6 @@ const PlaceDetail = () => {
                 {isARMode ? "AR 3D activé" : "Activer AR 3D"}
               </Button>
             </div>
-
-            {/* Restaurant icon - top right */}
-            {hasRestaurants && place.city && (
-              <div className="absolute top-4 right-4 z-10">
-                <Button
-                  size="lg"
-                  className="gap-2 shadow-lg"
-                  style={{
-                    background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
-                    color: 'black'
-                  }}
-                  onClick={() => navigate(`/country/${place.country}?tab=restaurants&city=${encodeURIComponent(place.city || '')}`)}
-                >
-                  <Utensils className="w-5 h-5" />
-                  Restaurants à proximité
-                </Button>
-              </div>
-            )}
 
             {/* Religious Symbol 3D - fullscreen AR overlay */}
             {isARMode && (
