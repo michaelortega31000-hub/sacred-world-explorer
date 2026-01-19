@@ -59,7 +59,7 @@ interface POI {
 
 const LocationsTab = () => {
   const navigate = useNavigate();
-  const { userProgress, updatePlannedRoute, savePOI, removePOI, getPOIsForPlace, addToTrip, removeFromTrip } = useApp();
+  const { userProgress, updatePlannedRoute, savePOI, removePOI, getPOIsForPlace, addToTrip, removeFromTrip, reorderTrip } = useApp();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
@@ -135,6 +135,9 @@ const LocationsTab = () => {
     
     setOptimizedRouteState(newRoute);
     setDraggedIndex(null);
+    
+    // Sync reordered route to context so Globe3D updates
+    reorderTrip(newRoute.map(p => p.id));
     
     // Recalculate segments with new order
     calculateRouteSegments(newRoute, transportMode);
@@ -467,12 +470,14 @@ const LocationsTab = () => {
     return optimizedRouteState.some((place, index) => place.id !== optimizedRoute[index]?.id);
   }, [optimizedRouteState, optimizedRoute]);
 
-  // Update state when optimizedRoute changes
+  // Update state and sync to context when optimizedRoute changes
   useEffect(() => {
     if (optimizedRoute.length > 0) {
       setOptimizedRouteState(optimizedRoute);
+      // Sync the optimized order to the global context so Globe3D uses the correct order
+      reorderTrip(optimizedRoute.map(p => p.id));
     }
-  }, [optimizedRoute]);
+  }, [optimizedRoute, reorderTrip]);
 
   // Search for POIs near each place in the itinerary
   const searchPOIsAlongRoute = async (places: typeof plannedPlaces) => {

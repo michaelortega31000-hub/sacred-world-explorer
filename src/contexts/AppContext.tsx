@@ -63,6 +63,7 @@ interface AppContextType {
   removeFromTrip: (placeId: string) => void;
   isInTrip: (placeId: string) => boolean;
   clearTrip: () => void;
+  reorderTrip: (orderedIds: string[]) => void;
   saveRestaurant: (restaurantId: string) => void;
   unsaveRestaurant: (restaurantId: string) => void;
   savePOI: (poi: SavedPOI) => void;
@@ -366,6 +367,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const reorderTrip = (orderedIds: string[]) => {
+    setUserProgress(prev => ({
+      ...prev,
+      tripPlaces: orderedIds
+    }));
+  };
+
   const addPoints = (points: number) => {
     setUserProgress(prev => {
       const newTotalPoints = prev.totalPoints + points;
@@ -561,6 +569,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       removeFromTrip,
       isInTrip,
       clearTrip,
+      reorderTrip,
       saveRestaurant,
       unsaveRestaurant,
       savePOI,
