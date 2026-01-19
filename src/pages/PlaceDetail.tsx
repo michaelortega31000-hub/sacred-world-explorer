@@ -29,8 +29,10 @@ import {
   Plus,
   X,
   Loader2,
-  MapPinned
+  MapPinned,
+  Map as MapIcon
 } from 'lucide-react';
+import POIMiniMap from '@/components/POIMiniMap';
 import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
@@ -847,6 +849,19 @@ const PlaceDetail = () => {
                         </Button>
                       </div>
                     ))}
+                  </div>
+
+                  {/* Mini-map for saved POIs */}
+                  <div className="pt-3">
+                    <p className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <MapIcon className="w-4 h-4" />
+                      Carte des services
+                    </p>
+                    <POIMiniMap
+                      placeCoordinates={place.coordinates as [number, number]}
+                      placeName={place.name}
+                      savedPOIs={savedPOIsForPlace}
+                    />
                   </div>
                 </div>
               )}
