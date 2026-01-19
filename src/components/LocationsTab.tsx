@@ -19,7 +19,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import type { SavedPOI } from '@/contexts/AppContext';
 import jsPDF from 'jspdf';
-import TripStatsDashboard from './TripStatsDashboard';
+
 import {
   Select,
   SelectContent,
@@ -53,7 +53,8 @@ interface POI {
   type: 'restaurant' | 'lodging' | 'fuel';
   address: string;
   coordinates: [number, number];
-  segmentIndex: number; // which route segment this POI is near
+  segmentIndex: number; // index of the place this POI is near
+  placeId: string; // ID of the associated place
 }
 
 const LocationsTab = () => {
@@ -398,85 +399,58 @@ const LocationsTab = () => {
     return Array.from(cities).sort();
   }, [plannedPlaces]);
 
-  // Optimize route based on starting city with geographic proximity
+  // Calculate distance between two coordinates using Haversine formula
+  const calculateDistance = (coord1: [number, number], coord2: [number, number]): number => {
+    const R = 6371; // Earth's radius in km
+    const dLat = (coord2[1] - coord1[1]) * Math.PI / 180;
+    const dLon = (coord2[0] - coord1[0]) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(coord1[1] * Math.PI / 180) * Math.cos(coord2[1] * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+
+  // Optimize route using Nearest Neighbor algorithm with real coordinates
   const optimizedRoute = useMemo(() => {
     if (!startingCity || plannedPlaces.length === 0) return [];
     
-    const [city, country] = startingCity.split(', ');
-    
-    // Group all places by city
-    const placesByCity = plannedPlaces.reduce((acc, place) => {
-      const key = `${place.city}, ${place.country}`;
-      if (!acc[key]) acc[key] = [];
-      acc[key].push(place);
-      return acc;
-    }, {} as Record<string, typeof plannedPlaces>);
-    
-    // Simple geographic proximity map (European cities)
-    const cityProximity: Record<string, string[]> = {
-      'Barcelona, Spain': ['Madrid, Spain', 'Montserrat, Spain', 'Valencia, Spain', 'Marseille, France', 'Lyon, France'],
-      'Madrid, Spain': ['Barcelona, Spain', 'Toledo, Spain', 'Lisbon, Portugal', 'Seville, Spain'],
-      'Paris, France': ['Reims, France', 'Chartres, France', 'Strasbourg, France', 'Lyon, France', 'Brussels, Belgium'],
-      'Rome, Italy': ['Naples, Italy', 'Florence, Italy', 'Siena, Italy', 'Pisa, Italy', 'Vatican City, Vatican'],
-      'London, United Kingdom': ['Canterbury, United Kingdom', 'York, United Kingdom', 'Westminster, United Kingdom', 'Paris, France'],
-      'Berlin, Germany': ['Dresden, Germany', 'Cologne, Germany', 'Munich, Germany', 'Prague, Czech Republic'],
-      'Istanbul, Turkey': ['Ankara, Turkey', 'Athens, Greece', 'Sofia, Bulgaria'],
-      'Athens, Greece': ['Delphi, Greece', 'Thessaloniki, Greece', 'Istanbul, Turkey'],
-      'Moscow, Russia': ['St. Petersburg, Russia', 'Sergiyev Posad, Russia', 'Kiev, Ukraine'],
-      'Cairo, Egypt': ['Alexandria, Egypt', 'Giza, Egypt', 'Luxor, Egypt'],
-      'Bangkok, Thailand': ['Ayutthaya, Thailand', 'Chiang Mai, Thailand', 'Phuket, Thailand'],
-      'Tokyo, Japan': ['Kyoto, Japan', 'Osaka, Japan', 'Nara, Japan', 'Nikko, Japan'],
-      'Beijing, China': ['Xi\'an, China', 'Shanghai, China', 'Luoyang, China'],
-      'Delhi, India': ['Agra, India', 'Jaipur, India', 'Varanasi, India'],
-      'Mexico City, Mexico': ['Teotihuacan, Mexico', 'Puebla, Mexico', 'Guadalajara, Mexico'],
-      'Lima, Peru': ['Cusco, Peru', 'Arequipa, Peru', 'Machu Picchu, Peru'],
-      'Rio de Janeiro, Brazil': ['São Paulo, Brazil', 'Brasília, Brazil', 'Salvador, Brazil'],
-      'Buenos Aires, Argentina': ['Córdoba, Argentina', 'Mendoza, Argentina', 'Luján, Argentina'],
-    };
-    
     const route: typeof plannedPlaces = [];
-    const visitedCities = new Set<string>();
-    let currentCity = startingCity;
+    const remaining = [...plannedPlaces];
     
-    // Start with places in the starting city
-    if (placesByCity[currentCity]) {
-      route.push(...placesByCity[currentCity]);
-      visitedCities.add(currentCity);
+    // Find the first place in the starting city
+    const startIndex = remaining.findIndex(p => 
+      `${p.city}, ${p.country}` === startingCity
+    );
+    
+    if (startIndex !== -1) {
+      route.push(remaining[startIndex]);
+      remaining.splice(startIndex, 1);
+    } else if (remaining.length > 0) {
+      // If starting city not found, start with the first place
+      route.push(remaining[0]);
+      remaining.splice(0, 1);
     }
     
-    // Visit nearest cities
-    while (visitedCities.size < Object.keys(placesByCity).length) {
-      let nearestCity: string | null = null;
-      let foundInProximity = false;
+    // Add remaining places by geographic proximity (Nearest Neighbor)
+    while (remaining.length > 0) {
+      const lastPlace = route[route.length - 1];
+      let nearestIndex = 0;
+      let nearestDistance = Infinity;
       
-      // First, try to find a nearby city from proximity map
-      if (cityProximity[currentCity]) {
-        for (const nearCity of cityProximity[currentCity]) {
-          if (placesByCity[nearCity] && !visitedCities.has(nearCity)) {
-            nearestCity = nearCity;
-            foundInProximity = true;
-            break;
-          }
+      remaining.forEach((place, index) => {
+        const distance = calculateDistance(
+          lastPlace.coordinates as [number, number],
+          place.coordinates as [number, number]
+        );
+        if (distance < nearestDistance) {
+          nearestDistance = distance;
+          nearestIndex = index;
         }
-      }
+      });
       
-      // If no nearby city found in proximity map, pick next unvisited city
-      if (!foundInProximity) {
-        for (const city of Object.keys(placesByCity)) {
-          if (!visitedCities.has(city)) {
-            nearestCity = city;
-            break;
-          }
-        }
-      }
-      
-      if (nearestCity) {
-        route.push(...placesByCity[nearestCity]);
-        visitedCities.add(nearestCity);
-        currentCity = nearestCity;
-      } else {
-        break;
-      }
+      route.push(remaining[nearestIndex]);
+      remaining.splice(nearestIndex, 1);
     }
     
     return route;
@@ -500,9 +474,9 @@ const LocationsTab = () => {
     }
   }, [optimizedRoute]);
 
-  // Search for POIs along the route
+  // Search for POIs near each place in the itinerary
   const searchPOIsAlongRoute = async (places: typeof plannedPlaces) => {
-    if (places.length < 2) {
+    if (places.length === 0) {
       setPois([]);
       return;
     }
@@ -521,16 +495,12 @@ const LocationsTab = () => {
     }
 
     try {
-      // Search along each route segment
-      for (let i = 0; i < places.length - 1; i++) {
-        const start = places[i];
-        const end = places[i + 1];
-        
-        // Calculate midpoint for each segment
-        const midLng = (start.coordinates[0] + end.coordinates[0]) / 2;
-        const midLat = (start.coordinates[1] + end.coordinates[1]) / 2;
+      // Search for POIs near EACH place in the itinerary
+      for (let i = 0; i < places.length; i++) {
+        const place = places[i];
+        const coords = place.coordinates as [number, number];
 
-        // Search for different types of POIs near the midpoint
+        // Search for different types of POIs near this place
         const poiTypes = [
           { query: 'restaurant', type: 'restaurant' as const },
           { query: 'hotel', type: 'lodging' as const },
@@ -541,7 +511,7 @@ const LocationsTab = () => {
           try {
             const response = await fetch(
               `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
-              `proximity=${midLng},${midLat}&limit=2&access_token=${mapboxToken}`
+              `proximity=${coords[0]},${coords[1]}&limit=2&access_token=${mapboxToken}`
             );
 
             if (response.ok) {
@@ -553,7 +523,8 @@ const LocationsTab = () => {
                   type,
                   address: feature.place_name,
                   coordinates: feature.center,
-                  segmentIndex: i
+                  segmentIndex: i,
+                  placeId: place.id
                 });
               });
             }
@@ -1259,15 +1230,6 @@ const LocationsTab = () => {
                         onMapReady={(captureFn) => setCaptureMapFn(() => captureFn)}
                       />
 
-                      {/* Statistics Dashboard */}
-                      {routeSegments.length > 0 && (
-                        <TripStatsDashboard
-                          places={displayRoute}
-                          segments={routeSegments}
-                          savedPOIs={userProgress.savedPOIs}
-                          transportMode={transportMode}
-                        />
-                      )}
 
                       {/* Points d'arrêt suggérés */}
                       {pois.length > 0 && (
@@ -1337,31 +1299,29 @@ const LocationsTab = () => {
                                     </Label>
                                   </div>
                                 </div>
-                                {/* Group POIs by segment */}
-                                {Array.from(new Set(pois.map(p => p.segmentIndex))).map(segmentIndex => {
-                                  const segmentPOIs = pois.filter(p => p.segmentIndex === segmentIndex && selectedPOITypes.has(p.type));
-                                  const fromPlace = optimizedRoute[segmentIndex];
-                                  const toPlace = optimizedRoute[segmentIndex + 1];
+                                {/* Group POIs by place */}
+                                {displayRoute.map((place, index) => {
+                                  const placePOIs = pois.filter(p => p.segmentIndex === index && selectedPOITypes.has(p.type));
                                   
-                                  // Skip segment if no POIs match the filter
-                                  if (segmentPOIs.length === 0) return null;
+                                  // Skip place if no POIs match the filter
+                                  if (placePOIs.length === 0) return null;
                                   
                                   return (
-                                    <div key={segmentIndex} className="border-l-2 border-primary/20 pl-4">
+                                    <div key={index} className="border-l-2 border-primary/20 pl-4">
                                       <h4 className="font-medium mb-3 text-sm flex items-center gap-2">
                                         <Navigation className="w-4 h-4 text-primary" />
-                                        Entre {fromPlace.name} et {toPlace.name}
+                                        Près de {place.name} ({place.city})
                                       </h4>
                                       <div className="space-y-4">
                                         {/* Restaurants */}
-                                        {segmentPOIs.filter(p => p.type === 'restaurant').length > 0 && (
+                                        {placePOIs.filter(p => p.type === 'restaurant').length > 0 && (
                                           <div>
                                             <div className="flex items-center gap-2 text-sm font-medium mb-2 text-primary">
                                               <Utensils className="w-4 h-4" />
                                               Restaurants
                                             </div>
                                             <div className="space-y-2 ml-6">
-                                              {segmentPOIs.filter(p => p.type === 'restaurant').map(poi => {
+                                              {placePOIs.filter(p => p.type === 'restaurant').map(poi => {
                                                 const saved = isPOISaved(poi.id);
                                                 return (
                                                   <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
@@ -1373,7 +1333,7 @@ const LocationsTab = () => {
                                                       size="sm"
                                                       variant={saved ? "secondary" : "ghost"}
                                                       className="h-6 w-6 p-0 flex-shrink-0"
-                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, fromPlace.id)}
+                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}
                                                     >
                                                       {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                                                     </Button>
@@ -1385,14 +1345,14 @@ const LocationsTab = () => {
                                         )}
                                         
                                         {/* Hébergements */}
-                                        {segmentPOIs.filter(p => p.type === 'lodging').length > 0 && (
+                                        {placePOIs.filter(p => p.type === 'lodging').length > 0 && (
                                           <div>
                                             <div className="flex items-center gap-2 text-sm font-medium mb-2 text-secondary">
                                               <Hotel className="w-4 h-4" />
                                               Hébergements
                                             </div>
                                             <div className="space-y-2 ml-6">
-                                              {segmentPOIs.filter(p => p.type === 'lodging').map(poi => {
+                                              {placePOIs.filter(p => p.type === 'lodging').map(poi => {
                                                 const saved = isPOISaved(poi.id);
                                                 return (
                                                   <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
@@ -1404,7 +1364,7 @@ const LocationsTab = () => {
                                                       size="sm"
                                                       variant={saved ? "secondary" : "ghost"}
                                                       className="h-6 w-6 p-0 flex-shrink-0"
-                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, fromPlace.id)}
+                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}
                                                     >
                                                       {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                                                     </Button>
@@ -1416,14 +1376,14 @@ const LocationsTab = () => {
                                         )}
                                         
                                         {/* Stations-service */}
-                                        {segmentPOIs.filter(p => p.type === 'fuel').length > 0 && (
+                                        {placePOIs.filter(p => p.type === 'fuel').length > 0 && (
                                           <div>
                                             <div className="flex items-center gap-2 text-sm font-medium mb-2 text-accent">
                                               <Fuel className="w-4 h-4" />
                                               Stations-service
                                             </div>
                                             <div className="space-y-2 ml-6">
-                                              {segmentPOIs.filter(p => p.type === 'fuel').map(poi => {
+                                              {placePOIs.filter(p => p.type === 'fuel').map(poi => {
                                                 const saved = isPOISaved(poi.id);
                                                 return (
                                                   <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
@@ -1435,7 +1395,7 @@ const LocationsTab = () => {
                                                       size="sm"
                                                       variant={saved ? "secondary" : "ghost"}
                                                       className="h-6 w-6 p-0 flex-shrink-0"
-                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, fromPlace.id)}
+                                                      onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}
                                                     >
                                                       {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
                                                     </Button>
