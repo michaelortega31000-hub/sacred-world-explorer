@@ -257,22 +257,8 @@ const Globe3D = ({
       foundPlaces.push({ place, coords });
     });
 
-    // Reorder to start at Spain and end in Australia if both present
-    const hasSpain = foundPlaces.some(fp => (fp.place.country || '').toLowerCase() === 'spain' || String(fp.place.id).startsWith('esp-'));
-    const hasAustralia = foundPlaces.some(fp => (fp.place.country || '').toLowerCase() === 'australia' || String(fp.place.id).startsWith('aus-'));
-    if (hasSpain && hasAustralia) {
-      const startIdx = foundPlaces.findIndex(fp => (fp.place.country || '').toLowerCase() === 'spain' || String(fp.place.id).startsWith('esp-'));
-      let endIdx = -1;
-      for (let i = foundPlaces.length - 1; i >= 0; i--) {
-        const fp = foundPlaces[i];
-        if ((fp.place.country || '').toLowerCase() === 'australia' || String(fp.place.id).startsWith('aus-')) { endIdx = i; break; }
-      }
-      if (startIdx !== -1 && endIdx !== -1) {
-        const middle = foundPlaces.filter((_, i) => i !== startIdx && i !== endIdx);
-        const reordered = [foundPlaces[startIdx], ...middle, foundPlaces[endIdx]];
-        foundPlaces.length = 0; foundPlaces.push(...reordered);
-      }
-    }
+    // Use tripPlaces order directly - it's already optimized by LocationsTab
+    // No reordering needed here, the order comes from userProgress.tripPlaces
 
     // Build features with order/isStart/isEnd properties
     tripFeatures = foundPlaces.map((fp, idx) => ({
