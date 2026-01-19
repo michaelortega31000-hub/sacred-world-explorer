@@ -24,7 +24,12 @@ import {
   Users,
   Utensils,
   ImagePlus,
-  ImageIcon
+  ImageIcon,
+  Hotel,
+  Plus,
+  X,
+  Loader2,
+  MapPinned
 } from 'lucide-react';
 import { BackButton } from '@/components/BackButton';
 import BottomNavigation from '@/components/BottomNavigation';
@@ -33,7 +38,8 @@ import { useToast } from '@/hooks/use-toast';
 import { getImageUrl } from '@/lib/imageHelper';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, SavedPOI } from '@/contexts/AppContext';
+import { getMapboxToken } from '@/lib/mapboxHelper';
 import { logger } from '@/lib/logger';
 import { AddMemoryDialog } from '@/components/AddMemoryDialog';
 import ReligiousSymbol from '@/components/ReligiousSymbol';
@@ -54,7 +60,7 @@ const PlaceDetail = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { visitPlace, isPlaceVisited } = useApp();
+  const { visitPlace, isPlaceVisited, savePOI, removePOI, getPOIsForPlace } = useApp();
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
@@ -83,6 +89,19 @@ const PlaceDetail = () => {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [showFilters, setShowFilters] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  
+  // POI search states
+  interface SearchedPOI {
+    id: string;
+    name: string;
+    type: 'restaurant' | 'lodging';
+    address: string;
+    coordinates: [number, number];
+  }
+  const [nearbyPOIs, setNearbyPOIs] = useState<SearchedPOI[]>([]);
+  const [searchingPOIs, setSearchingPOIs] = useState(false);
+  const [selectedPOIType, setSelectedPOIType] = useState<'restaurant' | 'hotel' | null>(null);
+  
   const { userProgress } = useApp();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const arSupport = useARSupport();
@@ -435,6 +454,95 @@ const PlaceDetail = () => {
     });
   };
 
+  // Search for nearby POIs (restaurants or hotels) restricted to the place's city
+  const searchNearbyPOIs = async (type: 'restaurant' | 'hotel') => {
+    if (!place) return;
+    
+    setSearchingPOIs(true);
+    setSelectedPOIType(type);
+    setNearbyPOIs([]);
+    
+    try {
+      const mapboxToken = getMapboxToken();
+      const query = type === 'hotel' ? 'hotel hostel lodging' : 'restaurant';
+      const [lon, lat] = place.coordinates;
+      
+      // Bounding box of ~15km around the place (typical city radius)
+      const offset = 0.15;
+      const bbox = `${lon - offset},${lat - offset},${lon + offset},${lat + offset}`;
+      
+      const response = await fetch(
+        `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+        `proximity=${lon},${lat}&` +
+        `bbox=${bbox}&` +
+        `limit=10&` +
+        `access_token=${mapboxToken}`
+      );
+      
+      const data = await response.json();
+      
+      if (data.features) {
+        // Filter to only include results that mention the city name
+        const cityName = place.city.toLowerCase();
+        const filtered = data.features.filter((f: any) => 
+          f.place_name.toLowerCase().includes(cityName)
+        );
+        
+        const pois: SearchedPOI[] = filtered.slice(0, 6).map((f: any) => ({
+          id: f.id,
+          name: f.text || f.place_name.split(',')[0],
+          type: type === 'hotel' ? 'lodging' as const : 'restaurant' as const,
+          address: f.place_name,
+          coordinates: f.center as [number, number]
+        }));
+        
+        setNearbyPOIs(pois);
+        
+        if (pois.length === 0) {
+          toast({
+            title: "Aucun résultat",
+            description: `Aucun ${type === 'hotel' ? 'hôtel' : 'restaurant'} trouvé à ${place.city}`,
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error searching POIs:', error);
+      toast({
+        title: "Erreur de recherche",
+        description: "Impossible de trouver des établissements à proximité",
+        variant: "destructive"
+      });
+    } finally {
+      setSearchingPOIs(false);
+    }
+  };
+
+  // Handle saving a POI
+  const handleSavePOI = (poi: SearchedPOI) => {
+    savePOI({
+      id: poi.id,
+      name: poi.name,
+      type: poi.type,
+      address: poi.address,
+      coordinates: poi.coordinates,
+      placeId: placeId!
+    });
+    
+    toast({
+      title: "Ajouté à l'itinéraire",
+      description: `${poi.name} sauvegardé`,
+    });
+  };
+
+  // Check if a POI is already saved
+  const isPOISaved = (poiId: string) => {
+    const savedPOIs = getPOIsForPlace(placeId!);
+    return savedPOIs.some(p => p.id === poiId);
+  };
+
+  // Get saved POIs for this place
+  const savedPOIsForPlace = placeId ? getPOIsForPlace(placeId) : [];
+
   // Images de la galerie (pour l'exemple, on utilise la même image)
   const galleryImages = place.imageUrl ? [
     resolveImageUrl(place.imageUrl) || place.imageUrl, 
@@ -636,7 +744,159 @@ const PlaceDetail = () => {
             </CardContent>
           </Card>
 
-          {/* Actions principales */}
+          {/* Services à Proximité */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MapPinned className="w-5 h-5" />
+                Services à proximité de {place.city}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {/* Search buttons */}
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => searchNearbyPOIs('restaurant')}
+                  variant={selectedPOIType === 'restaurant' ? 'default' : 'outline'}
+                  className="flex-1 gap-2"
+                  disabled={searchingPOIs}
+                  style={selectedPOIType === 'restaurant' ? {
+                    background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                    color: 'black'
+                  } : undefined}
+                >
+                  {searchingPOIs && selectedPOIType === 'restaurant' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Utensils className="w-4 h-4" />
+                  )}
+                  Restaurants
+                </Button>
+                
+                <Button
+                  onClick={() => searchNearbyPOIs('hotel')}
+                  variant={selectedPOIType === 'hotel' ? 'default' : 'outline'}
+                  className="flex-1 gap-2"
+                  disabled={searchingPOIs}
+                  style={selectedPOIType === 'hotel' ? {
+                    background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                    color: 'black'
+                  } : undefined}
+                >
+                  {searchingPOIs && selectedPOIType === 'hotel' ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Hotel className="w-4 h-4" />
+                  )}
+                  Hôtels
+                </Button>
+              </div>
+
+              {/* Search results */}
+              {nearbyPOIs.length > 0 && (
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {nearbyPOIs.length} résultat{nearbyPOIs.length > 1 ? 's' : ''} trouvé{nearbyPOIs.length > 1 ? 's' : ''} à {place.city}
+                  </p>
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {nearbyPOIs.map((poi) => {
+                      const saved = isPOISaved(poi.id);
+                      return (
+                        <div 
+                          key={poi.id}
+                          className="flex items-center justify-between p-3 bg-muted/50 rounded-lg"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate">{poi.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">
+                              📍 {poi.address}
+                            </p>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant={saved ? 'outline' : 'default'}
+                            onClick={() => {
+                              if (saved) {
+                                removePOI(poi.id);
+                                toast({
+                                  title: "Retiré",
+                                  description: `${poi.name} retiré de l'itinéraire`,
+                                });
+                              } else {
+                                handleSavePOI(poi);
+                              }
+                            }}
+                            className="ml-2 shrink-0"
+                            style={!saved ? {
+                              background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                              color: 'black'
+                            } : undefined}
+                          >
+                            {saved ? (
+                              <><CheckCircle2 className="w-4 h-4 mr-1" /> Sauvegardé</>
+                            ) : (
+                              <><Plus className="w-4 h-4 mr-1" /> Ajouter</>
+                            )}
+                          </Button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Saved POIs for this place */}
+              {savedPOIsForPlace.length > 0 && (
+                <div className="pt-3 border-t space-y-2">
+                  <p className="text-sm font-medium flex items-center gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-success" />
+                    POIs sauvegardés pour ce lieu ({savedPOIsForPlace.length})
+                  </p>
+                  <div className="space-y-2">
+                    {savedPOIsForPlace.map((poi) => (
+                      <div 
+                        key={poi.id}
+                        className="flex items-center justify-between p-2 bg-success/10 rounded-lg border border-success/20"
+                      >
+                        <div className="flex items-center gap-2 min-w-0">
+                          {poi.type === 'restaurant' ? (
+                            <Utensils className="w-4 h-4 text-success shrink-0" />
+                          ) : (
+                            <Hotel className="w-4 h-4 text-success shrink-0" />
+                          )}
+                          <div className="min-w-0">
+                            <p className="font-medium text-sm truncate">{poi.name}</p>
+                            <p className="text-xs text-muted-foreground truncate">{poi.address}</p>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => {
+                            removePOI(poi.id);
+                            toast({
+                              title: "Retiré",
+                              description: `${poi.name} retiré de l'itinéraire`,
+                            });
+                          }}
+                          className="shrink-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                        >
+                          <X className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Empty state */}
+              {!searchingPOIs && nearbyPOIs.length === 0 && savedPOIsForPlace.length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  Recherchez des restaurants ou hôtels à {place.city} pour les ajouter à votre itinéraire
+                </p>
+              )}
+            </CardContent>
+          </Card>
           <div className="grid md:grid-cols-2 gap-4">
             {/* Vérifier ma visite - caché si déjà visité */}
             {!isPlaceVisited(placeId!) && (
