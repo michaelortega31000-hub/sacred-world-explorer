@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { WifiOff, BookOpen, Globe, Camera, Trophy, Calendar, CheckCircle, MapPin, Compass, Award, Target, TrendingUp, Heart, Users, Route, Settings, Check, LucideIcon } from 'lucide-react';
+import { WifiOff, BookOpen, Globe, Camera, Trophy, Calendar, CheckCircle, MapPin, Compass, Award, Target, TrendingUp, Heart, Users, Route, Settings, Check, LogOut, LucideIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const languages = [
@@ -200,6 +200,7 @@ const Splash = () => {
   const [selectedLanguage, setSelectedLanguage] = useState('fr');
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   
   // Charger la progression du tutoriel depuis localStorage
   const [tutorialProgress, setTutorialProgress] = useState(() => {
@@ -208,17 +209,25 @@ const Splash = () => {
   });
 
   useEffect(() => {
-    // Vérifier si l'utilisateur est déjà connecté
+    // Vérifier si l'utilisateur est connecté (sans redirection automatique)
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) {
-        navigate('/welcome');
-      }
+      setIsLoggedIn(!!session);
     });
-  }, [navigate]);
+  }, []);
 
   const handleStartExploration = (e: React.MouseEvent) => {
     e.stopPropagation();
-    navigate('/auth');
+    if (isLoggedIn) {
+      navigate('/welcome');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleLogout = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    await supabase.auth.signOut();
+    setIsLoggedIn(false);
   };
 
   const handleLanguageClick = (e: React.MouseEvent) => {
@@ -318,17 +327,17 @@ const Splash = () => {
         fetchPriority="high"
       />
       
-      {/* Boutons Mode hors ligne et Tutoriel - En bas avec espacement mobile optimisé */}
+      {/* Boutons Mode hors ligne, Tutoriel et Déconnexion - En bas avec espacement mobile optimisé */}
       <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 z-10 px-4 sm:px-6">
-        <div className="max-w-md mx-auto flex items-center justify-between gap-3 sm:gap-4">
+        <div className="max-w-lg mx-auto flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           {/* Bouton Mode hors ligne */}
           <Button
             onClick={handleOfflineMode}
             variant="outline"
             size="lg"
-            className="flex-1 gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-12 sm:h-14 text-sm sm:text-base"
+            className="gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-11 sm:h-12 text-xs sm:text-sm px-3 sm:px-4"
           >
-            <WifiOff className="w-4 h-4 sm:w-5 sm:h-5" />
+            <WifiOff className="w-4 h-4" />
             <span>Hors ligne</span>
           </Button>
           
@@ -337,11 +346,24 @@ const Splash = () => {
             onClick={handleTutorialOpen}
             variant="outline"
             size="lg"
-            className="flex-1 gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-12 sm:h-14 text-sm sm:text-base"
+            className="gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-11 sm:h-12 text-xs sm:text-sm px-3 sm:px-4"
           >
-            <BookOpen className="w-4 h-4 sm:w-5 sm:h-5" />
+            <BookOpen className="w-4 h-4" />
             <span>Tutoriel</span>
           </Button>
+
+          {/* Bouton Déconnexion - visible uniquement si connecté */}
+          {isLoggedIn && (
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              size="lg"
+              className="gap-2 border-destructive/40 bg-sacred-blue/90 backdrop-blur-md hover:bg-destructive/20 text-foreground shadow-lg h-11 sm:h-12 text-xs sm:text-sm px-3 sm:px-4"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Déconnexion</span>
+            </Button>
+          )}
         </div>
       </div>
       
@@ -352,12 +374,12 @@ const Splash = () => {
           {/* This space contains the logo and text from the image */}
         </div>
         
-        {/* Button zone 1 - "Commencer l'exploration" */}
+        {/* Button zone 1 - "Commencer l'exploration" ou "Continuer" */}
         <div className="w-full max-w-md mb-3">
           <button
             onClick={handleStartExploration}
             className="w-full h-16 cursor-pointer opacity-0 hover:opacity-5 transition-opacity bg-primary rounded-full"
-            aria-label="Commencer l'exploration"
+            aria-label={isLoggedIn ? "Continuer vers l'application" : "Commencer l'exploration"}
           />
         </div>
         
