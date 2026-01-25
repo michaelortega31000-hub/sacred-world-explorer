@@ -1,177 +1,182 @@
 
-# Plan : Repositionner les onglets et agrandir la carte
 
-## Objectif
-1. Positionner les 6 onglets d'exploration en bas, juste au-dessus de la navigation principale
-2. Agrandir la zone de contenu (map et autres vues) pour éliminer les espaces vides
-3. Corriger le bug des icônes manquantes dans BottomNavigation
+# Plan : Corriger l'affichage des pays, lieux et images
 
----
+## Problèmes identifiés
 
-## Calcul des hauteurs pour optimiser l'espace
+| Problème | Cause racine | Impact |
+|----------|--------------|--------|
+| Nom affiché en arabe "مصر" | Globe3D prend `name` avant `name_en` | URL incorrecte `/country/مصر` |
+| 0 lieux affichés | `getPlacesByCountry("مصر")` ne trouve pas les lieux car ils utilisent `country: "Egypt"` | Page vide |
+| Mauvaises images de fond | `getBackgroundRotationImages` filtre par religion, pas par pays | Images de cathédrales pour l'Égypte |
 
-| Élément | Hauteur estimée |
-|---------|-----------------|
-| Header (compact sur /explore) | ~48px |
-| BottomNavigation | ~72px |
-| TabsList (6 onglets) | ~56px |
-| **Total réservé** | ~176px |
-
-**Hauteur disponible pour le contenu** : `calc(100vh - 176px)` ou `calc(100dvh - 176px)` pour mobile
+**Note importante** : Les noms des lieux sont déjà en français dans la base de données (ex: "Pyramides de Gizeh", "Temple de Karnak"). Pas de traduction supplémentaire nécessaire.
 
 ---
 
-## Structure visuelle finale
+## Solution en 4 étapes
 
-```text
-┌─────────────────────────────────┐
-│ Header compact (~48px)          │
-├─────────────────────────────────┤
-│                                 │
-│                                 │
-│   CONTENU (Map/AR/Lieux...)     │
-│   calc(100dvh - 176px)          │
-│                                 │
-│                                 │
-├─────────────────────────────────┤
-│ 6 onglets exploration (~56px)   │  ← fixed, z-40
-├─────────────────────────────────┤
-│ 4 nav principale (~72px)        │  ← fixed, z-50
-└─────────────────────────────────┘
+### 1. Corriger l'extraction du nom dans Globe3D.tsx
+
+Prioriser `name_en` pour obtenir le nom anglais standardisé utilisé comme clé dans l'application.
+
+**Fichier** : `src/components/Globe3D.tsx` (lignes 1007-1012)
+
+```typescript
+// AVANT (problématique)
+const countryName = 
+  feature.properties?.name ||        // ← مصر (arabe)
+  feature.properties?.name_en ||     // ← Egypt
+  ...
+
+// APRÈS (corrigé)
+const countryName = 
+  feature.properties?.name_en ||     // ← Egypt (priorité)
+  feature.properties?.name ||        // ← Fallback
+  feature.properties?.name_fr ||
+  feature.properties?.iso_3166_1 ||
+  feature.properties?.worldview;
 ```
 
 ---
 
-## Modifications à apporter
+### 2. Ajouter les noms arabes au mapping (sécurité)
 
-### 1. `src/pages/Explore.tsx`
+En cas de fallback sur `name`, le mapping convertira les noms arabes vers l'anglais.
 
-**Changements :**
+**Fichier** : `src/lib/countryNameMapping.ts`
 
-- Supprimer le padding-bottom inutile (sera calculé dynamiquement)
-- Supprimer le container wrapper qui ajoute des marges
-- Sortir `TabsList` de `TabsContent` pour le rendre fixe et visible sur toutes les vues
-- Calculer la hauteur du contenu pour remplir tout l'espace disponible
-- Utiliser `100dvh` (dynamic viewport height) pour mieux gérer les barres d'adresse mobiles
+Ajouter ces mappings :
 
 ```typescript
-const Explore = () => {
-  // ... hooks existants
+// Noms arabes → Anglais (fallback sécurité)
+'مصر': 'Egypt',                    // Égypte
+'المغرب': 'Morocco',               // Maroc
+'الجزائر': 'Algeria',              // Algérie
+'تونس': 'Tunisia',                 // Tunisie
+'السعودية': 'Saudi Arabia',        // Arabie Saoudite
+'المملكة العربية السعودية': 'Saudi Arabia',
+'الإمارات': 'United Arab Emirates',
+'الإمارات العربية المتحدة': 'United Arab Emirates',
+'الأردن': 'Jordan',                // Jordanie
+'لبنان': 'Lebanon',                // Liban
+'سوريا': 'Syria',                  // Syrie
+'العراق': 'Iraq',                  // Irak
+'إيران': 'Iran',                   // Iran
+'فلسطين': 'Palestine',             // Palestine
+'إسرائيل': 'Israel',               // Israël
+'تركيا': 'Turkey',                 // Turquie
+'ليبيا': 'Libya',                  // Libye
+'السودان': 'Sudan',                // Soudan
+'اليمن': 'Yemen',                  // Yémen
+'عُمان': 'Oman',                   // Oman
+'قطر': 'Qatar',                    // Qatar
+'الكويت': 'Kuwait',                // Koweït
+'البحرين': 'Bahrain',              // Bahreïn
+```
 
-  return (
-    <div className="min-h-screen bg-background flex flex-col">
-      <Header />
-      
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        {/* Contenu qui remplit l'espace disponible */}
-        <div className="flex-1 overflow-hidden" style={{ height: 'calc(100dvh - 176px)' }}>
-          <TabsContent value="map" className="h-full m-0 p-0">
-            <div className="h-full w-full">
-              <Globe3D tripPlaces={userProgress.tripPlaces} onCountryClick={handleCountryClick} />
-            </div>
-          </TabsContent>
+---
 
-          <TabsContent value="ar" className="h-full m-0 p-0">
-            <ARCameraView onClose={() => setActiveTab('map')} />
-          </TabsContent>
+### 3. Ajouter fonction `getImagesByCountry`
 
-          <TabsContent value="nearby" className="h-full m-0 p-2 overflow-auto">
-            <ProximityDetector />
-          </TabsContent>
+Créer une nouvelle fonction pour filtrer les images par pays spécifique.
 
-          <TabsContent value="locations" className="h-full m-0 p-2 overflow-auto">
-            <LocationsTab />
-          </TabsContent>
+**Fichier** : `src/lib/religionImageHelper.ts`
 
-          <TabsContent value="challenges" className="h-full m-0 p-2 overflow-auto">
-            <ChallengesTab />
-          </TabsContent>
+```typescript
+import { normalizeCountryName } from './countryNameMapping';
 
-          <TabsContent value="rankings" className="h-full m-0 p-2 overflow-auto">
-            <RankingsTab />
-          </TabsContent>
-        </div>
+/**
+ * Récupère des images de fond pour un pays spécifique
+ */
+export function getImagesByCountry(country: string | null, count: number = 5): string[] {
+  if (!country) {
+    return getImagesByReligion(null, count);
+  }
 
-        {/* TabsList FIXE au-dessus de BottomNavigation */}
-        <TabsList className="fixed bottom-[72px] left-2 right-2 z-40 
-          grid grid-cols-6 bg-background/95 backdrop-blur-md 
-          shadow-2xl border-2 border-primary/40 p-1.5 rounded-lg">
-          <TabsTrigger value="map" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Globe className="w-4 h-4" />
-            <span className="text-[10px]">Carte</span>
-          </TabsTrigger>
-          <TabsTrigger value="ar" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Camera className="w-4 h-4" />
-            <span className="text-[10px]">AR</span>
-          </TabsTrigger>
-          <TabsTrigger value="nearby" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Compass className="w-4 h-4" />
-            <span className="text-[10px]">Proche</span>
-          </TabsTrigger>
-          <TabsTrigger value="locations" className="flex flex-col items-center gap-0.5 py-1.5">
-            <MapPin className="w-4 h-4" />
-            <span className="text-[10px]">Lieux</span>
-          </TabsTrigger>
-          <TabsTrigger value="challenges" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Target className="w-4 h-4" />
-            <span className="text-[10px]">Défis</span>
-          </TabsTrigger>
-          <TabsTrigger value="rankings" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Trophy className="w-4 h-4" />
-            <span className="text-[10px]">Rang</span>
-          </TabsTrigger>
-        </TabsList>
-      </Tabs>
-
-      <BottomNavigation />
-    </div>
+  // Normaliser le nom du pays (مصر → Egypt)
+  const normalizedCountry = normalizeCountryName(country);
+  
+  // Filtrer les lieux du pays
+  const countryPlaces = mockPlaces.filter(place => 
+    place.country.toLowerCase() === normalizedCountry.toLowerCase()
   );
-};
+
+  if (countryPlaces.length === 0) {
+    console.warn(`⚠️ Aucune image trouvée pour le pays: "${country}" (normalisé: "${normalizedCountry}")`);
+    return getImagesByReligion(null, count);
+  }
+
+  // Mélanger et retourner
+  return countryPlaces
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.min(count, countryPlaces.length))
+    .map(place => getImageUrl(place.imageUrl || ''))
+    .filter(url => url !== '/placeholder.svg');
+}
 ```
 
-### 2. `src/components/BottomNavigation.tsx`
+---
 
-**Problème** : L'icône n'est pas rendue (ligne 47 est vide après `<Icon>`)
+### 4. Utiliser les images par pays dans Country.tsx
 
-**Correction** : Ajouter le rendu de l'icône
+Remplacer le filtre par religion avec le filtre par pays.
+
+**Fichier** : `src/pages/Country.tsx` (lignes 27 et 36)
 
 ```typescript
-return (
-  <button key={item.path} onClick={() => navigate(item.path)} className={...}>
-    <Icon className="w-5 h-5" />  {/* ← Ajouter cette ligne */}
-    <span className="text-[10px] font-medium">{item.label}</span>
-  </button>
-);
+// AVANT
+import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
+const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
+
+// APRÈS
+import { getImagesByCountry } from '@/lib/religionImageHelper';
+const backgroundImages = getImagesByCountry(country);
 ```
 
 ---
 
 ## Fichiers à modifier
 
-| Fichier | Modifications |
-|---------|---------------|
-| `src/pages/Explore.tsx` | Restructurer layout, sortir TabsList, utiliser 100dvh |
-| `src/components/BottomNavigation.tsx` | Ajouter le rendu de l'icône manquante |
-
----
-
-## Améliorations apportées
-
-1. **Map plein écran** : La carte occupe maintenant tout l'espace vertical disponible sans bordures ni marges inutiles
-
-2. **Onglets toujours visibles** : Les 6 onglets sont fixes et accessibles depuis toutes les vues
-
-3. **Labels toujours affichés** : Chaque onglet a une icône + label visible (même sur mobile)
-
-4. **Navigation cohérente** : Les icônes de Journal/Calendrier/Profil/Réglages seront à nouveau visibles
-
-5. **Compatibilité mobile** : Utilisation de `100dvh` pour gérer correctement la barre d'adresse mobile
+| Fichier | Modification |
+|---------|--------------|
+| `src/components/Globe3D.tsx` | Prioriser `name_en` sur `name` (ligne 1007-1012) |
+| `src/lib/countryNameMapping.ts` | Ajouter mappings arabes → anglais |
+| `src/lib/religionImageHelper.ts` | Ajouter fonction `getImagesByCountry()` |
+| `src/pages/Country.tsx` | Utiliser `getImagesByCountry(country)` |
 
 ---
 
 ## Résultat attendu
 
-- La carte 3D remplira tout l'espace entre le header et les barres de navigation
-- Aucun espace vide visible
-- Navigation fluide entre les 6 modes d'exploration
-- Interface cohérente sur mobile et desktop
+### Pour l'Égypte :
+
+1. **URL correcte** : `/country/Egypt` (au lieu de `/country/مصر`)
+
+2. **Titre en français** : "Égypte" (via traduction i18n `countries.Egypt`)
+
+3. **7 lieux sacrés affichés** (déjà en français) :
+   - Pyramides de Gizeh (Le Caire)
+   - Mosquée Al-Azhar (Le Caire)
+   - Temple de Karnak (Louxor)
+   - Monastère Sainte-Catherine
+   - Mosquée du Sultan Hassan (Le Caire)
+   - Mosquée Mohammed Ali (Le Caire)
+   - Mosquée Ibn Tulun (Le Caire)
+
+4. **Images de fond égyptiennes** :
+   - Pyramides de Gizeh
+   - Mosquées du Caire
+   - Temple de Karnak
+   - Monastère Sainte-Catherine
+
+---
+
+## Tests de validation
+
+1. Cliquer sur l'Égypte → URL = `/country/Egypt`
+2. Vérifier titre "Égypte" (français)
+3. Vérifier 7 lieux affichés avec noms français
+4. Vérifier images de fond = monuments égyptiens uniquement
+5. Répéter pour : Maroc, Arabie Saoudite, Turquie, Tunisie
+
