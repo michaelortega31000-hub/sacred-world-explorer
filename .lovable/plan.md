@@ -1,225 +1,177 @@
 
-# Plan : Corriger les problèmes de géolocalisation
+# Plan : Repositionner les onglets et agrandir la carte
 
 ## Objectif
-Résoudre les 3 problèmes signalés :
-1. La permission refusée n'est pas gérée correctement
-2. La carte ne se centre pas sur la position
-3. La position ne s'affiche pas
+1. Positionner les 6 onglets d'exploration en bas, juste au-dessus de la navigation principale
+2. Agrandir la zone de contenu (map et autres vues) pour éliminer les espaces vides
+3. Corriger le bug des icônes manquantes dans BottomNavigation
 
 ---
 
-## Analyse des Causes
+## Calcul des hauteurs pour optimiser l'espace
 
-| Problème | Cause | Fichier |
-|----------|-------|---------|
-| Permission refusée | Pas de guide pour réactiver | `useGeolocation.ts`, `Globe3D.tsx` |
-| Carte ne se centre pas | Toast et flyTo déclenchés à chaque mise à jour de position | `Globe3D.tsx` ligne 1175-1180 |
-| Position ne s'affiche pas | État `geolocationEnabled` remis à false immédiatement après erreur | `Globe3D.tsx` ligne 1184 |
-| Toast répétés | `toast.success()` dans useEffect déclenché par `watchPosition` | `Globe3D.tsx` ligne 1180 |
+| Élément | Hauteur estimée |
+|---------|-----------------|
+| Header (compact sur /explore) | ~48px |
+| BottomNavigation | ~72px |
+| TabsList (6 onglets) | ~56px |
+| **Total réservé** | ~176px |
+
+**Hauteur disponible pour le contenu** : `calc(100vh - 176px)` ou `calc(100dvh - 176px)` pour mobile
 
 ---
 
-## Modifications à Apporter
+## Structure visuelle finale
 
-### 1. Améliorer `src/hooks/useGeolocation.ts`
+```text
+┌─────────────────────────────────┐
+│ Header compact (~48px)          │
+├─────────────────────────────────┤
+│                                 │
+│                                 │
+│   CONTENU (Map/AR/Lieux...)     │
+│   calc(100dvh - 176px)          │
+│                                 │
+│                                 │
+├─────────────────────────────────┤
+│ 6 onglets exploration (~56px)   │  ← fixed, z-40
+├─────────────────────────────────┤
+│ 4 nav principale (~72px)        │  ← fixed, z-50
+└─────────────────────────────────┘
+```
 
-**Ajouter un état pour distinguer la première demande** :
+---
+
+## Modifications à apporter
+
+### 1. `src/pages/Explore.tsx`
+
+**Changements :**
+
+- Supprimer le padding-bottom inutile (sera calculé dynamiquement)
+- Supprimer le container wrapper qui ajoute des marges
+- Sortir `TabsList` de `TabsContent` pour le rendre fixe et visible sur toutes les vues
+- Calculer la hauteur du contenu pour remplir tout l'espace disponible
+- Utiliser `100dvh` (dynamic viewport height) pour mieux gérer les barres d'adresse mobiles
 
 ```typescript
-export const useGeolocation = (enabled: boolean = false) => {
-  const [position, setPosition] = useState<UserGeolocation | null>(null);
-  const [error, setError] = useState<GeolocationError | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [permissionState, setPermissionState] = useState<'prompt' | 'granted' | 'denied' | 'unknown'>('unknown');
-  const hasInitialPosition = useRef(false); // Track first position
+const Explore = () => {
+  // ... hooks existants
 
-  useEffect(() => {
-    // Vérifier l'état de la permission au montage
-    if (navigator.permissions) {
-      navigator.permissions.query({ name: 'geolocation' }).then(result => {
-        setPermissionState(result.state);
-        result.onchange = () => setPermissionState(result.state);
-      }).catch(() => setPermissionState('unknown'));
-    }
-  }, []);
+  return (
+    <div className="min-h-screen bg-background flex flex-col">
+      <Header />
+      
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+        {/* Contenu qui remplit l'espace disponible */}
+        <div className="flex-1 overflow-hidden" style={{ height: 'calc(100dvh - 176px)' }}>
+          <TabsContent value="map" className="h-full m-0 p-0">
+            <div className="h-full w-full">
+              <Globe3D tripPlaces={userProgress.tripPlaces} onCountryClick={handleCountryClick} />
+            </div>
+          </TabsContent>
 
-  // ... reste du code avec hasInitialPosition pour éviter les callbacks répétés
+          <TabsContent value="ar" className="h-full m-0 p-0">
+            <ARCameraView onClose={() => setActiveTab('map')} />
+          </TabsContent>
+
+          <TabsContent value="nearby" className="h-full m-0 p-2 overflow-auto">
+            <ProximityDetector />
+          </TabsContent>
+
+          <TabsContent value="locations" className="h-full m-0 p-2 overflow-auto">
+            <LocationsTab />
+          </TabsContent>
+
+          <TabsContent value="challenges" className="h-full m-0 p-2 overflow-auto">
+            <ChallengesTab />
+          </TabsContent>
+
+          <TabsContent value="rankings" className="h-full m-0 p-2 overflow-auto">
+            <RankingsTab />
+          </TabsContent>
+        </div>
+
+        {/* TabsList FIXE au-dessus de BottomNavigation */}
+        <TabsList className="fixed bottom-[72px] left-2 right-2 z-40 
+          grid grid-cols-6 bg-background/95 backdrop-blur-md 
+          shadow-2xl border-2 border-primary/40 p-1.5 rounded-lg">
+          <TabsTrigger value="map" className="flex flex-col items-center gap-0.5 py-1.5">
+            <Globe className="w-4 h-4" />
+            <span className="text-[10px]">Carte</span>
+          </TabsTrigger>
+          <TabsTrigger value="ar" className="flex flex-col items-center gap-0.5 py-1.5">
+            <Camera className="w-4 h-4" />
+            <span className="text-[10px]">AR</span>
+          </TabsTrigger>
+          <TabsTrigger value="nearby" className="flex flex-col items-center gap-0.5 py-1.5">
+            <Compass className="w-4 h-4" />
+            <span className="text-[10px]">Proche</span>
+          </TabsTrigger>
+          <TabsTrigger value="locations" className="flex flex-col items-center gap-0.5 py-1.5">
+            <MapPin className="w-4 h-4" />
+            <span className="text-[10px]">Lieux</span>
+          </TabsTrigger>
+          <TabsTrigger value="challenges" className="flex flex-col items-center gap-0.5 py-1.5">
+            <Target className="w-4 h-4" />
+            <span className="text-[10px]">Défis</span>
+          </TabsTrigger>
+          <TabsTrigger value="rankings" className="flex flex-col items-center gap-0.5 py-1.5">
+            <Trophy className="w-4 h-4" />
+            <span className="text-[10px]">Rang</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      <BottomNavigation />
+    </div>
+  );
 };
 ```
 
-**Retourner aussi** : `permissionState`, `hasInitialPosition`
+### 2. `src/components/BottomNavigation.tsx`
 
-### 2. Corriger `src/components/Globe3D.tsx`
+**Problème** : L'icône n'est pas rendue (ligne 47 est vide après `<Icon>`)
 
-**Problème principal** : Le useEffect (lignes 1144-1186) déclenche `flyTo` et `toast` à chaque mise à jour de position.
-
-**Solution** : Utiliser un flag pour ne zoomer qu'une seule fois.
+**Correction** : Ajouter le rendu de l'icône
 
 ```typescript
-// Ajouter un ref pour tracker le premier centrage
-const hasInitiallyZoomed = useRef(false);
-
-// Modifier le useEffect geolocation
-useEffect(() => {
-  if (!map.current || !geolocationEnabled) {
-    if (userLocationMarker.current) {
-      userLocationMarker.current.remove();
-      userLocationMarker.current = null;
-    }
-    hasInitiallyZoomed.current = false; // Reset quand désactivé
-    return;
-  }
-
-  if (userPosition) {
-    const { latitude, longitude } = userPosition;
-    
-    // Créer ou mettre à jour le marqueur
-    if (!userLocationMarker.current) {
-      const el = document.createElement('div');
-      el.className = 'user-location-marker';
-      el.style.cssText = `...`;
-      userLocationMarker.current = new mapboxgl.Marker({ element: el })
-        .setLngLat([longitude, latitude])
-        .addTo(map.current);
-    } else {
-      userLocationMarker.current.setLngLat([longitude, latitude]);
-    }
-
-    // Ne zoomer qu'UNE SEULE FOIS lors de la première position
-    if (!hasInitiallyZoomed.current) {
-      hasInitiallyZoomed.current = true;
-      map.current.flyTo({
-        center: [longitude, latitude],
-        zoom: 12,
-        duration: 2000
-      });
-      toast.success(t('location.enabled'));
-    }
-  }
-
-  if (geolocationError) {
-    // Afficher un message avec instructions
-    toast.error(
-      geolocationError.code === 1 
-        ? 'Géolocalisation refusée. Allez dans les paramètres de votre navigateur pour l\'activer.'
-        : t('location.error'),
-      { duration: 5000 }
-    );
-    // NE PAS désactiver immédiatement - laisser l'utilisateur réessayer
-    // setGeolocationEnabled(false); // Retirer cette ligne
-  }
-}, [userPosition, geolocationError, geolocationEnabled]);
-```
-
-**Modifier `handleRecenter`** pour forcer un re-zoom :
-
-```typescript
-const handleRecenter = () => {
-  if (geolocationEnabled && userPosition) {
-    // Si déjà activé avec position, recentrer manuellement
-    map.current?.flyTo({
-      center: [userPosition.longitude, userPosition.latitude],
-      zoom: 12,
-      duration: 2000
-    });
-  } else {
-    // Activer et reset le flag pour permettre le zoom initial
-    hasInitiallyZoomed.current = false;
-    setGeolocationEnabled(true);
-  }
-};
-```
-
-### 3. Améliorer `src/components/ProximityDetector.tsx`
-
-**Problème** : Demande la permission immédiatement sans explication.
-
-**Solution** : Ajouter un écran d'activation préalable.
-
-```typescript
-const ProximityDetector = () => {
-  const [permissionRequested, setPermissionRequested] = useState(false);
-  const { position, error, loading, permissionState } = useGeolocation(permissionRequested);
-  
-  // Si pas encore demandé, afficher un écran d'explication
-  if (!permissionRequested) {
-    return (
-      <Card className="p-6 text-center">
-        <MapPin className="w-12 h-12 mx-auto mb-4 text-primary" />
-        <h3 className="text-lg font-semibold mb-2">Découvrez les lieux sacrés autour de vous</h3>
-        <p className="text-muted-foreground mb-4">
-          Activez la géolocalisation pour voir les monuments à proximité de votre position actuelle.
-        </p>
-        <Button onClick={() => setPermissionRequested(true)}>
-          <Navigation className="w-4 h-4 mr-2" />
-          Activer la localisation
-        </Button>
-      </Card>
-    );
-  }
-
-  // Si permission refusée, afficher les instructions
-  if (error && error.code === 1) {
-    return (
-      <Alert variant="destructive">
-        <MapPin className="h-4 w-4" />
-        <AlertDescription className="space-y-2">
-          <p>La permission de géolocalisation a été refusée.</p>
-          <p className="text-xs">
-            Pour l'activer : Paramètres du navigateur → Confidentialité → Localisation → Autoriser pour ce site
-          </p>
-        </AlertDescription>
-      </Alert>
-    );
-  }
-
-  // ... reste du code existant
-};
-```
-
-### 4. Nettoyer `NearMeFeature.tsx`
-
-Le composant est vide et inutile. Deux options :
-- **Option A** : Le supprimer complètement et retirer son import de `Explore.tsx`
-- **Option B** : Le restaurer avec une fonctionnalité utile
-
-**Choix recommandé** : Option A (supprimer) car `ProximityDetector` fait déjà le travail.
-
-Modifier `src/pages/Explore.tsx` :
-```diff
-- import NearMeFeature from '@/components/NearMeFeature';
-
-// Dans le JSX, retirer:
--             <NearMeFeature />
+return (
+  <button key={item.path} onClick={() => navigate(item.path)} className={...}>
+    <Icon className="w-5 h-5" />  {/* ← Ajouter cette ligne */}
+    <span className="text-[10px] font-medium">{item.label}</span>
+  </button>
+);
 ```
 
 ---
 
-## Résumé des Fichiers à Modifier
+## Fichiers à modifier
 
-| Fichier | Action |
-|---------|--------|
-| `src/hooks/useGeolocation.ts` | Ajouter `permissionState`, `hasInitialPosition`, améliorer les erreurs |
-| `src/components/Globe3D.tsx` | Ajouter `hasInitiallyZoomed` ref, corriger useEffect, améliorer handleRecenter |
-| `src/components/ProximityDetector.tsx` | Ajouter écran d'activation préalable, meilleurs messages d'erreur |
-| `src/pages/Explore.tsx` | Retirer `<NearMeFeature />` (inutile) |
-| `src/components/NearMeFeature.tsx` | Supprimer le fichier |
+| Fichier | Modifications |
+|---------|---------------|
+| `src/pages/Explore.tsx` | Restructurer layout, sortir TabsList, utiliser 100dvh |
+| `src/components/BottomNavigation.tsx` | Ajouter le rendu de l'icône manquante |
 
 ---
 
-## Résultat Attendu
+## Améliorations apportées
 
-1. **Bouton géolocalisation sur la carte 3D** : 
-   - Premier clic → demande permission → zoom sur la position
-   - Clics suivants → recentre immédiatement
-   - Toast affiché une seule fois
+1. **Map plein écran** : La carte occupe maintenant tout l'espace vertical disponible sans bordures ni marges inutiles
 
-2. **Onglet "Proche"** :
-   - Affiche d'abord une explication avec bouton "Activer"
-   - Après clic → demande permission
-   - Si refusé → instructions claires pour réactiver
+2. **Onglets toujours visibles** : Les 6 onglets sont fixes et accessibles depuis toutes les vues
 
-3. **Marqueur position** :
-   - S'affiche correctement après autorisation
-   - Se met à jour silencieusement (sans toast à chaque fois)
+3. **Labels toujours affichés** : Chaque onglet a une icône + label visible (même sur mobile)
+
+4. **Navigation cohérente** : Les icônes de Journal/Calendrier/Profil/Réglages seront à nouveau visibles
+
+5. **Compatibilité mobile** : Utilisation de `100dvh` pour gérer correctement la barre d'adresse mobile
+
+---
+
+## Résultat attendu
+
+- La carte 3D remplira tout l'espace entre le header et les barres de navigation
+- Aucun espace vide visible
+- Navigation fluide entre les 6 modes d'exploration
+- Interface cohérente sur mobile et desktop
