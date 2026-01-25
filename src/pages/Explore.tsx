@@ -16,6 +16,7 @@ import { normalizeCountryName } from '@/lib/countryNameMapping';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { userProgress } = useApp();
   const navigate = useNavigate();
   
@@ -30,14 +31,22 @@ const Explore = () => {
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <Header />
+      {/* Header - hidden in fullscreen mode */}
+      {!isFullscreen && <Header />}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         {/* Contenu qui remplit l'espace disponible */}
-        <div className="flex-1 overflow-hidden" style={{ height: 'calc(100dvh - 130px)' }}>
+        <div 
+          className="flex-1 overflow-hidden" 
+          style={{ height: isFullscreen ? '100dvh' : 'calc(100dvh - 130px)' }}
+        >
           <TabsContent value="map" className="h-full m-0 p-0">
             <div className="h-full w-full">
-              <Globe3D tripPlaces={userProgress.tripPlaces} onCountryClick={handleCountryClick} />
+              <Globe3D 
+                tripPlaces={userProgress.tripPlaces} 
+                onCountryClick={handleCountryClick}
+                onFullscreenChange={setIsFullscreen}
+              />
             </div>
           </TabsContent>
 
@@ -62,36 +71,39 @@ const Explore = () => {
           </TabsContent>
         </div>
 
-        {/* TabsList FIXE au-dessus de BottomNavigation */}
-        <TabsList className="fixed bottom-[36px] left-2 right-2 z-40 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-1 rounded-lg">
-          <TabsTrigger value="map" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Globe className="w-4 h-4" />
-            <span className="text-[10px]">Carte</span>
-          </TabsTrigger>
-          <TabsTrigger value="ar" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Camera className="w-4 h-4" />
-            <span className="text-[10px]">AR</span>
-          </TabsTrigger>
-          <TabsTrigger value="nearby" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Compass className="w-4 h-4" />
-            <span className="text-[10px]">Proche</span>
-          </TabsTrigger>
-          <TabsTrigger value="locations" className="flex flex-col items-center gap-0.5 py-1.5">
-            <MapPin className="w-4 h-4" />
-            <span className="text-[10px]">Lieux</span>
-          </TabsTrigger>
-          <TabsTrigger value="challenges" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Target className="w-4 h-4" />
-            <span className="text-[10px]">Défis</span>
-          </TabsTrigger>
-          <TabsTrigger value="rankings" className="flex flex-col items-center gap-0.5 py-1.5">
-            <Trophy className="w-4 h-4" />
-            <span className="text-[10px]">Rang</span>
-          </TabsTrigger>
-        </TabsList>
+        {/* TabsList FIXE au-dessus de BottomNavigation - hidden in fullscreen mode */}
+        {!isFullscreen && (
+          <TabsList className="fixed bottom-[36px] left-2 right-2 z-40 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-1 rounded-lg">
+            <TabsTrigger value="map" className="flex flex-col items-center gap-0.5 py-1.5">
+              <Globe className="w-4 h-4" />
+              <span className="text-[10px]">Carte</span>
+            </TabsTrigger>
+            <TabsTrigger value="ar" className="flex flex-col items-center gap-0.5 py-1.5">
+              <Camera className="w-4 h-4" />
+              <span className="text-[10px]">AR</span>
+            </TabsTrigger>
+            <TabsTrigger value="nearby" className="flex flex-col items-center gap-0.5 py-1.5">
+              <Compass className="w-4 h-4" />
+              <span className="text-[10px]">Proche</span>
+            </TabsTrigger>
+            <TabsTrigger value="locations" className="flex flex-col items-center gap-0.5 py-1.5">
+              <MapPin className="w-4 h-4" />
+              <span className="text-[10px]">Lieux</span>
+            </TabsTrigger>
+            <TabsTrigger value="challenges" className="flex flex-col items-center gap-0.5 py-1.5">
+              <Target className="w-4 h-4" />
+              <span className="text-[10px]">Défis</span>
+            </TabsTrigger>
+            <TabsTrigger value="rankings" className="flex flex-col items-center gap-0.5 py-1.5">
+              <Trophy className="w-4 h-4" />
+              <span className="text-[10px]">Rang</span>
+            </TabsTrigger>
+          </TabsList>
+        )}
       </Tabs>
 
-      <BottomNavigation />
+      {/* Bottom navigation - hidden in fullscreen mode */}
+      {!isFullscreen && <BottomNavigation />}
     </div>
   );
 };
