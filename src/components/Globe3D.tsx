@@ -1595,10 +1595,8 @@ const Globe3D = ({
       {/* Monument filter */}
       {filterControlContainer ? createPortal(<MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />, filterControlContainer) :
     // Fallback overlay if control not yet mounted
-    <div className="absolute inset-0 pointer-events-none flex items-start sm:items-end justify-start p-3 sm:p-4 z-[200]">
-          <div className="pointer-events-auto">
+    <div className="absolute top-4 left-4 z-[200]">
             <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
-          </div>
         </div>}
 
       {/* Clear history confirmation dialog */}
