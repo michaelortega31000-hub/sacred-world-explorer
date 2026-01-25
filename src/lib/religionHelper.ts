@@ -1,4 +1,4 @@
-import { Religion } from '@/contexts/AppContext';
+import type { Religion } from '@/contexts/AppContext';
 
 /**
  * Détermine automatiquement la religion d'un lieu en fonction de son type et de son nom

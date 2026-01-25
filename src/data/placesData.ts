@@ -1,4 +1,4 @@
-import { Place } from '@/contexts/AppContext';
+import type { Place } from '@/contexts/AppContext';
 
 // Mock data for sacred places around the world
 export const mockPlaces: Place[] = [
