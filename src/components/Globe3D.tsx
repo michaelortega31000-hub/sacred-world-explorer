@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Locate, Search, X, Loader2, AlertCircle, Route, Trash2 } from 'lucide-react';
+import { Calendar, Locate, Search, X, Loader2, AlertCircle, Route, Trash2, Maximize2, Minimize2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
@@ -27,6 +27,7 @@ interface Globe3DProps {
   onRecenterRef?: (fn: () => void) => void;
   onFlyToRef?: (fn: (lat: number, lng: number, zoom?: number) => void) => void;
   onPausedChange?: (paused: boolean) => void;
+  onFullscreenChange?: (isFullscreen: boolean) => void;
   tripPlaces?: string[];
 }
 interface PlaceFeature {
@@ -59,6 +60,7 @@ const Globe3D = ({
   onRecenterRef,
   onFlyToRef,
   onPausedChange,
+  onFullscreenChange,
   tripPlaces = []
 }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
@@ -86,6 +88,7 @@ const Globe3D = ({
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const {
     position: userPosition,
     error: geolocationError
@@ -1515,13 +1518,37 @@ const Globe3D = ({
         </div>
       </div>
       
-      {/* Geolocation button */}
+      {/* Control buttons - top right */}
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        {/* Fullscreen toggle */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant={geolocationEnabled ? "default" : "secondary"} size="icon" onClick={handleRecenter} className="rounded-full shadow-lg">
-                <Locate className="h-5 w-5" />
+              <Button 
+                variant="secondary" 
+                size="icon" 
+                onClick={() => {
+                  const newState = !isFullscreen;
+                  setIsFullscreen(newState);
+                  onFullscreenChange?.(newState);
+                }} 
+                className="rounded-full shadow-lg h-9 w-9"
+              >
+                {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{isFullscreen ? 'Quitter plein écran' : 'Plein écran'}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Geolocation button */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button variant={geolocationEnabled ? "default" : "secondary"} size="icon" onClick={handleRecenter} className="rounded-full shadow-lg h-9 w-9">
+                <Locate className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
@@ -1530,24 +1557,12 @@ const Globe3D = ({
           </Tooltip>
         </TooltipProvider>
 
-        {/* Location tracking controls */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{isRecording ? 'Arrêter l\'enregistrement' : 'Enregistrer mon parcours'}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
-
         {/* Clear history button */}
         {locationHistory.length > 0 && <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button variant="destructive" size="icon" onClick={() => setShowClearDialog(true)} className="rounded-full shadow-lg">
-                  <Trash2 className="h-5 w-5" />
+                <Button variant="destructive" size="icon" onClick={() => setShowClearDialog(true)} className="rounded-full shadow-lg h-9 w-9">
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </TooltipTrigger>
               <TooltipContent>
@@ -1557,39 +1572,22 @@ const Globe3D = ({
           </TooltipProvider>}
 
         {/* Activity legend */}
-        {locationHistory.length > 0 && isRecording && <div className="bg-background/80 backdrop-blur-sm border border-border rounded-lg shadow-lg p-3 text-xs">
-            <div className="space-y-1.5">
+        {locationHistory.length > 0 && isRecording && <div className="bg-background/80 backdrop-blur-sm border border-border rounded-lg shadow-lg p-2 text-xs">
+            <div className="space-y-1">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{
-              backgroundColor: 'hsl(142, 76%, 36%)'
-            }} />
-                <span className="text-foreground">Marche</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                <span className="text-foreground text-[10px]">Marche</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{
-              backgroundColor: 'hsl(217, 91%, 60%)'
-            }} />
-                <span className="text-foreground">Vélo</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-500" />
+                <span className="text-foreground text-[10px]">Vélo</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full" style={{
-              backgroundColor: 'hsl(0, 84%, 60%)'
-            }} />
-                <span className="text-foreground">Transport</span>
+                <div className="w-2.5 h-2.5 rounded-full bg-red-500" />
+                <span className="text-foreground text-[10px]">Transport</span>
               </div>
             </div>
           </div>}
-
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{t('navigation.calendar')}</p>
-            </TooltipContent>
-          </Tooltip>
-        </TooltipProvider>
       </div>
 
       {/* Monument filter */}
