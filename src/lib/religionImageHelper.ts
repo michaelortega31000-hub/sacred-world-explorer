@@ -1,4 +1,4 @@
-import { Religion } from '@/contexts/AppContext';
+import type { Religion } from '@/contexts/AppContext';
 import { mockPlaces } from '@/data/placesData';
 import { inferReligionFromPlace } from './religionHelper';
 import { getImageUrl } from './imageHelper';
