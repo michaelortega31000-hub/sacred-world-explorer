@@ -14,6 +14,31 @@ export const mapboxToAppCountryName: Record<string, string> = {
   'Vatican': 'Vatican',
   'United Kingdom': 'United Kingdom',
   'Great Britain': 'United Kingdom',
+  
+  // Noms arabes → Anglais (fallback sécurité)
+  'مصر': 'Egypt',                    // Égypte
+  'المغرب': 'Morocco',               // Maroc
+  'الجزائر': 'Algeria',              // Algérie
+  'تونس': 'Tunisia',                 // Tunisie
+  'السعودية': 'Saudi Arabia',        // Arabie Saoudite
+  'المملكة العربية السعودية': 'Saudi Arabia',
+  'الإمارات': 'United Arab Emirates',
+  'الإمارات العربية المتحدة': 'United Arab Emirates',
+  'الأردن': 'Jordan',                // Jordanie
+  'لبنان': 'Lebanon',                // Liban
+  'سوريا': 'Syria',                  // Syrie
+  'العراق': 'Iraq',                  // Irak
+  'إيران': 'Iran',                   // Iran
+  'فلسطين': 'Palestine',             // Palestine
+  'إسرائيل': 'Israel',               // Israël
+  'تركيا': 'Turkey',                 // Turquie
+  'ليبيا': 'Libya',                  // Libye
+  'السودان': 'Sudan',                // Soudan
+  'اليمن': 'Yemen',                  // Yémen
+  'عُمان': 'Oman',                   // Oman
+  'قطر': 'Qatar',                    // Qatar
+  'الكويت': 'Kuwait',                // Koweït
+  'البحرين': 'Bahrain',              // Bahreïn
   'UK': 'United Kingdom',
   
   // Pays européens

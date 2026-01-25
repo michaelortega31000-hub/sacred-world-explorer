@@ -1005,8 +1005,8 @@ const Globe3D = ({
           
           // Extract country name from Mapbox properties
           const countryName = 
-            feature.properties?.name ||
             feature.properties?.name_en ||
+            feature.properties?.name ||
             feature.properties?.name_fr ||
             feature.properties?.iso_3166_1 ||
             feature.properties?.worldview;

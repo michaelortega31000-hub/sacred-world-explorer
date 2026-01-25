@@ -2,6 +2,7 @@ import { Religion } from '@/contexts/AppContext';
 import { mockPlaces } from '@/data/placesData';
 import { inferReligionFromPlace } from './religionHelper';
 import { getImageUrl } from './imageHelper';
+import { normalizeCountryName } from './countryNameMapping';
 
 /**
  * Récupère une liste d'images filtrées par religion
@@ -55,6 +56,35 @@ export function getIconicImageForReligion(religion: Religion | null): string {
 
   if (!religion) return getImageUrl('/src/assets/places/notre-dame.jpg');
   return getImageUrl(iconicPlaces[religion]);
+}
+
+/**
+ * Récupère des images de fond pour un pays spécifique
+ */
+export function getImagesByCountry(country: string | null, count: number = 5): string[] {
+  if (!country) {
+    return getImagesByReligion(null, count);
+  }
+
+  // Normaliser le nom du pays (مصر → Egypt)
+  const normalizedCountry = normalizeCountryName(country);
+  
+  // Filtrer les lieux du pays
+  const countryPlaces = mockPlaces.filter(place => 
+    place.country.toLowerCase() === normalizedCountry.toLowerCase()
+  );
+
+  if (countryPlaces.length === 0) {
+    console.warn(`⚠️ Aucune image trouvée pour le pays: "${country}" (normalisé: "${normalizedCountry}")`);
+    return getImagesByReligion(null, count);
+  }
+
+  // Mélanger et retourner
+  return countryPlaces
+    .sort(() => Math.random() - 0.5)
+    .slice(0, Math.min(count, countryPlaces.length))
+    .map(place => getImageUrl(place.imageUrl || ''))
+    .filter(url => url !== '/placeholder.svg');
 }
 
 /**

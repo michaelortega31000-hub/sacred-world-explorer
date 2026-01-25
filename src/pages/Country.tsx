@@ -24,7 +24,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/imageHelper';
 import { ImageBackground } from '@/components/ImageBackground';
-import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
+import { getImagesByCountry } from '@/lib/religionImageHelper';
 
 const Country = () => {
   const { countryName: country } = useParams<{ countryName: string }>();
@@ -33,7 +33,7 @@ const Country = () => {
   const { t } = useTranslation();
   const { visitPlace, isPlaceVisited, userProgress, addToTrip, removeFromTrip, isInTrip } = useApp();
   const { toast: toastHook } = useToast();
-  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
+  const backgroundImages = getImagesByCountry(country);
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
