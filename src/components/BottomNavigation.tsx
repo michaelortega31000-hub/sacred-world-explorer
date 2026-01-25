@@ -41,12 +41,17 @@ const BottomNavigation = () => {
           {navItems.map(item => {
           const Icon = item.icon;
           const active = isActive(item.path);
-          return <button key={item.path} onClick={() => navigate(item.path)} className={`flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-all duration-300 ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`} style={active ? {
-            filter: 'drop-shadow(0 0 8px rgba(52, 224, 161, 0.6))'
-          } : {}}>
-                
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </button>;
+          return (
+            <button 
+              key={item.path} 
+              onClick={() => navigate(item.path)} 
+              className={`flex flex-col items-center justify-center gap-1 py-2 rounded-lg transition-all duration-300 ${active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'}`} 
+              style={active ? { filter: 'drop-shadow(0 0 8px rgba(52, 224, 161, 0.6))' } : {}}
+            >
+              <Icon className="w-5 h-5" />
+              <span className="text-[10px] font-medium">{item.label}</span>
+            </button>
+          );
         })}
         </div>
       </div>
