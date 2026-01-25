@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { useGeolocation, UserGeolocation } from '@/hooks/useGeolocation';
+import { useGeolocation } from '@/hooks/useGeolocation';
+import type { UserGeolocation } from '@/hooks/useGeolocation';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
 import { logger } from '@/lib/logger';
