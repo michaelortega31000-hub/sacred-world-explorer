@@ -34,7 +34,7 @@ const Explore = () => {
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         {/* Contenu qui remplit l'espace disponible */}
-        <div className="flex-1 overflow-hidden" style={{ height: 'calc(100dvh - 176px)' }}>
+        <div className="flex-1 overflow-hidden" style={{ height: 'calc(100dvh - 130px)' }}>
           <TabsContent value="map" className="h-full m-0 p-0">
             <div className="h-full w-full">
               <Globe3D tripPlaces={userProgress.tripPlaces} onCountryClick={handleCountryClick} />
@@ -63,7 +63,7 @@ const Explore = () => {
         </div>
 
         {/* TabsList FIXE au-dessus de BottomNavigation */}
-        <TabsList className="fixed bottom-[72px] left-2 right-2 z-40 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-1.5 rounded-lg">
+        <TabsList className="fixed bottom-[36px] left-2 right-2 z-40 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-1 rounded-lg">
           <TabsTrigger value="map" className="flex flex-col items-center gap-0.5 py-1.5">
             <Globe className="w-4 h-4" />
             <span className="text-[10px]">Carte</span>
