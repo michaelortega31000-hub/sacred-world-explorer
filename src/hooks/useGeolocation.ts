@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export interface UserGeolocation {
   latitude: number;
@@ -12,16 +12,35 @@ export interface GeolocationError {
   message: string;
 }
 
+export type PermissionState = 'prompt' | 'granted' | 'denied' | 'unknown';
+
 export const useGeolocation = (enabled: boolean = false) => {
   const [position, setPosition] = useState<UserGeolocation | null>(null);
   const [error, setError] = useState<GeolocationError | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [permissionState, setPermissionState] = useState<PermissionState>('unknown');
+  const hasReceivedPosition = useRef(false);
+
+  // Check permission state on mount
+  useEffect(() => {
+    if (navigator.permissions) {
+      navigator.permissions.query({ name: 'geolocation' }).then(result => {
+        setPermissionState(result.state as PermissionState);
+        result.onchange = () => {
+          setPermissionState(result.state as PermissionState);
+        };
+      }).catch(() => {
+        setPermissionState('unknown');
+      });
+    }
+  }, []);
 
   useEffect(() => {
     if (!enabled) {
       setPosition(null);
       setError(null);
       setLoading(false);
+      hasReceivedPosition.current = false;
       return;
     }
 
@@ -34,8 +53,12 @@ export const useGeolocation = (enabled: boolean = false) => {
     }
 
     setLoading(true);
+    setError(null);
 
     const handleSuccess = (pos: GeolocationPosition) => {
+      const isFirst = !hasReceivedPosition.current;
+      hasReceivedPosition.current = true;
+      
       setPosition({
         latitude: pos.coords.latitude,
         longitude: pos.coords.longitude,
@@ -44,6 +67,7 @@ export const useGeolocation = (enabled: boolean = false) => {
       });
       setError(null);
       setLoading(false);
+      setPermissionState('granted');
     };
 
     const handleError = (err: GeolocationPositionError) => {
@@ -51,7 +75,8 @@ export const useGeolocation = (enabled: boolean = false) => {
       
       switch(err.code) {
         case err.PERMISSION_DENIED:
-          message = 'Permission de géolocalisation refusée';
+          message = 'Permission de géolocalisation refusée. Allez dans les paramètres de votre navigateur pour l\'activer.';
+          setPermissionState('denied');
           break;
         case err.POSITION_UNAVAILABLE:
           message = 'Position non disponible';
@@ -91,5 +116,11 @@ export const useGeolocation = (enabled: boolean = false) => {
     };
   }, [enabled]);
 
-  return { position, error, loading };
+  return { 
+    position, 
+    error, 
+    loading, 
+    permissionState,
+    isFirstPosition: !hasReceivedPosition.current
+  };
 };

@@ -8,7 +8,6 @@ import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensi
 import { useNavigate } from 'react-router-dom';
 import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { useApp } from '@/contexts/AppContext';
-import NearMeFeature from './NearMeFeature';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getImageUrl } from '@/lib/imageHelper';
@@ -661,9 +660,6 @@ const LocationsTab = () => {
           Découvrez {mockPlaces.length} lieux sacrés à travers le monde
         </p>
       </div>
-
-      {/* Near Me Feature */}
-      <NearMeFeature />
 
       {/* Tabs for All vs Planned */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>

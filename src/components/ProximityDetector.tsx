@@ -3,11 +3,14 @@ import { useGeolocation } from '@/hooks/useGeolocation';
 import { mockPlaces } from '@/data/placesData';
 import PlaceCard from './PlaceCard';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { MapPin, Navigation } from 'lucide-react';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { MapPin, Navigation, Loader2, Settings } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const ProximityDetector = () => {
-  const { position, error } = useGeolocation(true);
+  const [permissionRequested, setPermissionRequested] = useState(false);
+  const { position, error, loading, permissionState } = useGeolocation(permissionRequested);
   const { userProgress } = useApp();
   const [nearbyPlaces, setNearbyPlaces] = useState<any[]>([]);
 
@@ -71,12 +74,69 @@ const ProximityDetector = () => {
     setNearbyPlaces(nearby);
   }, [position, userProgress.visitedPlaces]);
 
-  if (error) {
+  // Show activation screen if permission not yet requested
+  if (!permissionRequested) {
     return (
-      <Alert variant="destructive">
+      <Card className="p-6 text-center border-primary/20 bg-card/50 backdrop-blur-sm">
+        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
+          <MapPin className="w-8 h-8 text-primary" />
+        </div>
+        <h3 className="text-lg font-semibold mb-2">Découvrez les lieux sacrés autour de vous</h3>
+        <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+          Activez la géolocalisation pour voir les monuments religieux à proximité de votre position actuelle.
+        </p>
+        <Button onClick={() => setPermissionRequested(true)} size="lg">
+          <Navigation className="w-4 h-4 mr-2" />
+          Activer la localisation
+        </Button>
+      </Card>
+    );
+  }
+
+  // Show loading state
+  if (loading) {
+    return (
+      <Card className="p-6 text-center border-primary/20">
+        <Loader2 className="w-8 h-8 mx-auto mb-4 text-primary animate-spin" />
+        <p className="text-muted-foreground">Recherche de votre position...</p>
+      </Card>
+    );
+  }
+
+  // Show error state with instructions
+  if (error) {
+    const isDenied = error.code === 1;
+    return (
+      <Alert variant={isDenied ? "destructive" : "default"} className="border-2">
         <MapPin className="h-4 w-4" />
-        <AlertDescription>
-          {error.message}. Activez la géolocalisation pour voir les lieux proches.
+        <AlertDescription className="space-y-3">
+          <p className="font-medium">{error.message}</p>
+          {isDenied && (
+            <div className="text-xs space-y-2 mt-2 p-3 bg-muted/50 rounded-md">
+              <p className="font-medium flex items-center gap-2">
+                <Settings className="w-3 h-3" />
+                Pour activer la géolocalisation :
+              </p>
+              <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                <li>Cliquez sur l'icône 🔒 dans la barre d'adresse</li>
+                <li>Recherchez "Localisation" ou "Position"</li>
+                <li>Sélectionnez "Autoriser"</li>
+                <li>Actualisez la page</li>
+              </ul>
+            </div>
+          )}
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={() => {
+              setPermissionRequested(false);
+              setTimeout(() => setPermissionRequested(true), 100);
+            }}
+            className="mt-2"
+          >
+            <Navigation className="w-3 h-3 mr-2" />
+            Réessayer
+          </Button>
         </AlertDescription>
       </Alert>
     );
@@ -95,20 +155,21 @@ const ProximityDetector = () => {
 
   if (nearbyPlaces.length === 0) {
     return (
-      <Alert>
-        <MapPin className="h-4 w-4" />
-        <AlertDescription>
-          Aucun lieu sacré à proximité (dans un rayon de 10km).
-        </AlertDescription>
-      </Alert>
+      <Card className="p-6 text-center border-primary/20">
+        <MapPin className="w-8 h-8 mx-auto mb-4 text-muted-foreground" />
+        <h3 className="text-lg font-semibold mb-2">Aucun lieu sacré à proximité</h3>
+        <p className="text-muted-foreground">
+          Aucun monument trouvé dans un rayon de 10km autour de votre position.
+        </p>
+      </Card>
     );
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <MapPin className="w-4 h-4" />
-        <span>{nearbyPlaces.length} lieux trouvés près de vous</span>
+      <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/30 p-3 rounded-lg">
+        <MapPin className="w-4 h-4 text-primary" />
+        <span><strong>{nearbyPlaces.length}</strong> lieux trouvés près de vous</span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
