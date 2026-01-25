@@ -8,7 +8,6 @@ import Globe3D from '@/components/Globe3D';
 import LocationsTab from '@/components/LocationsTab';
 import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
-import NearMeFeature from '@/components/NearMeFeature';
 import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
 import { useApp } from '@/contexts/AppContext';
@@ -45,7 +44,7 @@ const Explore = () => {
                 <Globe3D tripPlaces={userProgress.tripPlaces} onCountryClick={handleCountryClick} />
               </div>
               
-              <TabsList className="absolute bottom-4 left-4 right-4 z-50 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-2 sm:p-3 rounded-lg">
+            <TabsList className="absolute bottom-4 left-4 right-4 z-50 grid grid-cols-6 bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-2 sm:p-3 rounded-lg">
                 <TabsTrigger value="map" className="gap-1 sm:gap-2">
                   <Globe className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">Carte 3D</span>
@@ -71,8 +70,6 @@ const Explore = () => {
                   <span className="hidden sm:inline">Classement</span>
                 </TabsTrigger>
               </TabsList>
-              
-              <NearMeFeature />
             </TabsContent>
 
             <TabsContent value="ar" className="h-[calc(100vh-140px)] sm:h-[calc(100vh-160px)]">

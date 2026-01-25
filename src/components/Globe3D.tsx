@@ -69,6 +69,7 @@ const Globe3D = ({
   const tripEndMarker = useRef<mapboxgl.Marker | null>(null);
   const tripMarkers = useRef<mapboxgl.Marker[]>([]);
   const endMarkerTimeout = useRef<NodeJS.Timeout | null>(null);
+  const hasInitiallyZoomed = useRef(false);
   const navigate = useNavigate();
   const {
     t
@@ -1148,13 +1149,14 @@ const Globe3D = ({
         userLocationMarker.current.remove();
         userLocationMarker.current = null;
       }
+      hasInitiallyZoomed.current = false;
       return;
     }
+    
     if (userPosition) {
-      const {
-        latitude,
-        longitude
-      } = userPosition;
+      const { latitude, longitude } = userPosition;
+      
+      // Create or update the marker
       if (!userLocationMarker.current) {
         const el = document.createElement('div');
         el.className = 'user-location-marker';
@@ -1172,18 +1174,28 @@ const Globe3D = ({
       } else {
         userLocationMarker.current.setLngLat([longitude, latitude]);
       }
-      map.current.flyTo({
-        center: [longitude, latitude],
-        zoom: 12,
-        duration: 2000
-      });
-      toast.success(t('location.enabled'));
+      
+      // Only zoom and show toast ONCE on first position
+      if (!hasInitiallyZoomed.current) {
+        hasInitiallyZoomed.current = true;
+        map.current.flyTo({
+          center: [longitude, latitude],
+          zoom: 12,
+          duration: 2000
+        });
+        toast.success(t('location.enabled'));
+      }
     }
+    
     if (geolocationError) {
-      toast.error(t('location.error'));
-      setGeolocationEnabled(false);
+      // Show detailed error message with instructions
+      const errorMessage = geolocationError.code === 1 
+        ? 'Géolocalisation refusée. Allez dans les paramètres de votre navigateur pour l\'activer.'
+        : t('location.error');
+      toast.error(errorMessage, { duration: 5000 });
+      // Don't disable geolocation immediately - let user retry
     }
-  }, [userPosition, geolocationError, geolocationEnabled]);
+  }, [userPosition, geolocationError, geolocationEnabled, t]);
 
   // FlyTo function
   const handleFlyTo = (lat: number, lng: number, zoom: number = 12, preserveView: boolean = false) => {
@@ -1216,15 +1228,15 @@ const Globe3D = ({
   // Recenter function
   const handleRecenter = () => {
     if (geolocationEnabled && userPosition) {
-      // If already enabled and we have a position, just zoom to it
+      // If already enabled and we have a position, just recenter (no toast)
       map.current?.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
         zoom: 12,
         duration: 2000
       });
-      toast.success(t('location.enabled'));
     } else {
-      // Enable geolocation (will trigger zoom in useEffect)
+      // Enable geolocation and reset zoom flag for initial zoom
+      hasInitiallyZoomed.current = false;
       setGeolocationEnabled(true);
     }
   };
