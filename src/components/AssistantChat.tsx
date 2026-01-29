@@ -47,6 +47,91 @@ type Message = {
 
 type Mode = "help" | "history";
 
+type Suggestion = {
+  label: string;
+  message: string;
+};
+
+const normalizeRoute = (pathname: string) => {
+  if (/^\/place\/[^/]+$/.test(pathname)) return "/place/:id";
+  if (/^\/country\/[^/]+$/.test(pathname)) return "/country/:id";
+  if (/^\/u\/[^/]+$/.test(pathname)) return "/u/:username";
+  if (/^\/user\/[^/]+$/.test(pathname)) return "/user/:userId";
+  if (/^\/world\/.+$/.test(pathname)) return "/world/*";
+  return pathname;
+};
+
+const getInitialSuggestions = (route: string, mode: Mode): Suggestion[] => {
+  const r = normalizeRoute(route);
+
+  if (mode === "history") {
+    if (r === "/place/:id") {
+      return [
+        { label: "📅 Dates clés", message: "Donne-moi les dates clés de ce lieu." },
+        { label: "✨ Anecdote", message: "Raconte-moi une anecdote sur ce lieu." },
+        { label: "🔎 Contexte", message: "Quel est le contexte historique de ce lieu ?" },
+      ];
+    }
+    if (r === "/country/:id") {
+      return [
+        { label: "🗺️ Lieux sacrés", message: "Quels sont les lieux sacrés majeurs de ce pays ?" },
+        { label: "📚 Traditions", message: "Quelles traditions sont importantes dans ce pays ?" },
+        { label: "📅 3 faits", message: "Donne-moi 3 faits historiques marquants." },
+      ];
+    }
+    return [
+      { label: "📚 Lieu célèbre", message: "Propose-moi un lieu sacré célèbre et explique pourquoi." },
+      { label: "✨ Anecdote", message: "Raconte-moi une anecdote historique surprenante." },
+      { label: "🔎 Lieu méconnu", message: "Propose-moi un lieu sacré méconnu à découvrir." },
+    ];
+  }
+
+  switch (r) {
+    case "/traditions":
+      return [
+        { label: "📚 Découvrir", message: "Je veux découvrir une tradition." },
+        { label: "🎲 Au hasard", message: "Propose-moi une tradition au hasard." },
+        { label: "📅 3 faits", message: "Donne-moi 3 faits historiques sur une tradition." },
+      ];
+    case "/explore":
+      return [
+        { label: "🔎 Près de moi", message: "Trouve-moi des lieux près de moi." },
+        { label: "🧭 Filtrer", message: "Aide-moi à filtrer (tradition / distance)." },
+        { label: "✨ Itinéraire", message: "Fais-moi un itinéraire d'1h autour de moi." },
+      ];
+    case "/place/:id":
+      return [
+        { label: "📅 Dates clés", message: "Donne-moi les dates clés de ce lieu." },
+        { label: "📜 Anecdote", message: "Raconte-moi une anecdote sur ce lieu." },
+        { label: "🗺️ Voir autour", message: "Qu'est-ce qu'il y a à voir autour ?" },
+      ];
+    case "/profile":
+      return [
+        { label: "👤 Modifier", message: "Comment modifier mon profil ?" },
+        { label: "🧿 Avatar", message: "Comment choisir un avatar ?" },
+        { label: "🏅 Badges", message: "Comment gagner des badges ?" },
+      ];
+    case "/calendar":
+      return [
+        { label: "📅 Prochains", message: "Que dois-je regarder dans le calendrier ?" },
+        { label: "🔔 Rappel", message: "Je veux créer un rappel." },
+        { label: "✨ Ce mois", message: "Qu'est-ce que je peux planifier ce mois-ci ?" },
+      ];
+    case "/country/:id":
+      return [
+        { label: "🗺️ Lieux sacrés", message: "Quels sont les lieux sacrés de ce pays ?" },
+        { label: "📚 Traditions", message: "Parle-moi des traditions de ce pays." },
+        { label: "📅 3 faits", message: "Donne-moi 3 faits historiques." },
+      ];
+    default:
+      return [
+        { label: "🗺️ Explorer", message: "Aide-moi à utiliser la page Explorer." },
+        { label: "🔎 Aide", message: "Où suis-je dans l'app et que puis-je faire ici ?" },
+        { label: "📚 Traditions", message: "Explique-moi comment fonctionne la section Traditions." },
+      ];
+  }
+};
+
 const AssistantChat = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -58,6 +143,11 @@ const AssistantChat = () => {
   
   const location = useLocation();
   const { placeId } = useParams<{ placeId?: string }>();
+
+  const initialSuggestions = useMemo(
+    () => getInitialSuggestions(location.pathname, mode),
+    [location.pathname, mode]
+  );
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -166,13 +256,35 @@ const AssistantChat = () => {
         <ScrollArea className="flex-1 p-4">
           <div className="space-y-4">
             {messages.length === 0 && (
-              <div className="text-center text-muted-foreground py-8">
-                <MessageCircle className="h-12 w-12 mx-auto mb-3 opacity-50" />
-                <p className="text-sm">
+              <div className="text-center py-6">
+                <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-50 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground mb-4">
                   {mode === "help" 
                     ? "Posez vos questions sur l'application !" 
                     : "Découvrez l'histoire des lieux sacrés !"}
                 </p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  {initialSuggestions.map((suggestion, idx) => (
+                    <Button
+                      key={idx}
+                      variant="outline"
+                      size="sm"
+                      className="text-xs h-auto py-1.5 px-3"
+                      disabled={isLoading}
+                      onClick={() => {
+                        const userMessage: Message = {
+                          id: crypto.randomUUID(),
+                          role: "user",
+                          content: suggestion.message,
+                        };
+                        setMessages((prev) => [...prev, userMessage]);
+                        handleSendWithMessage(suggestion.message);
+                      }}
+                    >
+                      {suggestion.label}
+                    </Button>
+                  ))}
+                </div>
               </div>
             )}
             
