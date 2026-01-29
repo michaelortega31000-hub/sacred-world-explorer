@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation, useParams } from "react-router-dom";
 import { MessageCircle, Send, Loader2, Sparkles, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,30 @@ import {
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+
+// Parse quick replies from message content
+const parseQuickReplies = (content: string): { text: string; suggestions: Array<{ label: string; message: string }> } => {
+  const regex = /<lov-actions>([\s\S]*?)<\/lov-actions>/;
+  const match = content.match(regex);
+  
+  if (!match) {
+    return { text: content, suggestions: [] };
+  }
+  
+  const text = content.replace(regex, '').trim();
+  const suggestionsRegex = /<lov-suggestion message="([^"]+)">([^<]+)<\/lov-suggestion>/g;
+  const suggestions: Array<{ label: string; message: string }> = [];
+  
+  let suggestionMatch;
+  while ((suggestionMatch = suggestionsRegex.exec(match[1])) !== null) {
+    suggestions.push({
+      message: suggestionMatch[1],
+      label: suggestionMatch[2],
+    });
+  }
+  
+  return { text, suggestions };
+};
 
 type Message = {
   id: string;
@@ -42,23 +66,13 @@ const AssistantChat = () => {
     }
   }, [messages]);
 
-  const sendMessage = async () => {
-    if (!input.trim() || isLoading) return;
-
-    const userMessage: Message = {
-      id: crypto.randomUUID(),
-      role: "user",
-      content: input.trim(),
-    };
-
-    setMessages((prev) => [...prev, userMessage]);
-    setInput("");
+  const handleSendWithMessage = async (messageContent: string) => {
     setIsLoading(true);
 
     try {
       const { data, error } = await supabase.functions.invoke("sacred-assistant", {
         body: {
-          message: userMessage.content,
+          message: messageContent,
           mode,
           currentRoute: location.pathname,
           selectedPlaceId: placeId || null,
@@ -90,6 +104,20 @@ const AssistantChat = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const sendMessage = async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: Message = {
+      id: crypto.randomUUID(),
+      role: "user",
+      content: input.trim(),
+    };
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    await handleSendWithMessage(userMessage.content);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -148,22 +176,55 @@ const AssistantChat = () => {
               </div>
             )}
             
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
-              >
-                <div
-                  className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
-                    message.role === "user"
-                      ? "bg-primary text-primary-foreground"
-                      : "bg-muted"
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-wrap">{message.content}</p>
+            {messages.map((message, index) => {
+              const isLastAssistant = message.role === "assistant" && index === messages.length - 1;
+              const { text, suggestions } = message.role === "assistant" 
+                ? parseQuickReplies(message.content)
+                : { text: message.content, suggestions: [] };
+              
+              return (
+                <div key={message.id}>
+                  <div
+                    className={`flex ${message.role === "user" ? "justify-end" : "justify-start"}`}
+                  >
+                    <div
+                      className={`max-w-[85%] rounded-2xl px-4 py-2.5 ${
+                        message.role === "user"
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted"
+                      }`}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{text}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Quick replies for last assistant message */}
+                  {isLastAssistant && suggestions.length > 0 && !isLoading && (
+                    <div className="flex flex-wrap gap-2 mt-3 justify-start">
+                      {suggestions.map((suggestion, idx) => (
+                        <Button
+                          key={idx}
+                          variant="outline"
+                          size="sm"
+                          className="text-xs h-auto py-1.5 px-3"
+                          onClick={() => {
+                            const userMessage: Message = {
+                              id: crypto.randomUUID(),
+                              role: "user",
+                              content: suggestion.message,
+                            };
+                            setMessages((prev) => [...prev, userMessage]);
+                            handleSendWithMessage(suggestion.message);
+                          }}
+                        >
+                          {suggestion.label}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
-            ))}
+              );
+            })}
             
             {isLoading && (
               <div className="flex justify-start">
