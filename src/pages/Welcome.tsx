@@ -45,6 +45,7 @@ const Welcome = () => {
             variant="outline"
             size="default"
             className="gap-3 font-medium"
+            onClick={() => navigate('/?tutorial=true')}
           >
             <BookOpen className="w-5 h-5" />
             Tutoriel
