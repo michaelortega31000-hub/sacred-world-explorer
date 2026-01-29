@@ -15,6 +15,7 @@ import { inferReligionFromPlace } from '@/lib/religionHelper';
 import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { useLocationHistory } from '@/hooks/useLocationHistory';
+import { useCountrySparkle } from '@/hooks/useCountrySparkle';
 import { toast } from 'sonner';
 import { getMapboxToken } from '@/lib/mapboxHelper';
 import type { Religion } from '@/contexts/AppContext';
@@ -94,6 +95,9 @@ const Globe3D = ({
     position: userPosition,
     error: geolocationError
   } = useGeolocation(geolocationEnabled);
+
+  // Sparkle effect on country click
+  const { triggerSparkle } = useCountrySparkle();
 
   // Location history tracking
   const {
@@ -1017,6 +1021,9 @@ const Globe3D = ({
             feature.properties?.worldview;
           
           if (countryName) {
+            // Trigger sparkle effect at click position
+            triggerSparkle(e.point.x, e.point.y);
+            
             console.log('🌍 Country clicked (raw from Mapbox):', {
               name: feature.properties?.name,
               name_en: feature.properties?.name_en,
