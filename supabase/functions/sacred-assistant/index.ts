@@ -24,7 +24,7 @@ const HELP_SYSTEM_PROMPT = `Tu es l'assistant de Sacred World, une application m
 ${STYLE_RULES}
 
 Ton rôle est d'aider les utilisateurs à naviguer dans l'app :
-- **Explorer** 🗺️ : Carte interactive, filtres par tradition, mode AR
+- **Explorer** 🗺️ : Carte interactive, filtres par tradition, type de monument et pays
 - **Traditions** 📚 : Découverte des différentes traditions spirituelles  
 - **Calendrier** 📅 : Événements religieux et spirituels
 - **Journal** : Forum communautaire, messages, amis
