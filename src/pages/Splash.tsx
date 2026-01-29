@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { WifiOff, BookOpen, Globe, Camera, Trophy, Calendar, CheckCircle, MapPin, Compass, Award, Target, TrendingUp, Heart, Users, Route, Settings, Check, LogOut, LucideIcon } from 'lucide-react';
+import { WifiOff, BookOpen, Globe, Trophy, Calendar, Target, Users, Settings, Check, LogOut, LucideIcon, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 
 const languages = [
@@ -33,7 +33,7 @@ interface TutorialStep {
 }
 
 const tutorialSteps: TutorialStep[] = [
-  // Catégorie 1: Découverte & Exploration (Turquoise)
+  // 1. Bienvenue
   {
     category: 'discovery',
     icon: Globe,
@@ -44,144 +44,73 @@ const tutorialSteps: TutorialStep[] = [
     ctaText: "Commencer l'Exploration",
     ctaLink: "/welcome"
   },
+  // 2. Explorez le Monde (fusion Globe + Filtres + Géoloc)
   {
     category: 'discovery',
     icon: Globe,
-    title: "Explorez le Globe 3D Interactif",
-    description: "Faites tourner le globe 3D pour découvrir des milliers de lieux. Cliquez sur un pays pour voir tous ses monuments sacrés et planifier votre itinéraire.",
+    title: "Explorez le Monde",
+    description: "Faites tourner le globe 3D interactif, filtrez par pays, religion ou type de monument, et découvrez les lieux près de chez vous grâce à la géolocalisation.",
     categoryColor: "hsl(var(--primary))",
     categoryLabel: "Découverte & Exploration",
     ctaText: "Voir le Globe 3D",
     ctaLink: "/worldmap"
   },
+  // 3. Assistant Sacred World (NOUVEAU)
   {
     category: 'discovery',
-    icon: Camera,
-    title: "Expérience en Réalité Augmentée",
-    description: "Pointez votre caméra vers des monuments pour obtenir des informations en temps réel avec des superpositions immersives et des symboles religieux animés.",
+    icon: MessageCircle,
+    title: "Assistant Sacred World",
+    description: "Posez vos questions à l'assistant intelligent ! Mode « Aide » pour naviguer dans l'app, mode « Histoire » pour découvrir l'histoire des lieux sacrés.",
     categoryColor: "hsl(var(--primary))",
     categoryLabel: "Découverte & Exploration",
-    ctaText: "Essayer la Caméra AR",
+    ctaText: "Essayer l'Assistant",
     ctaLink: "/explore"
   },
-  {
-    category: 'discovery',
-    icon: Compass,
-    title: "Découvrez les Lieux Près de Chez Vous",
-    description: "Activez la géolocalisation pour découvrir tous les lieux sacrés dans un rayon de 10 km. Obtenez des directions et des informations de distance.",
-    categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration",
-    ctaText: "Trouver des Lieux",
-    ctaLink: "/explore"
-  },
-  {
-    category: 'discovery',
-    icon: MapPin,
-    title: "Parcourez Tous les Lieux",
-    description: "Filtrez par religion, pays ou type de monument. Recherchez des lieux spécifiques et ajoutez vos favoris à votre itinéraire.",
-    categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration",
-    ctaText: "Explorer les Lieux",
-    ctaLink: "/explore"
-  },
-  
-  // Catégorie 2: Gamification & Progression (Doré)
-  {
-    category: 'gamification',
-    icon: CheckCircle,
-    title: "Visitez et Vérifiez Vos Visites",
-    description: "Visitez des lieux en personne, prenez une photo et vérifiez votre visite par GPS + IA. Gagnez des points pour chaque visite physique validée !",
-    categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression",
-    ctaText: "Voir Comment",
-    ctaLink: "/explore"
-  },
+  // 4. Points et Badges (fusion)
   {
     category: 'gamification',
     icon: Trophy,
-    title: "Collectez des Points et Montez de Niveau",
-    description: "Système XP : 100 points = 1 niveau. Visites physiques valent 10 points, visites virtuelles 1 point. Débloquez des récompenses à chaque niveau !",
+    title: "Gagnez des Points et Badges",
+    description: "Validez vos visites par photo GPS+IA (10 pts/visite). Montez de niveau et débloquez des badges exclusifs pour 10, 25, 50, 100+ visites !",
     categoryColor: "hsl(45 93% 47%)",
     categoryLabel: "Gamification & Progression",
     ctaText: "Voir Mon Profil",
     ctaLink: "/profile"
   },
-  {
-    category: 'gamification',
-    icon: Award,
-    title: "Débloquez des Badges Exclusifs",
-    description: "Gagnez des badges pour 10, 25, 50, 100, 250 visites et plus. Badges spéciaux pour lieux iconiques. Admirez-les en 3D dans votre profil !",
-    categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression",
-    ctaText: "Voir Mes Badges",
-    ctaLink: "/badges"
-  },
+  // 5. Défis et Classements (fusion)
   {
     category: 'gamification',
     icon: Target,
-    title: "Relevez des Défis Quotidiens",
-    description: "Quêtes hebdomadaires, défis quotidiens et challenges thématiques. Terminez-les pour gagner des badges rares et des bonus de points !",
+    title: "Défis et Classements",
+    description: "Relevez des défis quotidiens et hebdomadaires pour gagner des bonus. Grimpez dans les classements mondiaux, par pays et par religion !",
     categoryColor: "hsl(45 93% 47%)",
     categoryLabel: "Gamification & Progression",
     ctaText: "Voir les Défis",
     ctaLink: "/profile"
   },
-  {
-    category: 'gamification',
-    icon: TrendingUp,
-    title: "Grimpez dans les Classements",
-    description: "Classements mondiaux, par pays et par religion. Comparez-vous aux autres explorateurs et gagnez des récompenses de classement chaque semaine !",
-    categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression",
-    ctaText: "Voir les Classements",
-    ctaLink: "/profile"
-  },
-  
-  // Catégorie 3: Social & Communauté (Violet)
-  {
-    category: 'social',
-    icon: Heart,
-    title: "Créez Vos Souvenirs de Voyage",
-    description: "Uploadez vos photos de visites, écrivez vos réflexions personnelles et recommandez des restaurants et hébergements près des monuments.",
-    categoryColor: "hsl(270 60% 60%)",
-    categoryLabel: "Social & Communauté",
-    ctaText: "Ouvrir Mon Journal",
-    ctaLink: "/journal"
-  },
+  // 6. Communauté et Souvenirs (fusion)
   {
     category: 'social',
     icon: Users,
-    title: "Rejoignez la Communauté",
-    description: "Partagez vos vœux, photos et citations inspirantes. Participez aux discussions du forum, ajoutez des amis et échangez par messages privés.",
+    title: "Communauté et Souvenirs",
+    description: "Créez votre journal de voyage, partagez avec la communauté, ajoutez des amis et planifiez des itinéraires personnalisés jusqu'à 10 lieux.",
     categoryColor: "hsl(270 60% 60%)",
     categoryLabel: "Social & Communauté",
     ctaText: "Voir la Communauté",
     ctaLink: "/community"
   },
-  {
-    category: 'social',
-    icon: Route,
-    title: "Planifiez Vos Voyages",
-    description: "Créez des itinéraires personnalisés avec optimisation de route. Ajoutez jusqu'à 10 lieux, sauvegardez vos voyages et partagez-les avec la communauté.",
-    categoryColor: "hsl(270 60% 60%)",
-    categoryLabel: "Social & Communauté",
-    ctaText: "Planifier un Voyage",
-    ctaLink: "/profile"
-  },
-  
-  // Catégorie 4: Calendrier & Événements (Bleu)
+  // 7. Calendrier
   {
     category: 'calendar',
     icon: Calendar,
     title: "Calendrier Multi-Religieux",
-    description: "Consultez les événements religieux de toutes les traditions. Notifications push, rappels personnalisables et vues année/mois/semaine/jour.",
+    description: "Consultez les événements de toutes les traditions. Activez les rappels personnalisés et explorez les vues année, mois, semaine ou jour.",
     categoryColor: "hsl(217 91% 60%)",
     categoryLabel: "Calendrier & Événements",
     ctaText: "Voir le Calendrier",
     ctaLink: "/calendar"
   },
-  
-  // Catégorie 5: Personnalisation (Vert)
+  // 8. Personnalisation
   {
     category: 'personalization',
     icon: Settings,
