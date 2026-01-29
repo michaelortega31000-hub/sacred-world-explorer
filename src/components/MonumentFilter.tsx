@@ -15,6 +15,7 @@ import { inferReligionFromPlace } from '@/lib/religionHelper';
 export interface FilterOptions {
   religions: Religion[];
   types: string[];
+  countries: string[];
 }
 
 interface FilterPreset {
@@ -36,6 +37,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const [isOpen, setIsOpen] = useState(false);
   const [selectedReligions, setSelectedReligions] = useState<Religion[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [presetName, setPresetName] = useState('');
@@ -85,6 +87,20 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     return Array.from(typesSet).sort((a, b) => a.localeCompare(b));
   }, []);
 
+  // Calculate country counts from places data
+  const countryCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    mockPlaces.forEach(place => {
+      counts[place.country] = (counts[place.country] || 0) + 1;
+    });
+    return counts;
+  }, []);
+
+  // Dynamically extract available countries from places data
+  const availableCountries = useMemo(() => {
+    return Object.keys(countryCounts).sort((a, b) => a.localeCompare(b));
+  }, [countryCounts]);
+
   // Load presets and last filters from localStorage on mount
   useEffect(() => {
     const savedPresets = localStorage.getItem(PRESETS_STORAGE_KEY);
@@ -103,9 +119,10 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
         const parsed: FilterOptions = JSON.parse(lastFilters);
         setSelectedReligions(parsed.religions || []);
         setSelectedTypes(parsed.types || []);
+        setSelectedCountries(parsed.countries || []);
         onFilterChange(parsed);
         
-        if ((parsed.religions?.length || 0) + (parsed.types?.length || 0) > 0) {
+        if ((parsed.religions?.length || 0) + (parsed.types?.length || 0) + (parsed.countries?.length || 0) > 0) {
           toast({
             title: "Filtres restaurés",
             description: "Vos derniers filtres ont été appliqués",
@@ -122,15 +139,17 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     const filters: FilterOptions = {
       religions: selectedReligions,
       types: selectedTypes,
+      countries: selectedCountries,
     };
     localStorage.setItem(LAST_FILTERS_STORAGE_KEY, JSON.stringify(filters));
-  }, [selectedReligions, selectedTypes]);
+  }, [selectedReligions, selectedTypes, selectedCountries]);
 
   // Synchroniser avec des filtres externes (contrôle par le parent)
   useEffect(() => {
     if (externalFilters) {
       setSelectedReligions(externalFilters.religions || []);
       setSelectedTypes(externalFilters.types || []);
+      setSelectedCountries(externalFilters.countries || []);
     }
   }, [externalFilters]);
 
@@ -182,8 +201,8 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       : [...selectedReligions, religion];
     
     setSelectedReligions(newReligions);
-    console.log('🎯 Religion filter changed:', { religions: newReligions, types: selectedTypes });
-    onFilterChange({ religions: newReligions, types: selectedTypes });
+    console.log('🎯 Religion filter changed:', { religions: newReligions, types: selectedTypes, countries: selectedCountries });
+    onFilterChange({ religions: newReligions, types: selectedTypes, countries: selectedCountries });
   };
 
   const handleTypeToggle = (type: string) => {
@@ -192,14 +211,25 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       : [...selectedTypes, type];
     
     setSelectedTypes(newTypes);
-    console.log('🎯 Type filter changed:', { religions: selectedReligions, types: newTypes });
-    onFilterChange({ religions: selectedReligions, types: newTypes });
+    console.log('🎯 Type filter changed:', { religions: selectedReligions, types: newTypes, countries: selectedCountries });
+    onFilterChange({ religions: selectedReligions, types: newTypes, countries: selectedCountries });
+  };
+
+  const handleCountryToggle = (country: string) => {
+    const newCountries = selectedCountries.includes(country)
+      ? selectedCountries.filter(c => c !== country)
+      : [...selectedCountries, country];
+    
+    setSelectedCountries(newCountries);
+    console.log('🎯 Country filter changed:', { religions: selectedReligions, types: selectedTypes, countries: newCountries });
+    onFilterChange({ religions: selectedReligions, types: selectedTypes, countries: newCountries });
   };
 
   const clearFilters = () => {
     setSelectedReligions([]);
     setSelectedTypes([]);
-    onFilterChange({ religions: [], types: [] });
+    setSelectedCountries([]);
+    onFilterChange({ religions: [], types: [], countries: [] });
   };
 
   const savePreset = () => {
@@ -227,6 +257,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       filters: {
         religions: selectedReligions,
         types: selectedTypes,
+        countries: selectedCountries,
       },
     };
 
@@ -244,9 +275,14 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   };
 
   const loadPreset = (preset: FilterPreset) => {
-    setSelectedReligions(preset.filters.religions);
-    setSelectedTypes(preset.filters.types);
-    onFilterChange(preset.filters);
+    setSelectedReligions(preset.filters.religions || []);
+    setSelectedTypes(preset.filters.types || []);
+    setSelectedCountries(preset.filters.countries || []);
+    onFilterChange({
+      religions: preset.filters.religions || [],
+      types: preset.filters.types || [],
+      countries: preset.filters.countries || [],
+    });
     
     toast({
       title: "Préréglage appliqué",
@@ -265,16 +301,20 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     });
   };
 
-  const hasActiveFilters = selectedReligions.length > 0 || selectedTypes.length > 0;
-  const activeFiltersCount = selectedReligions.length + selectedTypes.length;
+  const hasActiveFilters = selectedReligions.length > 0 || selectedTypes.length > 0 || selectedCountries.length > 0;
+  const activeFiltersCount = selectedReligions.length + selectedTypes.length + selectedCountries.length;
 
-  // Filter religions and types based on search query
+  // Filter religions, types and countries based on search query
   const filteredReligions = religions.filter(religion =>
     religion.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filteredMonumentTypes = availableTypes.filter(type =>
     type.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredCountries = availableCountries.filter(country =>
+    country.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const filterPanel = isOpen && (
@@ -479,6 +519,53 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                 </span>
               </label>
             );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Countries Section */}
+      <div className="p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
+        <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter">
+          Par Pays {filteredCountries.length < availableCountries.length && (
+            <span className="text-xs text-[#EAD7B5]/60">({filteredCountries.length})</span>
+          )}
+        </h4>
+        {filteredCountries.length === 0 ? (
+          <p className="text-sm text-[#EAD7B5]/60 py-4 text-center">Aucun pays trouvé</p>
+        ) : (
+          <div className="space-y-2 max-h-40 overflow-y-auto">
+            {filteredCountries.map((country) => {
+              const isChecked = selectedCountries.includes(country);
+              const count = countryCounts[country] || 0;
+              
+              return (
+                <label
+                  key={country}
+                  className={cn(
+                    "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all duration-200",
+                    isChecked ? "bg-white/10" : "hover:bg-white/5"
+                  )}
+                >
+                  <Checkbox
+                    checked={isChecked}
+                    onCheckedChange={() => handleCountryToggle(country)}
+                    className={cn(
+                      "border-[#F4C542]/50",
+                      isChecked && "data-[state=checked]:bg-[#F4C542]/20 data-[state=checked]:border-[#F4C542]"
+                    )}
+                  />
+                  <span className={cn(
+                    "text-sm font-medium font-inter transition-colors flex-1",
+                    isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
+                  )}>
+                    {country}
+                  </span>
+                  <span className="text-xs text-[#EAD7B5]/60 font-inter">
+                    {count}
+                  </span>
+                </label>
+              );
             })}
           </div>
         )}

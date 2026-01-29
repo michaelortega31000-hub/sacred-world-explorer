@@ -83,7 +83,8 @@ const Globe3D = ({
   const [isPaused, setIsPaused] = useState(false);
   const [filters, setFilters] = useState<FilterOptions>({
     religions: [],
-    types: []
+    types: [],
+    countries: []
   });
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
@@ -169,7 +170,8 @@ const Globe3D = ({
         if (tLower.includes('pyram')) return textBlob.includes('pyram');
         return normalizedType.includes(tLower) || tLower.includes(normalizedType);
       });
-      if (!matchesReligion || !matchesType) return;
+      const matchesCountry = activeFilters.countries.length === 0 || activeFilters.countries.includes(place.country);
+      if (!matchesReligion || !matchesType || !matchesCountry) return;
       features.push({
         type: 'Feature',
         geometry: {
@@ -427,7 +429,7 @@ const Globe3D = ({
     if (!map.current || !isMapReadyRef.current) return;
 
     // Only show monuments when filters are active
-    const hasActiveFilters = filters.religions.length > 0 || filters.types.length > 0;
+    const hasActiveFilters = filters.religions.length > 0 || filters.types.length > 0 || filters.countries.length > 0;
     if (!showMonuments || !hasActiveFilters) {
       // Clear data when no filters active
       const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
@@ -1381,7 +1383,7 @@ const Globe3D = ({
   // Handle filter changes
   const handleFilterChange = (newFilters: FilterOptions) => {
     setFilters(newFilters);
-    if (newFilters.religions.length > 0 || newFilters.types.length > 0) {
+    if (newFilters.religions.length > 0 || newFilters.types.length > 0 || newFilters.countries.length > 0) {
       setShowMonuments(true);
     }
   };
