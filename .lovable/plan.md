@@ -1,177 +1,148 @@
 
 
-# Plan : Animations de transition fluides pour le tutoriel
+# Plan : Effet Sparkle/Glow au clic sur un pays du globe
 
-## Analyse du problème actuel
+## Résumé
 
-Les transitions actuelles utilisent `document.querySelector()` pour manipuler les classes CSS manuellement, ce qui :
-- N'est pas idiomatique en React
-- Peut causer des bugs de timing
-- Ne produit pas des transitions très fluides
+Ajouter un effet visuel de type "étoiles scintillantes" qui s'affiche à la position du clic lorsqu'on sélectionne un pays sur le globe 3D. L'effet utilisera la bibliothèque `canvas-confetti` déjà installée dans le projet.
 
-## Solution proposée
+---
 
-Remplacer la logique DOM par un système React avec `useState` pour gérer l'état d'animation, combiné avec des keyframes CSS plus sophistiquées pour des transitions de type "slide + fade".
+## Approche technique
+
+Le projet utilise déjà `canvas-confetti` pour les effets de célébration (badges, challenges). On va créer une configuration spécifique pour un effet "sparkle" avec des étoiles dorées/blanches qui partent de la position exacte du clic.
 
 ---
 
 ## Modifications
 
-### 1. Fichier : `tailwind.config.ts`
+### 1. Créer un hook dédié : `src/hooks/useCountrySparkle.ts`
 
-Ajouter de nouvelles keyframes pour des transitions plus élaborées :
-
-```typescript
-keyframes: {
-  // ... existants ...
-  "slide-fade-left": {
-    "0%": { opacity: "1", transform: "translateX(0)" },
-    "100%": { opacity: "0", transform: "translateX(-30px)" }
-  },
-  "slide-fade-right": {
-    "0%": { opacity: "1", transform: "translateX(0)" },
-    "100%": { opacity: "0", transform: "translateX(30px)" }
-  },
-  "slide-in-left": {
-    "0%": { opacity: "0", transform: "translateX(30px)" },
-    "100%": { opacity: "1", transform: "translateX(0)" }
-  },
-  "slide-in-right": {
-    "0%": { opacity: "0", transform: "translateX(-30px)" },
-    "100%": { opacity: "1", transform: "translateX(0)" }
-  }
-}
-
-animation: {
-  // ... existants ...
-  "slide-fade-left": "slide-fade-left 0.3s ease-out forwards",
-  "slide-fade-right": "slide-fade-right 0.3s ease-out forwards",
-  "slide-in-left": "slide-in-left 0.4s ease-out forwards",
-  "slide-in-right": "slide-in-right 0.4s ease-out forwards"
-}
-```
-
----
-
-### 2. Fichier : `src/pages/Splash.tsx`
-
-**2.1 Ajouter un état pour la direction et l'animation**
+Nouveau fichier qui encapsule la logique de l'effet sparkle :
 
 ```typescript
-const [isAnimating, setIsAnimating] = useState(false);
-const [animationDirection, setAnimationDirection] = useState<'next' | 'prev'>('next');
-```
+import confetti from 'canvas-confetti';
 
-**2.2 Refactorer `handleTutorialNext`**
+export const useCountrySparkle = () => {
+  const triggerSparkle = (x: number, y: number) => {
+    // Position normalisée (0-1) pour canvas-confetti
+    const originX = x / window.innerWidth;
+    const originY = y / window.innerHeight;
 
-Utiliser l'état React au lieu de `document.querySelector` :
+    // Premier burst - étoiles dorées
+    confetti({
+      particleCount: 25,
+      spread: 60,
+      origin: { x: originX, y: originY },
+      colors: ['#F4C542', '#FFD700', '#FFF8E1', '#FFFFFF'],
+      shapes: ['star'],
+      scalar: 0.8,
+      gravity: 0.6,
+      ticks: 80,
+      startVelocity: 15,
+    });
 
-```typescript
-const handleTutorialNext = () => {
-  if (isAnimating) return; // Empêcher le spam de clics
-  
-  const nextStep = tutorialStep + 1;
-  if (nextStep < tutorialSteps.length) {
-    setIsAnimating(true);
-    setAnimationDirection('next');
-    
+    // Deuxième burst légèrement décalé - effet pétillant
     setTimeout(() => {
-      setTutorialStep(nextStep);
-      const newProgress = Math.max(tutorialProgress, nextStep + 1);
-      setTutorialProgress(newProgress);
-      localStorage.setItem('tutorialProgress', newProgress.toString());
-      
-      setTimeout(() => setIsAnimating(false), 400);
-    }, 300);
-  } else {
-    // Tutoriel terminé
-    setShowTutorial(false);
-    setTutorialStep(0);
-    localStorage.setItem('tutorialCompleted', 'true');
-    localStorage.setItem('tutorialProgress', tutorialSteps.length.toString());
-  }
+      confetti({
+        particleCount: 15,
+        spread: 40,
+        origin: { x: originX, y: originY },
+        colors: ['#34E0A1', '#FFFFFF', '#F4C542'],
+        shapes: ['circle'],
+        scalar: 0.5,
+        gravity: 0.4,
+        ticks: 60,
+        startVelocity: 10,
+      });
+    }, 50);
+  };
+
+  return { triggerSparkle };
 };
 ```
 
-**2.3 Refactorer `handleTutorialPrev`**
+---
+
+### 2. Modifier `src/components/Globe3D.tsx`
+
+**2.1 Importer le hook**
 
 ```typescript
-const handleTutorialPrev = () => {
-  if (isAnimating || tutorialStep === 0) return;
-  
-  setIsAnimating(true);
-  setAnimationDirection('prev');
-  
-  setTimeout(() => {
-    setTutorialStep(tutorialStep - 1);
-    setTimeout(() => setIsAnimating(false), 400);
-  }, 300);
-};
+import { useCountrySparkle } from '@/hooks/useCountrySparkle';
 ```
 
-**2.4 Modifier le rendu du contenu avec classes dynamiques**
+**2.2 Initialiser le hook dans le composant**
 
-Remplacer la classe statique `tutorial-content` par des classes conditionnelles :
+```typescript
+const { triggerSparkle } = useCountrySparkle();
+```
 
-```tsx
-<div 
-  className={`flex flex-col items-center gap-6 py-4 transition-all duration-300 ${
-    isAnimating 
-      ? animationDirection === 'next' 
-        ? 'animate-slide-fade-left' 
-        : 'animate-slide-fade-right'
-      : animationDirection === 'next'
-        ? 'animate-slide-in-left'
-        : 'animate-slide-in-right'
-  }`}
->
+**2.3 Déclencher l'effet au clic sur un pays** (lignes 1008-1028)
+
+Dans le handler de clic sur pays, juste après avoir détecté un pays valide et avant d'appeler `onCountryClick` :
+
+```typescript
+if (countryName) {
+  // Déclencher l'effet sparkle à la position du clic
+  triggerSparkle(e.point.x, e.point.y);
+  
+  console.log('🌍 Country clicked...', ...);
+  onCountryClick(countryName);
+}
 ```
 
 ---
 
-## Résumé des changements
+## Résultat visuel attendu
 
-| Fichier | Modifications |
-|---------|---------------|
-| `tailwind.config.ts` | +8 keyframes, +4 animations |
-| `src/pages/Splash.tsx` | Refactoring complet des handlers + classes dynamiques |
-
----
-
-## Résultat attendu
-
-| Aspect | Avant | Après |
-|--------|-------|-------|
-| Méthode | DOM manipulation | État React |
-| Effet | Simple fade | Slide + fade directionnel |
-| Direction | Aucune | Gauche (suivant) / Droite (précédent) |
-| Protection spam | Non | Oui (via `isAnimating`) |
-| Fluidité | Basique | Transitions 60fps |
+| Élément | Description |
+|---------|-------------|
+| Forme | Étoiles + cercles |
+| Couleurs | Or (#F4C542), blanc (#FFFFFF), vert (#34E0A1) |
+| Durée | ~100ms d'animation |
+| Position | Exactement à l'endroit du clic |
+| Effet | Double burst pour un look "pétillant" |
 
 ---
 
-## Détails techniques
+## Fichiers modifiés
 
-### Timing des animations
+| Fichier | Changements |
+|---------|-------------|
+| `src/hooks/useCountrySparkle.ts` | Nouveau fichier (~30 lignes) |
+| `src/components/Globe3D.tsx` | +2 imports, +1 ligne dans le handler |
+
+---
+
+## Avantages de cette approche
+
+1. **Réutilisable** : Le hook peut être utilisé ailleurs (clic sur monuments, etc.)
+2. **Cohérent** : Utilise la même bibliothèque que les autres effets du projet
+3. **Performant** : `canvas-confetti` est optimisé pour les animations
+4. **Personnalisable** : Facile d'ajuster couleurs, taille, nombre de particules
+
+---
+
+## Section technique
+
+### Pourquoi `canvas-confetti` ?
+
+- Déjà installé dans le projet (v1.9.4)
+- Utilisé pour les badges (`useBadgeConfetti.ts`) et les challenges
+- Support natif des formes "star" et "circle"
+- API simple : `confetti({ origin: {x, y}, colors, shapes, ... })`
+
+### Positionnement précis
+
+Mapbox fournit `e.point.x` et `e.point.y` en pixels absolus. On les normalise en divisant par la taille de la fenêtre car `canvas-confetti` attend des valeurs entre 0 et 1.
+
+### Timing du double burst
 
 ```text
-Clic Suivant →
-  ├── 0ms: setIsAnimating(true), direction='next'
-  ├── 0-300ms: animation slide-fade-left (sortie)
-  ├── 300ms: setTutorialStep(next)
-  ├── 300-700ms: animation slide-in-left (entrée)
-  └── 700ms: setIsAnimating(false)
-```
-
-### Classes CSS générées
-
-```css
-.animate-slide-fade-left {
-  animation: slide-fade-left 0.3s ease-out forwards;
-}
-
-.animate-slide-in-left {
-  animation: slide-in-left 0.4s ease-out forwards;
-}
+Clic →
+  ├── 0ms: Burst #1 (étoiles dorées, 25 particules)
+  ├── 50ms: Burst #2 (cercles, 15 particules)
+  └── ~150ms: Fin de l'animation
 ```
 
