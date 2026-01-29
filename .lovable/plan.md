@@ -1,108 +1,192 @@
 
-# Plan : Corriger l'assistant et ajouter le filtre par pays
+# Plan : Réduire le tutoriel de 15 à 8 étapes
 
-## Résumé des problèmes
+## Résumé
 
-1. **Mode AR mentionné** : L'assistant dit "mode AR" dans sa description d'Explorer (ligne 27 de la edge function), mais cette fonctionnalité n'est pas encore opérationnelle
-2. **Filtre pays manquant** : Le MonumentFilter permet de filtrer par religion et type, mais pas par pays
-
----
-
-## Modifications prévues
-
-### 1. Edge Function : Retirer la mention du mode AR
-
-**Fichier** : `supabase/functions/sacred-assistant/index.ts`
-
-**Ligne 27** : Modifier la description de la page Explorer
-
-| Avant | Après |
-|-------|-------|
-| `- **Explorer** 🗺️ : Carte interactive, filtres par tradition, mode AR` | `- **Explorer** 🗺️ : Carte interactive, filtres par tradition, type de monument et pays` |
+Passer de 15 étapes à **8 étapes** en :
+1. Supprimant l'étape AR (non fonctionnelle)
+2. Regroupant les étapes similaires
+3. Ajoutant l'Assistant Sacred World
 
 ---
 
-### 2. MonumentFilter : Ajouter le filtre par pays
+## Nouveau tutoriel proposé : 8 étapes
 
-**Fichier** : `src/components/MonumentFilter.tsx`
-
-**2.1 Modifier l'interface `FilterOptions`** (lignes 15-18)
-
-```typescript
-export interface FilterOptions {
-  religions: Religion[];
-  types: string[];
-  countries: string[];  // Nouveau
-}
-```
-
-**2.2 Ajouter un state pour les pays sélectionnés**
-
-```typescript
-const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
-```
-
-**2.3 Calculer les pays disponibles et leurs counts**
-
-```typescript
-const countryCounts = useMemo(() => {
-  const counts: Record<string, number> = {};
-  mockPlaces.forEach(place => {
-    counts[place.country] = (counts[place.country] || 0) + 1;
-  });
-  return counts;
-}, []);
-
-const availableCountries = useMemo(() => {
-  return Object.keys(countryCounts).sort((a, b) => a.localeCompare(b));
-}, [countryCounts]);
-```
-
-**2.4 Ajouter une fonction `handleCountryToggle`**
-
-```typescript
-const handleCountryToggle = (country: string) => {
-  const newCountries = selectedCountries.includes(country)
-    ? selectedCountries.filter(c => c !== country)
-    : [...selectedCountries, country];
-  
-  setSelectedCountries(newCountries);
-  onFilterChange({ religions: selectedReligions, types: selectedTypes, countries: newCountries });
-};
-```
-
-**2.5 Ajouter une section "Par Pays" dans le panel**
-
-Nouvelle section entre les religions et les types de monuments, avec :
-- Titre "Par Pays"
-- Barre de recherche filtrée
-- Liste de checkboxes avec le nom du pays et le nombre de lieux
+| # | Catégorie | Titre | Contenu fusionné |
+|---|-----------|-------|------------------|
+| 1 | Découverte | Bienvenue dans SacredWorld | Introduction générale |
+| 2 | Découverte | Explorez le Monde | Globe 3D + Filtres + Lieux proches |
+| **3** | **Découverte** | **Assistant Sacred World** | **Mode Aide + Mode Histoire (NOUVEAU)** |
+| 4 | Gamification | Gagnez des Points et Badges | Visites + Points + Badges |
+| 5 | Gamification | Défis et Classements | Défis quotidiens + Classements |
+| 6 | Social | Communauté et Souvenirs | Journal + Communauté + Voyages |
+| 7 | Calendrier | Calendrier Multi-Religieux | Événements + Rappels |
+| 8 | Personnalisation | Personnalisez Votre Expérience | Avatar + Langue + Notifications |
 
 ---
 
-### 3. Mettre à jour les autres fonctions
+## Détail des fusions
 
-**Dans `MonumentFilter.tsx`** :
+### Étape 2 : Explorez le Monde (fusion de 4 anciennes étapes)
+```
+Globe 3D + Filtres par pays/religion + Géolocalisation
+"Faites tourner le globe 3D, filtrez par pays, religion ou type 
+de monument, et découvrez les lieux près de chez vous avec la géolocalisation."
+```
 
-- `clearFilters()` : vider aussi `selectedCountries`
-- `savePreset()` : inclure `countries` dans les préréglages
-- `loadPreset()` : restaurer aussi les pays
-- `hasActiveFilters` : compter aussi les pays
-- Synchronisation avec `externalFilters`
+### Étape 3 : Assistant Sacred World (NOUVELLE)
+```
+Mode Aide + Mode Histoire
+"Posez vos questions à l'assistant ! Mode « Aide » pour naviguer 
+dans l'app, mode « Histoire » pour découvrir l'histoire des lieux sacrés."
+```
+
+### Étape 4 : Gagnez des Points et Badges (fusion de 3 anciennes)
+```
+Visites vérifiées + Système XP + Badges
+"Validez vos visites par photo GPS+IA, gagnez des points (10 pts 
+par visite physique) et débloquez des badges exclusifs !"
+```
+
+### Étape 5 : Défis et Classements (fusion de 2 anciennes)
+```
+Défis quotidiens/hebdo + Classements
+"Relevez des défis quotidiens et hebdomadaires. Grimpez dans les 
+classements mondiaux, par pays et par religion !"
+```
+
+### Étape 6 : Communauté et Souvenirs (fusion de 3 anciennes)
+```
+Journal + Forum + Amis + Voyages
+"Créez vos souvenirs, partagez avec la communauté, ajoutez des 
+amis et planifiez vos itinéraires personnalisés."
+```
 
 ---
 
-## Fichiers modifiés
+## Avantages
+
+| Critère | Avant | Après |
+|---------|-------|-------|
+| Nombre d'étapes | 15 | **8** |
+| Temps estimé | ~5 min | **~2 min** |
+| Étape AR | ❌ Présente | ✅ Supprimée |
+| Assistant | ❌ Absent | ✅ Présent |
+
+---
+
+## Fichier modifié
 
 | Fichier | Changements |
 |---------|-------------|
-| `supabase/functions/sacred-assistant/index.ts` | Retirer "mode AR" de la description |
-| `src/components/MonumentFilter.tsx` | Ajouter filtre par pays (~80 lignes) |
+| `src/pages/Splash.tsx` | Réécrire `tutorialSteps` (lignes 35-195) |
 
 ---
 
-## Résultat attendu
+## Section technique
 
-1. L'assistant ne mentionne plus la réalité augmentée
-2. Le filtre propose 3 catégories : Religion, Type de monument, **Pays**
-3. L'utilisateur peut combiner plusieurs filtres (ex: "Cathédrales en France")
+### Import à ajouter
+```typescript
+import { MessageCircle } from "lucide-react";
+```
+
+### Nouveau tableau `tutorialSteps`
+
+```typescript
+const tutorialSteps: TutorialStep[] = [
+  // 1. Bienvenue
+  {
+    category: 'discovery',
+    icon: Globe,
+    title: "Bienvenue dans SacredWorld",
+    description: "Partez à la découverte des lieux sacrés et monuments culturels les plus emblématiques du monde entier. Une aventure spirituelle et culturelle vous attend !",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Commencer l'Exploration",
+    ctaLink: "/welcome"
+  },
+  // 2. Explorez le Monde (fusion Globe + Filtres + Géoloc)
+  {
+    category: 'discovery',
+    icon: Globe,
+    title: "Explorez le Monde",
+    description: "Faites tourner le globe 3D interactif, filtrez par pays, religion ou type de monument, et découvrez les lieux près de chez vous grâce à la géolocalisation.",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Voir le Globe 3D",
+    ctaLink: "/worldmap"
+  },
+  // 3. Assistant Sacred World (NOUVEAU)
+  {
+    category: 'discovery',
+    icon: MessageCircle,
+    title: "Assistant Sacred World",
+    description: "Posez vos questions à l'assistant intelligent ! Mode « Aide » pour naviguer dans l'app, mode « Histoire » pour découvrir l'histoire des lieux sacrés.",
+    categoryColor: "hsl(var(--primary))",
+    categoryLabel: "Découverte & Exploration",
+    ctaText: "Essayer l'Assistant",
+    ctaLink: "/explore"
+  },
+  // 4. Points et Badges (fusion)
+  {
+    category: 'gamification',
+    icon: Trophy,
+    title: "Gagnez des Points et Badges",
+    description: "Validez vos visites par photo GPS+IA (10 pts/visite). Montez de niveau et débloquez des badges exclusifs pour 10, 25, 50, 100+ visites !",
+    categoryColor: "hsl(45 93% 47%)",
+    categoryLabel: "Gamification & Progression",
+    ctaText: "Voir Mon Profil",
+    ctaLink: "/profile"
+  },
+  // 5. Défis et Classements (fusion)
+  {
+    category: 'gamification',
+    icon: Target,
+    title: "Défis et Classements",
+    description: "Relevez des défis quotidiens et hebdomadaires pour gagner des bonus. Grimpez dans les classements mondiaux, par pays et par religion !",
+    categoryColor: "hsl(45 93% 47%)",
+    categoryLabel: "Gamification & Progression",
+    ctaText: "Voir les Défis",
+    ctaLink: "/profile"
+  },
+  // 6. Communauté et Souvenirs (fusion)
+  {
+    category: 'social',
+    icon: Users,
+    title: "Communauté et Souvenirs",
+    description: "Créez votre journal de voyage, partagez avec la communauté, ajoutez des amis et planifiez des itinéraires personnalisés jusqu'à 10 lieux.",
+    categoryColor: "hsl(270 60% 60%)",
+    categoryLabel: "Social & Communauté",
+    ctaText: "Voir la Communauté",
+    ctaLink: "/community"
+  },
+  // 7. Calendrier
+  {
+    category: 'calendar',
+    icon: Calendar,
+    title: "Calendrier Multi-Religieux",
+    description: "Consultez les événements de toutes les traditions. Activez les rappels personnalisés et explorez les vues année, mois, semaine ou jour.",
+    categoryColor: "hsl(217 91% 60%)",
+    categoryLabel: "Calendrier & Événements",
+    ctaText: "Voir le Calendrier",
+    ctaLink: "/calendar"
+  },
+  // 8. Personnalisation
+  {
+    category: 'personalization',
+    icon: Settings,
+    title: "Personnalisez Votre Expérience",
+    description: "Choisissez votre avatar, configurez votre profil public/privé, sélectionnez votre langue parmi 8 disponibles et gérez vos notifications.",
+    categoryColor: "hsl(142 71% 45%)",
+    categoryLabel: "Personnalisation",
+    ctaText: "Ouvrir les Paramètres",
+    ctaLink: "/settings"
+  },
+];
+```
+
+### Icônes conservées
+- `Globe`, `MessageCircle` (nouveau), `Trophy`, `Target`, `Users`, `Calendar`, `Settings`
+
+### Icônes supprimées
+- `Camera` (AR), `Compass`, `MapPin`, `CheckCircle`, `Award`, `TrendingUp`, `Heart`, `Route`
