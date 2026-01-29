@@ -1,94 +1,108 @@
 
-# Plan : Intégrer les suggestions prédéfinies dans l'assistant
+# Plan : Corriger l'assistant et ajouter le filtre par pays
 
-## Résumé
+## Résumé des problèmes
 
-Ajouter les fonctions `normalizeRoute` et `getInitialSuggestions` fournies par l'utilisateur, puis afficher des boutons de suggestions cliquables dans l'état vide de l'assistant.
+1. **Mode AR mentionné** : L'assistant dit "mode AR" dans sa description d'Explorer (ligne 27 de la edge function), mais cette fonctionnalité n'est pas encore opérationnelle
+2. **Filtre pays manquant** : Le MonumentFilter permet de filtrer par religion et type, mais pas par pays
 
 ---
 
-## Modifications
+## Modifications prévues
 
-### Fichier : `src/components/AssistantChat.tsx`
+### 1. Edge Function : Retirer la mention du mode AR
 
-**1. Ajouter le type `Suggestion` et les fonctions utilitaires**
+**Fichier** : `supabase/functions/sacred-assistant/index.ts`
 
-Après le type `Mode` (ligne 48), ajouter :
-- Type `Suggestion` avec `label` et `message`
-- Fonction `normalizeRoute` pour matcher les routes dynamiques
-- Fonction `getInitialSuggestions` avec le mapping complet
+**Ligne 27** : Modifier la description de la page Explorer
 
-**2. Créer un `useMemo` pour les suggestions initiales**
+| Avant | Après |
+|-------|-------|
+| `- **Explorer** 🗺️ : Carte interactive, filtres par tradition, mode AR` | `- **Explorer** 🗺️ : Carte interactive, filtres par tradition, type de monument et pays` |
 
-Dans le composant, après les hooks existants :
+---
 
-```tsx
-const initialSuggestions = useMemo(
-  () => getInitialSuggestions(location.pathname, mode),
-  [location.pathname, mode]
-);
+### 2. MonumentFilter : Ajouter le filtre par pays
+
+**Fichier** : `src/components/MonumentFilter.tsx`
+
+**2.1 Modifier l'interface `FilterOptions`** (lignes 15-18)
+
+```typescript
+export interface FilterOptions {
+  religions: Religion[];
+  types: string[];
+  countries: string[];  // Nouveau
+}
 ```
 
-**3. Modifier l'état vide (lignes 168-177)**
+**2.2 Ajouter un state pour les pays sélectionnés**
 
-Remplacer le simple texte par :
-- L'icône et le texte d'accueil
-- Des boutons cliquables pour chaque suggestion
-- Au clic, envoyer le message et démarrer la conversation
-
-Nouveau rendu :
-
-```tsx
-{messages.length === 0 && (
-  <div className="text-center py-6">
-    <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-50" />
-    <p className="text-sm text-muted-foreground mb-4">
-      {mode === "help" 
-        ? "Posez vos questions sur l'application !" 
-        : "Découvrez l'histoire des lieux sacrés !"}
-    </p>
-    <div className="flex flex-wrap gap-2 justify-center">
-      {initialSuggestions.map((suggestion, idx) => (
-        <Button
-          key={idx}
-          variant="outline"
-          size="sm"
-          className="text-xs h-auto py-1.5 px-3"
-          disabled={isLoading}
-          onClick={() => {
-            const userMessage: Message = {
-              id: crypto.randomUUID(),
-              role: "user",
-              content: suggestion.message,
-            };
-            setMessages((prev) => [...prev, userMessage]);
-            handleSendWithMessage(suggestion.message);
-          }}
-        >
-          {suggestion.label}
-        </Button>
-      ))}
-    </div>
-  </div>
-)}
+```typescript
+const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
 ```
 
+**2.3 Calculer les pays disponibles et leurs counts**
+
+```typescript
+const countryCounts = useMemo(() => {
+  const counts: Record<string, number> = {};
+  mockPlaces.forEach(place => {
+    counts[place.country] = (counts[place.country] || 0) + 1;
+  });
+  return counts;
+}, []);
+
+const availableCountries = useMemo(() => {
+  return Object.keys(countryCounts).sort((a, b) => a.localeCompare(b));
+}, [countryCounts]);
+```
+
+**2.4 Ajouter une fonction `handleCountryToggle`**
+
+```typescript
+const handleCountryToggle = (country: string) => {
+  const newCountries = selectedCountries.includes(country)
+    ? selectedCountries.filter(c => c !== country)
+    : [...selectedCountries, country];
+  
+  setSelectedCountries(newCountries);
+  onFilterChange({ religions: selectedReligions, types: selectedTypes, countries: newCountries });
+};
+```
+
+**2.5 Ajouter une section "Par Pays" dans le panel**
+
+Nouvelle section entre les religions et les types de monuments, avec :
+- Titre "Par Pays"
+- Barre de recherche filtrée
+- Liste de checkboxes avec le nom du pays et le nombre de lieux
+
 ---
 
-## Résultat
+### 3. Mettre à jour les autres fonctions
 
-| Route | Mode | Suggestions affichées |
-|-------|------|----------------------|
-| `/country/Kazakhstan` | help | 🗺️ Lieux sacrés, 📚 Traditions, 📅 3 faits |
-| `/country/Kazakhstan` | history | 🗺️ Lieux sacrés, 📚 Traditions, 📅 3 faits |
-| `/place/123` | help | 📅 Dates clés, 📜 Anecdote, 🗺️ Voir autour |
-| `/explore` | help | 🔎 Près de moi, 🧭 Filtrer, ✨ Itinéraire |
-| Autre | history | 📚 Lieu célèbre, ✨ Anecdote, 🔎 Lieu méconnu |
+**Dans `MonumentFilter.tsx`** :
+
+- `clearFilters()` : vider aussi `selectedCountries`
+- `savePreset()` : inclure `countries` dans les préréglages
+- `loadPreset()` : restaurer aussi les pays
+- `hasActiveFilters` : compter aussi les pays
+- Synchronisation avec `externalFilters`
 
 ---
 
-## Fichier modifié
+## Fichiers modifiés
 
 | Fichier | Changements |
 |---------|-------------|
-| `src/components/AssistantChat.tsx` | +60 lignes (types + fonctions + rendu) |
+| `supabase/functions/sacred-assistant/index.ts` | Retirer "mode AR" de la description |
+| `src/components/MonumentFilter.tsx` | Ajouter filtre par pays (~80 lignes) |
+
+---
+
+## Résultat attendu
+
+1. L'assistant ne mentionne plus la réalité augmentée
+2. Le filtre propose 3 catégories : Religion, Type de monument, **Pays**
+3. L'utilisateur peut combiner plusieurs filtres (ex: "Cathédrales en France")
