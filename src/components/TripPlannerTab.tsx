@@ -12,6 +12,7 @@ import { getImageUrl } from '@/lib/imageHelper';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import TripRouteMap from './TripRouteMap';
+import ItineraryGlobe from './ItineraryGlobe';
 
 interface SavedRestaurant {
   id: string;
@@ -49,6 +50,16 @@ const TripPlannerTab = () => {
   
   const allPlaces = getAllPlaces();
   const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
+  
+  // Mapping des données pour ItineraryGlobe (coordonnées: [lng, lat])
+  const itineraryGlobePlaces = useMemo(() => {
+    return tripPlaces.map(place => ({
+      id: place.id,
+      name: place.name,
+      lat: place.coordinates[1],
+      lng: place.coordinates[0],
+    }));
+  }, [tripPlaces]);
   
   // Group by country
   const placesByCountry = tripPlaces.reduce((acc, place) => {
@@ -205,7 +216,17 @@ const TripPlannerTab = () => {
   };
 
   return (
-    <div className="p-6 max-w-6xl mx-auto">
+    <div className="relative min-h-screen overflow-hidden">
+      {/* Globe 3D en arrière-plan */}
+      {tripPlaces.length > 0 && (
+        <>
+          <ItineraryGlobe places={itineraryGlobePlaces} autoRotateSpeed={0.18} />
+          <div className="absolute inset-0 bg-background/60 pointer-events-none" />
+        </>
+      )}
+      
+      {/* Contenu au premier plan */}
+      <div className="relative z-10 p-6 max-w-6xl mx-auto">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -554,6 +575,7 @@ const TripPlannerTab = () => {
           )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };
