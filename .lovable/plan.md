@@ -1,143 +1,94 @@
 
-# Plan : Bouton flottant "Assistant" avec panneau de chat
+# Plan : Intégrer les suggestions prédéfinies dans l'assistant
 
 ## Résumé
 
-Ajout d'un bouton flottant "Assistant" visible sur toutes les pages, ouvrant un panneau de chat latéral avec deux modes (Aide dans l'app / Histoire) qui communique avec une nouvelle edge function IA.
+Ajouter les fonctions `normalizeRoute` et `getInitialSuggestions` fournies par l'utilisateur, puis afficher des boutons de suggestions cliquables dans l'état vide de l'assistant.
 
 ---
 
-## Fonctionnalités
+## Modifications
 
-1. **Bouton flottant "Assistant"**
-   - Visible sur toutes les pages (sauf splash/auth)
-   - Positionné en bas à droite, au-dessus de la navigation
-   - Design cohérent avec l'identité visuelle (couleur primary)
+### Fichier : `src/components/AssistantChat.tsx`
 
-2. **Panneau de chat**
-   - Ouvre depuis la droite (Sheet component existant)
-   - Toggle pour choisir le mode : "Aide dans l'app" ou "Histoire"
-   - Zone de messages avec scroll
-   - Input pour écrire + bouton d'envoi
+**1. Ajouter le type `Suggestion` et les fonctions utilitaires**
 
-3. **Communication API**
-   - Envoie `{ message, mode, currentRoute, selectedPlaceId }` à `/functions/v1/sacred-assistant`
-   - Affiche les réponses de l'IA en temps réel
+Après le type `Mode` (ligne 48), ajouter :
+- Type `Suggestion` avec `label` et `message`
+- Fonction `normalizeRoute` pour matcher les routes dynamiques
+- Fonction `getInitialSuggestions` avec le mapping complet
 
----
+**2. Créer un `useMemo` pour les suggestions initiales**
 
-## Architecture des fichiers
+Dans le composant, après les hooks existants :
 
-```text
-src/
-├── components/
-│   └── AssistantChat.tsx          # Nouveau - Composant principal
-│
-└── App.tsx                        # Modifié - Ajout du composant global
+```tsx
+const initialSuggestions = useMemo(
+  () => getInitialSuggestions(location.pathname, mode),
+  [location.pathname, mode]
+);
+```
 
-supabase/
-├── config.toml                    # Modifié - Ajout config edge function
-└── functions/
-    └── sacred-assistant/
-        └── index.ts               # Nouveau - Edge function IA
+**3. Modifier l'état vide (lignes 168-177)**
+
+Remplacer le simple texte par :
+- L'icône et le texte d'accueil
+- Des boutons cliquables pour chaque suggestion
+- Au clic, envoyer le message et démarrer la conversation
+
+Nouveau rendu :
+
+```tsx
+{messages.length === 0 && (
+  <div className="text-center py-6">
+    <MessageCircle className="h-10 w-10 mx-auto mb-3 opacity-50" />
+    <p className="text-sm text-muted-foreground mb-4">
+      {mode === "help" 
+        ? "Posez vos questions sur l'application !" 
+        : "Découvrez l'histoire des lieux sacrés !"}
+    </p>
+    <div className="flex flex-wrap gap-2 justify-center">
+      {initialSuggestions.map((suggestion, idx) => (
+        <Button
+          key={idx}
+          variant="outline"
+          size="sm"
+          className="text-xs h-auto py-1.5 px-3"
+          disabled={isLoading}
+          onClick={() => {
+            const userMessage: Message = {
+              id: crypto.randomUUID(),
+              role: "user",
+              content: suggestion.message,
+            };
+            setMessages((prev) => [...prev, userMessage]);
+            handleSendWithMessage(suggestion.message);
+          }}
+        >
+          {suggestion.label}
+        </Button>
+      ))}
+    </div>
+  </div>
+)}
 ```
 
 ---
 
-## Détails techniques
+## Résultat
 
-### 1. Composant AssistantChat.tsx
-
-Structure du composant :
-- Utilise le hook `useLocation` pour obtenir la route actuelle
-- Utilise le hook `useParams` pour obtenir `placeId` si disponible
-- État local pour : messages, mode sélectionné, input, loading, isOpen
-- Sheet (panneau latéral) pour l'interface de chat
-
-Éléments UI utilisés :
-- `Sheet`, `SheetContent`, `SheetHeader`, `SheetTitle` (existants)
-- `ToggleGroup`, `ToggleGroupItem` (existants) pour le toggle mode
-- `ScrollArea` (existant) pour la zone de messages
-- `Textarea` + `Button` (existants) pour l'input
-- Icône `MessageCircle` ou `Bot` de Lucide pour le bouton flottant
-
-### 2. Edge Function sacred-assistant
-
-Utilise Lovable AI Gateway (déjà configuré avec LOVABLE_API_KEY) :
-- Modèle : `google/gemini-2.5-flash` (rapide et efficace)
-- Système prompt différent selon le mode :
-  - **Aide** : Assistant pour naviguer dans l'app Sacred World
-  - **Histoire** : Conteur d'histoires sur les lieux sacrés
-
-### 3. Intégration dans App.tsx
-
-- Ajout du composant `AssistantChat` au niveau global, à l'intérieur du `TooltipProvider`
-- Visible partout sauf sur `/` (Splash) et `/auth`
+| Route | Mode | Suggestions affichées |
+|-------|------|----------------------|
+| `/country/Kazakhstan` | help | 🗺️ Lieux sacrés, 📚 Traditions, 📅 3 faits |
+| `/country/Kazakhstan` | history | 🗺️ Lieux sacrés, 📚 Traditions, 📅 3 faits |
+| `/place/123` | help | 📅 Dates clés, 📜 Anecdote, 🗺️ Voir autour |
+| `/explore` | help | 🔎 Près de moi, 🧭 Filtrer, ✨ Itinéraire |
+| Autre | history | 📚 Lieu célèbre, ✨ Anecdote, 🔎 Lieu méconnu |
 
 ---
 
-## Flux de données
+## Fichier modifié
 
-```text
-┌──────────────────────────────────────────────────────────┐
-│                    Utilisateur                           │
-│                         │                                │
-│                    ▼ Clique bouton                       │
-│              ┌─────────────────┐                         │
-│              │  AssistantChat  │                         │
-│              │   (Sheet open)  │                         │
-│              └────────┬────────┘                         │
-│                       │                                  │
-│         Écrit message + choisit mode                     │
-│                       │                                  │
-│                       ▼                                  │
-│   ┌───────────────────────────────────────────┐          │
-│   │  POST /functions/v1/sacred-assistant      │          │
-│   │  {message, mode, currentRoute, placeId}   │          │
-│   └───────────────────┬───────────────────────┘          │
-│                       │                                  │
-│                       ▼                                  │
-│         ┌─────────────────────────┐                      │
-│         │  Lovable AI Gateway     │                      │
-│         │  (Gemini 2.5 Flash)     │                      │
-│         └────────────┬────────────┘                      │
-│                      │                                   │
-│                      ▼                                   │
-│              Réponse affichée                            │
-└──────────────────────────────────────────────────────────┘
-```
-
----
-
-## Interface utilisateur
-
-**Bouton flottant :**
-- Position : `fixed bottom-24 right-4` (au-dessus de BottomNavigation)
-- Style : Cercle avec icône, fond primary, shadow
-- Animation : pulse subtle pour attirer l'attention
-
-**Panneau chat :**
-- Header : Titre "Assistant Sacred World" + bouton fermer
-- Toggle modes : 2 boutons "Aide dans l'app" / "Histoire"
-- Zone messages : Liste scrollable, bulles de chat
-- Input : Textarea + bouton envoi
-
----
-
-## Sécurité
-
-- Edge function avec `verify_jwt = true` (utilisateur authentifié requis)
-- Validation des entrées (message non vide, mode valide)
-- Rate limiting côté serveur recommandé
-- Pas de données sensibles exposées
-
----
-
-## Étapes d'implémentation
-
-1. Créer l'edge function `sacred-assistant` avec prompts IA
-2. Mettre à jour `supabase/config.toml` avec la config JWT
-3. Créer le composant `AssistantChat.tsx`
-4. Intégrer dans `App.tsx`
-5. Tester les deux modes de conversation
-
+| Fichier | Changements |
+|---------|-------------|
+| `src/components/AssistantChat.tsx` | +60 lignes (types + fonctions + rendu) |
