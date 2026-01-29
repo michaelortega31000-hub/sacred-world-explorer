@@ -1,192 +1,177 @@
 
-# Plan : Réduire le tutoriel de 15 à 8 étapes
 
-## Résumé
+# Plan : Animations de transition fluides pour le tutoriel
 
-Passer de 15 étapes à **8 étapes** en :
-1. Supprimant l'étape AR (non fonctionnelle)
-2. Regroupant les étapes similaires
-3. Ajoutant l'Assistant Sacred World
+## Analyse du problème actuel
 
----
+Les transitions actuelles utilisent `document.querySelector()` pour manipuler les classes CSS manuellement, ce qui :
+- N'est pas idiomatique en React
+- Peut causer des bugs de timing
+- Ne produit pas des transitions très fluides
 
-## Nouveau tutoriel proposé : 8 étapes
+## Solution proposée
 
-| # | Catégorie | Titre | Contenu fusionné |
-|---|-----------|-------|------------------|
-| 1 | Découverte | Bienvenue dans SacredWorld | Introduction générale |
-| 2 | Découverte | Explorez le Monde | Globe 3D + Filtres + Lieux proches |
-| **3** | **Découverte** | **Assistant Sacred World** | **Mode Aide + Mode Histoire (NOUVEAU)** |
-| 4 | Gamification | Gagnez des Points et Badges | Visites + Points + Badges |
-| 5 | Gamification | Défis et Classements | Défis quotidiens + Classements |
-| 6 | Social | Communauté et Souvenirs | Journal + Communauté + Voyages |
-| 7 | Calendrier | Calendrier Multi-Religieux | Événements + Rappels |
-| 8 | Personnalisation | Personnalisez Votre Expérience | Avatar + Langue + Notifications |
+Remplacer la logique DOM par un système React avec `useState` pour gérer l'état d'animation, combiné avec des keyframes CSS plus sophistiquées pour des transitions de type "slide + fade".
 
 ---
 
-## Détail des fusions
+## Modifications
 
-### Étape 2 : Explorez le Monde (fusion de 4 anciennes étapes)
-```
-Globe 3D + Filtres par pays/religion + Géolocalisation
-"Faites tourner le globe 3D, filtrez par pays, religion ou type 
-de monument, et découvrez les lieux près de chez vous avec la géolocalisation."
-```
+### 1. Fichier : `tailwind.config.ts`
 
-### Étape 3 : Assistant Sacred World (NOUVELLE)
-```
-Mode Aide + Mode Histoire
-"Posez vos questions à l'assistant ! Mode « Aide » pour naviguer 
-dans l'app, mode « Histoire » pour découvrir l'histoire des lieux sacrés."
-```
-
-### Étape 4 : Gagnez des Points et Badges (fusion de 3 anciennes)
-```
-Visites vérifiées + Système XP + Badges
-"Validez vos visites par photo GPS+IA, gagnez des points (10 pts 
-par visite physique) et débloquez des badges exclusifs !"
-```
-
-### Étape 5 : Défis et Classements (fusion de 2 anciennes)
-```
-Défis quotidiens/hebdo + Classements
-"Relevez des défis quotidiens et hebdomadaires. Grimpez dans les 
-classements mondiaux, par pays et par religion !"
-```
-
-### Étape 6 : Communauté et Souvenirs (fusion de 3 anciennes)
-```
-Journal + Forum + Amis + Voyages
-"Créez vos souvenirs, partagez avec la communauté, ajoutez des 
-amis et planifiez vos itinéraires personnalisés."
-```
-
----
-
-## Avantages
-
-| Critère | Avant | Après |
-|---------|-------|-------|
-| Nombre d'étapes | 15 | **8** |
-| Temps estimé | ~5 min | **~2 min** |
-| Étape AR | ❌ Présente | ✅ Supprimée |
-| Assistant | ❌ Absent | ✅ Présent |
-
----
-
-## Fichier modifié
-
-| Fichier | Changements |
-|---------|-------------|
-| `src/pages/Splash.tsx` | Réécrire `tutorialSteps` (lignes 35-195) |
-
----
-
-## Section technique
-
-### Import à ajouter
-```typescript
-import { MessageCircle } from "lucide-react";
-```
-
-### Nouveau tableau `tutorialSteps`
+Ajouter de nouvelles keyframes pour des transitions plus élaborées :
 
 ```typescript
-const tutorialSteps: TutorialStep[] = [
-  // 1. Bienvenue
-  {
-    category: 'discovery',
-    icon: Globe,
-    title: "Bienvenue dans SacredWorld",
-    description: "Partez à la découverte des lieux sacrés et monuments culturels les plus emblématiques du monde entier. Une aventure spirituelle et culturelle vous attend !",
-    categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration",
-    ctaText: "Commencer l'Exploration",
-    ctaLink: "/welcome"
+keyframes: {
+  // ... existants ...
+  "slide-fade-left": {
+    "0%": { opacity: "1", transform: "translateX(0)" },
+    "100%": { opacity: "0", transform: "translateX(-30px)" }
   },
-  // 2. Explorez le Monde (fusion Globe + Filtres + Géoloc)
-  {
-    category: 'discovery',
-    icon: Globe,
-    title: "Explorez le Monde",
-    description: "Faites tourner le globe 3D interactif, filtrez par pays, religion ou type de monument, et découvrez les lieux près de chez vous grâce à la géolocalisation.",
-    categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration",
-    ctaText: "Voir le Globe 3D",
-    ctaLink: "/worldmap"
+  "slide-fade-right": {
+    "0%": { opacity: "1", transform: "translateX(0)" },
+    "100%": { opacity: "0", transform: "translateX(30px)" }
   },
-  // 3. Assistant Sacred World (NOUVEAU)
-  {
-    category: 'discovery',
-    icon: MessageCircle,
-    title: "Assistant Sacred World",
-    description: "Posez vos questions à l'assistant intelligent ! Mode « Aide » pour naviguer dans l'app, mode « Histoire » pour découvrir l'histoire des lieux sacrés.",
-    categoryColor: "hsl(var(--primary))",
-    categoryLabel: "Découverte & Exploration",
-    ctaText: "Essayer l'Assistant",
-    ctaLink: "/explore"
+  "slide-in-left": {
+    "0%": { opacity: "0", transform: "translateX(30px)" },
+    "100%": { opacity: "1", transform: "translateX(0)" }
   },
-  // 4. Points et Badges (fusion)
-  {
-    category: 'gamification',
-    icon: Trophy,
-    title: "Gagnez des Points et Badges",
-    description: "Validez vos visites par photo GPS+IA (10 pts/visite). Montez de niveau et débloquez des badges exclusifs pour 10, 25, 50, 100+ visites !",
-    categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression",
-    ctaText: "Voir Mon Profil",
-    ctaLink: "/profile"
-  },
-  // 5. Défis et Classements (fusion)
-  {
-    category: 'gamification',
-    icon: Target,
-    title: "Défis et Classements",
-    description: "Relevez des défis quotidiens et hebdomadaires pour gagner des bonus. Grimpez dans les classements mondiaux, par pays et par religion !",
-    categoryColor: "hsl(45 93% 47%)",
-    categoryLabel: "Gamification & Progression",
-    ctaText: "Voir les Défis",
-    ctaLink: "/profile"
-  },
-  // 6. Communauté et Souvenirs (fusion)
-  {
-    category: 'social',
-    icon: Users,
-    title: "Communauté et Souvenirs",
-    description: "Créez votre journal de voyage, partagez avec la communauté, ajoutez des amis et planifiez des itinéraires personnalisés jusqu'à 10 lieux.",
-    categoryColor: "hsl(270 60% 60%)",
-    categoryLabel: "Social & Communauté",
-    ctaText: "Voir la Communauté",
-    ctaLink: "/community"
-  },
-  // 7. Calendrier
-  {
-    category: 'calendar',
-    icon: Calendar,
-    title: "Calendrier Multi-Religieux",
-    description: "Consultez les événements de toutes les traditions. Activez les rappels personnalisés et explorez les vues année, mois, semaine ou jour.",
-    categoryColor: "hsl(217 91% 60%)",
-    categoryLabel: "Calendrier & Événements",
-    ctaText: "Voir le Calendrier",
-    ctaLink: "/calendar"
-  },
-  // 8. Personnalisation
-  {
-    category: 'personalization',
-    icon: Settings,
-    title: "Personnalisez Votre Expérience",
-    description: "Choisissez votre avatar, configurez votre profil public/privé, sélectionnez votre langue parmi 8 disponibles et gérez vos notifications.",
-    categoryColor: "hsl(142 71% 45%)",
-    categoryLabel: "Personnalisation",
-    ctaText: "Ouvrir les Paramètres",
-    ctaLink: "/settings"
-  },
-];
+  "slide-in-right": {
+    "0%": { opacity: "0", transform: "translateX(-30px)" },
+    "100%": { opacity: "1", transform: "translateX(0)" }
+  }
+}
+
+animation: {
+  // ... existants ...
+  "slide-fade-left": "slide-fade-left 0.3s ease-out forwards",
+  "slide-fade-right": "slide-fade-right 0.3s ease-out forwards",
+  "slide-in-left": "slide-in-left 0.4s ease-out forwards",
+  "slide-in-right": "slide-in-right 0.4s ease-out forwards"
+}
 ```
 
-### Icônes conservées
-- `Globe`, `MessageCircle` (nouveau), `Trophy`, `Target`, `Users`, `Calendar`, `Settings`
+---
 
-### Icônes supprimées
-- `Camera` (AR), `Compass`, `MapPin`, `CheckCircle`, `Award`, `TrendingUp`, `Heart`, `Route`
+### 2. Fichier : `src/pages/Splash.tsx`
+
+**2.1 Ajouter un état pour la direction et l'animation**
+
+```typescript
+const [isAnimating, setIsAnimating] = useState(false);
+const [animationDirection, setAnimationDirection] = useState<'next' | 'prev'>('next');
+```
+
+**2.2 Refactorer `handleTutorialNext`**
+
+Utiliser l'état React au lieu de `document.querySelector` :
+
+```typescript
+const handleTutorialNext = () => {
+  if (isAnimating) return; // Empêcher le spam de clics
+  
+  const nextStep = tutorialStep + 1;
+  if (nextStep < tutorialSteps.length) {
+    setIsAnimating(true);
+    setAnimationDirection('next');
+    
+    setTimeout(() => {
+      setTutorialStep(nextStep);
+      const newProgress = Math.max(tutorialProgress, nextStep + 1);
+      setTutorialProgress(newProgress);
+      localStorage.setItem('tutorialProgress', newProgress.toString());
+      
+      setTimeout(() => setIsAnimating(false), 400);
+    }, 300);
+  } else {
+    // Tutoriel terminé
+    setShowTutorial(false);
+    setTutorialStep(0);
+    localStorage.setItem('tutorialCompleted', 'true');
+    localStorage.setItem('tutorialProgress', tutorialSteps.length.toString());
+  }
+};
+```
+
+**2.3 Refactorer `handleTutorialPrev`**
+
+```typescript
+const handleTutorialPrev = () => {
+  if (isAnimating || tutorialStep === 0) return;
+  
+  setIsAnimating(true);
+  setAnimationDirection('prev');
+  
+  setTimeout(() => {
+    setTutorialStep(tutorialStep - 1);
+    setTimeout(() => setIsAnimating(false), 400);
+  }, 300);
+};
+```
+
+**2.4 Modifier le rendu du contenu avec classes dynamiques**
+
+Remplacer la classe statique `tutorial-content` par des classes conditionnelles :
+
+```tsx
+<div 
+  className={`flex flex-col items-center gap-6 py-4 transition-all duration-300 ${
+    isAnimating 
+      ? animationDirection === 'next' 
+        ? 'animate-slide-fade-left' 
+        : 'animate-slide-fade-right'
+      : animationDirection === 'next'
+        ? 'animate-slide-in-left'
+        : 'animate-slide-in-right'
+  }`}
+>
+```
+
+---
+
+## Résumé des changements
+
+| Fichier | Modifications |
+|---------|---------------|
+| `tailwind.config.ts` | +8 keyframes, +4 animations |
+| `src/pages/Splash.tsx` | Refactoring complet des handlers + classes dynamiques |
+
+---
+
+## Résultat attendu
+
+| Aspect | Avant | Après |
+|--------|-------|-------|
+| Méthode | DOM manipulation | État React |
+| Effet | Simple fade | Slide + fade directionnel |
+| Direction | Aucune | Gauche (suivant) / Droite (précédent) |
+| Protection spam | Non | Oui (via `isAnimating`) |
+| Fluidité | Basique | Transitions 60fps |
+
+---
+
+## Détails techniques
+
+### Timing des animations
+
+```text
+Clic Suivant →
+  ├── 0ms: setIsAnimating(true), direction='next'
+  ├── 0-300ms: animation slide-fade-left (sortie)
+  ├── 300ms: setTutorialStep(next)
+  ├── 300-700ms: animation slide-in-left (entrée)
+  └── 700ms: setIsAnimating(false)
+```
+
+### Classes CSS générées
+
+```css
+.animate-slide-fade-left {
+  animation: slide-fade-left 0.3s ease-out forwards;
+}
+
+.animate-slide-in-left {
+  animation: slide-in-left 0.4s ease-out forwards;
+}
+```
+
