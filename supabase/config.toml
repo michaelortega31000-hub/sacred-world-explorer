@@ -41,3 +41,6 @@ verify_jwt = true
 
 [functions.recalculate-storage-quota]
 verify_jwt = false
+
+[functions.sacred-assistant]
+verify_jwt = false
