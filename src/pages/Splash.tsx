@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import splashHero from '@/assets/splash-hero.webp';
 import splashHeroMobile from '@/assets/splash-hero-mobile.webp';
 import splashHeroTablet from '@/assets/splash-hero-tablet.webp';
@@ -139,12 +139,20 @@ const Splash = () => {
     return saved ? parseInt(saved, 10) : 0;
   });
 
+  const [searchParams] = useSearchParams();
+
   useEffect(() => {
     // Vérifier si l'utilisateur est connecté (sans redirection automatique)
     supabase.auth.getSession().then(({ data: { session } }) => {
       setIsLoggedIn(!!session);
     });
-  }, []);
+
+    // Ouvrir automatiquement le tutoriel si paramètre URL présent
+    if (searchParams.get('tutorial') === 'true') {
+      setShowTutorial(true);
+      setTutorialStep(0);
+    }
+  }, [searchParams]);
 
   const handleStartExploration = (e: React.MouseEvent) => {
     e.stopPropagation();
