@@ -130,6 +130,8 @@ const Splash = () => {
   const [showTutorial, setShowTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [animationDirection, setAnimationDirection] = useState<'next' | 'prev'>('next');
   
   // Charger la progression du tutoriel depuis localStorage
   const [tutorialProgress, setTutorialProgress] = useState(() => {
@@ -183,29 +185,22 @@ const Splash = () => {
   };
 
   const handleTutorialNext = () => {
+    if (isAnimating) return;
+    
     const nextStep = tutorialStep + 1;
     if (nextStep < tutorialSteps.length) {
-      // Animation de sortie puis entrée
-      const content = document.querySelector('.tutorial-content');
-      if (content) {
-        content.classList.add('animate-fade-out');
-        setTimeout(() => {
-          setTutorialStep(nextStep);
-          // Sauvegarder la progression
-          const newProgress = Math.max(tutorialProgress, nextStep + 1);
-          setTutorialProgress(newProgress);
-          localStorage.setItem('tutorialProgress', newProgress.toString());
-          content.classList.remove('animate-fade-out');
-          content.classList.add('animate-fade-in');
-        }, 200);
-      } else {
+      setIsAnimating(true);
+      setAnimationDirection('next');
+      
+      setTimeout(() => {
         setTutorialStep(nextStep);
         const newProgress = Math.max(tutorialProgress, nextStep + 1);
         setTutorialProgress(newProgress);
         localStorage.setItem('tutorialProgress', newProgress.toString());
-      }
+        
+        setTimeout(() => setIsAnimating(false), 400);
+      }, 300);
     } else {
-      // Tutoriel terminé
       setShowTutorial(false);
       setTutorialStep(0);
       localStorage.setItem('tutorialCompleted', 'true');
@@ -214,19 +209,15 @@ const Splash = () => {
   };
 
   const handleTutorialPrev = () => {
-    if (tutorialStep > 0) {
-      const content = document.querySelector('.tutorial-content');
-      if (content) {
-        content.classList.add('animate-fade-out');
-        setTimeout(() => {
-          setTutorialStep(tutorialStep - 1);
-          content.classList.remove('animate-fade-out');
-          content.classList.add('animate-fade-in');
-        }, 200);
-      } else {
-        setTutorialStep(tutorialStep - 1);
-      }
-    }
+    if (isAnimating || tutorialStep === 0) return;
+    
+    setIsAnimating(true);
+    setAnimationDirection('prev');
+    
+    setTimeout(() => {
+      setTutorialStep(tutorialStep - 1);
+      setTimeout(() => setIsAnimating(false), 400);
+    }, 300);
   };
 
   const handleSkipTutorial = () => {
@@ -371,7 +362,17 @@ const Splash = () => {
             </DialogTitle>
           </DialogHeader>
           
-          <div className="flex flex-col items-center gap-6 py-4 tutorial-content">
+          <div 
+            className={`flex flex-col items-center gap-6 py-4 ${
+              isAnimating 
+                ? animationDirection === 'next' 
+                  ? 'animate-slide-fade-left' 
+                  : 'animate-slide-fade-right'
+                : animationDirection === 'next'
+                  ? 'animate-slide-in-left'
+                  : 'animate-slide-in-right'
+            }`}
+          >
             <div className="relative animate-scale-in" style={{ animationDelay: '200ms' }}>
               {/* Glow pulsant en arrière-plan */}
               <div 
