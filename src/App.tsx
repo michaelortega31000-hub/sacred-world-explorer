@@ -2,9 +2,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider } from "./contexts/AppContext";
 import "./i18n/config";
+import AssistantChat from "./components/AssistantChat";
 import Splash from "./pages/Splash";
 import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
@@ -28,12 +29,25 @@ import SecurityTest from "./pages/SecurityTest";
 
 const queryClient = new QueryClient();
 
+// Wrapper component to conditionally render AssistantChat
+const AssistantWrapper = () => {
+  const location = useLocation();
+  const hiddenPaths = ["/", "/auth"];
+  
+  if (hiddenPaths.includes(location.pathname)) {
+    return null;
+  }
+  
+  return <AssistantChat />;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AppProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
+        <AssistantWrapper />
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
