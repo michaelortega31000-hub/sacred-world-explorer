@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { getAllPlaces } from '@/data/placesData';
+import { usePlaces } from '@/hooks/usePlaces';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -112,8 +113,9 @@ const PlaceDetail = () => {
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
 
-  const allPlaces = getAllPlaces();
-  const place = allPlaces.find(p => p.id === placeId);
+  // Use merged places from database + local
+  const { data: allMergedPlaces = [] } = usePlaces();
+  const place = allMergedPlaces.find(p => p.id === placeId);
 
   useEffect(() => {
     if (!place) {
