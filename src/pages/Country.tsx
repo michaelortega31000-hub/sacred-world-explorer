@@ -7,9 +7,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock, Utensils } from 'lucide-react';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock, Utensils, Loader2 } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
-import { getPlacesByCountry, getAllCountries } from '@/data/placesData';
+import { usePlacesByCountry, useAllCountries } from '@/hooks/usePlaces';
 import RankingTab from '@/components/RankingTab';
 import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
@@ -45,25 +45,27 @@ const Country = () => {
   // Get active tab from URL or default to 'places'
   const activeTab = searchParams.get('tab') || 'places';
   
-  const places = country ? getPlacesByCountry(country) : [];
-  const allCountries = getAllCountries().sort((a, b) => {
+  // Use the hybrid hook to get merged places (DB + local)
+  const { places, isLoading: placesLoading } = usePlacesByCountry(country);
+  const { countries: allCountries, isLoading: countriesLoading } = useAllCountries();
+  
+  const sortedCountries = allCountries.sort((a, b) => {
     const nameA = t(`countries.${a}`, a);
     const nameB = t(`countries.${b}`, b);
     return nameA.localeCompare(nameB);
   });
 
-  // Avertir si aucun monument trouvé
+  // Avertir si aucun monument trouvé (only after loading)
   useEffect(() => {
-    if (country && places.length === 0) {
+    if (country && !placesLoading && places.length === 0) {
       console.warn(`⚠️ Aucun monument trouvé pour le pays: "${country}"`);
-      console.log('💡 Pays disponibles dans la base:', getAllCountries());
       
       toast.error(
         `Aucun monument trouvé pour "${country}". Vérifiez le nom du pays.`,
         { duration: 5000 }
       );
     }
-  }, [country, places.length]);
+  }, [country, places.length, placesLoading]);
 
   // Group places by city
   const citiesByLetter = Object.entries(
@@ -268,7 +270,7 @@ const Country = () => {
               <SelectValue placeholder="Choisir un pays" />
             </SelectTrigger>
             <SelectContent className="max-h-[400px] bg-card border-border z-50">
-              {allCountries.map((countryName) => (
+              {sortedCountries.map((countryName) => (
                 <SelectItem key={countryName} value={countryName}>
                   {t(`countries.${countryName}`, countryName)}
                 </SelectItem>
@@ -356,7 +358,14 @@ const Country = () => {
               {t(`countries.${country}`, country)}
             </h1>
             <p className="text-muted-foreground mb-8">
-              {places.length} {places.length === 1 ? 'lieu sacré' : 'lieux sacrés'}
+              {placesLoading ? (
+                <span className="flex items-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Chargement...
+                </span>
+              ) : (
+                `${places.length} ${places.length === 1 ? 'lieu sacré' : 'lieux sacrés'}`
+              )}
             </p>
 
             {/* Group places by city */}

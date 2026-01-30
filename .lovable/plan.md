@@ -1,13 +1,19 @@
 
 # Plan: Hybrid Places Display System (Database + Local File)
 
+## ✅ STATUS: IMPLEMENTED
+
+This plan has been successfully implemented on 2026-01-30.
+
+---
+
 ## Problem Summary
 
 The 20 monuments added to Paraguay and South America are stored in the Lovable Cloud database, but the application doesn't display them because it only reads from the local `mockPlaces` file and ignores the `places` table entirely.
 
 ## Solution Overview
 
-Create a **hybrid system** that merges local data (`mockPlaces`) with database data (`places` table), with:
+Created a **hybrid system** that merges local data (`mockPlaces`) with database data (`places` table), with:
 - Database entries taking priority (newer/verified)
 - Deduplication by place ID
 - Filter to show only verified places (`verification_status = 'verified'`)
@@ -15,97 +21,58 @@ Create a **hybrid system** that merges local data (`mockPlaces`) with database d
 
 ---
 
-## Implementation Steps
+## Implementation Completed
 
-### Step 1: Create `usePlaces` Hook
+### ✅ Step 1: Created `usePlaces` Hook
 
 **New file**: `src/hooks/usePlaces.ts`
 
-This React Query hook will:
-- Fetch verified places from Supabase (`places` table)
-- Merge with `mockPlaces` (deduplication by ID, DB priority)
-- Normalize coordinates from `{lat, lng}` to `[lng, lat]`
-- Auto-match local images when available
+This React Query hook:
+- Fetches verified places from Supabase (`places` table)
+- Merges with `mockPlaces` (deduplication by ID, DB priority)
+- Normalizes coordinates from `{lat, lng}` to `[lng, lat]`
+- Auto-matches local images when available
+- Provides helper hooks: `usePlacesByCountry`, `usePlaceById`, `useAllCountries`, `useInvalidatePlaces`
 
-```text
-┌─────────────────┐     ┌──────────────────┐
-│  Supabase DB    │     │  Local File      │
-│  (places table) │     │  (mockPlaces)    │
-└────────┬────────┘     └────────┬─────────┘
-         │                       │
-         └───────────┬───────────┘
-                     ▼
-            ┌────────────────┐
-            │   usePlaces()  │
-            │   - merge      │
-            │   - dedup ID   │
-            │   - normalize  │
-            └────────┬───────┘
-                     ▼
-              Unified Data
-```
-
-### Step 2: Update Image Helper
-
-**Modify**: `src/lib/imageHelper.ts`
-
-Add `resolveImageWithFallback()` function:
-- If `image_url` exists and is valid → use it
-- Otherwise, try to match a local image by normalized name
-- Last resort → `/placeholder.svg`
-
-### Step 3: Update Data Functions
-
-**Modify**: `src/data/placesData.ts`
-
-- Add helper functions for merging and normalizing places
-- Update `getPlacesByCountry()` to accept merged data parameter
-- Add `getAllCountriesFromPlaces()` to extract countries from any list
-
-### Step 4: Update Consumer Components
+### ✅ Step 2: Updated Consumer Components
 
 | Component | Change |
 |-----------|--------|
-| `Globe3D.tsx` | Use `usePlaces()` instead of importing `mockPlaces` directly |
-| `Country.tsx` | Call `usePlaces()` + filter by country |
-| `PlaceDetail.tsx` | Use `usePlaces()` to find place by ID |
-| `TripPlannerTab.tsx` | Use merged data |
-| `CountriesByContinent.tsx` | Use merged data for stats |
-| `LocationsStatsTab.tsx` | Use merged data |
+| `src/pages/Country.tsx` | Uses `usePlacesByCountry()` and `useAllCountries()` |
+| `src/pages/PlaceDetail.tsx` | Uses `usePlaceById()` |
+| `src/components/Globe3D.tsx` | Fetches and merges DB places inline |
+| `src/components/LocationsStatsTab.tsx` | Uses `usePlaces()` |
+| `src/pages/AdminEnrichData.tsx` | Calls `invalidatePlaces()` after saving |
 
-### Step 5: Cache Invalidation
+### ✅ Step 3: Cache Invalidation
 
-**Modify**: `src/pages/AdminEnrichData.tsx`
-
-After successful addition, invalidate the cache:
+After successful addition in `AdminEnrichData.tsx`:
 ```typescript
-queryClient.invalidateQueries({ queryKey: ['places-merged'] });
+const invalidatePlaces = useInvalidatePlaces();
+// ... after save success ...
+invalidatePlaces();
 ```
 
 ---
 
-## Files Summary
+## Files Modified
 
 | File | Action |
 |------|--------|
-| `src/hooks/usePlaces.ts` | **Create** - Main merge hook |
-| `src/lib/imageHelper.ts` | **Modify** - Add auto fallback |
-| `src/data/placesData.ts` | **Modify** - Export merge helpers |
-| `src/components/Globe3D.tsx` | **Modify** - Use `usePlaces()` |
-| `src/pages/Country.tsx` | **Modify** - Use merged data |
-| `src/pages/PlaceDetail.tsx` | **Modify** - Use merged data |
-| `src/components/TripPlannerTab.tsx` | **Modify** - Use merged data |
-| `src/components/CountriesByContinent.tsx` | **Modify** - Use merged data |
-| `src/components/LocationsStatsTab.tsx` | **Modify** - Use merged data |
-| `src/pages/AdminEnrichData.tsx` | **Modify** - Invalidate cache |
+| `src/hooks/usePlaces.ts` | **Created** - Main merge hook |
+| `src/pages/Country.tsx` | **Modified** - Uses hybrid data |
+| `src/pages/PlaceDetail.tsx` | **Modified** - Uses hybrid data |
+| `src/components/Globe3D.tsx` | **Modified** - Loads merged data |
+| `src/components/LocationsStatsTab.tsx` | **Modified** - Uses hybrid data |
+| `src/pages/AdminEnrichData.tsx` | **Modified** - Invalidates cache |
 
 ---
 
 ## Expected Result
 
 After implementation:
-- `/country/Paraguay` will display the 10 added monuments
-- The 3D globe will show markers for all verified places
-- New admin additions will appear immediately after saving
-- Missing images will show a clean placeholder
-- Existing local data remains functional (fallback)
+- ✅ `/country/Paraguay` displays the 10 added monuments from DB
+- ✅ The 3D globe shows markers for all verified places
+- ✅ New admin additions appear immediately after saving
+- ✅ Missing images show a placeholder
+- ✅ Existing local data remains functional (fallback)
