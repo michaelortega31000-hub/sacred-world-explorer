@@ -1,6 +1,4 @@
-import React, { useRef, useMemo } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Sphere, Line } from "@react-three/drei";
+import React, { useRef, useMemo, useState, useEffect, Suspense } from "react";
 import * as THREE from "three";
 
 export type ItineraryPlace = {
@@ -9,6 +7,19 @@ export type ItineraryPlace = {
   lat: number;
   lng: number;
 };
+
+// Check WebGL support
+function isWebGLAvailable(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    return !!(
+      window.WebGLRenderingContext &&
+      (canvas.getContext('webgl') || canvas.getContext('experimental-webgl'))
+    );
+  } catch (e) {
+    return false;
+  }
+}
 
 function isFiniteNumber(n: unknown): n is number {
   return typeof n === "number" && Number.isFinite(n);
@@ -44,87 +55,21 @@ function createArcPoints(start: THREE.Vector3, end: THREE.Vector3, segments: num
   return points;
 }
 
-// Rotating globe mesh
-function RotatingGlobe({ autoRotateSpeed }: { autoRotateSpeed: number }) {
-  const globeRef = useRef<THREE.Mesh>(null);
-  
-  useFrame((_, delta) => {
-    if (globeRef.current) {
-      globeRef.current.rotation.y += delta * autoRotateSpeed * 0.5;
-    }
-  });
-
+// Static fallback component
+function StaticFallback() {
   return (
-    <Sphere ref={globeRef} args={[1, 64, 64]}>
-      <meshStandardMaterial
-        color="#1a365d"
-        roughness={0.8}
-        metalness={0.2}
-        emissive="#0E1B3F"
-        emissiveIntensity={0.1}
-      />
-    </Sphere>
+    <div className="absolute inset-0 bg-gradient-to-b from-[#0E1B3F] via-[#1a365d] to-[#0E1B3F]">
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-1/4 left-1/4 w-2 h-2 bg-primary rounded-full animate-pulse" />
+        <div className="absolute top-1/3 right-1/3 w-1.5 h-1.5 bg-primary/80 rounded-full animate-pulse delay-300" />
+        <div className="absolute bottom-1/3 left-1/2 w-2 h-2 bg-primary rounded-full animate-pulse delay-700" />
+      </div>
+    </div>
   );
 }
 
-// Trip markers and arcs
-function TripVisualization({ places }: { places: ItineraryPlace[] }) {
-  const groupRef = useRef<THREE.Group>(null);
-  
-  useFrame((_, delta) => {
-    if (groupRef.current) {
-      groupRef.current.rotation.y += delta * 0.09;
-    }
-  });
-
-  const cleanPlaces = useMemo(() => {
-    return places.filter(p => isFiniteNumber(p.lat) && isFiniteNumber(p.lng));
-  }, [places]);
-
-  const markers = useMemo(() => {
-    return cleanPlaces.map(place => latLngToVector3(place.lat, place.lng, 1.02));
-  }, [cleanPlaces]);
-
-  const arcs = useMemo(() => {
-    if (cleanPlaces.length < 2) return [];
-    
-    const arcsList: THREE.Vector3[][] = [];
-    for (let i = 0; i < cleanPlaces.length - 1; i++) {
-      const start = latLngToVector3(cleanPlaces[i].lat, cleanPlaces[i].lng, 1.02);
-      const end = latLngToVector3(cleanPlaces[i + 1].lat, cleanPlaces[i + 1].lng, 1.02);
-      arcsList.push(createArcPoints(start, end));
-    }
-    return arcsList;
-  }, [cleanPlaces]);
-
-  return (
-    <group ref={groupRef}>
-      {/* Markers for each destination */}
-      {markers.map((position, idx) => (
-        <mesh key={idx} position={position}>
-          <sphereGeometry args={[0.02, 16, 16]} />
-          <meshStandardMaterial
-            color="#F4C542"
-            emissive="#F4C542"
-            emissiveIntensity={0.8}
-          />
-        </mesh>
-      ))}
-      
-      {/* Arcs connecting destinations */}
-      {arcs.map((arcPoints, idx) => (
-        <Line
-          key={`arc-${idx}`}
-          points={arcPoints}
-          color="#F4C542"
-          lineWidth={2}
-          transparent
-          opacity={0.8}
-        />
-      ))}
-    </group>
-  );
-}
+// Lazy-loaded 3D content
+const Globe3DContent = React.lazy(() => import('./ItineraryGlobe3D'));
 
 export default function ItineraryGlobe({
   places,
@@ -133,36 +78,66 @@ export default function ItineraryGlobe({
   places: ItineraryPlace[];
   autoRotateSpeed?: number;
 }) {
+  const [webGLSupported, setWebGLSupported] = useState<boolean | null>(null);
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setWebGLSupported(isWebGLAvailable());
+  }, []);
+
+  // Filter valid places
+  const cleanPlaces = useMemo(() => {
+    return places.filter(p => isFiniteNumber(p.lat) && isFiniteNumber(p.lng));
+  }, [places]);
+
+  // Loading state
+  if (webGLSupported === null) {
+    return <StaticFallback />;
+  }
+
+  // No WebGL or error occurred
+  if (!webGLSupported || hasError) {
+    return <StaticFallback />;
+  }
+
   return (
     <div className="absolute inset-0 pointer-events-none">
-      <Canvas
-        camera={{ position: [0, 0, 2.5], fov: 45 }}
-        style={{ background: 'transparent' }}
-      >
-        <ambientLight intensity={0.3} />
-        <directionalLight position={[5, 3, 5]} intensity={0.8} />
-        <pointLight position={[-5, -3, -5]} intensity={0.3} color="#34E0A1" />
-        
-        <RotatingGlobe autoRotateSpeed={autoRotateSpeed} />
-        <TripVisualization places={places} />
-        
-        {/* Atmosphere glow effect */}
-        <Sphere args={[1.05, 32, 32]}>
-          <meshBasicMaterial
-            color="#34E0A1"
-            transparent
-            opacity={0.08}
-            side={THREE.BackSide}
+      <ErrorBoundary onError={() => setHasError(true)}>
+        <Suspense fallback={<StaticFallback />}>
+          <Globe3DContent 
+            places={cleanPlaces} 
+            autoRotateSpeed={autoRotateSpeed}
+            latLngToVector3={latLngToVector3}
+            createArcPoints={createArcPoints}
           />
-        </Sphere>
-        
-        <OrbitControls
-          enableZoom={false}
-          enablePan={false}
-          enableRotate={false}
-          autoRotate={false}
-        />
-      </Canvas>
+        </Suspense>
+      </ErrorBoundary>
     </div>
   );
+}
+
+// Simple error boundary
+class ErrorBoundary extends React.Component<
+  { children: React.ReactNode; onError: () => void },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode; onError: () => void }) {
+    super(props);
+    this.state = { hasError: false };
+  }
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch() {
+    this.props.onError();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return null;
+    }
+    return this.props.children;
+  }
 }
