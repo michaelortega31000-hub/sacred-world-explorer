@@ -5,8 +5,8 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { migratePlacesToSupabase } from '@/utils/migratePlacesData';
 import Header from '@/components/Header';
-import { ArrowLeft, Database, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus } from 'lucide-react';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Admin = () => {
   const [isMigrating, setIsMigrating] = useState(false);
@@ -79,6 +79,20 @@ const Admin = () => {
                   Outils de gestion de la base de données
                 </p>
               </div>
+            </div>
+
+            {/* Data Enrichment Section */}
+            <div className="border-t pt-6">
+              <h2 className="text-xl font-semibold mb-4">Enrichissement des données</h2>
+              <p className="text-muted-foreground mb-4">
+                Ajoutez de nouveaux lieux sacrés avec des sources vérifiées (Wikipedia, UNESCO, etc.)
+              </p>
+              <Link to="/admin/enrich-data">
+                <Button size="lg" variant="outline">
+                  <BookPlus className="mr-2 h-4 w-4" />
+                  Enrichir les données
+                </Button>
+              </Link>
             </div>
 
             <div className="border-t pt-6">
