@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -45,6 +46,10 @@ Style de narration :
 - Accessible à tous les publics
 
 Si l'utilisateur mentionne un lieu spécifique, concentre-toi sur ce lieu.`;
+
+// Rate limiting: 20 requests per hour per user
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MINUTES = 60;
 
 // Quick replies mapping based on route
 const getQuickReplies = (route: string, mode: string): string => {
@@ -129,12 +134,104 @@ serve(async (req) => {
   }
 
   try {
+    // Authentication validation
+    const authHeader = req.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      console.error('Missing or invalid Authorization header');
+      return new Response(
+        JSON.stringify({ error: 'Authentification requise' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    
+    const supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } }
+    });
+
+    // Validate JWT and get user
+    const token = authHeader.replace('Bearer ', '');
+    const { data: claimsData, error: claimsError } = await supabase.auth.getClaims(token);
+    
+    if (claimsError || !claimsData?.claims) {
+      console.error('JWT validation failed:', claimsError);
+      return new Response(
+        JSON.stringify({ error: 'Token invalide ou expiré' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    const userId = claimsData.claims.sub;
+    if (!userId) {
+      return new Response(
+        JSON.stringify({ error: 'Utilisateur non identifié' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Rate limiting check
+    const windowStart = new Date(Date.now() - RATE_LIMIT_WINDOW_MINUTES * 60 * 1000).toISOString();
+    
+    const { data: rateLimitData, error: rateLimitError } = await supabase
+      .from('rate_limits')
+      .select('count, window_start')
+      .eq('user_id', userId)
+      .eq('action', 'sacred_assistant')
+      .gte('window_start', windowStart)
+      .maybeSingle();
+
+    if (rateLimitError && rateLimitError.code !== 'PGRST116') {
+      console.error('Rate limit check error:', rateLimitError);
+    }
+
+    const currentCount = rateLimitData?.count || 0;
+
+    if (currentCount >= RATE_LIMIT_MAX) {
+      console.log(`Rate limit exceeded for user ${userId}: ${currentCount}/${RATE_LIMIT_MAX}`);
+      return new Response(
+        JSON.stringify({ 
+          error: 'Limite de requêtes atteinte. Veuillez réessayer dans une heure.',
+          retryAfter: RATE_LIMIT_WINDOW_MINUTES * 60
+        }),
+        { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Update rate limit counter
+    if (rateLimitData) {
+      await supabase
+        .from('rate_limits')
+        .update({ count: currentCount + 1, updated_at: new Date().toISOString() })
+        .eq('user_id', userId)
+        .eq('action', 'sacred_assistant')
+        .gte('window_start', windowStart);
+    } else {
+      await supabase
+        .from('rate_limits')
+        .insert({
+          user_id: userId,
+          action: 'sacred_assistant',
+          count: 1,
+          window_start: new Date().toISOString()
+        });
+    }
+
     const { message, mode, currentRoute, selectedPlaceId } = await req.json();
 
     // Validation
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return new Response(
         JSON.stringify({ error: 'Message is required' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Limit message length to prevent abuse
+    if (message.length > 2000) {
+      return new Response(
+        JSON.stringify({ error: 'Message trop long (max 2000 caractères)' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
