@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { getImageUrl } from '@/lib/imageHelper';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import TripRouteMap from './TripRouteMap';
+
 import ItineraryGlobe from './ItineraryGlobe';
 
 interface SavedRestaurant {
@@ -365,10 +365,6 @@ const TripPlannerTab = () => {
                 </Card>
               )}
 
-              {/* Interactive Route Map */}
-              {showOptimizedRoute && startingCity && optimizedRoute.length > 0 && (
-                <TripRouteMap places={optimizedRoute} />
-              )}
 
               {/* Summary */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
