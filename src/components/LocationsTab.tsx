@@ -13,7 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getImageUrl } from '@/lib/imageHelper';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
-import TripRouteMap from './TripRouteMap';
+
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import type { SavedPOI } from '@/contexts/AppContext';
@@ -1224,12 +1224,6 @@ const LocationsTab = () => {
                         </CardContent>
                       </Card>
 
-                       {/* Interactive Route Map */}
-                      <TripRouteMap 
-                        places={displayRoute} 
-                        savedPOIs={userProgress.savedPOIs}
-                        onMapReady={(captureFn) => setCaptureMapFn(() => captureFn)}
-                      />
 
 
                       {/* Points d'arrêt suggérés */}
