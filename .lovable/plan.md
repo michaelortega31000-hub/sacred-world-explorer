@@ -1,148 +1,256 @@
 
+# Plan: Enrich Sacred Places Data with Verified Internet Sources
 
-# Plan : Effet Sparkle/Glow au clic sur un pays du globe
+## Understanding Your Request
 
-## Résumé
-
-Ajouter un effet visuel de type "étoiles scintillantes" qui s'affiche à la position du clic lorsqu'on sélectionne un pays sur le globe 3D. L'effet utilisera la bibliothèque `canvas-confetti` déjà installée dans le projet.
-
----
-
-## Approche technique
-
-Le projet utilise déjà `canvas-confetti` pour les effets de célébration (badges, challenges). On va créer une configuration spécifique pour un effet "sparkle" avec des étoiles dorées/blanches qui partent de la position exacte du clic.
+You want to:
+1. **Find reliable information** about sacred monuments, cathedrals, temples from trusted internet sources
+2. **Verify the data is accurate** before adding it to the application
+3. **Expand the database** with new places that aren't currently in the app
 
 ---
 
-## Modifications
+## Current State
 
-### 1. Créer un hook dédié : `src/hooks/useCountrySparkle.ts`
+- **200+ sacred places** already in `placesData.ts` with curated descriptions
+- Data is manually written and verified
+- Database has a `places` table ready to store new places
+- No automated data enrichment system exists yet
 
-Nouveau fichier qui encapsule la logique de l'effet sparkle :
+---
+
+## Proposed Solution: Two-Tier Data Enrichment
+
+### Option A: Admin-Curated Enrichment (Recommended - Most Accurate)
+
+Create an **admin interface** where you can:
+1. Search for a sacred place using web search (Perplexity or Firecrawl)
+2. Review the sources and verify accuracy
+3. Edit and approve the description before saving to database
+4. Mark the source as verified (Wikipedia, UNESCO, official site)
+
+```text
+┌─────────────────────────────────────────────────────────────────┐
+│                    ADMIN DATA ENRICHMENT                         │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                  │
+│  [Search: "Hagia Sophia Istanbul" ]  [🔎 Search Web]             │
+│                                                                  │
+│  ─────────────────────────────────────────────────────────────   │
+│  SOURCES FOUND:                                                  │
+│                                                                  │
+│  📖 Wikipedia (en.wikipedia.org)                                 │
+│  ✓ "Built 537 AD by Emperor Justinian I..."                      │
+│                                                                  │
+│  🏛️ UNESCO World Heritage (whc.unesco.org)                       │
+│  ✓ "Outstanding universal value... Byzantine architecture..."   │
+│                                                                  │
+│  🏫 Official Site (ayasofyamuzesi.gov.tr)                        │
+│  ✓ "Museum hours: 9am-7pm..."                                    │
+│                                                                  │
+│  ─────────────────────────────────────────────────────────────   │
+│  COMPILED DESCRIPTION:                                           │
+│                                                                  │
+│  ┌────────────────────────────────────────────────────────────┐  │
+│  │ Hagia Sophia, built in 537 AD under Emperor Justinian I,  │  │
+│  │ was the world's largest cathedral for nearly 1000 years.  │  │
+│  │ Originally a Byzantine church, converted to mosque in     │  │
+│  │ 1453, museum in 1934, and mosque again in 2020...          │  │
+│  └────────────────────────────────────────────────────────────┘  │
+│                                                                  │
+│  Sources: ☑ Wikipedia  ☑ UNESCO  ☑ Official                      │
+│  Verified by: Admin                                              │
+│                                                                  │
+│  [Save to Database]  [Discard]                                   │
+│                                                                  │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+**Benefits:**
+- Human verification ensures 100% accuracy
+- Sources are tracked and can be cited
+- No hallucinations possible - only approved data enters the system
+
+---
+
+### Option B: Automated Enrichment with Citations (Faster but requires review)
+
+Use **Perplexity API** (search with citations) to automatically gather information, then store with source URLs for verification:
+
+```text
+User adds: "Angkor Wat, Cambodia"
+     ↓
+System calls Perplexity search API
+     ↓
+Returns: {
+  content: "Angkor Wat is a Hindu-Buddhist temple complex...",
+  citations: [
+    "https://whc.unesco.org/en/list/668",
+    "https://en.wikipedia.org/wiki/Angkor_Wat"
+  ]
+}
+     ↓
+Stored with sources for admin review
+     ↓
+Admin approves → data becomes active
+```
+
+---
+
+## Technical Implementation
+
+### Step 1: Connect Perplexity or Firecrawl
+
+We can use connectors to access web search with citations:
+
+| Connector | Purpose | Accuracy |
+|-----------|---------|----------|
+| **Perplexity** | AI search with source citations | High - cites reliable sources |
+| **Firecrawl** | Scrape specific sites (Wikipedia, UNESCO) | Very High - exact source content |
+
+### Step 2: Database Schema Update
+
+Add source tracking to the places table:
+
+```sql
+ALTER TABLE places ADD COLUMN IF NOT EXISTS source_urls TEXT[];
+ALTER TABLE places ADD COLUMN IF NOT EXISTS verified_by UUID;
+ALTER TABLE places ADD COLUMN IF NOT EXISTS verified_at TIMESTAMPTZ;
+ALTER TABLE places ADD COLUMN IF NOT EXISTS data_source TEXT; -- 'manual', 'wikipedia', 'unesco', 'perplexity'
+```
+
+### Step 3: Create Admin Enrichment Page
+
+New admin page for data curation:
+
+```text
+/admin/enrich-data
+  ├── Search web for place information
+  ├── Display sources with citations
+  ├── Allow editing before saving
+  └── Track verification status
+```
+
+### Step 4: Edge Function for Web Search
+
+Create `enrich-place-data` edge function:
 
 ```typescript
-import confetti from 'canvas-confetti';
+// supabase/functions/enrich-place-data/index.ts
 
-export const useCountrySparkle = () => {
-  const triggerSparkle = (x: number, y: number) => {
-    // Position normalisée (0-1) pour canvas-confetti
-    const originX = x / window.innerWidth;
-    const originY = y / window.innerHeight;
+// 1. Search reliable sources only
+const reliableSources = [
+  'wikipedia.org',
+  'whc.unesco.org', // UNESCO World Heritage
+  'britannica.com',
+  'sacred-destinations.com'
+];
 
-    // Premier burst - étoiles dorées
-    confetti({
-      particleCount: 25,
-      spread: 60,
-      origin: { x: originX, y: originY },
-      colors: ['#F4C542', '#FFD700', '#FFF8E1', '#FFFFFF'],
-      shapes: ['star'],
-      scalar: 0.8,
-      gravity: 0.6,
-      ticks: 80,
-      startVelocity: 15,
-    });
+// 2. Get information with citations
+const result = await perplexity.search({
+  query: `${placeName} ${placeType} history architecture`,
+  search_domain_filter: reliableSources
+});
 
-    // Deuxième burst légèrement décalé - effet pétillant
-    setTimeout(() => {
-      confetti({
-        particleCount: 15,
-        spread: 40,
-        origin: { x: originX, y: originY },
-        colors: ['#34E0A1', '#FFFFFF', '#F4C542'],
-        shapes: ['circle'],
-        scalar: 0.5,
-        gravity: 0.4,
-        ticks: 60,
-        startVelocity: 10,
-      });
-    }, 50);
-  };
-
-  return { triggerSparkle };
+// 3. Return with sources for verification
+return {
+  description: result.content,
+  sources: result.citations,
+  requiresVerification: true
 };
 ```
 
 ---
 
-### 2. Modifier `src/components/Globe3D.tsx`
+## Reliable Sources to Use
 
-**2.1 Importer le hook**
-
-```typescript
-import { useCountrySparkle } from '@/hooks/useCountrySparkle';
-```
-
-**2.2 Initialiser le hook dans le composant**
-
-```typescript
-const { triggerSparkle } = useCountrySparkle();
-```
-
-**2.3 Déclencher l'effet au clic sur un pays** (lignes 1008-1028)
-
-Dans le handler de clic sur pays, juste après avoir détecté un pays valide et avant d'appeler `onCountryClick` :
-
-```typescript
-if (countryName) {
-  // Déclencher l'effet sparkle à la position du clic
-  triggerSparkle(e.point.x, e.point.y);
-  
-  console.log('🌍 Country clicked...', ...);
-  onCountryClick(countryName);
-}
-```
+| Source | Type | Reliability |
+|--------|------|-------------|
+| **Wikipedia** | Encyclopedia | High (cited, community-verified) |
+| **UNESCO World Heritage** | Official | Very High (expert-verified) |
+| **Britannica** | Encyclopedia | Very High (expert-written) |
+| **Official tourism boards** | Government | High (official sources) |
+| **Sacred-destinations.com** | Specialized | High (focused on sacred sites) |
 
 ---
 
-## Résultat visuel attendu
-
-| Élément | Description |
-|---------|-------------|
-| Forme | Étoiles + cercles |
-| Couleurs | Or (#F4C542), blanc (#FFFFFF), vert (#34E0A1) |
-| Durée | ~100ms d'animation |
-| Position | Exactement à l'endroit du clic |
-| Effet | Double burst pour un look "pétillant" |
-
----
-
-## Fichiers modifiés
-
-| Fichier | Changements |
-|---------|-------------|
-| `src/hooks/useCountrySparkle.ts` | Nouveau fichier (~30 lignes) |
-| `src/components/Globe3D.tsx` | +2 imports, +1 ligne dans le handler |
-
----
-
-## Avantages de cette approche
-
-1. **Réutilisable** : Le hook peut être utilisé ailleurs (clic sur monuments, etc.)
-2. **Cohérent** : Utilise la même bibliothèque que les autres effets du projet
-3. **Performant** : `canvas-confetti` est optimisé pour les animations
-4. **Personnalisable** : Facile d'ajuster couleurs, taille, nombre de particules
-
----
-
-## Section technique
-
-### Pourquoi `canvas-confetti` ?
-
-- Déjà installé dans le projet (v1.9.4)
-- Utilisé pour les badges (`useBadgeConfetti.ts`) et les challenges
-- Support natif des formes "star" et "circle"
-- API simple : `confetti({ origin: {x, y}, colors, shapes, ... })`
-
-### Positionnement précis
-
-Mapbox fournit `e.point.x` et `e.point.y` en pixels absolus. On les normalise en divisant par la taille de la fenêtre car `canvas-confetti` attend des valeurs entre 0 et 1.
-
-### Timing du double burst
+## Data Flow with Verification
 
 ```text
-Clic →
-  ├── 0ms: Burst #1 (étoiles dorées, 25 particules)
-  ├── 50ms: Burst #2 (cercles, 15 particules)
-  └── ~150ms: Fin de l'animation
+┌──────────────────────────────────────────────────────────────────┐
+│                         DATA ENRICHMENT FLOW                      │
+└──────────────────────────────────────────────────────────────────┘
+
+     ┌─────────────┐
+     │ Admin wants │
+     │ to add new  │
+     │ sacred place│
+     └──────┬──────┘
+            │
+            ▼
+     ┌─────────────┐
+     │ Search web  │
+     │ (Perplexity │
+     │ or Firecrawl│
+     └──────┬──────┘
+            │
+            ▼
+     ┌─────────────┐
+     │ Display     │
+     │ sources &   │
+     │ citations   │
+     └──────┬──────┘
+            │
+            ▼
+     ┌─────────────┐
+     │ Admin       │
+     │ reviews &   │◄─── HUMAN VERIFICATION
+     │ edits       │
+     └──────┬──────┘
+            │
+            ▼
+     ┌─────────────┐
+     │ Save with   │
+     │ source_urls │
+     │ & verified  │
+     └──────┬──────┘
+            │
+            ▼
+     ┌─────────────┐
+     │ Available   │
+     │ in app &    │
+     │ chatbot     │
+     └─────────────┘
 ```
 
+---
+
+## Files to Create/Modify
+
+| File | Purpose |
+|------|---------|
+| `supabase/functions/enrich-place-data/index.ts` | Edge function to search reliable sources |
+| `src/pages/AdminEnrichData.tsx` | Admin interface for data curation |
+| `src/components/admin/PlaceEnrichmentForm.tsx` | Form to search, review, and save |
+| Database migration | Add source_urls, verified_by columns |
+
+---
+
+## Summary
+
+| Approach | Speed | Accuracy | Effort |
+|----------|-------|----------|--------|
+| **Manual curation** | Slow | 100% | High |
+| **Admin-verified web search** | Medium | 100% | Medium |
+| **Automated with citations** | Fast | 95%+ | Low |
+
+**Recommendation:** Use **Admin-verified web search** - it combines speed (automated search) with accuracy (human verification before saving). The chatbot will only use data that has been reviewed and approved, ensuring zero hallucinations.
+
+---
+
+## Next Steps
+
+1. Connect Perplexity or Firecrawl connector for web search
+2. Add source tracking columns to places table
+3. Create admin enrichment interface
+4. Integrate verified data into chatbot context
