@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { getAllPlaces } from '@/data/placesData';
-import { MapPin, Globe2, Building2, Trophy, Flag, Users, ChevronRight, ArrowLeft } from 'lucide-react';
+import { usePlaces } from '@/hooks/usePlaces';
+import { MapPin, Globe2, Building2, Trophy, Flag, Users, ChevronRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +15,7 @@ import ReligionRankingTab from './ReligionRankingTab';
 const LocationsStatsTab = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const allPlaces = getAllPlaces();
+  const { data: allPlaces = [], isLoading } = usePlaces();
   
   const [selectedContinent, setSelectedContinent] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
@@ -205,12 +205,20 @@ const LocationsStatsTab = () => {
             </CardHeader>
             <CardContent>
               <div className="text-center">
-                <p className="text-6xl font-bold mb-2" style={{ color: 'hsl(45 100% 51%)' }}>
-                  {allPlaces.length}
-                </p>
-                <p className="text-muted-foreground text-lg">
-                  Monuments et édifices recensés dans le monde
-                </p>
+                {isLoading ? (
+                  <div className="flex items-center justify-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-6xl font-bold mb-2" style={{ color: 'hsl(45 100% 51%)' }}>
+                      {allPlaces.length}
+                    </p>
+                    <p className="text-muted-foreground text-lg">
+                      Monuments et édifices recensés dans le monde
+                    </p>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

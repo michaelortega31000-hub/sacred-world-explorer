@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { getAllPlaces } from '@/data/placesData';
+import { usePlaceById } from '@/hooks/usePlaces';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -109,19 +109,19 @@ const PlaceDetail = () => {
   
   const { position } = useGeolocation(true);
 
+  // Use the hybrid hook to get merged place data
+  const { place, isLoading: placeLoading } = usePlaceById(placeId);
+
   // Resolve via shared helper (fuzzy filename support)
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
 
-  const allPlaces = getAllPlaces();
-  const place = allPlaces.find(p => p.id === placeId);
-
   useEffect(() => {
-    if (!place) {
+    if (!placeLoading && !place) {
       navigate('/world');
-    } else {
+    } else if (place) {
       fetchCommunityPhotos();
     }
-  }, [place, navigate]);
+  }, [place, placeLoading, navigate]);
 
   const fetchCommunityPhotos = async () => {
     if (!placeId) return;
@@ -180,6 +180,15 @@ const PlaceDetail = () => {
       setLoadingPhotos(false);
     }
   };
+
+  // Show loading state
+  if (placeLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   if (!place) return null;
 

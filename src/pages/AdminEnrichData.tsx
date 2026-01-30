@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useInvalidatePlaces } from '@/hooks/usePlaces';
 import Header from '@/components/Header';
 import { ArrowLeft, Database, Plus, CheckCircle2, Link as LinkIcon, Trash2, ExternalLink } from 'lucide-react';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
@@ -78,6 +79,7 @@ const AdminEnrichData = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { isAdmin, loading: isAdminLoading } = useIsAdmin();
+  const invalidatePlaces = useInvalidatePlaces();
   const [isSaving, setIsSaving] = useState(false);
   const [formData, setFormData] = useState<PlaceFormData>({
     id: '',
@@ -166,6 +168,9 @@ const AdminEnrichData = () => {
         });
 
       if (error) throw error;
+
+      // Invalidate the places cache so new data appears immediately
+      invalidatePlaces();
 
       toast({
         title: "Lieu enregistré",

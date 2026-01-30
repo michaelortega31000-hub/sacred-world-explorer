@@ -622,13 +622,60 @@ const Globe3D = ({
         'star-intensity': 0.6
       });
 
-      // Load places data
-      const {
-        mockPlaces
-      } = await import('@/data/placesData');
-      allPlacesRef.current = mockPlaces;
-      console.log('📦 Loaded places:', mockPlaces.length);
-      console.log('📦 Sample places:', mockPlaces.slice(0, 5).map(p => ({
+      // Load places data from merged hook
+      const { usePlaces } = await import('@/hooks/usePlaces');
+      // We can't use hooks directly here, so we'll import the mock and fetch from DB
+      const { mockPlaces } = await import('@/data/placesData');
+      const { supabase } = await import('@/integrations/supabase/client');
+      
+      // Fetch verified places from DB
+      let mergedPlaces = [...mockPlaces];
+      try {
+        const { data: dbPlaces } = await supabase
+          .from('places')
+          .select('*')
+          .eq('verification_status', 'verified');
+        
+        if (dbPlaces && dbPlaces.length > 0) {
+          // Normalize DB places and merge
+          const dbIds = new Set(dbPlaces.map(p => p.id));
+          const uniqueLocal = mockPlaces.filter(p => !dbIds.has(p.id));
+          
+          const normalizedDb = dbPlaces.map(p => {
+            const coords = p.coordinates as any;
+            let normalizedCoords: [number, number];
+            if (Array.isArray(coords)) {
+              normalizedCoords = [Number(coords[0]), Number(coords[1])];
+            } else if (coords && typeof coords === 'object' && 'lat' in coords) {
+              normalizedCoords = [coords.lng, coords.lat];
+            } else {
+              normalizedCoords = [0, 0];
+            }
+            
+            return {
+              id: p.id,
+              name: p.name,
+              country: p.country,
+              city: p.city,
+              type: p.type,
+              description: p.description || '',
+              points: p.points_value || 50,
+              coordinates: normalizedCoords,
+              imageUrl: p.image_url || '/placeholder.svg',
+              religion: p.religion || undefined,
+            } as any; // Cast to Place type
+          });
+          
+          mergedPlaces = [...normalizedDb, ...uniqueLocal];
+          console.log(`📍 Globe: Merged ${mergedPlaces.length} places (${normalizedDb.length} from DB)`);
+        }
+      } catch (err) {
+        console.warn('Failed to fetch DB places for globe:', err);
+      }
+      
+      allPlacesRef.current = mergedPlaces;
+      console.log('📦 Loaded places:', mergedPlaces.length);
+      console.log('📦 Sample places:', mergedPlaces.slice(0, 5).map(p => ({
         id: p.id,
         name: p.name,
         coords: p.coordinates,
@@ -639,7 +686,7 @@ const Globe3D = ({
       if (tripPlaces && tripPlaces.length > 0) {
         console.log('🔍 Searching for trip places in loaded data:');
         tripPlaces.forEach(id => {
-          const found = mockPlaces.find(p => p.id === id);
+          const found = mergedPlaces.find(p => p.id === id);
           console.log(`  ${id}:`, found ? `✅ ${found.name}` : '❌ NOT FOUND');
         });
       }
