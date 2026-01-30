@@ -740,42 +740,57 @@ export type Database = {
           coordinates: Json
           country: string
           created_at: string
+          data_source: string | null
           description: string | null
           id: string
           image_url: string | null
           name: string
           points_value: number
           religion: string | null
+          source_urls: string[] | null
           type: string
           updated_at: string
+          verification_status: string | null
+          verified_at: string | null
+          verified_by: string | null
         }
         Insert: {
           city: string
           coordinates: Json
           country: string
           created_at?: string
+          data_source?: string | null
           description?: string | null
           id: string
           image_url?: string | null
           name: string
           points_value?: number
           religion?: string | null
+          source_urls?: string[] | null
           type: string
           updated_at?: string
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Update: {
           city?: string
           coordinates?: Json
           country?: string
           created_at?: string
+          data_source?: string | null
           description?: string | null
           id?: string
           image_url?: string | null
           name?: string
           points_value?: number
           religion?: string | null
+          source_urls?: string[] | null
           type?: string
           updated_at?: string
+          verification_status?: string | null
+          verified_at?: string | null
+          verified_by?: string | null
         }
         Relationships: []
       }
