@@ -3068,12 +3068,18 @@ export const mockPlaces: Place[] = [
   }
 ];
 
-export const getPlacesByCountry = (country: string): Place[] => {
+/**
+ * Get places by country - supports optional external places array
+ * @param country - Country name to filter by
+ * @param places - Optional array of places (from usePlaces hook), defaults to mockPlaces
+ */
+export const getPlacesByCountry = (country: string, places?: Place[]): Place[] => {
+  const data = places || mockPlaces;
   // Normaliser le nom du pays reçu
   const normalizedCountry = country;
   
   // Filtrer avec plusieurs méthodes de comparaison
-  const places = mockPlaces.filter(place => {
+  const result = data.filter(place => {
     // Comparaison exacte d'abord
     if (place.country === normalizedCountry) return true;
     
@@ -3083,25 +3089,40 @@ export const getPlacesByCountry = (country: string): Place[] => {
     return false;
   });
   
-  console.log(`📍 getPlacesByCountry("${country}") → found ${places.length} places`);
+  console.log(`📍 getPlacesByCountry("${country}") → found ${result.length} places`);
   
-  if (places.length === 0) {
+  if (result.length === 0) {
     console.warn(`⚠️ No places found for country: "${country}". Try checking country name.`);
   }
   
-  return places;
+  return result;
 };
 
-export const getAllPlaces = (): Place[] => {
-  return mockPlaces;
+/**
+ * Get all places - supports optional external places array
+ * @param places - Optional array of places (from usePlaces hook), defaults to mockPlaces
+ */
+export const getAllPlaces = (places?: Place[]): Place[] => {
+  return places || mockPlaces;
 };
 
-export const getPlaceById = (id: string): Place | undefined => {
-  return mockPlaces.find(place => place.id === id);
+/**
+ * Get place by ID - supports optional external places array
+ * @param id - Place ID
+ * @param places - Optional array of places (from usePlaces hook), defaults to mockPlaces
+ */
+export const getPlaceById = (id: string, places?: Place[]): Place | undefined => {
+  const data = places || mockPlaces;
+  return data.find(place => place.id === id);
 };
 
-export const getAllCountries = (): string[] => {
-  return Array.from(new Set(mockPlaces.map(place => place.country))).sort();
+/**
+ * Get all countries - supports optional external places array
+ * @param places - Optional array of places (from usePlaces hook), defaults to mockPlaces
+ */
+export const getAllCountries = (places?: Place[]): string[] => {
+  const data = places || mockPlaces;
+  return Array.from(new Set(data.map(place => place.country))).sort();
 };
 
 // Country to Continent mapping

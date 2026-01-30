@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ChevronRight, MapPin, Globe, CheckCircle2, Calendar } from 'lucide-react';
 import { getAllCountries, getAllPlaces } from '@/data/placesData';
+import { usePlaces } from '@/hooks/usePlaces';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '@/contexts/AppContext';
 
@@ -70,8 +71,11 @@ const CountriesByContinent = () => {
   const [expandedContinent, setExpandedContinent] = useState<string | null>(null);
   const [showVisitedPlaces, setShowVisitedPlaces] = useState(false);
   const [showPlannedPlaces, setShowPlannedPlaces] = useState(false);
-  const allCountries = getAllCountries();
-  const allPlaces = getAllPlaces();
+  
+  // Use merged places from database + local
+  const { data: allMergedPlaces = [] } = usePlaces();
+  const allCountries = getAllCountries(allMergedPlaces);
+  const allPlaces = getAllPlaces(allMergedPlaces);
   
   // Calculer les statistiques
   const totalPlaces = allPlaces.length;
