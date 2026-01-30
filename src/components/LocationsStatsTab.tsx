@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { getAllPlaces } from '@/data/placesData';
-import { usePlaces } from '@/hooks/usePlaces';
 import { MapPin, Globe2, Building2, Trophy, Flag, Users, ChevronRight, ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -16,10 +15,7 @@ import ReligionRankingTab from './ReligionRankingTab';
 const LocationsStatsTab = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  
-  // Use merged places from database + local
-  const { data: allMergedPlaces = [] } = usePlaces();
-  const allPlaces = getAllPlaces(allMergedPlaces);
+  const allPlaces = getAllPlaces();
   
   const [selectedContinent, setSelectedContinent] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);

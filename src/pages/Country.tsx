@@ -10,7 +10,6 @@ import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious
 import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock, Utensils } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { getPlacesByCountry, getAllCountries } from '@/data/placesData';
-import { usePlaces } from '@/hooks/usePlaces';
 import RankingTab from '@/components/RankingTab';
 import CountryRankingTab from '@/components/CountryRankingTab';
 import ReligionRankingTab from '@/components/ReligionRankingTab';
@@ -46,28 +45,25 @@ const Country = () => {
   // Get active tab from URL or default to 'places'
   const activeTab = searchParams.get('tab') || 'places';
   
-  // Use merged places from database + local
-  const { data: allMergedPlaces = [], isLoading: placesLoading } = usePlaces();
-  
-  const places = country ? getPlacesByCountry(country, allMergedPlaces) : [];
-  const allCountries = getAllCountries(allMergedPlaces).sort((a, b) => {
+  const places = country ? getPlacesByCountry(country) : [];
+  const allCountries = getAllCountries().sort((a, b) => {
     const nameA = t(`countries.${a}`, a);
     const nameB = t(`countries.${b}`, b);
     return nameA.localeCompare(nameB);
   });
 
-  // Avertir si aucun monument trouvé (only when not loading)
+  // Avertir si aucun monument trouvé
   useEffect(() => {
-    if (country && places.length === 0 && !placesLoading) {
+    if (country && places.length === 0) {
       console.warn(`⚠️ Aucun monument trouvé pour le pays: "${country}"`);
-      console.log('💡 Pays disponibles dans la base:', getAllCountries(allMergedPlaces));
+      console.log('💡 Pays disponibles dans la base:', getAllCountries());
       
       toast.error(
         `Aucun monument trouvé pour "${country}". Vérifiez le nom du pays.`,
         { duration: 5000 }
       );
     }
-  }, [country, places.length, placesLoading, allMergedPlaces]);
+  }, [country, places.length]);
 
   // Group places by city
   const citiesByLetter = Object.entries(

@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -77,7 +76,6 @@ interface PlaceFormData {
 
 const AdminEnrichData = () => {
   const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { isAdmin, loading: isAdminLoading } = useIsAdmin();
   const [isSaving, setIsSaving] = useState(false);
@@ -168,9 +166,6 @@ const AdminEnrichData = () => {
         });
 
       if (error) throw error;
-
-      // Invalidate places cache so UI updates immediately
-      queryClient.invalidateQueries({ queryKey: ['places-merged'] });
 
       toast({
         title: "Lieu enregistré",
