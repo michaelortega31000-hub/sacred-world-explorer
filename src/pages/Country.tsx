@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock, Utensils, Loader2, Building2, Church } from 'lucide-react';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, Clock, Utensils, Loader2, Building2, Church } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { usePlacesByCountry, useAllCountries } from '@/hooks/usePlaces';
 import RankingTab from '@/components/RankingTab';
@@ -25,7 +25,7 @@ import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/imageHelper';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getImagesByCountry } from '@/lib/religionImageHelper';
-import PlaceCategoryFilter, { type PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
+
 
 const Country = () => {
   const { countryName: country } = useParams<{ countryName: string }>();
@@ -41,7 +41,7 @@ const Country = () => {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  const [placeCategory, setPlaceCategory] = useState<PlaceCategoryFilterValue>('all');
+  
   const cityRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   // Get active tab from URL or default to 'places'
@@ -69,11 +69,6 @@ const Country = () => {
     }
   }, [country, places.length, placesLoading]);
 
-  // Filter places by category
-  const filteredPlaces = useMemo(() => {
-    if (placeCategory === 'all') return places;
-    return places.filter(p => (p.placeCategory || 'religious_site') === placeCategory);
-  }, [places, placeCategory]);
 
   // Category counts
   const categoryCounts = useMemo(() => {
@@ -84,7 +79,7 @@ const Country = () => {
 
   // Group places by city
   const citiesByLetter = Object.entries(
-    filteredPlaces.reduce((acc, place) => {
+    places.reduce((acc, place) => {
       const city = place.city || 'Autres';
       if (!acc[city]) acc[city] = [];
       acc[city].push(place);
@@ -335,23 +330,6 @@ const Country = () => {
         </div>
 
         <TabsContent value="places" className="flex-1 m-0 p-6 relative">
-          {/* Back to Globe Button */}
-          <div className="absolute top-4 right-4 z-30">
-            <Button
-              onClick={() => navigate('/world')}
-              variant="outline"
-              size="sm"
-              className="gap-2 backdrop-blur-md border-2 transition-all duration-300 shadow-lg"
-              style={{
-                background: 'rgba(20, 43, 79, 0.8)',
-                color: '#F5F5F5',
-                borderColor: 'rgba(52, 224, 161, 0.3)',
-              }}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              <span className="hidden sm:inline">Retour au globe</span>
-            </Button>
-          </div>
 
           {/* Alphabet Navigator */}
           {availableLetters.length > 0 && (
@@ -394,14 +372,6 @@ const Country = () => {
               )}
             </p>
 
-            {/* Place Category Filter */}
-            <div className="mb-6">
-              <PlaceCategoryFilter 
-                value={placeCategory} 
-                onChange={setPlaceCategory}
-                persistKey={`country-${country}`}
-              />
-            </div>
 
             {/* Group places by city */}
             {citiesByLetter.map(([city, cityPlaces]) => (
