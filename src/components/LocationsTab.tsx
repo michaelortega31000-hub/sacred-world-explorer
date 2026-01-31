@@ -19,6 +19,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import type { SavedPOI, PlaceCategory } from '@/contexts/AppContext';
 import jsPDF from 'jspdf';
+import { getCitySearchTerms, citiesMatch } from '@/lib/cityNormalization';
+import { calculateDistanceInKm } from '@/lib/geoUtils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 interface SavedRestaurant {
   id: string;
@@ -45,6 +47,7 @@ interface POI {
   coordinates: [number, number];
   segmentIndex: number; // index of the place this POI is near
   placeId: string; // ID of the associated place
+  distanceFromPlace?: number; // distance in km from the sacred place
 }
 const LocationsTab = () => {
   const navigate = useNavigate();
@@ -443,7 +446,7 @@ const LocationsTab = () => {
     }
   }, [optimizedRoute, reorderTrip]);
 
-  // Search for POIs near each place in the itinerary - prioritize internal DB
+  // Search for POIs near each place in the itinerary - using city normalization and distance filtering
   const searchPOIsAlongRoute = useCallback(async (places: typeof plannedPlaces, abortSignal?: AbortSignal) => {
     if (places.length === 0) {
       setPois([]);
@@ -451,6 +454,7 @@ const LocationsTab = () => {
     }
     setLoadingPOIs(true);
     const foundPOIs: POI[] = [];
+    const MAX_DISTANCE_KM = 30; // Maximum distance from sacred place to POI
     
     try {
       // LIMIT: Only search POIs for the first 5 places to avoid too many API calls
@@ -463,31 +467,85 @@ const LocationsTab = () => {
         }
         
         const place = places[i];
-        const placeCity = place.city?.toLowerCase().trim() || '';
+        const placeCity = place.city || '';
         const placeCoords = place.coordinates as [number, number];
+        const placeLat = placeCoords[1];
+        const placeLng = placeCoords[0];
         
-        // 1. Search in internal database FIRST - restaurants
+        // Get all possible search terms for this city
+        const searchTerms = getCitySearchTerms(placeCity);
+        
+        // Helper function to filter POIs by city match and distance
+        const filterAndAddPOIs = (
+          items: any[],
+          type: 'restaurant' | 'lodging' | 'transport',
+          getId: (item: any) => string,
+          getName: (item: any) => string,
+          getAddress: (item: any) => string,
+          getCity: (item: any) => string,
+          getCoords: (item: any) => { lat: number; lng: number } | null
+        ) => {
+          items.forEach((item: any) => {
+            const itemCity = getCity(item);
+            const coords = getCoords(item);
+            
+            // First check: city name must match (using normalized comparison)
+            if (!citiesMatch(placeCity, itemCity)) {
+              return; // Skip this POI - city doesn't match
+            }
+            
+            // Calculate distance if coordinates are available
+            let distanceFromPlace: number | undefined;
+            let poiCoords: [number, number] = placeCoords; // default to place coords
+            
+            if (coords && coords.lat !== 0 && coords.lng !== 0) {
+              poiCoords = [coords.lng, coords.lat];
+              distanceFromPlace = calculateDistanceInKm(placeLat, placeLng, coords.lat, coords.lng);
+              
+              // Second check: must be within MAX_DISTANCE_KM
+              if (distanceFromPlace > MAX_DISTANCE_KM) {
+                return; // Skip this POI - too far away
+              }
+            }
+            
+            foundPOIs.push({
+              id: getId(item),
+              name: getName(item),
+              type,
+              address: getAddress(item),
+              coordinates: poiCoords,
+              segmentIndex: i,
+              placeId: place.id,
+              distanceFromPlace
+            });
+          });
+        };
+        
+        // 1. Search in internal database - restaurants
         try {
-          const { data: dbRestaurants } = await supabase
+          // Build OR query for all search terms
+          let query = supabase
             .from('restaurants')
             .select('id, name, address, city, coordinates')
-            .eq('verified', true)
-            .ilike('city', `%${placeCity}%`)
-            .limit(3);
+            .eq('verified', true);
+          
+          // Use primary city term for search (Supabase doesn't support OR easily in ilike)
+          if (searchTerms.length > 0) {
+            query = query.or(searchTerms.slice(0, 3).map(term => `city.ilike.%${term}%`).join(','));
+          }
+          
+          const { data: dbRestaurants } = await query.limit(10);
           
           if (dbRestaurants && dbRestaurants.length > 0) {
-            dbRestaurants.forEach((r: any) => {
-              const coords = r.coordinates as { lat: number; lng: number } | null;
-              foundPOIs.push({
-                id: `db-rest-${r.id}`,
-                name: r.name,
-                type: 'restaurant',
-                address: `${r.address}, ${r.city}`,
-                coordinates: coords ? [coords.lng, coords.lat] : placeCoords,
-                segmentIndex: i,
-                placeId: place.id
-              });
-            });
+            filterAndAddPOIs(
+              dbRestaurants,
+              'restaurant',
+              (r) => `db-rest-${r.id}`,
+              (r) => r.name,
+              (r) => `${r.address}, ${r.city}`,
+              (r) => r.city,
+              (r) => r.coordinates as { lat: number; lng: number } | null
+            );
           }
         } catch (error) {
           console.error('Error fetching DB restaurants:', error);
@@ -495,26 +553,27 @@ const LocationsTab = () => {
         
         // 2. Search in internal database - hotels
         try {
-          const { data: dbHotels } = await supabase
+          let query = supabase
             .from('hotels')
             .select('id, name, address, city, coordinates')
-            .eq('verified', true)
-            .ilike('city', `%${placeCity}%`)
-            .limit(3);
+            .eq('verified', true);
+          
+          if (searchTerms.length > 0) {
+            query = query.or(searchTerms.slice(0, 3).map(term => `city.ilike.%${term}%`).join(','));
+          }
+          
+          const { data: dbHotels } = await query.limit(10);
           
           if (dbHotels && dbHotels.length > 0) {
-            dbHotels.forEach((h: any) => {
-              const coords = h.coordinates as { lat: number; lng: number } | null;
-              foundPOIs.push({
-                id: `db-hotel-${h.id}`,
-                name: h.name,
-                type: 'lodging',
-                address: `${h.address}, ${h.city}`,
-                coordinates: coords ? [coords.lng, coords.lat] : placeCoords,
-                segmentIndex: i,
-                placeId: place.id
-              });
-            });
+            filterAndAddPOIs(
+              dbHotels,
+              'lodging',
+              (h) => `db-hotel-${h.id}`,
+              (h) => h.name,
+              (h) => `${h.address}, ${h.city}`,
+              (h) => h.city,
+              (h) => h.coordinates as { lat: number; lng: number } | null
+            );
           }
         } catch (error) {
           console.error('Error fetching DB hotels:', error);
@@ -522,35 +581,59 @@ const LocationsTab = () => {
         
         // 3. Search in internal database - transport stops
         try {
-          const { data: dbTransports } = await supabase
+          let query = supabase
             .from('transport_stops')
             .select('id, name, city, transport_type, coordinates')
-            .eq('verified', true)
-            .ilike('city', `%${placeCity}%`)
-            .limit(3);
+            .eq('verified', true);
+          
+          if (searchTerms.length > 0) {
+            query = query.or(searchTerms.slice(0, 3).map(term => `city.ilike.%${term}%`).join(','));
+          }
+          
+          const { data: dbTransports } = await query.limit(10);
           
           if (dbTransports && dbTransports.length > 0) {
-            dbTransports.forEach((t: any) => {
-              const coords = t.coordinates as { lat: number; lng: number } | null;
-              foundPOIs.push({
-                id: `db-transport-${t.id}`,
-                name: `${t.name} (${t.transport_type})`,
-                type: 'transport',
-                address: t.city,
-                coordinates: coords ? [coords.lng, coords.lat] : placeCoords,
-                segmentIndex: i,
-                placeId: place.id
-              });
-            });
+            filterAndAddPOIs(
+              dbTransports,
+              'transport',
+              (t) => `db-transport-${t.id}`,
+              (t) => `${t.name} (${t.transport_type})`,
+              (t) => t.city,
+              (t) => t.city,
+              (t) => t.coordinates as { lat: number; lng: number } | null
+            );
           }
         } catch (error) {
           console.error('Error fetching DB transports:', error);
         }
       }
       
+      // Sort POIs by distance (closest first) and limit to 3 per type per place
+      const sortedPOIs = foundPOIs.sort((a, b) => {
+        // First sort by segment index
+        if (a.segmentIndex !== b.segmentIndex) return a.segmentIndex - b.segmentIndex;
+        // Then by distance
+        const distA = a.distanceFromPlace ?? Infinity;
+        const distB = b.distanceFromPlace ?? Infinity;
+        return distA - distB;
+      });
+      
+      // Limit to 3 POIs per type per segment
+      const limitedPOIs: POI[] = [];
+      const countByTypeAndSegment = new Map<string, number>();
+      
+      for (const poi of sortedPOIs) {
+        const key = `${poi.segmentIndex}-${poi.type}`;
+        const count = countByTypeAndSegment.get(key) || 0;
+        if (count < 3) {
+          limitedPOIs.push(poi);
+          countByTypeAndSegment.set(key, count + 1);
+        }
+      }
+      
       // Only set POIs if not aborted
       if (!abortSignal?.aborted) {
-        setPois(foundPOIs);
+        setPois(limitedPOIs);
       }
     } catch (error: any) {
       if (error.name === 'AbortError') {
@@ -1204,9 +1287,18 @@ const LocationsTab = () => {
                                               {placePOIs.filter(p => p.type === 'restaurant').map(poi => {
                                 const saved = isPOISaved(poi.id);
                                 return <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
-                                                    <div>
+                                                    <div className="flex-1">
                                                       <div className="font-medium">{poi.name}</div>
-                                                      <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                      <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                                        <span>{poi.address}</span>
+                                                        {poi.distanceFromPlace !== undefined && (
+                                                          <Badge variant="outline" className="text-xs px-1 py-0">
+                                                            {poi.distanceFromPlace < 1 
+                                                              ? `${Math.round(poi.distanceFromPlace * 1000)}m` 
+                                                              : `${poi.distanceFromPlace.toFixed(1)}km`}
+                                                          </Badge>
+                                                        )}
+                                                      </div>
                                                     </div>
                                                     <Button size="sm" variant={saved ? "secondary" : "ghost"} className="h-6 w-6 p-0 flex-shrink-0" onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}>
                                                       {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
@@ -1226,9 +1318,18 @@ const LocationsTab = () => {
                                               {placePOIs.filter(p => p.type === 'lodging').map(poi => {
                                 const saved = isPOISaved(poi.id);
                                 return <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
-                                                    <div>
+                                                    <div className="flex-1">
                                                       <div className="font-medium">{poi.name}</div>
-                                                      <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                      <div className="text-xs text-muted-foreground flex items-center gap-2">
+                                                        <span>{poi.address}</span>
+                                                        {poi.distanceFromPlace !== undefined && (
+                                                          <Badge variant="outline" className="text-xs px-1 py-0">
+                                                            {poi.distanceFromPlace < 1 
+                                                              ? `${Math.round(poi.distanceFromPlace * 1000)}m` 
+                                                              : `${poi.distanceFromPlace.toFixed(1)}km`}
+                                                          </Badge>
+                                                        )}
+                                                      </div>
                                                     </div>
                                                     <Button size="sm" variant={saved ? "secondary" : "ghost"} className="h-6 w-6 p-0 flex-shrink-0" onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}>
                                                       {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
