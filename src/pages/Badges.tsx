@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { Award, Trophy, Star, Lock, Calendar, Compass, Target, MapPin, Medal, TrendingUp } from 'lucide-react';
+import { Award, Trophy, Star, Lock, Calendar, Compass, Target, MapPin, Medal, TrendingUp, Building2, Palette, BookOpen, Crown, Shield } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { ImageBackground } from '@/components/ImageBackground';
@@ -168,7 +168,11 @@ const Badges = () => {
   };
 
   const getReligionBadges = () => {
-    return badges.filter(b => b.religion !== null);
+    return badges.filter(b => b.religion !== null && !b.badge_type?.startsWith('culture'));
+  };
+
+  const getCultureBadges = () => {
+    return badges.filter(b => b.badge_type?.startsWith('culture') || b.quest_name?.toLowerCase().includes('musée') || b.quest_name?.toLowerCase().includes('museum'));
   };
 
   const getTierIcon = (tier: string) => {
@@ -198,13 +202,24 @@ const Badges = () => {
 
   const questBadges = getQuestBadges();
   const religionBadges = getReligionBadges();
+  const cultureBadges = getCultureBadges();
 
-  // Define progression goals
+  // Define progression goals - Religion
   const progressionGoals = [
-    { id: 'monthly-continents', name: 'Collectionneur de Continents', description: 'Visiter 5 continents différents', icon: <Compass className="w-6 h-6" />, unlocked: false },
-    { id: 'monthly-pilgrimage', name: 'Maître Pèlerin', description: 'Visiter 25 lieux sacrés', icon: <Target className="w-6 h-6" />, unlocked: false },
-    { id: 'monthly-religions', name: 'Explorateur des Religions', description: 'Visiter des lieux de 4 religions différentes', icon: <Medal className="w-6 h-6" />, unlocked: false },
-    { id: 'monthly-countries', name: 'Voyage Mondial', description: 'Visiter 15 pays différents', icon: <MapPin className="w-6 h-6" />, unlocked: false },
+    { id: 'monthly-continents', name: 'Collectionneur de Continents', description: 'Visiter 5 continents différents', icon: <Compass className="w-6 h-6" />, unlocked: false, category: 'religion' },
+    { id: 'monthly-pilgrimage', name: 'Maître Pèlerin', description: 'Visiter 25 lieux sacrés', icon: <Target className="w-6 h-6" />, unlocked: false, category: 'religion' },
+    { id: 'monthly-religions', name: 'Explorateur des Religions', description: 'Visiter des lieux de 4 religions différentes', icon: <Medal className="w-6 h-6" />, unlocked: false, category: 'religion' },
+    { id: 'monthly-countries', name: 'Voyage Mondial', description: 'Visiter 15 pays différents', icon: <MapPin className="w-6 h-6" />, unlocked: false, category: 'religion' },
+  ];
+
+  // Define Culture badges
+  const cultureBadgeGoals = [
+    { id: 'badge-museum-explorer', name: 'Explorateur de Musées', description: 'Visiter 1 musée culturel', icon: <Building2 className="w-6 h-6" />, unlocked: false, category: 'culture' },
+    { id: 'badge-art-lover', name: 'Amoureux de l\'Art', description: 'Visiter 5 musées culturels', icon: <Palette className="w-6 h-6" />, unlocked: false, category: 'culture' },
+    { id: 'badge-curator', name: 'Curator', description: 'Visiter 10 musées culturels', icon: <BookOpen className="w-6 h-6" />, unlocked: false, category: 'culture' },
+    { id: 'badge-heritage-guardian', name: 'Gardien du Patrimoine', description: 'Visiter des musées sur 3 continents', icon: <Shield className="w-6 h-6" />, unlocked: false, category: 'culture' },
+    { id: 'badge-manuscript-hunter', name: 'Chasseur de Manuscrits', description: 'Visiter 3 musées avec collections de manuscrits', icon: <BookOpen className="w-6 h-6" />, unlocked: false, category: 'culture' },
+    { id: 'badge-culture-master', name: 'Maître de la Culture', description: 'Compléter toutes les quêtes culture', icon: <Crown className="w-6 h-6" />, unlocked: false, category: 'culture' },
   ];
 
   // Mark unlocked badges
@@ -213,10 +228,18 @@ const Badges = () => {
     unlocked: badges.some(b => b.place_id === goal.id)
   }));
 
+  // Mark unlocked culture badges
+  const cultureProgressionWithStatus = cultureBadgeGoals.map(goal => ({
+    ...goal,
+    unlocked: badges.some(b => b.place_id === goal.id || b.badge_type === goal.id)
+  }));
+
   const filteredBadges = filter === 'all' 
     ? badges 
     : filter === 'quest' 
     ? questBadges 
+    : filter === 'culture'
+    ? cultureBadges
     : religionBadges;
 
   return (
@@ -378,6 +401,14 @@ const Badges = () => {
             <Star className="w-4 h-4 mr-1" />
             Religions ({religionBadges.length})
           </Button>
+          <Button
+            variant={filter === 'culture' ? 'default' : 'outline'}
+            onClick={() => setFilter('culture')}
+            size="sm"
+          >
+            <Building2 className="w-4 h-4 mr-1" />
+            Culture ({cultureBadges.length})
+          </Button>
         </div>
 
         <Tabs defaultValue="unlocked" className="w-full">
@@ -447,11 +478,12 @@ const Badges = () => {
           </TabsContent>
 
           <TabsContent value="locked" className="mt-6 space-y-4">
+            {/* Religion Badges */}
             <Card className="bg-sacred-beige/80 backdrop-blur-sm border-accent/20">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                  <Target className="w-5 h-5 text-accent" />
-                  Progression vers les Badges de Quêtes
+                  <Star className="w-5 h-5 text-accent" />
+                  Badges Religion & Quêtes
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -487,6 +519,57 @@ const Badges = () => {
                             <Progress value={0} className="h-2" />
                             <p className="text-xs text-muted-foreground mt-1">
                               Complétez la quête mensuelle pour débloquer
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Culture Badges */}
+            <Card className="bg-sacred-beige/80 backdrop-blur-sm border-primary/20">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-primary" />
+                  Badges Culture & Musées
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {cultureProgressionWithStatus.map(goal => (
+                  <div 
+                    key={goal.id}
+                    className={`p-4 rounded-lg border ${
+                      goal.unlocked 
+                        ? 'bg-gradient-to-r from-primary/20 to-transparent border-primary/30' 
+                        : 'bg-white/30 border-muted'
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`p-2 rounded-lg ${
+                        goal.unlocked 
+                          ? 'bg-primary/20 text-primary' 
+                          : 'bg-muted text-muted-foreground'
+                      }`}>
+                        {goal.unlocked ? <Trophy className="w-5 h-5" /> : goal.icon}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h3 className="font-semibold">{goal.name}</h3>
+                          {goal.unlocked && (
+                            <Badge variant="default" className="text-xs bg-primary">
+                              ✓ Débloqué
+                            </Badge>
+                          )}
+                        </div>
+                        <p className="text-sm text-muted-foreground">{goal.description}</p>
+                        {!goal.unlocked && (
+                          <div className="mt-3">
+                            <Progress value={0} className="h-2" />
+                            <p className="text-xs text-muted-foreground mt-1">
+                              Visitez des musées culturels pour débloquer
                             </p>
                           </div>
                         )}
