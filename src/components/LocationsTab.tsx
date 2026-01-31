@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -424,17 +424,27 @@ const LocationsTab = () => {
     return optimizedRouteState.some((place, index) => place.id !== optimizedRoute[index]?.id);
   }, [optimizedRouteState, optimizedRoute]);
 
+  // Track if we've already synced this route to prevent loops
+  const lastSyncedRouteRef = useRef<string>('');
+  const poiSearchAbortRef = useRef<AbortController | null>(null);
+  const poiSearchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   // Update state and sync to context when optimizedRoute changes
   useEffect(() => {
     if (optimizedRoute.length > 0) {
-      setOptimizedRouteState(optimizedRoute);
-      // Sync the optimized order to the global context so Globe3D uses the correct order
-      reorderTrip(optimizedRoute.map(p => p.id));
+      const routeKey = optimizedRoute.map(p => p.id).join(',');
+      // Only update if the route has actually changed
+      if (lastSyncedRouteRef.current !== routeKey) {
+        lastSyncedRouteRef.current = routeKey;
+        setOptimizedRouteState(optimizedRoute);
+        // Sync the optimized order to the global context so Globe3D uses the correct order
+        reorderTrip(optimizedRoute.map(p => p.id));
+      }
     }
   }, [optimizedRoute, reorderTrip]);
 
-  // Search for POIs near each place in the itinerary
-  const searchPOIsAlongRoute = async (places: typeof plannedPlaces) => {
+  // Search for POIs near each place in the itinerary - with limiting and abort support
+  const searchPOIsAlongRoute = useCallback(async (places: typeof plannedPlaces, abortSignal?: AbortSignal) => {
     if (places.length === 0) {
       setPois([]);
       return;
@@ -448,28 +458,42 @@ const LocationsTab = () => {
       return;
     }
     try {
-      // Search for POIs near EACH place in the itinerary
-      for (let i = 0; i < places.length; i++) {
+      // LIMIT: Only search POIs for the first 5 places to avoid too many API calls
+      const maxPlacesToSearch = Math.min(places.length, 5);
+      
+      // Search for POIs near EACH place in the itinerary (limited)
+      for (let i = 0; i < maxPlacesToSearch; i++) {
+        // Check if we should abort
+        if (abortSignal?.aborted) {
+          console.log('POI search aborted');
+          return;
+        }
+        
         const place = places[i];
         const coords = place.coordinates as [number, number];
 
-        // Search for different types of POIs near this place
+        // Search for different types of POIs near this place - only restaurant and hotel (skip fuel to reduce calls)
         const poiTypes = [{
           query: 'restaurant',
           type: 'restaurant' as const
         }, {
           query: 'hotel',
           type: 'lodging' as const
-        }, {
-          query: 'gas station',
-          type: 'fuel' as const
         }];
-        for (const {
-          query,
-          type
-        } of poiTypes) {
+        
+        for (const { query, type } of poiTypes) {
+          // Check if we should abort before each request
+          if (abortSignal?.aborted) {
+            console.log('POI search aborted');
+            return;
+          }
+          
           try {
-            const response = await fetch(`https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` + `proximity=${coords[0]},${coords[1]}&limit=2&access_token=${mapboxToken}`);
+            const response = await fetch(
+              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` + 
+              `proximity=${coords[0]},${coords[1]}&limit=2&access_token=${mapboxToken}`,
+              { signal: abortSignal }
+            );
             if (response.ok) {
               const data = await response.json();
               data.features?.forEach((feature: any) => {
@@ -484,30 +508,71 @@ const LocationsTab = () => {
                 });
               });
             }
-          } catch (error) {
+          } catch (error: any) {
+            if (error.name === 'AbortError') {
+              console.log('POI fetch aborted');
+              return;
+            }
             console.error(`Error fetching ${type} POIs:`, error);
           }
         }
       }
-      setPois(foundPOIs);
-    } catch (error) {
+      
+      // Only set POIs if not aborted
+      if (!abortSignal?.aborted) {
+        setPois(foundPOIs);
+      }
+    } catch (error: any) {
+      if (error.name === 'AbortError') {
+        console.log('POI search aborted');
+        return;
+      }
       console.error('Error searching POIs:', error);
       setPois([]);
     } finally {
-      setLoadingPOIs(false);
+      if (!abortSignal?.aborted) {
+        setLoadingPOIs(false);
+      }
     }
-  };
+  }, []);
 
-  // Calculate route segments when optimized route changes
+  // Calculate route segments when optimized route changes - with debounce
   useEffect(() => {
+    // Clear any pending timeout
+    if (poiSearchTimeoutRef.current) {
+      clearTimeout(poiSearchTimeoutRef.current);
+    }
+    
+    // Abort any ongoing POI search
+    if (poiSearchAbortRef.current) {
+      poiSearchAbortRef.current.abort();
+    }
+    
     if (showOptimizedRoute && displayRoute.length >= 2) {
       calculateRouteSegments(displayRoute, transportMode);
-      searchPOIsAlongRoute(displayRoute);
+      
+      // Debounce POI search to avoid excessive calls
+      poiSearchTimeoutRef.current = setTimeout(() => {
+        const abortController = new AbortController();
+        poiSearchAbortRef.current = abortController;
+        searchPOIsAlongRoute(displayRoute, abortController.signal);
+      }, 500); // Wait 500ms before starting POI search
     } else {
       setRouteSegments([]);
       setPois([]);
+      setLoadingPOIs(false);
     }
-  }, [displayRoute, showOptimizedRoute, transportMode]);
+    
+    // Cleanup on unmount or when dependencies change
+    return () => {
+      if (poiSearchTimeoutRef.current) {
+        clearTimeout(poiSearchTimeoutRef.current);
+      }
+      if (poiSearchAbortRef.current) {
+        poiSearchAbortRef.current.abort();
+      }
+    };
+  }, [displayRoute, showOptimizedRoute, transportMode, searchPOIsAlongRoute]);
 
   // Get unique cities from planned places
   const tripCities = useMemo(() => {
