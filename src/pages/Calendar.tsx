@@ -34,12 +34,6 @@ const Calendar = () => {
       
       <div className="container mx-auto px-4 py-6">
         <div className="space-y-6">
-          <div className="space-y-2">
-            
-            <p className="text-lg text-muted-foreground">
-              Découvrez les fêtes et célébrations du monde entier
-            </p>
-          </div>
 
           <CalendarTab />
         </div>
