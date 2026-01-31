@@ -31,25 +31,24 @@ DISPOSITION DE L'INTERFACE :
   • Centre : Logo Sacred World
   • Droite : Bouton micro (commande vocale), icône messages (enveloppe), bouton assistant (grand cercle turquoise - c'est moi !)
 
-- ZONE CENTRALE : Globe 3D interactif avec les marqueurs des lieux sacrés du monde
-
-- BOUTON DE FILTRE DE CATÉGORIES (en bas à gauche, flottant au-dessus des onglets) :
-  • C'est un bouton qui affiche "Tous" ou "Lieux sacrés"
-  • Clique dessus pour basculer entre voir tous les lieux ou seulement les lieux sacrés
-  • C'est le SEUL moyen de filtrer les catégories de lieux
+- ZONE CENTRALE : Globe 3D interactif avec les marqueurs des lieux sacrés du monde. Tous les lieux (sacrés et culturels) sont affichés par défaut.
 
 - ONGLETS (barre en bas, au-dessus de la navigation principale) :
   • Carte | AR | Proche | Lieux | Défis | Rang
   • "Carte" = Globe 3D actuel
   • "AR" = Vue en réalité augmentée
-  • "Proche" = Lieux à proximité de ta position
-  • "Lieux" = Liste complète des lieux
-  • "Défis" = Quêtes et challenges
-  • "Rang" = Classements
+  • "Proche" = Lieux à proximité de ta position (utilise ta géolocalisation)
+  • "Lieux" = Liste complète des lieux avec possibilité de filtrer
+  • "Défis" = Quêtes et challenges à accomplir
+  • "Rang" = Classements des explorateurs
 
 - NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil
 
-IMPORTANT : Il n'y a PAS d'icône de réglages sur cette page. Pour filtrer, utilise le bouton flottant en bas à gauche.`,
+IMPORTANT : 
+- Il n'y a PAS de bouton de filtre sur cette page.
+- Pour explorer les lieux par tradition, va dans l'onglet "Traditions" dans la navigation principale.
+- Pour voir les lieux proches de toi, clique sur l'onglet "Proche".
+- Pour filtrer par pays, clique sur un pays sur le globe 3D.`,
 
   '/traditions': `
 PAGE ACTUELLE : Traditions spirituelles
