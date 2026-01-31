@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from 'react';
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Filter, X, Search, Save, Trash2, Star } from 'lucide-react';
+import { Filter, X, Save, Trash2, Star, Church, Building2, ChevronDown } from 'lucide-react';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
@@ -11,11 +11,11 @@ import { Religion } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
 import { mockPlaces } from '@/data/placesData';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 export interface FilterOptions {
   religions: Religion[];
   types: string[];
-  countries: string[];
 }
 
 interface FilterPreset {
@@ -27,6 +27,17 @@ interface FilterPreset {
 const PRESETS_STORAGE_KEY = 'monument-filter-presets';
 const LAST_FILTERS_STORAGE_KEY = 'monument-last-filters';
 
+// Classification des types culturels (musées, centres, etc.)
+const culturalTypes = [
+  'Musée',
+  'Centre culturel',
+  'Galerie',
+  'Exposition',
+  'Mémorial',
+  'Site archéologique',
+  'Ruines',
+];
+
 interface MonumentFilterProps {
   onFilterChange: (filters: FilterOptions) => void;
   externalFilters?: FilterOptions;
@@ -37,8 +48,6 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const [isOpen, setIsOpen] = useState(false);
   const [selectedReligions, setSelectedReligions] = useState<Religion[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>([]);
-  const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
-  const [searchQuery, setSearchQuery] = useState('');
   const [presets, setPresets] = useState<FilterPreset[]>([]);
   const [presetName, setPresetName] = useState('');
   const [showSavePreset, setShowSavePreset] = useState(false);
@@ -69,37 +78,48 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     return counts;
   }, []);
 
-  // Calculate type counts from places data
-  const typeCounts = useMemo(() => {
+  // Calculate type counts from places data (for cultural types)
+  const culturalTypeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
 
     mockPlaces.forEach(place => {
       const type = place.type;
-      counts[type] = (counts[type] || 0) + 1;
+      // Only count if it's a cultural type
+      const matchingCultural = culturalTypes.find(ct => 
+        type.toLowerCase().includes(ct.toLowerCase()) || 
+        ct.toLowerCase().includes(type.toLowerCase())
+      );
+      if (matchingCultural) {
+        counts[matchingCultural] = (counts[matchingCultural] || 0) + 1;
+      }
     });
 
     return counts;
   }, []);
 
-  // Dynamically extract available monument types from places data
-  const availableTypes = useMemo(() => {
-    const typesSet = new Set(mockPlaces.map(place => place.type));
-    return Array.from(typesSet).sort((a, b) => a.localeCompare(b));
-  }, []);
-
-  // Calculate country counts from places data
-  const countryCounts = useMemo(() => {
+  // Calculate type counts for religious monument types (for accordion)
+  const religiousTypeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
+
     mockPlaces.forEach(place => {
-      counts[place.country] = (counts[place.country] || 0) + 1;
+      const type = place.type;
+      // Exclude cultural types
+      const isCultural = culturalTypes.some(ct => 
+        type.toLowerCase().includes(ct.toLowerCase()) || 
+        ct.toLowerCase().includes(type.toLowerCase())
+      );
+      if (!isCultural) {
+        counts[type] = (counts[type] || 0) + 1;
+      }
     });
+
     return counts;
   }, []);
 
-  // Dynamically extract available countries from places data
-  const availableCountries = useMemo(() => {
-    return Object.keys(countryCounts).sort((a, b) => a.localeCompare(b));
-  }, [countryCounts]);
+  // Get available religious monument types
+  const availableReligiousTypes = useMemo(() => {
+    return Object.keys(religiousTypeCounts).sort((a, b) => a.localeCompare(b));
+  }, [religiousTypeCounts]);
 
   // Load presets and last filters from localStorage on mount
   useEffect(() => {
@@ -119,10 +139,9 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
         const parsed: FilterOptions = JSON.parse(lastFilters);
         setSelectedReligions(parsed.religions || []);
         setSelectedTypes(parsed.types || []);
-        setSelectedCountries(parsed.countries || []);
         onFilterChange(parsed);
         
-        if ((parsed.religions?.length || 0) + (parsed.types?.length || 0) + (parsed.countries?.length || 0) > 0) {
+        if ((parsed.religions?.length || 0) + (parsed.types?.length || 0) > 0) {
           toast({
             title: "Filtres restaurés",
             description: "Vos derniers filtres ont été appliqués",
@@ -139,17 +158,15 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     const filters: FilterOptions = {
       religions: selectedReligions,
       types: selectedTypes,
-      countries: selectedCountries,
     };
     localStorage.setItem(LAST_FILTERS_STORAGE_KEY, JSON.stringify(filters));
-  }, [selectedReligions, selectedTypes, selectedCountries]);
+  }, [selectedReligions, selectedTypes]);
 
   // Synchroniser avec des filtres externes (contrôle par le parent)
   useEffect(() => {
     if (externalFilters) {
       setSelectedReligions(externalFilters.religions || []);
       setSelectedTypes(externalFilters.types || []);
-      setSelectedCountries(externalFilters.countries || []);
     }
   }, [externalFilters]);
 
@@ -201,8 +218,8 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       : [...selectedReligions, religion];
     
     setSelectedReligions(newReligions);
-    console.log('🎯 Religion filter changed:', { religions: newReligions, types: selectedTypes, countries: selectedCountries });
-    onFilterChange({ religions: newReligions, types: selectedTypes, countries: selectedCountries });
+    console.log('🎯 Religion filter changed:', { religions: newReligions, types: selectedTypes });
+    onFilterChange({ religions: newReligions, types: selectedTypes });
   };
 
   const handleTypeToggle = (type: string) => {
@@ -211,25 +228,14 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       : [...selectedTypes, type];
     
     setSelectedTypes(newTypes);
-    console.log('🎯 Type filter changed:', { religions: selectedReligions, types: newTypes, countries: selectedCountries });
-    onFilterChange({ religions: selectedReligions, types: newTypes, countries: selectedCountries });
-  };
-
-  const handleCountryToggle = (country: string) => {
-    const newCountries = selectedCountries.includes(country)
-      ? selectedCountries.filter(c => c !== country)
-      : [...selectedCountries, country];
-    
-    setSelectedCountries(newCountries);
-    console.log('🎯 Country filter changed:', { religions: selectedReligions, types: selectedTypes, countries: newCountries });
-    onFilterChange({ religions: selectedReligions, types: selectedTypes, countries: newCountries });
+    console.log('🎯 Type filter changed:', { religions: selectedReligions, types: newTypes });
+    onFilterChange({ religions: selectedReligions, types: newTypes });
   };
 
   const clearFilters = () => {
     setSelectedReligions([]);
     setSelectedTypes([]);
-    setSelectedCountries([]);
-    onFilterChange({ religions: [], types: [], countries: [] });
+    onFilterChange({ religions: [], types: [] });
   };
 
   const savePreset = () => {
@@ -257,7 +263,6 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       filters: {
         religions: selectedReligions,
         types: selectedTypes,
-        countries: selectedCountries,
       },
     };
 
@@ -277,11 +282,9 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const loadPreset = (preset: FilterPreset) => {
     setSelectedReligions(preset.filters.religions || []);
     setSelectedTypes(preset.filters.types || []);
-    setSelectedCountries(preset.filters.countries || []);
     onFilterChange({
       religions: preset.filters.religions || [],
       types: preset.filters.types || [],
-      countries: preset.filters.countries || [],
     });
     
     toast({
@@ -301,26 +304,13 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     });
   };
 
-  const hasActiveFilters = selectedReligions.length > 0 || selectedTypes.length > 0 || selectedCountries.length > 0;
-  const activeFiltersCount = selectedReligions.length + selectedTypes.length + selectedCountries.length;
-
-  // Filter religions, types and countries based on search query
-  const filteredReligions = religions.filter(religion =>
-    religion.name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredMonumentTypes = availableTypes.filter(type =>
-    type.toLowerCase().includes(searchQuery.toLowerCase())
-  );
-
-  const filteredCountries = availableCountries.filter(country =>
-    country.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const hasActiveFilters = selectedReligions.length > 0 || selectedTypes.length > 0;
+  const activeFiltersCount = selectedReligions.length + selectedTypes.length;
 
   const filterPanel = isOpen && (
     <div
       ref={panelRef}
-      className="fixed z-[9999] w-80 max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in"
+      className="fixed z-[9999] w-[340px] max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in"
       style={{
         top: window.innerWidth < 640 ? `${panelPosition.top}px` : 'auto',
         bottom: window.innerWidth >= 640 ? `${window.innerHeight - panelPosition.top}px` : 'auto',
@@ -445,177 +435,152 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
         </div>
       )}
 
-      {/* Search Bar */}
-      <div className="p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#EAD7B5]/60" />
-          <Input
-            type="text"
-            placeholder="Rechercher..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-white/5 border-[#34E0A1]/30 text-[#F5F5F5] placeholder:text-[#EAD7B5]/50 focus:border-[#34E0A1] focus:ring-[#34E0A1]/30"
-          />
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#EAD7B5]/60 hover:text-[#34E0A1] transition-colors"
-            >
-              <X className="w-4 h-4" />
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Religions Section */}
-      <div className="p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
-        <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter">
-          Par Religion {filteredReligions.length < religions.length && (
-            <span className="text-xs text-[#EAD7B5]/60">({filteredReligions.length})</span>
-          )}
-        </h4>
-        {filteredReligions.length === 0 ? (
-          <p className="text-sm text-[#EAD7B5]/60 py-4 text-center">Aucune religion trouvée</p>
-        ) : (
-          <div className="space-y-2">
-            {filteredReligions.map((religion) => {
-            const isChecked = selectedReligions.includes(religion.id);
-            const colorConfig = religionColors[religion.id];
-            const count = religionCounts[religion.id];
-            
-            return (
-              <label
-                key={religion.id}
-                className={cn(
-                  "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all duration-200",
-                  isChecked ? "bg-white/10" : "hover:bg-white/5"
-                )}
-              >
-                <Checkbox
-                  checked={isChecked}
-                  onCheckedChange={() => handleReligionToggle(religion.id)}
-                  style={{
-                    borderColor: colorConfig.marker,
-                  }}
-                  className={cn(
-                    isChecked && "data-[state=checked]:bg-transparent"
-                  )}
-                />
-                <div
-                  className="w-3 h-3 rounded-full"
-                  style={{ 
-                    background: colorConfig.marker,
-                    boxShadow: `0 0 8px ${colorConfig.marker}80`
-                  }}
-                />
-                <span className={cn(
-                  "text-sm font-medium font-inter transition-colors flex-1",
-                  isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
-                )}>
-                  {religion.name}
-                </span>
-                <span className="text-xs text-[#EAD7B5]/60 font-inter">
-                  {count}
-                </span>
-              </label>
-            );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* Countries Section */}
-      <div className="p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
-        <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter">
-          Par Pays {filteredCountries.length < availableCountries.length && (
-            <span className="text-xs text-[#EAD7B5]/60">({filteredCountries.length})</span>
-          )}
-        </h4>
-        {filteredCountries.length === 0 ? (
-          <p className="text-sm text-[#EAD7B5]/60 py-4 text-center">Aucun pays trouvé</p>
-        ) : (
-          <div className="space-y-2 max-h-40 overflow-y-auto">
-            {filteredCountries.map((country) => {
-              const isChecked = selectedCountries.includes(country);
-              const count = countryCounts[country] || 0;
+      {/* Two Column Layout: Traditions & Cultural */}
+      <div className="grid grid-cols-2 gap-4 p-4 border-b" style={{ borderColor: 'rgba(52, 224, 161, 0.1)' }}>
+        {/* Left Column: Traditions (Religions) */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-[#EAD7B5] font-inter flex items-center gap-2">
+            <Church className="w-4 h-4 text-[#F4C542]" />
+            Traditions
+          </h4>
+          <div className="space-y-1.5">
+            {religions.map((religion) => {
+              const isChecked = selectedReligions.includes(religion.id);
+              const colorConfig = religionColors[religion.id];
+              const count = religionCounts[religion.id];
               
               return (
                 <label
-                  key={country}
+                  key={religion.id}
                   className={cn(
-                    "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all duration-200",
+                    "flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200",
                     isChecked ? "bg-white/10" : "hover:bg-white/5"
                   )}
                 >
                   <Checkbox
                     checked={isChecked}
-                    onCheckedChange={() => handleCountryToggle(country)}
+                    onCheckedChange={() => handleReligionToggle(religion.id)}
+                    style={{
+                      borderColor: colorConfig.marker,
+                    }}
                     className={cn(
-                      "border-[#F4C542]/50",
-                      isChecked && "data-[state=checked]:bg-[#F4C542]/20 data-[state=checked]:border-[#F4C542]"
+                      "h-3.5 w-3.5",
+                      isChecked && "data-[state=checked]:bg-transparent"
                     )}
                   />
+                  <div
+                    className="w-2 h-2 rounded-full flex-shrink-0"
+                    style={{ 
+                      background: colorConfig.marker,
+                      boxShadow: `0 0 6px ${colorConfig.marker}80`
+                    }}
+                  />
                   <span className={cn(
-                    "text-sm font-medium font-inter transition-colors flex-1",
+                    "text-xs font-medium font-inter transition-colors flex-1 truncate",
                     isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
                   )}>
-                    {country}
+                    {religion.name}
                   </span>
-                  <span className="text-xs text-[#EAD7B5]/60 font-inter">
+                  <span className="text-[10px] text-[#EAD7B5]/60 font-inter">
                     {count}
                   </span>
                 </label>
               );
             })}
           </div>
-        )}
-      </div>
+        </div>
 
-      {/* Monument Types Section */}
-      <div className="p-4">
-        <h4 className="text-sm font-semibold text-[#EAD7B5] mb-3 font-inter">
-          Par Type de Monument {filteredMonumentTypes.length < availableTypes.length && (
-            <span className="text-xs text-[#EAD7B5]/60">({filteredMonumentTypes.length})</span>
-          )}
-        </h4>
-        {filteredMonumentTypes.length === 0 ? (
-          <p className="text-sm text-[#EAD7B5]/60 py-4 text-center">Aucun type trouvé</p>
-        ) : (
-          <div className="space-y-2">
-            {filteredMonumentTypes.map((type) => {
-            const isChecked = selectedTypes.includes(type);
-            const count = typeCounts[type] || 0;
-            
-            return (
-              <label
-                key={type}
-                className={cn(
-                  "flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-all duration-200",
-                  isChecked ? "bg-white/10" : "hover:bg-white/5"
-                )}
-              >
-                <Checkbox
-                  checked={isChecked}
-                  onCheckedChange={() => handleTypeToggle(type)}
+        {/* Right Column: Cultural Types (Museums, etc.) */}
+        <div className="space-y-3">
+          <h4 className="text-sm font-semibold text-[#EAD7B5] font-inter flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-[#34E0A1]" />
+            Musées & Culture
+          </h4>
+          <div className="space-y-1.5">
+            {culturalTypes.map((type) => {
+              const isChecked = selectedTypes.includes(type);
+              const count = culturalTypeCounts[type] || 0;
+              
+              return (
+                <label
+                  key={type}
                   className={cn(
-                    "border-[#34E0A1]/50",
-                    isChecked && "data-[state=checked]:bg-[#34E0A1]/20 data-[state=checked]:border-[#34E0A1]"
+                    "flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200",
+                    isChecked ? "bg-white/10" : "hover:bg-white/5"
                   )}
-                />
-                <span className={cn(
-                  "text-sm font-medium font-inter transition-colors flex-1",
-                  isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
-                )}>
-                  {type}
-                </span>
-                <span className="text-xs text-[#EAD7B5]/60 font-inter">
-                  {count}
-                </span>
-              </label>
-            );
+                >
+                  <Checkbox
+                    checked={isChecked}
+                    onCheckedChange={() => handleTypeToggle(type)}
+                    className={cn(
+                      "h-3.5 w-3.5 border-[#34E0A1]/50",
+                      isChecked && "data-[state=checked]:bg-[#34E0A1]/20 data-[state=checked]:border-[#34E0A1]"
+                    )}
+                  />
+                  <span className={cn(
+                    "text-xs font-medium font-inter transition-colors flex-1 truncate",
+                    isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
+                  )}>
+                    {type}
+                  </span>
+                  <span className="text-[10px] text-[#EAD7B5]/60 font-inter">
+                    {count}
+                  </span>
+                </label>
+              );
             })}
           </div>
-        )}
+        </div>
+      </div>
+
+      {/* Accordion: Religious Monument Types (optional fine-grained filter) */}
+      <div className="p-4">
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="monument-types" className="border-none">
+            <AccordionTrigger className="py-2 text-sm font-semibold text-[#EAD7B5] hover:no-underline hover:text-[#34E0A1]">
+              <span className="flex items-center gap-2">
+                <ChevronDown className="w-4 h-4 text-[#F4C542]" />
+                Types de monuments religieux
+              </span>
+            </AccordionTrigger>
+            <AccordionContent>
+              <div className="grid grid-cols-2 gap-1.5 pt-2">
+                {availableReligiousTypes.map((type) => {
+                  const isChecked = selectedTypes.includes(type);
+                  const count = religiousTypeCounts[type] || 0;
+                  
+                  return (
+                    <label
+                      key={type}
+                      className={cn(
+                        "flex items-center gap-2 p-1.5 rounded-lg cursor-pointer transition-all duration-200",
+                        isChecked ? "bg-white/10" : "hover:bg-white/5"
+                      )}
+                    >
+                      <Checkbox
+                        checked={isChecked}
+                        onCheckedChange={() => handleTypeToggle(type)}
+                        className={cn(
+                          "h-3 w-3 border-[#F4C542]/50",
+                          isChecked && "data-[state=checked]:bg-[#F4C542]/20 data-[state=checked]:border-[#F4C542]"
+                        )}
+                      />
+                      <span className={cn(
+                        "text-[11px] font-medium font-inter transition-colors flex-1 truncate",
+                        isChecked ? "text-[#F5F5F5]" : "text-[#EAD7B5]/80"
+                      )}>
+                        {type}
+                      </span>
+                      <span className="text-[10px] text-[#EAD7B5]/60 font-inter">
+                        {count}
+                      </span>
+                    </label>
+                  );
+                })}
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </div>
     </div>
   );
