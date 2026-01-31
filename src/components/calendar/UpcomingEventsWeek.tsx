@@ -172,7 +172,8 @@ const UpcomingEventsWeek = ({ events, onEventClick, traditionColors }: UpcomingE
         </CardHeader>
         <CardContent className="px-3 sm:px-6">
           <ScrollArea className="h-[400px]">
-            <div className="space-y-3 pr-3">
+            {/* Extra right padding so text/badges never sit under the scroll area edge */}
+            <div className="space-y-3 pr-6">
               {upcomingEvents.map((event) => {
                 const countdown = getCountdown(event.date);
                 const hasReminderEnabled = hasReminder(event.id);
@@ -181,7 +182,7 @@ const UpcomingEventsWeek = ({ events, onEventClick, traditionColors }: UpcomingE
                   <div
                     key={event.id}
                     className={cn(
-                      "relative group rounded-lg border-2 overflow-hidden transition-all",
+                      "relative group w-full box-border rounded-lg border-2 overflow-hidden transition-all",
                       "hover:shadow-lg hover:scale-[1.02] cursor-pointer",
                       countdown.urgent && "ring-2 ring-primary/50"
                     )}
@@ -210,14 +211,14 @@ const UpcomingEventsWeek = ({ events, onEventClick, traditionColors }: UpcomingE
                         />
 
                         <div className="flex-1 min-w-0" onClick={() => onEventClick(event)}>
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <h4 className="font-semibold text-foreground group-hover:text-primary transition-colors">
+                          <div className="flex flex-col gap-2 mb-2 sm:flex-row sm:items-start sm:justify-between">
+                            <h4 className="min-w-0 font-semibold leading-snug break-words text-foreground group-hover:text-primary transition-colors">
                               {event.nameFr}
                             </h4>
                             <Badge
                               variant={countdown.urgent ? "default" : "secondary"}
                               className={cn(
-                                "flex items-center gap-1 whitespace-nowrap flex-shrink-0",
+                                "flex items-center gap-1 whitespace-nowrap self-start sm:self-auto flex-shrink-0",
                                 countdown.urgent && "animate-pulse-subtle"
                               )}
                             >
