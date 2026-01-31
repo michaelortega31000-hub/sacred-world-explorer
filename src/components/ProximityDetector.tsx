@@ -9,9 +9,10 @@ import { MapPin, Navigation, Loader2, Settings } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
 const ProximityDetector = () => {
-  const [permissionRequested, setPermissionRequested] = useState(false);
-  const { position, error, loading, permissionState } = useGeolocation(permissionRequested);
-  const { userProgress } = useApp();
+  // Use global geolocation state from AppContext (synced with header toggle)
+  const { userProgress, toggleGeolocation } = useApp();
+  const geolocationEnabled = userProgress.geolocationEnabled;
+  const { position, error, loading, permissionState } = useGeolocation(geolocationEnabled);
   const [nearbyPlaces, setNearbyPlaces] = useState<any[]>([]);
 
   // Calculate distance between two coordinates (Haversine formula)
@@ -74,8 +75,8 @@ const ProximityDetector = () => {
     setNearbyPlaces(nearby);
   }, [position, userProgress.visitedPlaces]);
 
-  // Show activation screen if permission not yet requested
-  if (!permissionRequested) {
+  // Show activation screen if geolocation is not enabled (synced with header toggle)
+  if (!geolocationEnabled) {
     return (
       <Card className="p-6 text-center border-primary/20 bg-card/50 backdrop-blur-sm">
         <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/10 flex items-center justify-center">
@@ -85,7 +86,7 @@ const ProximityDetector = () => {
         <p className="text-muted-foreground mb-6 max-w-md mx-auto">
           Activez la géolocalisation pour voir les monuments religieux à proximité de votre position actuelle.
         </p>
-        <Button onClick={() => setPermissionRequested(true)} size="lg">
+        <Button onClick={toggleGeolocation} size="lg">
           <Navigation className="w-4 h-4 mr-2" />
           Activer la localisation
         </Button>
@@ -129,8 +130,9 @@ const ProximityDetector = () => {
             variant="outline" 
             size="sm" 
             onClick={() => {
-              setPermissionRequested(false);
-              setTimeout(() => setPermissionRequested(true), 100);
+              // Toggle off and on to retry geolocation
+              toggleGeolocation();
+              setTimeout(() => toggleGeolocation(), 100);
             }}
             className="mt-2"
           >

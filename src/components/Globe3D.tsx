@@ -1200,16 +1200,13 @@ const Globe3D = ({
         });
       }
     }
-    if (geolocationError) {
-      // Only surface the error when user explicitly requested a recenter.
-      // This keeps the header toggle independent (no “error toast” on simple enable).
-      if (pendingRecenter.current) {
-        pendingRecenter.current = false;
-        const errorMessage = geolocationError.code === 1 ? 'Permission de géolocalisation refusée.' : t('location.error');
-        toast.error(errorMessage, {
-          duration: 5000
-        });
-      }
+    // Show geolocation error IMMEDIATELY when geolocation is enabled
+    if (geolocationError && geolocationEnabled) {
+      const errorMessage = geolocationError.code === 1 
+        ? 'Permission de géolocalisation refusée' 
+        : 'Erreur de localisation';
+      toast.error(errorMessage, { duration: 5000 });
+      pendingRecenter.current = false;
     }
   }, [userPosition, geolocationError, geolocationEnabled, t]);
 
@@ -1240,14 +1237,9 @@ const Globe3D = ({
     }
   };
 
-  // Recenter function
+  // Recenter function - only zooms to position, button is disabled if geolocation is OFF
   const handleRecenter = () => {
-    // This button should ONLY recenter/zoom.
-    // Activation is handled by the header toggle (left of the logo).
-    if (!geolocationEnabled) {
-      toast.info('Active la géolocalisation via le bouton en haut à gauche.');
-      return;
-    }
+    if (!geolocationEnabled) return; // Button is disabled, do nothing
 
     if (userPosition) {
       map.current?.flyTo({
@@ -1255,11 +1247,10 @@ const Globe3D = ({
         zoom: 12,
         duration: 2000
       });
-      return;
+    } else {
+      // Position not yet available, zoom when we get it
+      pendingRecenter.current = true;
     }
-
-    // Geolocation enabled but position not yet available: recenter as soon as we get it
-    pendingRecenter.current = true;
   };
 
   // Expose functions via refs
@@ -1553,16 +1544,25 @@ const Globe3D = ({
           </Tooltip>
         </TooltipProvider>
 
-        {/* Geolocation button */}
+        {/* Geolocation recenter button - disabled if geolocation is OFF */}
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button variant={geolocationEnabled ? "default" : "secondary"} size="icon" onClick={handleRecenter} className="rounded-full shadow-lg h-9 w-9">
+              <Button 
+                variant={geolocationEnabled ? "default" : "secondary"} 
+                size="icon" 
+                onClick={handleRecenter} 
+                disabled={!geolocationEnabled}
+                className={cn(
+                  "rounded-full shadow-lg h-9 w-9",
+                  !geolocationEnabled && "opacity-50 cursor-not-allowed"
+                )}
+              >
                 <Locate className="h-4 w-4" />
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>Recentrer sur ma position</p>
+              <p>{geolocationEnabled ? 'Recentrer sur ma position' : 'Activez la géolocalisation d\'abord'}</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
