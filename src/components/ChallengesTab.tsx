@@ -411,7 +411,7 @@ const ChallengesTab = () => {
   }, [userLocation]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       {/* Streak Display */}
       <Card className="border-accent/30 bg-gradient-to-r from-orange-500/10 via-red-500/10 to-pink-500/10">
         <CardContent className="pt-6">
