@@ -1,190 +1,160 @@
 
-# Plan : Réorganisation des contrôles Header + Zone Globe
+# Plan : Refonte du filtre MonumentFilter
 
 ## Objectif
-Réorganiser les éléments de contrôle sur la page `/explore` :
-1. Déplacer le filtre de catégorie en haut à gauche du header
-2. Descendre le bouton de géolocalisation et l'aligner avec le chatbot (en bas de l'écran)
-3. Garder l'icône de religion + badge tout à gauche du header
+
+Simplifier le panneau de filtrage en supprimant la section "Pays" et en réorganisant l'interface en deux colonnes distinctes :
+- **Colonne gauche** : Filtrer par traditions/religions (sites sacrés)
+- **Colonne droite** : Filtrer par type de musée/centre culturel
 
 ---
 
-## Structure actuelle vs. Structure cible
+## Structure actuelle vs. cible
 
 ```text
-ACTUEL:
-┌─────────────────────────────────────────┐
-│ [Géoloc] [Religion] [Badge]  [Logo]  [Actions] │  ← Header
-├─────────────────────────────────────────┤
-│           [Filtre Catégorie]            │  ← Au-dessus du globe (centre)
-│                                         │
-│              Globe 3D                   │
-│                                         │
-│                              [Chatbot]  │  ← Bas droite (fixed)
-├─────────────────────────────────────────┤
-│        [Onglets exploration]            │
-└─────────────────────────────────────────┘
+ACTUEL (MonumentFilter.tsx):
+┌─────────────────────────────────┐
+│ En-tête : Filtres               │
+│ Préréglages sauvegardés         │
+│ Barre de recherche              │
+├─────────────────────────────────┤
+│ Section : Par Religion          │
+│  □ Christianisme (150)          │
+│  □ Islam (45)                   │
+│  □ Judaïsme (12)                │
+│  ... (6 options)                │
+├─────────────────────────────────┤
+│ Section : Par Pays ← SUPPRIMER  │
+│  □ France (25)                  │
+│  □ Italie (30)                  │
+│  ... (50+ pays)                 │
+├─────────────────────────────────┤
+│ Section : Par Type de Monument  │
+│  □ Cathédrale (45)              │
+│  □ Mosquée (20)                 │
+│  □ Temple (35)                  │
+│  ... (15+ types)                │
+└─────────────────────────────────┘
 
 CIBLE:
-┌─────────────────────────────────────────┐
-│ [Religion] [Badge] [Filtre]  [Logo]  [Actions] │  ← Header (filtre ajouté)
-├─────────────────────────────────────────┤
-│                                         │
-│              Globe 3D                   │
-│                                         │
-│  [Géoloc]                    [Chatbot]  │  ← Bas (géoloc à gauche, chatbot à droite)
-├─────────────────────────────────────────┤
-│        [Onglets exploration]            │
-└─────────────────────────────────────────┘
+┌─────────────────────────────────┐
+│ En-tête : Filtres               │
+│ Préréglages sauvegardés         │
+├─────────────────────────────────┤
+│ ┌───────────────┬─────────────┐ │
+│ │ LIEUX SACRÉS │ MUSÉES      │ │
+│ │              │             │ │
+│ │ □ Christian. │ □ Musée art │ │
+│ │ □ Islam      │ □ Musée hist│ │
+│ │ □ Judaïsme   │ □ Centre cu.│ │
+│ │ □ Bouddhisme │ □ Exposition│ │
+│ │ □ Hindouisme │             │ │
+│ │ □ Traditions │             │ │
+│ └───────────────┴─────────────┘ │
+├─────────────────────────────────┤
+│ Types de monuments (optionnel)  │
+│  □ Cathédrale  □ Basilique     │
+│  □ Mosquée     □ Temple        │
+└─────────────────────────────────┘
 ```
 
 ---
 
-## Modifications a apporter
+## Modifications techniques
 
-### 1. Modifier le Header pour inclure le filtre de catégorie
+### Fichier à modifier : `src/components/MonumentFilter.tsx`
 
-**Fichier** : `src/components/Header.tsx`
+#### 1. Supprimer le filtre par pays
 
-Changements :
-- Ajouter une prop `categoryFilter` et `onCategoryChange` pour recevoir le filtre
-- Retirer le switch de géolocalisation du header
-- Ajouter le composant `PlaceCategoryFilter` après les badges
-- Réorganiser l'ordre des éléments
+Retirer les éléments liés aux pays :
+- État `selectedCountries`
+- Fonction `handleCountryToggle`
+- Calcul `countryCounts` et `availableCountries`
+- Filtrage `filteredCountries`
+- Section JSX "Par Pays" (lignes 527-572)
+- Mise à jour de l'interface `FilterOptions` pour retirer `countries`
+
+#### 2. Séparer les types par catégorie
+
+Créer deux listes distinctes basées sur `placeCategory` :
+- **Types religieux** : Cathédrale, Basilique, Mosquée, Temple, Synagogue, Sanctuaire, Abbaye, etc.
+- **Types culturels** : Musée, Centre culturel, Galerie, Exposition, etc.
 
 ```tsx
-interface HeaderProps {
-  showBack?: boolean;
-  backTo?: string;
-  backLabel?: string;
-  children?: React.ReactNode;
-  transparent?: boolean;
-  // Nouvelles props pour le filtre
-  categoryFilter?: PlaceCategoryFilterValue;
-  onCategoryChange?: (value: PlaceCategoryFilterValue) => void;
-}
+// Classification des types
+const religiousTypes = ['Cathédrale', 'Basilique', 'Mosquée', 'Temple', 
+  'Synagogue', 'Sanctuaire', 'Abbaye', 'Monastère', 'Église', 'Chapelle',
+  'Pagode', 'Stupa', 'Gurdwara', 'Mausolée', 'Tombeau'];
+
+const culturalTypes = ['Musée', 'Centre culturel', 'Galerie', 'Exposition',
+  'Mémorial', 'Site archéologique', 'Ruines'];
 ```
 
-Layout gauche du header :
+#### 3. Nouvelle mise en page en colonnes
+
+Utiliser une grille CSS à 2 colonnes :
+
 ```tsx
-<div className="flex items-center gap-1.5 sm:gap-3">
-  {/* 1. Indicateur de religion */}
-  {userProgress.selectedReligion && (
-    <div className="...">
-      <ReligionIcon religion={userProgress.selectedReligion} size="sm" />
-    </div>
-  )}
-  
-  {/* 2. Badges obtenus */}
-  <div className="flex items-center ...">
-    <Award className="..." />
-    <span>{userProgress.badges.length}</span>
+<div className="grid grid-cols-2 gap-4 p-4">
+  {/* Colonne gauche : Traditions */}
+  <div className="space-y-3">
+    <h4 className="text-sm font-semibold text-[#EAD7B5] flex items-center gap-2">
+      <Church className="w-4 h-4" />
+      Traditions
+    </h4>
+    {/* Liste des religions avec checkboxes */}
   </div>
   
-  {/* 3. Filtre de catégorie (nouveau) */}
-  {showExploreControls && categoryFilter !== undefined && (
-    <PlaceCategoryFilter 
-      value={categoryFilter}
-      onChange={onCategoryChange}
-      persistKey="explore"
-    />
-  )}
+  {/* Colonne droite : Musées */}
+  <div className="space-y-3">
+    <h4 className="text-sm font-semibold text-[#EAD7B5] flex items-center gap-2">
+      <Building2 className="w-4 h-4" />
+      Musées & Culture
+    </h4>
+    {/* Liste des types culturels avec checkboxes */}
+  </div>
 </div>
 ```
 
----
+#### 4. Garder une section "Types de monument" optionnelle
 
-### 2. Créer un nouveau composant GeolocationToggle flottant
-
-**Fichier** : `src/components/GeolocationToggle.tsx` (nouveau)
-
-Ce composant sera positionné en bas à gauche, aligné avec le chatbot :
-
-```tsx
-import { Switch } from '@/components/ui/switch';
-import { MapPin } from 'lucide-react';
-import { useApp } from '@/contexts/AppContext';
-
-const GeolocationToggle = () => {
-  const { userProgress, toggleGeolocation, userLocation } = useApp();
-  
-  return (
-    <div className="fixed bottom-24 left-4 z-50 flex items-center gap-2 bg-card/90 backdrop-blur-sm rounded-full px-3 py-2 shadow-lg border border-border/50">
-      <MapPin className={`w-4 h-4 ${
-        userProgress.geolocationEnabled && userLocation 
-          ? 'text-primary' 
-          : 'text-muted-foreground'
-      }`} />
-      <Switch 
-        checked={userProgress.geolocationEnabled} 
-        onCheckedChange={toggleGeolocation} 
-        aria-label="Activer la géolocalisation" 
-      />
-    </div>
-  );
-};
-
-export default GeolocationToggle;
-```
-
-Position : `fixed bottom-24 left-4` (symétrique au chatbot qui est `fixed bottom-24 right-4`)
+Pour un filtrage plus fin, conserver une section réduite avec les types de monuments spécifiques (Cathédrale, Mosquée, Temple, etc.) accessible via un accordéon "Plus de filtres".
 
 ---
 
-### 3. Modifier la page Explore
-
-**Fichier** : `src/pages/Explore.tsx`
-
-Changements :
-- Retirer le `PlaceCategoryFilter` de l'overlay du globe
-- Passer le filtre au Header via les nouvelles props
-- Ajouter le composant `GeolocationToggle` flottant
+## Interface FilterOptions mise à jour
 
 ```tsx
-import GeolocationToggle from '@/components/GeolocationToggle';
-
-// Dans le return:
-{!isFullscreen && (
-  <>
-    <Header 
-      categoryFilter={categoryFilter}
-      onCategoryChange={setCategoryFilter}
-    />
-    <GeolocationToggle />
-  </>
-)}
-```
-
-Retirer le bloc de l'overlay :
-```tsx
-// SUPPRIMER ce bloc :
-{!isFullscreen && (
-  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50">
-    <PlaceCategoryFilter ... />
-  </div>
-)}
+export interface FilterOptions {
+  religions: Religion[];
+  types: string[];
+  // countries supprimé
+}
 ```
 
 ---
 
-## Structure des fichiers
+## Résumé des changements
+
+| Élément | Action |
+|---------|--------|
+| Section "Par Pays" | Supprimer |
+| Section "Par Religion" | Déplacer en colonne gauche |
+| Section "Par Type" | Réorganiser en colonne droite (types culturels) |
+| Barre de recherche | Supprimer (plus nécessaire sans pays) |
+| Interface FilterOptions | Retirer le champ `countries` |
+| Layout général | Passer en grille 2 colonnes |
+
+---
+
+## Fichiers impactés
 
 ```text
 src/
   components/
-    GeolocationToggle.tsx  ← NOUVEAU
-    Header.tsx             ← MODIFIE
+    MonumentFilter.tsx    ← Refonte majeure
   pages/
-    Explore.tsx            ← MODIFIE
+    Globe3D.tsx           ← Adapter l'appel (retirer countries des filtres)
 ```
 
----
-
-## Résultat attendu
-
-Sur la page `/explore` :
-- **Header (haut)** : [Croix dorée] [Badge: X] [Filtre: Tous/Sacrés/Musées] ... [Logo] ... [Micro] [Mail]
-- **Bas gauche** : Bouton géolocalisation flottant (aligné avec le chatbot)
-- **Bas droite** : Bouton chatbot (position inchangée)
-
-Le bouton géolocalisation sera visuellement similaire au chatbot (arrondi, avec ombre) pour une cohérence visuelle.
+Le nouveau design sera plus épuré, plus visuel avec les colonnes, et permettra aux utilisateurs de choisir rapidement entre explorer les traditions religieuses ou les sites culturels.
