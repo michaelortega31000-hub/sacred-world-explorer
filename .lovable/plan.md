@@ -1,160 +1,130 @@
 
-# Plan : Refonte du filtre MonumentFilter
+# Plan : Filtrage des restaurants par proximité (50km)
 
-## Objectif
+## Problème identifié
 
-Simplifier le panneau de filtrage en supprimant la section "Pays" et en réorganisant l'interface en deux colonnes distinctes :
-- **Colonne gauche** : Filtrer par traditions/religions (sites sacrés)
-- **Colonne droite** : Filtrer par type de musée/centre culturel
+Quand l'utilisateur clique sur l'icône restaurant d'un lieu en Bolivie :
+1. Le code navigue vers `/country/Bolivia?tab=restaurants&city=La Paz`
+2. `RestaurantsTab` cherche des restaurants avec `city = "La Paz"` dans la base
+3. Aucun restaurant n'existe en Bolivie → le filtre passe à "tous les continents"
+4. Résultat : affichage de tous les restaurants mondiaux (Bangkok, etc.)
 
----
-
-## Structure actuelle vs. cible
-
-```text
-ACTUEL (MonumentFilter.tsx):
-┌─────────────────────────────────┐
-│ En-tête : Filtres               │
-│ Préréglages sauvegardés         │
-│ Barre de recherche              │
-├─────────────────────────────────┤
-│ Section : Par Religion          │
-│  □ Christianisme (150)          │
-│  □ Islam (45)                   │
-│  □ Judaïsme (12)                │
-│  ... (6 options)                │
-├─────────────────────────────────┤
-│ Section : Par Pays ← SUPPRIMER  │
-│  □ France (25)                  │
-│  □ Italie (30)                  │
-│  ... (50+ pays)                 │
-├─────────────────────────────────┤
-│ Section : Par Type de Monument  │
-│  □ Cathédrale (45)              │
-│  □ Mosquée (20)                 │
-│  □ Temple (35)                  │
-│  ... (15+ types)                │
-└─────────────────────────────────┘
-
-CIBLE:
-┌─────────────────────────────────┐
-│ En-tête : Filtres               │
-│ Préréglages sauvegardés         │
-├─────────────────────────────────┤
-│ ┌───────────────┬─────────────┐ │
-│ │ LIEUX SACRÉS │ MUSÉES      │ │
-│ │              │             │ │
-│ │ □ Christian. │ □ Musée art │ │
-│ │ □ Islam      │ □ Musée hist│ │
-│ │ □ Judaïsme   │ □ Centre cu.│ │
-│ │ □ Bouddhisme │ □ Exposition│ │
-│ │ □ Hindouisme │             │ │
-│ │ □ Traditions │             │ │
-│ └───────────────┴─────────────┘ │
-├─────────────────────────────────┤
-│ Types de monuments (optionnel)  │
-│  □ Cathédrale  □ Basilique     │
-│  □ Mosquée     □ Temple        │
-└─────────────────────────────────┘
-```
+**Cause racine** : La table `restaurants` n'a pas de coordonnées GPS, donc impossible de filtrer par distance géographique.
 
 ---
 
-## Modifications techniques
+## Solution proposée
 
-### Fichier à modifier : `src/components/MonumentFilter.tsx`
+### 1. Ajouter une colonne `coordinates` à la table `restaurants`
 
-#### 1. Supprimer le filtre par pays
-
-Retirer les éléments liés aux pays :
-- État `selectedCountries`
-- Fonction `handleCountryToggle`
-- Calcul `countryCounts` et `availableCountries`
-- Filtrage `filteredCountries`
-- Section JSX "Par Pays" (lignes 527-572)
-- Mise à jour de l'interface `FilterOptions` pour retirer `countries`
-
-#### 2. Séparer les types par catégorie
-
-Créer deux listes distinctes basées sur `placeCategory` :
-- **Types religieux** : Cathédrale, Basilique, Mosquée, Temple, Synagogue, Sanctuaire, Abbaye, etc.
-- **Types culturels** : Musée, Centre culturel, Galerie, Exposition, etc.
-
-```tsx
-// Classification des types
-const religiousTypes = ['Cathédrale', 'Basilique', 'Mosquée', 'Temple', 
-  'Synagogue', 'Sanctuaire', 'Abbaye', 'Monastère', 'Église', 'Chapelle',
-  'Pagode', 'Stupa', 'Gurdwara', 'Mausolée', 'Tombeau'];
-
-const culturalTypes = ['Musée', 'Centre culturel', 'Galerie', 'Exposition',
-  'Mémorial', 'Site archéologique', 'Ruines'];
+```sql
+ALTER TABLE restaurants 
+ADD COLUMN coordinates jsonb;
 ```
 
-#### 3. Nouvelle mise en page en colonnes
+### 2. Mettre à jour les restaurants existants avec leurs coordonnées
 
-Utiliser une grille CSS à 2 colonnes :
+Utiliser l'API Mapbox Geocoding pour convertir `address + city + country` en coordonnées latitude/longitude pour les restaurants existants.
 
-```tsx
-<div className="grid grid-cols-2 gap-4 p-4">
-  {/* Colonne gauche : Traditions */}
-  <div className="space-y-3">
-    <h4 className="text-sm font-semibold text-[#EAD7B5] flex items-center gap-2">
-      <Church className="w-4 h-4" />
-      Traditions
-    </h4>
-    {/* Liste des religions avec checkboxes */}
-  </div>
-  
-  {/* Colonne droite : Musées */}
-  <div className="space-y-3">
-    <h4 className="text-sm font-semibold text-[#EAD7B5] flex items-center gap-2">
-      <Building2 className="w-4 h-4" />
-      Musées & Culture
-    </h4>
-    {/* Liste des types culturels avec checkboxes */}
-  </div>
-</div>
-```
-
-#### 4. Garder une section "Types de monument" optionnelle
-
-Pour un filtrage plus fin, conserver une section réduite avec les types de monuments spécifiques (Cathédrale, Mosquée, Temple, etc.) accessible via un accordéon "Plus de filtres".
-
----
-
-## Interface FilterOptions mise à jour
+### 3. Modifier `RestaurantsTab` pour accepter les coordonnées du lieu
 
 ```tsx
-export interface FilterOptions {
-  religions: Religion[];
-  types: string[];
-  // countries supprimé
+interface RestaurantsTabProps {
+  country?: string;
+  city?: string;
+  placeCoordinates?: [number, number]; // NOUVEAU
+  maxDistanceKm?: number; // NOUVEAU (défaut: 50)
 }
 ```
 
----
+### 4. Implémenter le filtrage par proximité
 
-## Résumé des changements
+Quand `placeCoordinates` est fourni :
+- Récupérer tous les restaurants avec coordonnées
+- Calculer la distance entre chaque restaurant et le lieu
+- Filtrer ceux qui sont à moins de 50km
+- Si aucun restaurant dans le rayon : afficher un message clair au lieu de basculer sur tous les restaurants
 
-| Élément | Action |
-|---------|--------|
-| Section "Par Pays" | Supprimer |
-| Section "Par Religion" | Déplacer en colonne gauche |
-| Section "Par Type" | Réorganiser en colonne droite (types culturels) |
-| Barre de recherche | Supprimer (plus nécessaire sans pays) |
-| Interface FilterOptions | Retirer le champ `countries` |
-| Layout général | Passer en grille 2 colonnes |
-
----
-
-## Fichiers impactés
-
-```text
-src/
-  components/
-    MonumentFilter.tsx    ← Refonte majeure
-  pages/
-    Globe3D.tsx           ← Adapter l'appel (retirer countries des filtres)
+```tsx
+const filterByProximity = (restaurants: Restaurant[], centerCoords: [number, number], maxKm: number) => {
+  return restaurants.filter(r => {
+    if (!r.coordinates) return false;
+    const distance = calculateDistance(
+      centerCoords[1], centerCoords[0], // lat, lon du lieu
+      r.coordinates.lat, r.coordinates.lng // lat, lon du restaurant
+    );
+    return distance <= maxKm * 1000; // Convertir km en mètres
+  });
+};
 ```
 
-Le nouveau design sera plus épuré, plus visuel avec les colonnes, et permettra aux utilisateurs de choisir rapidement entre explorer les traditions religieuses ou les sites culturels.
+### 5. Modifier la navigation depuis Country.tsx
+
+Passer les coordonnées du lieu dans l'URL :
+
+```tsx
+// Avant
+navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city)}`);
+
+// Après
+navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city)}&lat=${place.coordinates[1]}&lng=${place.coordinates[0]}`);
+```
+
+### 6. Améliorer l'UX quand aucun restaurant n'est trouvé
+
+Afficher un message explicite :
+```
+🍽️ Aucun restaurant référencé dans un rayon de 50km
+Soyez le premier à ajouter un restaurant !
+[+ Ajouter un restaurant]
+```
+
+---
+
+## Fichiers à modifier
+
+| Fichier | Modification |
+|---------|-------------|
+| `supabase/migrations/` | Ajouter colonne `coordinates` à `restaurants` |
+| `src/components/RestaurantsTab.tsx` | Accepter `placeCoordinates`, filtrer par distance, gérer le cas "aucun résultat" |
+| `src/pages/Country.tsx` | Passer `lat` et `lng` dans l'URL de navigation |
+| `src/components/AddRestaurantDialog.tsx` | Géocoder l'adresse pour stocker les coordonnées |
+
+---
+
+## Flux après implémentation
+
+```text
+Utilisateur clique sur 🍽️ en Bolivie
+         ↓
+Navigation: /country/Bolivia?tab=restaurants&city=La+Paz&lat=-16.5&lng=-68.15
+         ↓
+RestaurantsTab récupère tous les restaurants avec coordonnées
+         ↓
+Calcul distance pour chaque restaurant
+         ↓
+Filtre: distance ≤ 50km
+         ↓
+Si 0 résultats → "Aucun restaurant dans les 50km"
+Si N résultats → Affiche les N restaurants proches
+```
+
+---
+
+## Migration de données existantes
+
+Pour les 30+ restaurants existants (Bangkok, USA, etc.), une migration sera nécessaire pour :
+1. Géocoder leurs adresses via Mapbox
+2. Stocker les coordonnées dans la nouvelle colonne
+
+Cette migration peut être faite via une edge function ou manuellement.
+
+---
+
+## Alternative légère (sans coordonnées)
+
+Si l'ajout de coordonnées est trop complexe pour l'instant, une solution intermédiaire :
+- Quand aucun restaurant n'est trouvé dans la ville, **ne pas basculer sur "tous"**
+- Afficher simplement "Aucun restaurant à [ville]" avec le bouton pour en ajouter un
+
+Cette solution est plus rapide à implémenter mais ne résout pas le filtrage géographique réel.
