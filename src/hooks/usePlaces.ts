@@ -2,7 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { mockPlaces } from '@/data/placesData';
 import { getImageUrl } from '@/lib/imageHelper';
-import type { Place, Religion } from '@/contexts/AppContext';
+import type { Place, Religion, PlaceCategory } from '@/contexts/AppContext';
 import type { Json } from '@/integrations/supabase/types';
 
 // Type for DB place row (matching Supabase schema)
@@ -18,6 +18,9 @@ interface DBPlace {
   image_url: string | null;
   religion: string | null;
   verification_status: string | null;
+  place_category: string | null;
+  tags: string[] | null;
+  traditions_related: string[] | null;
 }
 
 /**
@@ -86,11 +89,14 @@ const normalizeDbPlace = (dbPlace: DBPlace): Place => {
     country: dbPlace.country,
     city: dbPlace.city,
     type: dbPlace.type,
+    placeCategory: (dbPlace.place_category as PlaceCategory) || 'religious_site',
     description: dbPlace.description || '',
     points: dbPlace.points_value || 50,
     coordinates: normalizeCoordinates(dbPlace.coordinates),
     imageUrl,
     religion: (dbPlace.religion as Religion) || undefined,
+    tags: dbPlace.tags || [],
+    traditionsRelated: dbPlace.traditions_related || [],
   };
 };
 

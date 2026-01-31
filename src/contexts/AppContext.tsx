@@ -14,17 +14,22 @@ import {
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
+export type PlaceCategory = 'religious_site' | 'museum' | 'other';
+
 export interface Place {
   id: string;
   name: string;
   country: string;
   city?: string;
   type: string;
+  placeCategory?: PlaceCategory;
   description: string;
   points: number;
   coordinates: [number, number];
   imageUrl?: string;
   religion?: Religion;
+  tags?: string[];
+  traditionsRelated?: string[];
 }
 
 export interface SavedPOI {

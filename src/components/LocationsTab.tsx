@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -14,10 +14,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { getImageUrl } from '@/lib/imageHelper';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Label } from '@/components/ui/label';
+import PlaceCategoryFilter, { type PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import type { SavedPOI } from '@/contexts/AppContext';
+import type { SavedPOI, PlaceCategory } from '@/contexts/AppContext';
 import jsPDF from 'jspdf';
 
 import {
@@ -67,6 +68,7 @@ const LocationsTab = () => {
   const [selectedCountry, setSelectedCountry] = useState<string>('all');
   const [selectedCity, setSelectedCity] = useState<string>('all');
   const [activeTab, setActiveTab] = useState<string>('all');
+  const [placeCategory, setPlaceCategory] = useState<PlaceCategoryFilterValue>('all');
   const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
   const [routeSegments, setRouteSegments] = useState<RouteSegment[]>([]);
   const [loadingRouteInfo, setLoadingRouteInfo] = useState(false);
@@ -621,6 +623,11 @@ const LocationsTab = () => {
   const filteredPlaces = useMemo(() => {
     let filtered = activeTab === 'planned' ? plannedPlaces : allPlaces;
 
+    // Filter by place category
+    if (placeCategory !== 'all') {
+      filtered = filtered.filter(p => (p.placeCategory || 'religious_site') === placeCategory);
+    }
+
     if (selectedContinent !== 'all') {
       filtered = filtered.filter(p => getContinent(p.country) === selectedContinent);
     }
@@ -643,7 +650,14 @@ const LocationsTab = () => {
     }
 
     return filtered.sort((a, b) => a.name.localeCompare(b.name));
-  }, [selectedContinent, selectedCountry, selectedCity, searchQuery, activeTab, plannedPlaces]);
+  }, [selectedContinent, selectedCountry, selectedCity, searchQuery, activeTab, plannedPlaces, allPlaces, placeCategory]);
+
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const religious = allPlaces.filter(p => (p.placeCategory || 'religious_site') === 'religious_site').length;
+    const museums = allPlaces.filter(p => p.placeCategory === 'museum').length;
+    return { religious, museums, total: allPlaces.length };
+  }, [allPlaces]);
 
   const isPlaceVisited = (placeId: string) => {
     return userProgress.visitedPlaces.includes(placeId);
@@ -659,8 +673,20 @@ const LocationsTab = () => {
           Lieux Sacrés du Monde
         </h1>
         <p className="text-muted-foreground text-lg">
-          Découvrez {isLoadingPlaces ? '...' : allPlaces.length} lieux sacrés à travers le monde
+          Découvrez {isLoadingPlaces ? '...' : categoryCounts.total} lieux à travers le monde
+          <span className="text-sm ml-2">
+            ({categoryCounts.religious} lieux sacrés · {categoryCounts.museums} musées)
+          </span>
         </p>
+      </div>
+
+      {/* Place Category Filter */}
+      <div className="flex justify-center">
+        <PlaceCategoryFilter 
+          value={placeCategory} 
+          onChange={setPlaceCategory}
+          persistKey="locations-tab"
+        />
       </div>
 
       {/* Tabs for All vs Planned */}
