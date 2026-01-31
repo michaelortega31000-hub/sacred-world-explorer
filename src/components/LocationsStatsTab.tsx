@@ -10,7 +10,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import RankingTab from './RankingTab';
 import CountryRankingTab from './CountryRankingTab';
-import ReligionRankingTab from './ReligionRankingTab';
+import FriendsRankingTab from './FriendsRankingTab';
 
 const LocationsStatsTab = () => {
   const { t } = useTranslation();
@@ -188,9 +188,9 @@ const LocationsStatsTab = () => {
             <Flag className="w-4 h-4" />
             {t('tabs.countryRanking')}
           </TabsTrigger>
-          <TabsTrigger value="religion" className="gap-2">
+          <TabsTrigger value="friends" className="gap-2">
             <Users className="w-4 h-4" />
-            {t('tabs.religionRanking')}
+            Classement amis
           </TabsTrigger>
         </TabsList>
 
@@ -338,8 +338,8 @@ const LocationsStatsTab = () => {
           <CountryRankingTab />
         </TabsContent>
 
-        <TabsContent value="religion">
-          <ReligionRankingTab />
+        <TabsContent value="friends">
+          <FriendsRankingTab />
         </TabsContent>
       </Tabs>
     </div>
