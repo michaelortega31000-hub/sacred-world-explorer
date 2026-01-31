@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff } from 'lucide-react';
+import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -115,6 +115,7 @@ const ForumTab = () => {
   const [isModerator, setIsModerator] = useState(false);
   const [hidePostId, setHidePostId] = useState<string | null>(null);
   const [hideReason, setHideReason] = useState('');
+  const [deleteTopicId, setDeleteTopicId] = useState<string | null>(null);
 
   useEffect(() => {
     loadTopics();
@@ -486,6 +487,27 @@ const ForumTab = () => {
     }
   };
 
+  const deleteTopic = async (topicId: string) => {
+    if (!session?.user) {
+      toast.error('Vous devez être connecté');
+      return;
+    }
+
+    const { error } = await supabase
+      .from('forum_topics')
+      .delete()
+      .eq('id', topicId)
+      .eq('author_id', session.user.id);
+
+    if (error) {
+      toast.error('Erreur lors de la suppression du topic');
+    } else {
+      toast.success('Topic supprimé avec succès');
+      setDeleteTopicId(null);
+      loadTopics();
+    }
+  };
+
   if (selectedTopic) {
     return (
       <div className="container mx-auto p-4 max-w-4xl space-y-4">
@@ -688,15 +710,30 @@ const ForumTab = () => {
                           </CardDescription>
                           <p className="text-sm mt-2 line-clamp-2">{topic.description}</p>
                         </div>
-                        <div className="flex flex-col items-end gap-1 text-sm text-muted-foreground ml-4">
-                          <span className="flex items-center gap-1">
-                            <Eye className="w-4 h-4" />
-                            {topic.views_count}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <MessageSquare className="w-4 h-4" />
-                            {topic.posts_count}
-                          </span>
+                        <div className="flex flex-col items-end gap-2 text-sm text-muted-foreground ml-4">
+                          <div className="flex flex-col items-end gap-1">
+                            <span className="flex items-center gap-1">
+                              <Eye className="w-4 h-4" />
+                              {topic.views_count}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <MessageSquare className="w-4 h-4" />
+                              {topic.posts_count}
+                            </span>
+                          </div>
+                          {session?.user?.id === topic.author_id && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setDeleteTopicId(topic.id);
+                              }}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </CardHeader>
@@ -828,6 +865,27 @@ const ForumTab = () => {
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setHidePostId(null)}>Annuler</AlertDialogCancel>
             <AlertDialogAction onClick={hidePost}>Masquer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Topic Confirmation Dialog */}
+      <AlertDialog open={!!deleteTopicId} onOpenChange={(open) => !open && setDeleteTopicId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer ce topic ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Le topic et toutes ses réponses seront définitivement supprimés.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setDeleteTopicId(null)}>Annuler</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => deleteTopicId && deleteTopic(deleteTopicId)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Supprimer
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
