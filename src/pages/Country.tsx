@@ -81,8 +81,14 @@ const Country = () => {
     return cityA.localeCompare(cityB);
   });
 
-  // Resolve via shared helper (fuzzy filename support)
-  const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
+  // Resolve image URLs:
+  // - External URLs (http/https) should be used as-is
+  // - Local asset paths can go through getImageUrl (fuzzy filename support)
+  const resolveImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return getImageUrl(url);
+  };
 
   // Get available letters
   const availableLetters = Array.from(
