@@ -932,25 +932,29 @@ const LocationsTab = () => {
                         </div>
                         <div className="flex-1">
                           <label className="text-sm font-medium mb-2 block">Mode de transport</label>
-                          <div className="flex gap-2">
-                            <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('driving')}>
-                              <Car className="w-4 h-4 mr-2" />
-                              Voiture
-                            </Button>
-                            <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('cycling')}>
-                              <Bike className="w-4 h-4 mr-2" />
-                              Vélo
-                            </Button>
-                            <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('walking')}>
-                              <PersonStanding className="w-4 h-4 mr-2" />
-                              Marche
-                            </Button>
+                          <div className="flex flex-col gap-2">
+                            <div className="flex gap-2">
+                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('driving')}>
+                                <Car className="w-4 h-4 mr-2" />
+                                Voiture
+                              </Button>
+                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('cycling')}>
+                                <Bike className="w-4 h-4 mr-2" />
+                                Vélo
+                              </Button>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('walking')}>
+                                <PersonStanding className="w-4 h-4 mr-2" />
+                                Marche
+                              </Button>
+                              {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="flex-1 gap-2">
+                                  <Navigation className="w-4 h-4" />
+                                  {showOptimizedRoute ? 'Masquer' : 'Itinéraire'}
+                                </Button>}
+                            </div>
                           </div>
                         </div>
-                        {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="gap-2 self-end">
-                            <Navigation className="w-4 h-4" />
-                            {showOptimizedRoute ? 'Masquer' : 'Itinéraire'}
-                          </Button>}
                       </div>
                     </CardContent>
                   </Card>
