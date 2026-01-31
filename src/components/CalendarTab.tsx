@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, isSameDay, setMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { religiousEvents2025, getEventsByDate, getEventsByTradition, getAllEventDates, ReligiousEvent } from '@/data/religiousEvents';
+import { religiousEvents2026, getEventsByDate, getEventsByTradition, getAllEventDates, ReligiousEvent } from '@/data/religiousEvents';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import CalendarViewSelector from '@/components/calendar/CalendarViewSelector';
@@ -69,7 +69,7 @@ const CalendarTab = () => {
     });
     setEvents([...visitedEvents, ...plannedEvents]);
   }, [userProgress.visitedPlaces, userProgress.tripPlaces]);
-  const filteredReligiousEvents = traditionFilter === 'all' ? religiousEvents2025 : getEventsByTradition(traditionFilter);
+  const filteredReligiousEvents = traditionFilter === 'all' ? religiousEvents2026 : getEventsByTradition(traditionFilter);
   const eventsForSelectedDate = selectedDate ? events.filter(event => isSameDay(event.date, selectedDate)) : [];
   const religiousEventsForSelectedDate = selectedDate ? getEventsByDate(selectedDate).filter(event => traditionFilter === 'all' || event.tradition === traditionFilter) : [];
   const daysWithPersonalEvents = events.map(event => event.date);
@@ -220,13 +220,13 @@ const CalendarTab = () => {
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-foreground">
                 <CalendarIcon className="w-5 h-5" />
-                Calendrier 2025
+                Calendrier 2026
               </CardTitle>
               <CardDescription className="text-muted-foreground">
                 {calendarView === 'month' && 'Les points colorés indiquent les événements religieux'}
                 {calendarView === 'week' && 'Planning hebdomadaire des événements'}
                 {calendarView === 'list' && 'Liste chronologique des événements'}
-                {calendarView === 'year' && 'Vue d\'ensemble de l\'année 2025'}
+                {calendarView === 'year' && 'Vue d\'ensemble de l\'année 2026'}
               </CardDescription>
             </CardHeader>
             <CardContent className="flex justify-center">
@@ -271,7 +271,7 @@ const CalendarTab = () => {
               
               {calendarView === 'year' && (
                 <YearView 
-                  year={2025}
+                  year={2026}
                   events={filteredReligiousEvents}
                   onMonthClick={handleMonthClick}
                 />
