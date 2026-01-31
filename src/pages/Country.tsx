@@ -433,7 +433,8 @@ const Country = () => {
                                   src={resolveImageUrl(place.imageUrl) || place.imageUrl}
                                   alt={place.name}
                                   loading="lazy"
-                                  onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                                  referrerPolicy="no-referrer"
+                                  onError={(e) => { e.currentTarget.src = '/images/place-placeholder.jpg'; }}
                                   className="w-full h-full object-cover"
                                 />
                                 {/* Restaurant button - top left */}
@@ -604,7 +605,8 @@ const Country = () => {
                               src={resolveImageUrl(img) || img}
                               alt={`${selectedPlace.name} - Photo ${index + 1}`}
                               className="w-full h-full object-cover"
-                              onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                              referrerPolicy="no-referrer"
+                              onError={(e) => { e.currentTarget.src = '/images/place-placeholder.jpg'; }}
                             />
                           </div>
                         </CarouselItem>

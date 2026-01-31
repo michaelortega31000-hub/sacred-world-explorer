@@ -40,14 +40,15 @@ const PlaceCard = ({
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group relative">
       {/* Background image */}
       <div className="relative h-48 overflow-hidden">
-        <div 
-          className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
+        <img
+          src={imageUrl || '/images/place-placeholder.jpg'}
+          alt={name}
+          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          referrerPolicy="no-referrer"
           style={{
-            backgroundImage: imageUrl 
-              ? `url(${imageUrl})`
-              : 'linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary-glow)) 100%)',
             filter: unlocked ? 'brightness(1)' : 'brightness(0.6) grayscale(50%)'
           }}
+          onError={(e) => { e.currentTarget.src = '/images/place-placeholder.jpg'; }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
