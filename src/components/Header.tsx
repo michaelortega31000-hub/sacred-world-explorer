@@ -81,11 +81,25 @@ const Header = ({
             {/* Gauche : Religion + Géolocalisation + Points + Badges */}
             <div className="flex items-center gap-1.5 sm:gap-3">
               {/* Indicateur de religion */}
-              {userProgress.selectedReligion && religionColor && <div className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full`} title={userProgress.selectedReligion}>
+              {userProgress.selectedReligion && religionColor ? (
+                <div 
+                  className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full shadow-md`} 
+                  title={userProgress.selectedReligion}
+                >
                   <div className={religionColor.text}>
                     {getReligionIcon(userProgress.selectedReligion)}
                   </div>
-                </div>}
+                </div>
+              ) : userProgress.selectedReligion ? (
+                <div 
+                  className="flex items-center justify-center p-1.5 sm:p-2 bg-primary rounded-full shadow-md" 
+                  title={userProgress.selectedReligion}
+                >
+                  <div className="text-primary-foreground">
+                    {getReligionIcon(userProgress.selectedReligion)}
+                  </div>
+                </div>
+              ) : null}
               
               {showExploreControls && (
                 <div className="flex items-center gap-2">
