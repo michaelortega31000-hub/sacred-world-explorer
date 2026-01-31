@@ -9,6 +9,7 @@ const corsHeaders = {
 interface CreateTopicRequest {
   title: string;
   description: string;
+  visibility: 'private' | 'public';
 }
 
 // Validation regex - no HTML tags allowed
@@ -47,7 +48,34 @@ serve(async (req) => {
 
     // Parse request body
     const body: CreateTopicRequest = await req.json();
-    const { title, description } = body;
+    const { title, description, visibility = 'public' } = body;
+
+    // Validate visibility
+    if (visibility !== 'private' && visibility !== 'public') {
+      return new Response(
+        JSON.stringify({ error: 'Visibilité invalide' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Get user's selected religion for public topics
+    let userReligion: string | null = null;
+    if (visibility === 'public') {
+      const { data: progressData } = await supabaseClient
+        .from('user_progress')
+        .select('selected_religion')
+        .eq('user_id', user.id)
+        .single();
+      
+      userReligion = progressData?.selected_religion || null;
+      
+      if (!userReligion) {
+        return new Response(
+          JSON.stringify({ error: 'Veuillez d\'abord sélectionner une religion dans votre profil pour créer un topic public' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
 
     // Validate input
     if (!title || typeof title !== 'string' || title.trim().length === 0) {
@@ -120,6 +148,8 @@ serve(async (req) => {
         title: title.trim(),
         description: description.trim(),
         author_id: user.id,
+        visibility,
+        religion: visibility === 'public' ? userReligion : null,
       })
       .select()
       .single();
