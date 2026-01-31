@@ -1184,15 +1184,10 @@ const Globe3D = ({
         userLocationMarker.current.setLngLat([longitude, latitude]);
       }
 
-      // Only zoom and show toast ONCE on first position
+      // IMPORTANT UX: Header toggle only enables location tracking.
+      // Do NOT auto-zoom on first fix; zoom is reserved for the “Recentrer” button.
       if (!hasInitiallyZoomed.current) {
         hasInitiallyZoomed.current = true;
-        map.current.flyTo({
-          center: [longitude, latitude],
-          zoom: 12,
-          duration: 2000
-        });
-        toast.success(t('location.enabled'));
       }
 
       // If user explicitly requested recenter while we had no position yet, do it now
@@ -1206,12 +1201,15 @@ const Globe3D = ({
       }
     }
     if (geolocationError) {
-      // Keep message short: avoid browser settings instructions (header has its own activation control)
-      const errorMessage = geolocationError.code === 1 ? 'Permission de géolocalisation refusée.' : t('location.error');
-      toast.error(errorMessage, {
-        duration: 5000
-      });
-      // Don't disable geolocation immediately - let user retry
+      // Only surface the error when user explicitly requested a recenter.
+      // This keeps the header toggle independent (no “error toast” on simple enable).
+      if (pendingRecenter.current) {
+        pendingRecenter.current = false;
+        const errorMessage = geolocationError.code === 1 ? 'Permission de géolocalisation refusée.' : t('location.error');
+        toast.error(errorMessage, {
+          duration: 5000
+        });
+      }
     }
   }, [userPosition, geolocationError, geolocationEnabled, t]);
 
