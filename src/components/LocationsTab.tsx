@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -40,7 +40,7 @@ interface RouteSegment {
 interface POI {
   id: string;
   name: string;
-  type: 'restaurant' | 'lodging' | 'fuel';
+  type: 'restaurant' | 'lodging' | 'fuel' | 'transport';
   address: string;
   coordinates: [number, number];
   segmentIndex: number; // index of the place this POI is near
@@ -76,7 +76,7 @@ const LocationsTab = () => {
   const [loadingRouteInfo, setLoadingRouteInfo] = useState(false);
   const [pois, setPois] = useState<POI[]>([]);
   const [loadingPOIs, setLoadingPOIs] = useState(false);
-  const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'fuel'>>(new Set(['restaurant', 'lodging', 'fuel']));
+  const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'fuel' | 'transport'>>(new Set(['restaurant', 'lodging', 'fuel', 'transport']));
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   const [transportMode, setTransportMode] = useState<'driving' | 'cycling' | 'walking'>('driving');
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
@@ -90,7 +90,7 @@ const LocationsTab = () => {
   const setShowOptimizedRoute = (show: boolean) => {
     updatePlannedRoute(userProgress.plannedRouteStartCity, show);
   };
-  const togglePOIType = (type: 'restaurant' | 'lodging' | 'fuel') => {
+  const togglePOIType = (type: 'restaurant' | 'lodging' | 'fuel' | 'transport') => {
     setSelectedPOITypes(prev => {
       const newSet = new Set(prev);
       if (newSet.has(type)) {
@@ -1140,6 +1140,13 @@ const LocationsTab = () => {
                                     <Label htmlFor="filter-fuel" className="text-sm font-normal cursor-pointer flex items-center gap-1">
                                       <Fuel className="w-4 h-4 text-accent" />
                                       Stations-service
+                                    </Label>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Checkbox id="filter-transport" checked={selectedPOITypes.has('transport')} onCheckedChange={() => togglePOIType('transport')} />
+                                    <Label htmlFor="filter-transport" className="text-sm font-normal cursor-pointer flex items-center gap-1">
+                                      <Train className="w-4 h-4 text-blue-500" />
+                                      Transports
                                     </Label>
                                   </div>
                                 </div>
