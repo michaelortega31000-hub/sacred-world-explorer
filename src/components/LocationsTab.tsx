@@ -6,7 +6,8 @@ import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { mockPlaces, getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
+import { getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
+import { usePlaces } from '@/hooks/usePlaces';
 import { useApp } from '@/contexts/AppContext';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -59,6 +60,7 @@ interface POI {
 const LocationsTab = () => {
   const navigate = useNavigate();
   const { userProgress, updatePlannedRoute, savePOI, removePOI, getPOIsForPlace, addToTrip, removeFromTrip, reorderTrip } = useApp();
+  const { data: allPlaces = [], isLoading: isLoadingPlaces } = usePlaces();
   const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedContinent, setSelectedContinent] = useState<string>('all');
@@ -162,7 +164,7 @@ const LocationsTab = () => {
     });
     
     // Set starting city if places available
-    const firstPlace = mockPlaces.find(p => p.id === placeIds[0]);
+    const firstPlace = allPlaces.find(p => p.id === placeIds[0]);
     if (firstPlace) {
       setStartingCity(`${firstPlace.city}, ${firstPlace.country}`);
       setShowOptimizedRoute(true);
@@ -389,8 +391,8 @@ const LocationsTab = () => {
 
   // Get planned places
   const plannedPlaces = useMemo(() => {
-    return mockPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
-  }, [userProgress.tripPlaces]);
+    return allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
+  }, [userProgress.tripPlaces, allPlaces]);
 
   // Get all unique cities from planned places
   const availableCities = useMemo(() => {
@@ -617,7 +619,7 @@ const LocationsTab = () => {
 
   // Filter places based on selections and search
   const filteredPlaces = useMemo(() => {
-    let filtered = activeTab === 'planned' ? plannedPlaces : mockPlaces;
+    let filtered = activeTab === 'planned' ? plannedPlaces : allPlaces;
 
     if (selectedContinent !== 'all') {
       filtered = filtered.filter(p => getContinent(p.country) === selectedContinent);
@@ -657,7 +659,7 @@ const LocationsTab = () => {
           Lieux Sacrés du Monde
         </h1>
         <p className="text-muted-foreground text-lg">
-          Découvrez {mockPlaces.length} lieux sacrés à travers le monde
+          Découvrez {isLoadingPlaces ? '...' : allPlaces.length} lieux sacrés à travers le monde
         </p>
       </div>
 
