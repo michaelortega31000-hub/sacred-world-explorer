@@ -20,6 +20,146 @@ INTERDIT :
 - Réponds UNIQUEMENT avec la réponse finale destinée à l'utilisateur.
 `;
 
+// UI Layout Guide - Detailed description of UI elements and their positions per page
+const UI_LAYOUT_GUIDE: Record<string, string> = {
+  '/explore': `
+PAGE ACTUELLE : Explorer (Carte interactive)
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (barre en haut de l'écran) :
+  • Gauche : Icône de ta tradition spirituelle (grand cercle coloré), compteur de badges (petit chiffre), bouton de géolocalisation (petit cercle avec icône localisation)
+  • Centre : Logo Sacred World
+  • Droite : Bouton micro (commande vocale), icône messages (enveloppe), bouton assistant (grand cercle turquoise - c'est moi !)
+
+- ZONE CENTRALE : Globe 3D interactif avec les marqueurs des lieux sacrés du monde
+
+- BOUTON DE FILTRE DE CATÉGORIES (en bas à gauche, flottant au-dessus des onglets) :
+  • C'est un bouton qui affiche "Tous" ou "Lieux sacrés"
+  • Clique dessus pour basculer entre voir tous les lieux ou seulement les lieux sacrés
+  • C'est le SEUL moyen de filtrer les catégories de lieux
+
+- ONGLETS (barre en bas, au-dessus de la navigation principale) :
+  • Carte | AR | Proche | Lieux | Défis | Rang
+  • "Carte" = Globe 3D actuel
+  • "AR" = Vue en réalité augmentée
+  • "Proche" = Lieux à proximité de ta position
+  • "Lieux" = Liste complète des lieux
+  • "Défis" = Quêtes et challenges
+  • "Rang" = Classements
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil
+
+IMPORTANT : Il n'y a PAS d'icône de réglages sur cette page. Pour filtrer, utilise le bouton flottant en bas à gauche.`,
+
+  '/traditions': `
+PAGE ACTUELLE : Traditions spirituelles
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (en haut) : Logo Sacred World au centre, bouton assistant à droite
+
+- BARRE DE RECHERCHE (sous le header) : Permet de chercher une tradition par son nom
+
+- GRILLE DE TRADITIONS (zone centrale) : Cartes représentant chaque tradition spirituelle avec leur symbole
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil`,
+
+  '/calendar': `
+PAGE ACTUELLE : Calendrier des événements
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (en haut) : Titre "Calendrier", bouton assistant à droite
+
+- FILTRES (sous le header) : Sélecteur de tradition pour filtrer les événements par religion
+
+- CALENDRIER (zone centrale) : Vue mensuelle avec les événements marqués
+
+- LISTE DES ÉVÉNEMENTS (sous le calendrier) : Événements du jour ou de la semaine sélectionnée
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil`,
+
+  '/profile': `
+PAGE ACTUELLE : Mon Profil
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (en haut) : Bouton réglages (icône engrenage) à droite
+
+- SECTION AVATAR (haut de la page) : Photo de profil, nom d'utilisateur, niveau et points
+
+- SECTION STATISTIQUES (centre) : Nombre de lieux visités, badges débloqués, streak
+
+- ONGLETS DE CONTENU :
+  • Badges : Tous tes badges débloqués
+  • Visites : Historique de tes visites
+  • Souvenirs : Photos et notes de tes voyages
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil`,
+
+  '/place': `
+PAGE ACTUELLE : Détail d'un lieu sacré
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (en haut) : Bouton retour (flèche) à gauche, nom du lieu au centre
+
+- IMAGE (sous le header) : Grande photo du lieu
+
+- INFORMATIONS (zone scrollable) :
+  • Description du lieu
+  • Tradition/religion associée
+  • Localisation (ville, pays)
+  • Points à gagner
+
+- BOUTONS D'ACTION (en bas) :
+  • Ajouter au voyage
+  • Marquer comme visité
+  • Partager
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil`,
+
+  '/country': `
+PAGE ACTUELLE : Détail d'un pays
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (en haut) : Bouton retour (flèche) à gauche, nom du pays au centre
+
+- SECTION LIEUX SACRÉS : Liste des temples, églises, mosquées et autres lieux spirituels du pays
+
+- SECTION MUSÉES ET CULTURE : Liste des musées et centres culturels exceptionnels
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil`,
+
+  'default': `
+NAVIGATION GÉNÉRALE DE L'APPLICATION :
+
+- HEADER (barre en haut) : Contient généralement le logo ou le titre de la page, et le bouton assistant (grand cercle turquoise) à droite
+
+- NAVIGATION PRINCIPALE (barre tout en bas de l'écran) :
+  • Explorer 🗺️ : Carte interactive du monde avec les lieux sacrés
+  • Traditions 📚 : Découvrir les différentes traditions spirituelles
+  • Calendrier 📅 : Événements et fêtes religieuses
+  • Journal : Forum, messages et amis
+  • Profil : Tes badges, statistiques et paramètres`
+};
+
+// Function to get UI layout context based on current route
+const getUILayoutForRoute = (route: string): string => {
+  if (!route) return UI_LAYOUT_GUIDE['default'];
+  
+  // Check for exact matches first
+  if (UI_LAYOUT_GUIDE[route]) {
+    return UI_LAYOUT_GUIDE[route];
+  }
+  
+  // Check for partial matches (e.g., /place/123 matches /place)
+  if (route.startsWith('/explore')) return UI_LAYOUT_GUIDE['/explore'];
+  if (route.startsWith('/traditions')) return UI_LAYOUT_GUIDE['/traditions'];
+  if (route.startsWith('/calendar')) return UI_LAYOUT_GUIDE['/calendar'];
+  if (route.startsWith('/profile')) return UI_LAYOUT_GUIDE['/profile'];
+  if (route.startsWith('/place/')) return UI_LAYOUT_GUIDE['/place'];
+  if (route.startsWith('/country/')) return UI_LAYOUT_GUIDE['/country'];
+  
+  return UI_LAYOUT_GUIDE['default'];
+};
+
 const HELP_SYSTEM_PROMPT = `Tu es l'assistant de Sacred World, une application mobile de découverte des lieux sacrés du monde entier.
 
 ${STYLE_RULES}
@@ -252,7 +392,7 @@ serve(async (req) => {
       );
     }
 
-    // Build context message
+    // Build context message with UI layout
     let contextInfo = '';
     if (currentRoute) {
       contextInfo += `L'utilisateur est actuellement sur la page: ${currentRoute}. `;
@@ -261,10 +401,16 @@ serve(async (req) => {
       contextInfo += `Il regarde le lieu avec l'ID: ${selectedPlaceId}. `;
     }
 
+    // Get UI layout for current route
+    const uiLayout = getUILayoutForRoute(currentRoute || '');
+
     const systemPrompt = mode === 'help' ? HELP_SYSTEM_PROMPT : HISTORY_SYSTEM_PROMPT;
-    const fullSystemPrompt = contextInfo 
-      ? `${systemPrompt}\n\nContexte actuel: ${contextInfo}`
-      : systemPrompt;
+    const fullSystemPrompt = `${systemPrompt}
+
+CONNAISSANCE DE L'INTERFACE - UTILISE CES INFORMATIONS POUR GUIDER L'UTILISATEUR :
+${uiLayout}
+
+${contextInfo ? `Contexte additionnel: ${contextInfo}` : ''}`;
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
