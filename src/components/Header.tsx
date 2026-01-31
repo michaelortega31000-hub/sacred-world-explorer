@@ -52,13 +52,13 @@ const Header = ({
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Gauche : Religion + Badges + Filtre */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-              {/* 1. Indicateur de religion */}
+{/* 1. Indicateur de religion */}
               {userProgress.selectedReligion && (
                 <div
-                  className="flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20 overflow-hidden"
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20 overflow-hidden"
                   title={userProgress.selectedReligion}
                 >
-                  <ReligionIcon religion={userProgress.selectedReligion} size="lg" />
+                  <ReligionIcon religion={userProgress.selectedReligion} size="lg" className="scale-125" />
                 </div>
               )}
               
