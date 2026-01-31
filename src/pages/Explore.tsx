@@ -10,6 +10,7 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
+import PlaceCategoryFilter, { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { normalizeCountryName } from '@/lib/countryNameMapping';
@@ -17,6 +18,7 @@ import { normalizeCountryName } from '@/lib/countryNameMapping';
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [categoryFilter, setCategoryFilter] = useState<PlaceCategoryFilterValue>('all');
   const { userProgress } = useApp();
   const navigate = useNavigate();
   
@@ -41,12 +43,23 @@ const Explore = () => {
           style={{ height: isFullscreen ? '100dvh' : 'calc(100dvh - 130px)' }}
         >
           <TabsContent value="map" className="h-full m-0 p-0">
-            <div className="h-full w-full">
+            <div className="h-full w-full relative">
               <Globe3D 
                 tripPlaces={userProgress.tripPlaces} 
                 onCountryClick={handleCountryClick}
                 onFullscreenChange={setIsFullscreen}
+                categoryFilter={categoryFilter}
               />
+              {/* Category filter overlay */}
+              {!isFullscreen && (
+                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50">
+                  <PlaceCategoryFilter 
+                    value={categoryFilter}
+                    onChange={setCategoryFilter}
+                    persistKey="explore"
+                  />
+                </div>
+              )}
             </div>
           </TabsContent>
 
