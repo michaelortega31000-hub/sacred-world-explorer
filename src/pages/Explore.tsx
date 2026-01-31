@@ -34,7 +34,7 @@ const Explore = () => {
   // Debug log removed to prevent performance issues
   
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className={`min-h-screen flex flex-col ${isFullscreen ? 'bg-black' : 'bg-background'}`}>
       {/* Header with category filter - hidden in fullscreen mode */}
       {!isFullscreen && (
         <Header 
@@ -45,7 +45,7 @@ const Explore = () => {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         {/* Contenu qui remplit l'espace disponible */}
         <div 
-          className="flex-1 overflow-hidden" 
+          className={`flex-1 overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
           style={{ height: isFullscreen ? '100dvh' : 'calc(100dvh - 130px)' }}
         >
           <TabsContent value="map" className="h-full m-0 p-0">
