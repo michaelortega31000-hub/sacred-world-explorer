@@ -81,7 +81,8 @@ const Globe3D = ({
     t
   } = useTranslation();
   const {
-    userProgress
+    userProgress,
+    toggleGeolocation
   } = useApp();
   const [showMonuments, setShowMonuments] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
@@ -90,8 +91,10 @@ const Globe3D = ({
     types: [],
   });
   const [filteredCount, setFilteredCount] = useState<number>(0);
-  const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
+  
+  // Use global geolocation state from AppContext
+  const geolocationEnabled = userProgress.geolocationEnabled;
   const [isFullscreen, setIsFullscreen] = useState(false);
   const {
     position: userPosition,
@@ -1236,11 +1239,12 @@ const Globe3D = ({
         zoom: 12,
         duration: 2000
       });
-    } else {
-      // Enable geolocation and reset zoom flag for initial zoom
+    } else if (!geolocationEnabled) {
+      // Enable geolocation via global context and reset zoom flag
       hasInitiallyZoomed.current = false;
-      setGeolocationEnabled(true);
+      toggleGeolocation();
     }
+    // If geolocationEnabled but no position yet, do nothing - wait for position
   };
 
   // Expose functions via refs
@@ -1389,7 +1393,7 @@ const Globe3D = ({
       stopRecording();
     } else {
       if (!geolocationEnabled) {
-        setGeolocationEnabled(true);
+        toggleGeolocation();
       }
       startRecording();
     }
