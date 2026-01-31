@@ -3,13 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Mail, MapPin, Target, Award, Cross, Moon, Star, Flower2, Flame, Atom, Globe, Users } from 'lucide-react';
+import { ArrowLeft, Mail, MapPin, Award } from 'lucide-react';
 import logo from '@/assets/logo-glow.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
-import { Religion } from '@/contexts/AppContext';
-import { religionColors } from '@/config/religionColors';
 import VoiceCommand from '@/components/VoiceCommand';
+import ReligionIcon from '@/components/ReligionIcon';
 interface HeaderProps {
   showBack?: boolean;
   backTo?: string;
@@ -49,30 +48,6 @@ const Header = ({
   const handleGeolocationToggle = () => {
     toggleGeolocation();
   };
-  const getReligionIcon = (religion: Religion | null) => {
-    const iconClass = "w-4 h-4 sm:w-5 sm:h-5";
-    switch (religion) {
-      case 'christianity':
-        return <Cross className={iconClass} />;
-      case 'islam':
-        return <Moon className={iconClass} />;
-      case 'judaism':
-        return <Star className={iconClass} />;
-      case 'buddhism':
-        return <Flower2 className={iconClass} />;
-      case 'hinduism':
-        return <Flame className={iconClass} />;
-      case 'astronomy':
-        return <Atom className={iconClass} />;
-      case 'traditional':
-        return <Globe className={iconClass} />;
-      case 'atheism':
-        return <Users className={iconClass} />;
-      default:
-        return null;
-    }
-  };
-  const religionColor = userProgress.selectedReligion ? religionColors[userProgress.selectedReligion] : null;
   return <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
         {isTextOnlyPage ?
@@ -81,25 +56,14 @@ const Header = ({
             {/* Gauche : Religion + Géolocalisation + Points + Badges */}
             <div className="flex items-center gap-1.5 sm:gap-3">
               {/* Indicateur de religion */}
-              {userProgress.selectedReligion && religionColor ? (
+              {userProgress.selectedReligion && (
                 <div 
-                  className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full shadow-md`} 
+                  className="flex items-center justify-center p-1 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20"
                   title={userProgress.selectedReligion}
                 >
-                  <div className={religionColor.text}>
-                    {getReligionIcon(userProgress.selectedReligion)}
-                  </div>
+                  <ReligionIcon religion={userProgress.selectedReligion} size="sm" />
                 </div>
-              ) : userProgress.selectedReligion ? (
-                <div 
-                  className="flex items-center justify-center p-1.5 sm:p-2 bg-primary rounded-full shadow-md" 
-                  title={userProgress.selectedReligion}
-                >
-                  <div className="text-primary-foreground">
-                    {getReligionIcon(userProgress.selectedReligion)}
-                  </div>
-                </div>
-              ) : null}
+              )}
               
               {showExploreControls && (
                 <div className="flex items-center gap-2">
@@ -114,9 +78,9 @@ const Header = ({
               </div>
               
               {/* Badges obtenus */}
-              <div className="hidden sm:flex items-center gap-1.5 px-2.5 py-1 bg-primary/10 rounded-full">
-                <Award className="w-4 h-4 text-primary" />
-                <span className="text-sm font-medium text-foreground">
+              <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
+                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">
                   {userProgress.badges.length}
                 </span>
               </div>
