@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { logger } from '@/lib/logger';
+import { getMapboxToken } from '@/lib/mapboxHelper';
 
 // Validation schema with HTML sanitization
 const noHtmlRegex = /<[^>]*>/g;
@@ -132,6 +133,26 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
         return;
       }
 
+      // Geocode the address to get coordinates
+      let coordinates: { lat: number; lng: number } | null = null;
+      try {
+        const address = `${validation.data.address}, ${validation.data.city}, ${validation.data.country}`;
+        const mapboxToken = getMapboxToken();
+        const geocodeResponse = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(address)}.json?access_token=${mapboxToken}&limit=1`
+        );
+        const geocodeData = await geocodeResponse.json();
+        
+        if (geocodeData.features && geocodeData.features.length > 0) {
+          const [lng, lat] = geocodeData.features[0].center;
+          coordinates = { lat, lng };
+          logger.log('Geocoded restaurant address:', { address, coordinates });
+        }
+      } catch (geocodeError) {
+        logger.warn('Failed to geocode restaurant address:', geocodeError);
+        // Continue without coordinates - they can be added later
+      }
+
       const { error } = await supabase
         .from('restaurants')
         .insert({
@@ -146,6 +167,7 @@ export const AddRestaurantDialog = ({ onSuccess }: { onSuccess?: () => void }) =
           description: validation.data.description || null,
           type: selectedTypes,
           created_by: user.id,
+          coordinates: coordinates,
         });
 
       if (error) throw error;
