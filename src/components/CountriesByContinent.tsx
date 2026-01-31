@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { ChevronRight, MapPin, Globe, CheckCircle2, Calendar } from 'lucide-react';
-import { getAllCountries, getAllPlaces } from '@/data/placesData';
+import { ChevronRight, MapPin, Globe, CheckCircle2, Calendar, Loader2 } from 'lucide-react';
+import { getAllCountries } from '@/data/placesData';
+import { usePlaces } from '@/hooks/usePlaces';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '@/contexts/AppContext';
 
@@ -71,7 +72,7 @@ const CountriesByContinent = () => {
   const [showVisitedPlaces, setShowVisitedPlaces] = useState(false);
   const [showPlannedPlaces, setShowPlannedPlaces] = useState(false);
   const allCountries = getAllCountries();
-  const allPlaces = getAllPlaces();
+  const { data: allPlaces = [], isLoading } = usePlaces();
   
   // Calculer les statistiques
   const totalPlaces = allPlaces.length;
@@ -289,7 +290,9 @@ const CountriesByContinent = () => {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">Lieux recensés</p>
-                    <p className="text-3xl font-bold text-primary">{totalPlaces}</p>
+                    <p className="text-3xl font-bold text-primary">
+                      {isLoading ? <Loader2 className="w-6 h-6 animate-spin inline" /> : totalPlaces}
+                    </p>
                   </div>
                   <MapPin className="w-8 h-8 text-primary opacity-50" />
                 </div>
