@@ -5,7 +5,7 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { migratePlacesToSupabase } from '@/utils/migratePlacesData';
 import Header from '@/components/Header';
-import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus } from 'lucide-react';
+import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus, Image } from 'lucide-react';
 import { useNavigate, Link } from 'react-router-dom';
 
 const Admin = () => {
@@ -91,6 +91,20 @@ const Admin = () => {
                 <Button size="lg" variant="outline">
                   <BookPlus className="mr-2 h-4 w-4" />
                   Enrichir les données
+                </Button>
+              </Link>
+            </div>
+
+            {/* Image Audit Section */}
+            <div className="border-t pt-6">
+              <h2 className="text-xl font-semibold mb-4">Audit des images</h2>
+              <p className="text-muted-foreground mb-4">
+                Vérifiez et corrigez les images des 316 lieux sacrés. Récupérez automatiquement les images depuis Wikipedia.
+              </p>
+              <Link to="/admin/audit-images">
+                <Button size="lg" variant="outline">
+                  <Image className="mr-2 h-4 w-4" />
+                  Auditer les images
                 </Button>
               </Link>
             </div>
