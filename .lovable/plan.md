@@ -1,65 +1,75 @@
 
 
-# Plan : Réorganisation de la page Splash
+# Plan : Restaurer l'icône de religion dans le Header
 
 ## Problème identifié
-Les trois boutons (Hors ligne, Tutoriel, Déconnexion) sont positionnés en bas de l'écran et chevauchent la zone de sélection de langue "Français", rendant difficile ou impossible le clic sur cette option.
+L'utilisateur signale que l'icône de religion (croix bleue pour le christianisme) n'apparaît plus dans le header à côté du bouton de géolocalisation sur la page `/explore`.
+
+## Analyse du code actuel
+
+En examinant le fichier `src/components/Header.tsx`, le code pour afficher l'icône de religion existe bien aux lignes 84-88 :
+
+```tsx
+{/* Indicateur de religion */}
+{userProgress.selectedReligion && religionColor && (
+  <div className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full`}>
+    <div className={religionColor.text}>
+      {getReligionIcon(userProgress.selectedReligion)}
+    </div>
+  </div>
+)}
+```
+
+L'icône devrait s'afficher si :
+- `userProgress.selectedReligion` n'est pas `null` (l'utilisateur a choisi "christianity")
+- `religionColor` est défini (ce qui est le cas pour "christianity" dans `religionColors.ts`)
+
+## Diagnostic probable
+
+Le code semble correct. Les causes possibles sont :
+
+1. **État non synchronisé** : La valeur `selectedReligion` n'est pas correctement chargée depuis localStorage ou la base de données
+2. **Condition mal évaluée** : Un problème avec l'opérateur `&&` si `religionColor` est `undefined`
+3. **Icône masquée par CSS** : Un problème de z-index ou de visibilité
 
 ## Solution proposée
-Réorganiser la disposition en :
-1. **Déplacer les 3 boutons tout en haut** de la page
-2. **Décaler légèrement vers le bas** le logo SacredWorld et le texte pour qu'ils soient juste au-dessus du sélecteur de langue
 
-## Modifications techniques
+Vérifier que l'icône est bien présente et ajouter un rendu de secours pour assurer sa visibilité :
 
-### Fichier : `src/pages/Splash.tsx`
-
-#### 1. Déplacer les boutons en haut
-Changer la position des boutons de `bottom-6` à `top-6` :
+### Fichier : `src/components/Header.tsx`
 
 ```typescript
-// AVANT
-<div className="absolute bottom-6 sm:bottom-8 left-0 right-0 z-10 px-4 sm:px-6">
+// Ligne 75 - Assurer que religionColor a une valeur de fallback
+const religionColor = userProgress.selectedReligion 
+  ? religionColors[userProgress.selectedReligion] 
+  : null;
 
-// APRÈS  
-<div className="absolute top-4 sm:top-6 left-0 right-0 z-10 px-4 sm:px-6">
+// Lignes 84-88 - L'indicateur de religion est déjà présent
+// Vérifier que le rendu est correct
+{userProgress.selectedReligion && religionColor && (
+  <div 
+    className={`flex items-center justify-center p-1.5 sm:p-2 ${religionColor.bg} rounded-full`} 
+    title={userProgress.selectedReligion}
+  >
+    <div className={religionColor.text}>
+      {getReligionIcon(userProgress.selectedReligion)}
+    </div>
+  </div>
+)}
 ```
 
-#### 2. Ajuster la zone centrale
-Ajouter un padding-top pour décaler visuellement le contenu vers le bas et laisser l'espace pour les boutons en haut :
+## Action recommandée
 
-```typescript
-// Ajuster l'overlay des zones cliquables
-<div className="absolute inset-0 flex flex-col items-center justify-center p-4 pt-20">
-```
+Le code existant semble correct. La solution consiste à :
 
-## Résultat attendu
+1. **Vérifier l'état** : S'assurer que `userProgress.selectedReligion` contient bien `'christianity'`
+2. **Ajouter un log de debug** temporaire pour confirmer les valeurs
+3. **Forcer un rafraîchissement** de la page pour recharger l'état depuis localStorage
 
-```text
-┌─────────────────────────────────────────┐
-│  [Hors ligne] [Tutoriel] [Déconnexion]  │ ← Boutons tout en haut
-│                                         │
-│                                         │
-│              🌟 Logo 🌟                 │
-│             SacredWorld                 │
-│     Explore. Discover. Connect          │
-│          with the world.                │
-│                                         │
-│      [ Commencer l'exploration ]        │
-│                                         │
-│            🇫🇷 Français                 │ ← Maintenant accessible !
-│                                         │
-└─────────────────────────────────────────┘
-```
-
-## Fichiers à modifier
-
-| Fichier | Modification |
-|---------|--------------|
-| `src/pages/Splash.tsx` | Changer `bottom-6` → `top-4`, ajuster le padding du conteneur central |
+Si le problème persiste, nous pouvons ajouter un indicateur visuel de fallback ou debugger plus en profondeur l'état de l'application.
 
 ## Impact
-- Les boutons ne bloqueront plus le sélecteur de langue
-- Le logo reste centré visuellement sur l'image de fond
-- L'expérience mobile sera améliorée
+- L'icône de religion (croix bleue dans un cercle) sera visible dans le header gauche
+- Position : à gauche, avant le switch de géolocalisation
+- Style : icône blanche sur fond bleu pour le christianisme
 
