@@ -1,13 +1,13 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock, Utensils, Loader2 } from 'lucide-react';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, ArrowLeft, Clock, Utensils, Loader2, Building2, Church } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { usePlacesByCountry, useAllCountries } from '@/hooks/usePlaces';
 import RankingTab from '@/components/RankingTab';
@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/imageHelper';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getImagesByCountry } from '@/lib/religionImageHelper';
+import PlaceCategoryFilter, { type PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 
 const Country = () => {
   const { countryName: country } = useParams<{ countryName: string }>();
@@ -40,6 +41,7 @@ const Country = () => {
   const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [placeCategory, setPlaceCategory] = useState<PlaceCategoryFilterValue>('all');
   const cityRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   // Get active tab from URL or default to 'places'
@@ -67,9 +69,22 @@ const Country = () => {
     }
   }, [country, places.length, placesLoading]);
 
+  // Filter places by category
+  const filteredPlaces = useMemo(() => {
+    if (placeCategory === 'all') return places;
+    return places.filter(p => (p.placeCategory || 'religious_site') === placeCategory);
+  }, [places, placeCategory]);
+
+  // Category counts
+  const categoryCounts = useMemo(() => {
+    const religious = places.filter(p => (p.placeCategory || 'religious_site') === 'religious_site').length;
+    const museums = places.filter(p => p.placeCategory === 'museum').length;
+    return { religious, museums, total: places.length };
+  }, [places]);
+
   // Group places by city
   const citiesByLetter = Object.entries(
-    places.reduce((acc, place) => {
+    filteredPlaces.reduce((acc, place) => {
       const city = place.city || 'Autres';
       if (!acc[city]) acc[city] = [];
       acc[city].push(place);
@@ -363,16 +378,30 @@ const Country = () => {
             <h1 className="text-3xl md:text-4xl font-bold text-foreground mb-2">
               {t(`countries.${country}`, country)}
             </h1>
-            <p className="text-muted-foreground mb-8">
+            <p className="text-muted-foreground mb-4">
               {placesLoading ? (
                 <span className="flex items-center gap-2">
                   <Loader2 className="w-4 h-4 animate-spin" />
                   Chargement...
                 </span>
               ) : (
-                `${places.length} ${places.length === 1 ? 'lieu sacré' : 'lieux sacrés'}`
+                <>
+                  {categoryCounts.total} lieu{categoryCounts.total > 1 ? 'x' : ''}
+                  <span className="text-sm ml-2">
+                    ({categoryCounts.religious} sacrés · {categoryCounts.museums} musées)
+                  </span>
+                </>
               )}
             </p>
+
+            {/* Place Category Filter */}
+            <div className="mb-6">
+              <PlaceCategoryFilter 
+                value={placeCategory} 
+                onChange={setPlaceCategory}
+                persistKey={`country-${country}`}
+              />
+            </div>
 
             {/* Group places by city */}
             {citiesByLetter.map(([city, cityPlaces]) => (
@@ -460,9 +489,18 @@ const Country = () => {
                                   {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
                                 </div>
                               </div>
-                              <CardDescription className="flex items-center gap-1">
-                                <Book className="w-3 h-3" />
-                                {place.type}
+                              <CardDescription className="flex items-center gap-2">
+                                {place.placeCategory === 'museum' ? (
+                                  <Building2 className="w-3 h-3 text-blue-500" />
+                                ) : (
+                                  <Church className="w-3 h-3 text-amber-500" />
+                                )}
+                                <span>{place.type}</span>
+                                {place.placeCategory === 'museum' && (
+                                  <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/20">
+                                    Musée
+                                  </Badge>
+                                )}
                               </CardDescription>
                             </CardHeader>
                             <CardContent className="cursor-pointer" onClick={() => setSelectedPlace(place)}>

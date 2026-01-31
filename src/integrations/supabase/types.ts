@@ -745,9 +745,12 @@ export type Database = {
           id: string
           image_url: string | null
           name: string
+          place_category: string | null
           points_value: number
           religion: string | null
           source_urls: string[] | null
+          tags: string[] | null
+          traditions_related: string[] | null
           type: string
           updated_at: string
           verification_status: string | null
@@ -764,9 +767,12 @@ export type Database = {
           id: string
           image_url?: string | null
           name: string
+          place_category?: string | null
           points_value?: number
           religion?: string | null
           source_urls?: string[] | null
+          tags?: string[] | null
+          traditions_related?: string[] | null
           type: string
           updated_at?: string
           verification_status?: string | null
@@ -783,9 +789,12 @@ export type Database = {
           id?: string
           image_url?: string | null
           name?: string
+          place_category?: string | null
           points_value?: number
           religion?: string | null
           source_urls?: string[] | null
+          tags?: string[] | null
+          traditions_related?: string[] | null
           type?: string
           updated_at?: string
           verification_status?: string | null

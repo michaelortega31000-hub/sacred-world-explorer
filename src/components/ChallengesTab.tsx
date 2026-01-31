@@ -5,13 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Target, Trophy, MapPin, Compass, CheckCircle, Clock, Calendar, Flame } from 'lucide-react';
+import { Target, Trophy, MapPin, Compass, CheckCircle, Clock, Calendar, Flame, Building2, Palette } from 'lucide-react';
 import { toast } from 'sonner';
 import { mockPlaces as placesData } from '@/data/placesData';
+import { usePlaces } from '@/hooks/usePlaces';
 import confetti from 'canvas-confetti';
 
 const ChallengesTab = () => {
   const { userProgress, addPoints, userLocation, flyToLocation, updateStreak, getStreakBonus, awardQuestBadge } = useApp();
+  const { data: allPlaces = [] } = usePlaces();
+  const [claimedQuests, setClaimedQuests] = useState<string[]>(() => {
   const [claimedQuests, setClaimedQuests] = useState<string[]>(() => {
     const saved = localStorage.getItem('claimedQuests');
     return saved ? JSON.parse(saved) : [];
@@ -136,33 +139,70 @@ const ChallengesTab = () => {
     const visitedPlaces = userProgress.visitedPlaces || [];
     const continentsVisited = new Set(
       visitedPlaces.map(placeId => {
-        const place = placesData.find(p => p.id === placeId);
+        const place = allPlaces.find(p => p.id === placeId);
         return place ? getContinent(place.country) : null;
       }).filter(Boolean)
     ).size;
 
     const christianPlaces = visitedPlaces.filter(placeId => {
-      const place = placesData.find(p => p.id === placeId);
+      const place = allPlaces.find(p => p.id === placeId);
       return place?.religion === 'christianity';
     }).length;
 
     const europePlaces = visitedPlaces.filter(placeId => {
-      const place = placesData.find(p => p.id === placeId);
+      const place = allPlaces.find(p => p.id === placeId);
       return place && getContinent(place.country) === 'Europe';
     }).length;
 
     const countriesVisited = new Set(
       visitedPlaces.map(placeId => {
-        const place = placesData.find(p => p.id === placeId);
+        const place = allPlaces.find(p => p.id === placeId);
         return place?.country;
       }).filter(Boolean)
     ).size;
 
     const religionsVisited = new Set(
       visitedPlaces.map(placeId => {
-        const place = placesData.find(p => p.id === placeId);
+        const place = allPlaces.find(p => p.id === placeId);
         return place?.religion;
       }).filter(Boolean)
+    ).size;
+
+    // Museum-specific progress
+    const museumsVisited = visitedPlaces.filter(placeId => {
+      const place = allPlaces.find(p => p.id === placeId);
+      return place?.placeCategory === 'museum';
+    }).length;
+
+    const museumCountries = new Set(
+      visitedPlaces
+        .filter(placeId => {
+          const place = allPlaces.find(p => p.id === placeId);
+          return place?.placeCategory === 'museum';
+        })
+        .map(placeId => {
+          const place = allPlaces.find(p => p.id === placeId);
+          return place?.country;
+        })
+        .filter(Boolean)
+    ).size;
+
+    const manuscriptMuseums = visitedPlaces.filter(placeId => {
+      const place = allPlaces.find(p => p.id === placeId);
+      return place?.placeCategory === 'museum' && place?.tags?.includes('manuscrits');
+    }).length;
+
+    const museumContinents = new Set(
+      visitedPlaces
+        .filter(placeId => {
+          const place = allPlaces.find(p => p.id === placeId);
+          return place?.placeCategory === 'museum';
+        })
+        .map(placeId => {
+          const place = allPlaces.find(p => p.id === placeId);
+          return place ? getContinent(place.country) : null;
+        })
+        .filter(Boolean)
     ).size;
 
     return {
@@ -172,8 +212,12 @@ const ChallengesTab = () => {
       total: visitedPlaces.length,
       countries: countriesVisited,
       religions: religionsVisited,
+      museums: museumsVisited,
+      museumCountries,
+      manuscriptMuseums,
+      museumContinents,
     };
-  }, [userProgress.visitedPlaces]);
+  }, [userProgress.visitedPlaces, allPlaces]);
 
   const dailyQuests = [
     {
@@ -265,6 +309,82 @@ const ChallengesTab = () => {
     },
   ];
 
+  // Cultural/Museum Quests
+  const cultureQuests = [
+    {
+      id: 'culture-first-museum',
+      title: 'Premier Musée',
+      description: 'Visitez votre premier musée culturel',
+      progress: Math.min(questProgress.museums, 1),
+      goal: 1,
+      reward: 75,
+      icon: Building2,
+    },
+    {
+      id: 'culture-3-countries',
+      title: 'Globe-Trotter Culturel',
+      description: 'Visitez 3 musées dans 3 pays différents',
+      progress: questProgress.museumCountries,
+      goal: 3,
+      reward: 300,
+      icon: Compass,
+    },
+    {
+      id: 'culture-art-lover',
+      title: 'Amoureux de l\'Art',
+      description: 'Visitez 5 musées culturels',
+      progress: questProgress.museums,
+      goal: 5,
+      reward: 350,
+      icon: Palette,
+    },
+    {
+      id: 'culture-manuscripts',
+      title: 'Chasseur de Manuscrits',
+      description: 'Visitez 3 musées liés aux manuscrits',
+      progress: questProgress.manuscriptMuseums,
+      goal: 3,
+      reward: 400,
+      icon: Target,
+    },
+    {
+      id: 'culture-curator',
+      title: 'Curator',
+      description: 'Visitez 10 musées culturels',
+      progress: questProgress.museums,
+      goal: 10,
+      reward: 500,
+      icon: Trophy,
+    },
+    {
+      id: 'culture-heritage-guardian',
+      title: 'Gardien du Patrimoine',
+      description: 'Visitez des musées sur 3 continents',
+      progress: questProgress.museumContinents,
+      goal: 3,
+      reward: 600,
+      icon: MapPin,
+    },
+    {
+      id: 'culture-mixed-itinerary',
+      title: 'Itinéraire Mixte',
+      description: 'Visitez 2 musées + 2 lieux religieux',
+      progress: Math.min(questProgress.museums, 2) + Math.min(questProgress.total - questProgress.museums, 2),
+      goal: 4,
+      reward: 400,
+      icon: Compass,
+    },
+    {
+      id: 'culture-master',
+      title: 'Maître de la Culture',
+      description: 'Visitez 20 musées culturels',
+      progress: questProgress.museums,
+      goal: 20,
+      reward: 1000,
+      icon: Trophy,
+    },
+  ];
+
   const nearbyPlaces = useMemo(() => {
     if (!userLocation?.latitude || !userLocation?.longitude) {
       return [];
@@ -352,7 +472,7 @@ const ChallengesTab = () => {
       </Card>
 
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="w-full grid grid-cols-4 sm:inline-flex sm:justify-start">
+        <TabsList className="w-full grid grid-cols-5 sm:inline-flex sm:justify-start">
           <TabsTrigger value="daily" className="flex-shrink-0 gap-2">
             <Clock className="w-4 h-4" />
             <span className="hidden sm:inline">Journalière</span>
@@ -364,6 +484,10 @@ const ChallengesTab = () => {
           <TabsTrigger value="monthly" className="flex-shrink-0 gap-2">
             <Calendar className="w-4 h-4" />
             <span className="hidden sm:inline">Mensuelle</span>
+          </TabsTrigger>
+          <TabsTrigger value="culture" className="flex-shrink-0 gap-2">
+            <Building2 className="w-4 h-4" />
+            <span className="hidden sm:inline">Culture</span>
           </TabsTrigger>
           <TabsTrigger value="nearby" className="flex-shrink-0 gap-2">
             <MapPin className="w-4 h-4" />
@@ -577,6 +701,80 @@ const ChallengesTab = () => {
                       <div className="flex items-center gap-2">
                         <Trophy className="w-4 h-4 text-accent" />
                         <span className="font-semibold text-accent">+{quest.reward} points</span>
+                      </div>
+                      <Button
+                        disabled={!isCompleted || isClaimed}
+                        onClick={() => handleClaimReward(quest.id, quest.reward, false, true, quest.title, quest.description)}
+                        variant={isCompleted && !isClaimed ? 'default' : 'outline'}
+                      >
+                        {isClaimed ? 'Réclamé' : isCompleted ? 'Réclamer' : 'En cours'}
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="culture" className="space-y-6">
+          <Card className="border-blue-500/20 bg-gradient-to-br from-blue-500/5 to-transparent">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-blue-500" />
+                  <CardTitle>Quêtes Culture & Musées</CardTitle>
+                </div>
+                <Badge variant="outline" className="border-blue-500/30 text-blue-600">
+                  {questProgress.museums} musées visités
+                </Badge>
+              </div>
+              <CardDescription>
+                Explorez les musées culturels du monde et débloquez des récompenses exclusives
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <div className="grid gap-4">
+            {cultureQuests.map((quest) => {
+              const Icon = quest.icon;
+              const isCompleted = quest.progress >= quest.goal;
+              const isClaimed = claimedQuests.includes(quest.id);
+              const progressPercent = Math.min((quest.progress / quest.goal) * 100, 100);
+
+              return (
+                <Card key={quest.id} className="overflow-hidden border-blue-500/10">
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex gap-4">
+                        <div className="w-12 h-12 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                          <Icon className="w-6 h-6 text-blue-500" />
+                        </div>
+                        <div className="space-y-1">
+                          <CardTitle className="text-xl">{quest.title}</CardTitle>
+                          <CardDescription>{quest.description}</CardDescription>
+                        </div>
+                      </div>
+                      {isCompleted && (
+                        <CheckCircle className="w-6 h-6 text-green-500" />
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Progression: {quest.progress} / {quest.goal}
+                        </span>
+                        <span className="font-medium">{Math.round(progressPercent)}%</span>
+                      </div>
+                      <Progress value={progressPercent} className="h-2" />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2">
+                      <div className="flex items-center gap-2">
+                        <Trophy className="w-4 h-4 text-blue-500" />
+                        <span className="font-semibold text-blue-600">+{quest.reward} points</span>
                       </div>
                       <Button
                         disabled={!isCompleted || isClaimed}
