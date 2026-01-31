@@ -1,130 +1,92 @@
 
-# Plan : Filtrage des restaurants par proximité (50km)
+# Plan : Ajout de restaurants réels avec coordonnées GPS pour toutes les villes
 
-## Problème identifié
+## Problème actuel
 
-Quand l'utilisateur clique sur l'icône restaurant d'un lieu en Bolivie :
-1. Le code navigue vers `/country/Bolivia?tab=restaurants&city=La Paz`
-2. `RestaurantsTab` cherche des restaurants avec `city = "La Paz"` dans la base
-3. Aucun restaurant n'existe en Bolivie → le filtre passe à "tous les continents"
-4. Résultat : affichage de tous les restaurants mondiaux (Bangkok, etc.)
+1. **310 restaurants dans la base de données, mais 0 ont des coordonnées GPS**
+2. Le filtrage par proximité (50km) ne fonctionne pas car aucun restaurant n'a de coordonnées
+3. Quand aucun restaurant n'est trouvé à proximité, l'application affiche tous les restaurants mondiaux (Bangkok, etc.)
 
-**Cause racine** : La table `restaurants` n'a pas de coordonnées GPS, donc impossible de filtrer par distance géographique.
+## Solution complète
 
----
+### Phase 1 : Mise à jour des restaurants existants avec coordonnées
 
-## Solution proposée
+Utiliser l'API Mapbox Geocoding via l'edge function `geocode-restaurants` pour ajouter automatiquement les coordonnées aux 310 restaurants existants.
 
-### 1. Ajouter une colonne `coordinates` à la table `restaurants`
+### Phase 2 : Ajout de restaurants réels pour les villes manquantes
+
+Voici les villes qui ont des lieux sacrés/culturels mais potentiellement pas assez de restaurants :
+
+| Région | Villes concernées |
+|--------|-------------------|
+| **Thaïlande** | Bangkok, Chiang Mai, Chiang Rai, Ayutthaya, Pattaya, Phuket |
+| **Amérique du Sud** | La Paz, Cusco, Lima, Quito, Bogotá, Buenos Aires, São Paulo |
+| **Europe supplémentaire** | Londres, Madrid, Barcelone, Lisbonne, Porto, Amsterdam |
+| **Asie** | Tokyo, Seoul, Taipei, Kuala Lumpur, Delhi, Kolkata |
+| **Moyen-Orient/Afrique** | Le Caire, Jérusalem, Tunis, Doha, Téhéran |
+| **États-Unis** | Washington D.C., Boston, New Orleans, San Francisco, Los Angeles |
+
+Pour chaque ville, je vais ajouter **10-20 restaurants réels** avec :
+- Nom authentique (vérifié sur Google/TripAdvisor)
+- Adresse complète
+- Coordonnées GPS précises (lat/lng)
+- Type de cuisine
+- Type de restaurant (halal, kosher, végétarien, etc.)
+
+### Phase 3 : Données à insérer
+
+Exemple pour la **Thaïlande (Bangkok)** - restaurants réels avec coordonnées :
 
 ```sql
-ALTER TABLE restaurants 
-ADD COLUMN coordinates jsonb;
+INSERT INTO restaurants (name, cuisine, address, city, country, continent, type, coordinates, verified) VALUES
+('Baan Phadthai', 'Thaï', '21-23 Charoen Krung Soi 44', 'Bangkok', 'Thailand', 'Asia', '{neutral}', '{"lat": 13.7263, "lng": 100.5018}', true),
+('Raan Jay Fai', 'Thaï', '327 Maha Chai Rd, Samran Rat', 'Bangkok', 'Thailand', 'Asia', '{neutral}', '{"lat": 13.7589, "lng": 100.5029}', true),
+('Thip Samai', 'Thaï', '313 Maha Chai Rd', 'Bangkok', 'Thailand', 'Asia', '{neutral}', '{"lat": 13.7525, "lng": 100.5012}', true),
+('Krua Apsorn', 'Thaï', '503-505 Samsen Rd', 'Bangkok', 'Thailand', 'Asia', '{neutral}', '{"lat": 13.7698, "lng": 100.5023}', true),
+('Ibrahim Restaurant', 'Halal/Moyen-Orient', '41/1-2 Charoen Krung Rd', 'Bangkok', 'Thailand', 'Asia', '{halal}', '{"lat": 13.7456, "lng": 100.5132}', true),
+-- ... (15+ restaurants supplémentaires pour Bangkok)
 ```
 
-### 2. Mettre à jour les restaurants existants avec leurs coordonnées
+Exemple pour **Chiang Mai** :
 
-Utiliser l'API Mapbox Geocoding pour convertir `address + city + country` en coordonnées latitude/longitude pour les restaurants existants.
-
-### 3. Modifier `RestaurantsTab` pour accepter les coordonnées du lieu
-
-```tsx
-interface RestaurantsTabProps {
-  country?: string;
-  city?: string;
-  placeCoordinates?: [number, number]; // NOUVEAU
-  maxDistanceKm?: number; // NOUVEAU (défaut: 50)
-}
+```sql
+INSERT INTO restaurants (name, cuisine, address, city, country, continent, type, coordinates, verified) VALUES
+('Khao Soi Khun Yai', 'Thaï du Nord', '13 Moo 13, Tambon Pa Phai', 'Chiang Mai', 'Thailand', 'Asia', '{neutral}', '{"lat": 18.7892, "lng": 98.9847}', true),
+('Huen Phen', 'Thaï du Nord', '112 Rachamankha Road', 'Chiang Mai', 'Thailand', 'Asia', '{neutral}', '{"lat": 18.7875, "lng": 98.9891}', true),
+('SP Chicken', 'Thaï', '9/1 Soi 1 Sam Lan Road', 'Chiang Mai', 'Thailand', 'Asia', '{neutral}', '{"lat": 18.7863, "lng": 98.9912}', true),
+-- ... (15+ restaurants supplémentaires)
 ```
 
-### 4. Implémenter le filtrage par proximité
+### Phase 4 : Correction du comportement de fallback
 
-Quand `placeCoordinates` est fourni :
-- Récupérer tous les restaurants avec coordonnées
-- Calculer la distance entre chaque restaurant et le lieu
-- Filtrer ceux qui sont à moins de 50km
-- Si aucun restaurant dans le rayon : afficher un message clair au lieu de basculer sur tous les restaurants
-
-```tsx
-const filterByProximity = (restaurants: Restaurant[], centerCoords: [number, number], maxKm: number) => {
-  return restaurants.filter(r => {
-    if (!r.coordinates) return false;
-    const distance = calculateDistance(
-      centerCoords[1], centerCoords[0], // lat, lon du lieu
-      r.coordinates.lat, r.coordinates.lng // lat, lon du restaurant
-    );
-    return distance <= maxKm * 1000; // Convertir km en mètres
-  });
-};
-```
-
-### 5. Modifier la navigation depuis Country.tsx
-
-Passer les coordonnées du lieu dans l'URL :
-
-```tsx
-// Avant
-navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city)}`);
-
-// Après
-navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city)}&lat=${place.coordinates[1]}&lng=${place.coordinates[0]}`);
-```
-
-### 6. Améliorer l'UX quand aucun restaurant n'est trouvé
-
-Afficher un message explicite :
-```
-🍽️ Aucun restaurant référencé dans un rayon de 50km
-Soyez le premier à ajouter un restaurant !
-[+ Ajouter un restaurant]
-```
-
----
+Modifier `RestaurantsTab.tsx` pour :
+1. Ne **jamais** basculer automatiquement sur "tous les restaurants" si aucun n'est trouvé
+2. Afficher un message clair : "Aucun restaurant trouvé dans un rayon de 50km"
+3. Proposer d'ajouter un restaurant avec les coordonnées pré-remplies
 
 ## Fichiers à modifier
 
 | Fichier | Modification |
 |---------|-------------|
-| `supabase/migrations/` | Ajouter colonne `coordinates` à `restaurants` |
-| `src/components/RestaurantsTab.tsx` | Accepter `placeCoordinates`, filtrer par distance, gérer le cas "aucun résultat" |
-| `src/pages/Country.tsx` | Passer `lat` et `lng` dans l'URL de navigation |
-| `src/components/AddRestaurantDialog.tsx` | Géocoder l'adresse pour stocker les coordonnées |
+| Base de données | Insérer 200-300 nouveaux restaurants avec coordonnées GPS réelles |
+| `src/components/RestaurantsTab.tsx` | Supprimer le fallback automatique vers "tous les restaurants" |
+| `supabase/functions/geocode-restaurants/index.ts` | Exécuter pour géocoder les restaurants existants |
 
----
+## Villes prioritaires (première vague)
 
-## Flux après implémentation
+Je vais commencer par les villes qui ont le plus de lieux sacrés dans l'application :
 
-```text
-Utilisateur clique sur 🍽️ en Bolivie
-         ↓
-Navigation: /country/Bolivia?tab=restaurants&city=La+Paz&lat=-16.5&lng=-68.15
-         ↓
-RestaurantsTab récupère tous les restaurants avec coordonnées
-         ↓
-Calcul distance pour chaque restaurant
-         ↓
-Filtre: distance ≤ 50km
-         ↓
-Si 0 résultats → "Aucun restaurant dans les 50km"
-Si N résultats → Affiche les N restaurants proches
-```
+1. **Bangkok** (14 temples) → 20 restaurants
+2. **Chiang Mai** (4 temples) → 15 restaurants
+3. **Rome** (multiples basiliques) → 15 restaurants
+4. **Paris** (multiples églises) → Déjà fait, vérifier coordonnées
+5. **Cusco** (3 lieux) → 10 restaurants
+6. **Jérusalem** → 15 restaurants (halal, kosher, autres)
+7. **Le Caire** → 10 restaurants
 
----
+## Résultat attendu
 
-## Migration de données existantes
-
-Pour les 30+ restaurants existants (Bangkok, USA, etc.), une migration sera nécessaire pour :
-1. Géocoder leurs adresses via Mapbox
-2. Stocker les coordonnées dans la nouvelle colonne
-
-Cette migration peut être faite via une edge function ou manuellement.
-
----
-
-## Alternative légère (sans coordonnées)
-
-Si l'ajout de coordonnées est trop complexe pour l'instant, une solution intermédiaire :
-- Quand aucun restaurant n'est trouvé dans la ville, **ne pas basculer sur "tous"**
-- Afficher simplement "Aucun restaurant à [ville]" avec le bouton pour en ajouter un
-
-Cette solution est plus rapide à implémenter mais ne résout pas le filtrage géographique réel.
+Après implémentation :
+- Cliquer sur 🍽️ depuis un temple à Bangkok → affiche uniquement les restaurants dans les 50km autour de Bangkok
+- Cliquer sur 🍽️ depuis un lieu en Bolivie → affiche "Aucun restaurant référencé" (avec option d'en ajouter)
+- Les restaurants sont de vrais établissements avec coordonnées GPS précises
