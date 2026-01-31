@@ -53,21 +53,21 @@ const Header = ({
         {isTextOnlyPage ?
       // Header compact pour les pages Globe/Planifier/Journal/Classements
       <div className="flex items-center justify-between gap-2 sm:gap-4">
-            {/* Gauche : Religion + Géolocalisation + Points + Badges */}
+            {/* Gauche : Géolocalisation + Religion + Points + Badges */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-              {/* Indicateur de religion */}
+              {showExploreControls && (
+                <div className="flex items-center gap-2">
+                  <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
+                </div>
+              )}
+
+              {/* Indicateur de religion (entre géolocalisation et badges) */}
               {userProgress.selectedReligion && (
-                <div 
+                <div
                   className="flex items-center justify-center p-1 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20"
                   title={userProgress.selectedReligion}
                 >
                   <ReligionIcon religion={userProgress.selectedReligion} size="sm" />
-                </div>
-              )}
-              
-              {showExploreControls && (
-                <div className="flex items-center gap-2">
-                  <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
                 </div>
               )}
               
