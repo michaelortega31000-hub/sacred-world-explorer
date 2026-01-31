@@ -76,6 +76,7 @@ const Globe3D = ({
   const tripMarkers = useRef<mapboxgl.Marker[]>([]);
   const endMarkerTimeout = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyZoomed = useRef(false);
+  const pendingRecenter = useRef(false);
   const navigate = useNavigate();
   const {
     t
@@ -1155,6 +1156,7 @@ const Globe3D = ({
         userLocationMarker.current = null;
       }
       hasInitiallyZoomed.current = false;
+      pendingRecenter.current = false;
       return;
     }
     if (userPosition) {
@@ -1192,10 +1194,20 @@ const Globe3D = ({
         });
         toast.success(t('location.enabled'));
       }
+
+      // If user explicitly requested recenter while we had no position yet, do it now
+      if (pendingRecenter.current) {
+        pendingRecenter.current = false;
+        map.current.flyTo({
+          center: [longitude, latitude],
+          zoom: 12,
+          duration: 2000
+        });
+      }
     }
     if (geolocationError) {
-      // Show detailed error message with instructions
-      const errorMessage = geolocationError.code === 1 ? 'Géolocalisation refusée. Allez dans les paramètres de votre navigateur pour l\'activer.' : t('location.error');
+      // Keep message short: avoid browser settings instructions (header has its own activation control)
+      const errorMessage = geolocationError.code === 1 ? 'Permission de géolocalisation refusée.' : t('location.error');
       toast.error(errorMessage, {
         duration: 5000
       });
@@ -1232,19 +1244,24 @@ const Globe3D = ({
 
   // Recenter function
   const handleRecenter = () => {
-    if (geolocationEnabled && userPosition) {
-      // If already enabled and we have a position, just recenter (no toast)
+    // This button should ONLY recenter/zoom.
+    // Activation is handled by the header toggle (left of the logo).
+    if (!geolocationEnabled) {
+      toast.info('Active la géolocalisation via le bouton en haut à gauche.');
+      return;
+    }
+
+    if (userPosition) {
       map.current?.flyTo({
         center: [userPosition.longitude, userPosition.latitude],
         zoom: 12,
         duration: 2000
       });
-    } else if (!geolocationEnabled) {
-      // Enable geolocation via global context and reset zoom flag
-      hasInitiallyZoomed.current = false;
-      toggleGeolocation();
+      return;
     }
-    // If geolocationEnabled but no position yet, do nothing - wait for position
+
+    // Geolocation enabled but position not yet available: recenter as soon as we get it
+    pendingRecenter.current = true;
   };
 
   // Expose functions via refs
@@ -1547,7 +1564,7 @@ const Globe3D = ({
               </Button>
             </TooltipTrigger>
             <TooltipContent>
-              <p>{geolocationEnabled ? t('location.disable') : t('location.enable')}</p>
+              <p>Recentrer sur ma position</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>
