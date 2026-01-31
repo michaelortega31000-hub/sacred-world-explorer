@@ -4,7 +4,7 @@ import { fr } from "date-fns/locale";
 import { ReligiousEvent } from "@/data/religiousEvents";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Calendar, MapPin, Clock, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Clock, Sparkles, Crown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 
@@ -41,12 +41,23 @@ const ListView = ({ events, onEventClick }: ListViewProps) => {
     return `Il y a ${Math.abs(days)} jours`;
   };
 
+  const traditionLabels: Record<string, string> = {
+    christianity: 'Christianisme',
+    islam: 'Islam',
+    judaism: 'Judaïsme',
+    hinduism: 'Hindouisme',
+    buddhism: 'Bouddhisme',
+    other: 'Autre'
+  };
+
   return (
     <ScrollArea className="h-[600px] pr-4">
       <div className="space-y-6">
         {Object.entries(eventsByMonth).map(([monthKey, monthEvents]) => {
           const firstEvent = monthEvents[0];
           const monthName = format(firstEvent.date, 'MMMM yyyy', { locale: fr });
+          const majorCount = monthEvents.filter(e => e.subType !== 'saint').length;
+          const saintCount = monthEvents.filter(e => e.subType === 'saint').length;
 
           return (
             <div key={monthKey} className="space-y-3">
@@ -57,9 +68,18 @@ const ListView = ({ events, onEventClick }: ListViewProps) => {
                   <h3 className="text-lg font-bold capitalize text-foreground">
                     {monthName}
                   </h3>
-                  <Badge variant="secondary" className="ml-auto">
-                    {monthEvents.length} événement{monthEvents.length > 1 ? 's' : ''}
-                  </Badge>
+                  <div className="ml-auto flex gap-2">
+                    {majorCount > 0 && (
+                      <Badge variant="secondary">
+                        {majorCount} fête{majorCount > 1 ? 's' : ''}
+                      </Badge>
+                    )}
+                    {saintCount > 0 && (
+                      <Badge variant="outline" className="text-amber-600 border-amber-400">
+                        {saintCount} saint{saintCount > 1 ? 's' : ''}
+                      </Badge>
+                    )}
+                  </div>
                 </div>
                 <Separator className="mt-2" />
               </div>
@@ -68,46 +88,68 @@ const ListView = ({ events, onEventClick }: ListViewProps) => {
               {monthEvents.map((event) => {
                 const isUpcoming = isFuture(event.date);
                 const countdown = getCountdown(event.date);
+                const isSaint = event.subType === 'saint';
 
                 return (
                   <Card 
                     key={event.id}
-                    className="cursor-pointer hover:shadow-lg transition-all hover:scale-[1.01] group relative overflow-hidden"
+                    className={`cursor-pointer hover:shadow-lg transition-all hover:scale-[1.01] group relative overflow-hidden ${
+                      isSaint ? 'border-amber-200 dark:border-amber-800/50' : ''
+                    }`}
                     onClick={() => onEventClick(event)}
                   >
                     {/* Gradient background léger */}
                     <div
                       className="absolute inset-0 opacity-5 group-hover:opacity-10 transition-opacity"
                       style={{
-                        background: `linear-gradient(135deg, ${event.color}40 0%, transparent 100%)`,
+                        background: isSaint 
+                          ? `linear-gradient(135deg, #D4AF3740 0%, transparent 100%)`
+                          : `linear-gradient(135deg, ${event.color}40 0%, transparent 100%)`,
                       }}
                     />
 
                     <CardHeader className="pb-3 relative">
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex-1">
-                          <CardTitle className="text-lg flex items-center gap-3">
-                            <div 
-                              className="w-4 h-4 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform" 
-                              style={{ 
-                                backgroundColor: event.color,
-                                boxShadow: `0 0 12px ${event.color}60`,
-                              }}
-                            />
-                            <span className="group-hover:text-primary transition-colors">
+                          <CardTitle className={`text-lg flex items-center gap-3 ${isSaint ? 'text-base' : ''}`}>
+                            {isSaint ? (
+                              <Sparkles className="w-4 h-4 flex-shrink-0 text-amber-500 group-hover:scale-125 transition-transform" />
+                            ) : (
+                              <div 
+                                className="w-4 h-4 rounded-full flex-shrink-0 group-hover:scale-125 transition-transform" 
+                                style={{ 
+                                  backgroundColor: event.color,
+                                  boxShadow: `0 0 12px ${event.color}60`,
+                                }}
+                              />
+                            )}
+                            <span className={`group-hover:text-primary transition-colors ${isSaint ? 'text-amber-700 dark:text-amber-400' : ''}`}>
                               {event.nameFr}
                             </span>
                           </CardTitle>
-                          <Badge 
-                            className="mt-2"
-                            style={{
-                              backgroundColor: `${event.color}20`,
-                              color: event.color,
-                              borderColor: event.color,
-                            }}
-                          >
-                            {event.tradition}
-                          </Badge>
+                          <div className="flex items-center gap-2 mt-2 flex-wrap">
+                            <Badge 
+                              className={isSaint ? '' : ''}
+                              style={isSaint ? {
+                                backgroundColor: '#D4AF3720',
+                                color: '#B8860B',
+                                borderColor: '#D4AF37',
+                              } : {
+                                backgroundColor: `${event.color}20`,
+                                color: event.color,
+                                borderColor: event.color,
+                              }}
+                            >
+                              {isSaint ? '✨ Saint' : traditionLabels[event.tradition] || event.tradition}
+                            </Badge>
+                            {/* Patron info for saints */}
+                            {isSaint && event.saintInfo?.patronOf && (
+                              <Badge variant="outline" className="text-xs text-muted-foreground">
+                                <Crown className="w-3 h-3 mr-1" />
+                                Patron: {event.saintInfo.patronOf}
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                         
                         {isUpcoming && (
@@ -135,6 +177,13 @@ const ListView = ({ events, onEventClick }: ListViewProps) => {
                             <MapPin className="h-3 w-3" />
                             {event.relatedPlaces.length} lieu{event.relatedPlaces.length > 1 ? 'x' : ''}
                           </div>
+                        )}
+                        
+                        {/* Martyr/Confesseur info */}
+                        {isSaint && event.saintInfo?.martyrOrConfessor && (
+                          <Badge variant="secondary" className="text-xs capitalize">
+                            {event.saintInfo.martyrOrConfessor}
+                          </Badge>
                         )}
                       </div>
                     </CardContent>

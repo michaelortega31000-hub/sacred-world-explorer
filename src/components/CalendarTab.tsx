@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { format, isSameDay, setMonth } from 'date-fns';
 import { fr } from 'date-fns/locale';
-import { religiousEvents2026, getEventsByDate, getEventsByTradition, getAllEventDates, ReligiousEvent } from '@/data/religiousEvents';
+import { religiousEvents2026, getEventsByTradition, ReligiousEvent } from '@/data/religiousEvents';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '@/lib/utils';
 import CalendarViewSelector from '@/components/calendar/CalendarViewSelector';
@@ -71,7 +71,11 @@ const CalendarTab = () => {
   }, [userProgress.visitedPlaces, userProgress.tripPlaces]);
   const filteredReligiousEvents = traditionFilter === 'all' ? religiousEvents2026 : getEventsByTradition(traditionFilter);
   const eventsForSelectedDate = selectedDate ? events.filter(event => isSameDay(event.date, selectedDate)) : [];
-  const religiousEventsForSelectedDate = selectedDate ? getEventsByDate(selectedDate).filter(event => traditionFilter === 'all' || event.tradition === traditionFilter) : [];
+  
+  // For selected date, get events from the filtered list to respect tradition filter
+  const religiousEventsForSelectedDate = selectedDate 
+    ? filteredReligiousEvents.filter(event => isSameDay(event.date, selectedDate))
+    : [];
   const daysWithPersonalEvents = events.map(event => event.date);
   const daysWithReligiousEvents = filteredReligiousEvents.map(event => event.date);
   
@@ -300,30 +304,62 @@ const CalendarTab = () => {
                     </p>
                   </div> : <div className="space-y-3">
                     {/* Religious Events */}
-                    {religiousEventsForSelectedDate.map(event => <div key={event.id} onClick={() => setSelectedEvent(event)} className="p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg hover:border-primary bg-secondary/50" style={{
-                  borderColor: event.color
-                }}>
+                    {religiousEventsForSelectedDate.map(event => {
+                      const isSaint = event.subType === 'saint';
+                      return (
+                        <div 
+                          key={event.id} 
+                          onClick={() => setSelectedEvent(event)} 
+                          className={`p-4 rounded-lg border-2 transition-all cursor-pointer hover:shadow-lg hover:border-primary bg-secondary/50 ${
+                            isSaint ? 'border-amber-300 dark:border-amber-700' : ''
+                          }`} 
+                          style={{
+                            borderColor: isSaint ? undefined : event.color
+                          }}
+                        >
                           <div className="flex items-start gap-3">
-                            <div className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5" style={{
-                      backgroundColor: event.color,
-                      boxShadow: `0 0 10px ${event.color}`
-                    }} />
+                            {isSaint ? (
+                              <span className="text-amber-500 mt-1">✨</span>
+                            ) : (
+                              <div 
+                                className="w-3 h-3 rounded-full flex-shrink-0 mt-1.5" 
+                                style={{
+                                  backgroundColor: event.color,
+                                  boxShadow: `0 0 10px ${event.color}`
+                                }} 
+                              />
+                            )}
                             <div className="flex-1">
-                              <h4 className="font-semibold mb-1 text-foreground">
+                              <h4 className={`font-semibold mb-1 ${isSaint ? 'text-amber-700 dark:text-amber-400' : 'text-foreground'}`}>
                                 {event.nameFr}
                               </h4>
                               <p className="text-sm mb-2 text-muted-foreground">
                                 {event.descriptionFr}
                               </p>
-                            <Badge className="text-xs" style={{
-                        backgroundColor: event.color,
-                        color: event.tradition === 'other' ? '#0E1B3F' : '#FFFFFF'
-                      }}>
-                              {traditionLabels[event.tradition].icon} {traditionLabels[event.tradition].label}
-                            </Badge>
+                              <div className="flex flex-wrap gap-2">
+                                <Badge 
+                                  className="text-xs" 
+                                  style={isSaint ? {
+                                    backgroundColor: '#D4AF3720',
+                                    color: '#B8860B',
+                                  } : {
+                                    backgroundColor: event.color,
+                                    color: event.tradition === 'other' ? '#0E1B3F' : '#FFFFFF'
+                                  }}
+                                >
+                                  {isSaint ? '✨ Saint' : `${traditionLabels[event.tradition].icon} ${traditionLabels[event.tradition].label}`}
+                                </Badge>
+                                {isSaint && event.saintInfo?.patronOf && (
+                                  <Badge variant="outline" className="text-xs">
+                                    Patron: {event.saintInfo.patronOf}
+                                  </Badge>
+                                )}
+                              </div>
+                            </div>
                           </div>
                         </div>
-                      </div>)}
+                      );
+                    })}
 
                     {/* Personal Events */}
                     {eventsForSelectedDate.map((event, index) => <div key={`${event.placeId}-${index}`} className="p-4 rounded-lg border-2 transition-all bg-secondary/50" style={{
