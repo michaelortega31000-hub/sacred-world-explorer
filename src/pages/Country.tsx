@@ -443,11 +443,13 @@ const Country = () => {
                                     variant="secondary"
                                     onClick={(e) => {
                                       e.stopPropagation();
-                                      // Navigate to restaurants tab with this place's city
-                                      navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city || '')}`);
+                                      // Navigate to restaurants tab with place coordinates for proximity filtering
+                                      const lat = place.coordinates[1];
+                                      const lng = place.coordinates[0];
+                                      navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city || '')}&lat=${lat}&lng=${lng}`);
                                     }}
                                     className="opacity-90 group-hover:opacity-100 transition-opacity"
-                                    title="Voir les restaurants à proximité"
+                                    title="Voir les restaurants à proximité (50km)"
                                   >
                                     <Utensils className="w-4 h-4" />
                                   </Button>
@@ -573,7 +575,15 @@ const Country = () => {
         </TabsContent>
 
         <TabsContent value="restaurants" className="flex-1 m-0 p-6">
-          <RestaurantsTab country={country || ''} city={searchParams.get('city') || undefined} />
+          <RestaurantsTab 
+            country={country || ''} 
+            city={searchParams.get('city') || undefined}
+            placeCoordinates={
+              searchParams.get('lat') && searchParams.get('lng')
+                ? [parseFloat(searchParams.get('lng')!), parseFloat(searchParams.get('lat')!)]
+                : undefined
+            }
+          />
         </TabsContent>
       </Tabs>
 
