@@ -59,7 +59,8 @@ const tryMatchLocalImage = (placeName: string): string => {
     return result;
   }
   
-  return '/placeholder.svg';
+  // Use a beautiful default placeholder for sacred places
+  return '/images/place-placeholder.jpg';
 };
 
 /**
