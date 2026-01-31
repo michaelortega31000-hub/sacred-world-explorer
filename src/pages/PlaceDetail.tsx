@@ -445,7 +445,7 @@ const PlaceDetail = () => {
     });
   };
 
-  // Search for nearby POIs (restaurants or hotels) restricted to the place's city
+  // Search for nearby POIs (restaurants or hotels) - first from database, then Mapbox fallback
   const searchNearbyPOIs = async (type: 'restaurant' | 'hotel') => {
     if (!place) return;
     
@@ -454,6 +454,38 @@ const PlaceDetail = () => {
     setNearbyPOIs([]);
     
     try {
+      // For restaurants, first try to get from database
+      if (type === 'restaurant') {
+        const cityVariants = [
+          place.city,
+          place.city.toLowerCase(),
+          // Handle common variations (Barcelone/Barcelona, etc.)
+          place.city.replace(/e$/, 'a'), // Barcelone -> Barcelona
+          place.city.replace(/a$/, 'e'), // Barcelona -> Barcelone
+        ];
+        
+        const { data: dbRestaurants, error } = await supabase
+          .from('restaurants')
+          .select('id, name, address, city, coordinates, cuisine, type')
+          .eq('verified', true)
+          .or(cityVariants.map(c => `city.ilike.%${c}%`).join(','));
+        
+        if (!error && dbRestaurants && dbRestaurants.length > 0) {
+          const pois: SearchedPOI[] = dbRestaurants.slice(0, 10).map((r: any) => ({
+            id: r.id,
+            name: r.name,
+            type: 'restaurant' as const,
+            address: r.address || `${r.city}`,
+            coordinates: r.coordinates ? [r.coordinates.lng, r.coordinates.lat] as [number, number] : place.coordinates
+          }));
+          
+          setNearbyPOIs(pois);
+          setSearchingPOIs(false);
+          return;
+        }
+      }
+      
+      // Fallback to Mapbox for hotels or if no restaurants found in DB
       const mapboxToken = getMapboxToken();
       const query = type === 'hotel' ? 'hotel hostel lodging' : 'restaurant';
       const [lon, lat] = place.coordinates;
