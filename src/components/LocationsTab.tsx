@@ -947,12 +947,10 @@ const LocationsTab = () => {
                             </Button>
                           </div>
                         </div>
-                        {startingCity && <div className="flex items-end">
-                            <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} className="gap-2">
-                              <Navigation className="w-4 h-4" />
-                              {showOptimizedRoute ? 'Masquer' : 'Afficher'} l'itinéraire
-                            </Button>
-                          </div>}
+                        {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="gap-2 self-end">
+                            <Navigation className="w-4 h-4" />
+                            {showOptimizedRoute ? 'Masquer' : 'Itinéraire'}
+                          </Button>}
                       </div>
                     </CardContent>
                   </Card>
