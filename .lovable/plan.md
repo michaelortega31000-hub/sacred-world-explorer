@@ -1,105 +1,75 @@
 
-# Plan : Correction des images manquantes pour les lieux sacrés
 
-## Problemes identifies
+# Plan : Améliorer la connaissance de l'interface par l'assistant
 
-### 1. Erreur de build critique dans `toggle-group.tsx`
-Le fichier `src/components/ui/toggle-group.tsx` est casse - les composants `ToggleGroup` et `ToggleGroupItem` ne retournent rien (void) au lieu de retourner du JSX. Cela cause une erreur TypeScript.
+## Problème identifié
 
-### 2. Places dans la base de donnees avec image locale existante
-16 places dans la base de donnees ont `image_url = NULL` mais des images locales correspondantes existent. Il suffit de mettre a jour la base de donnees avec les URLs correctes :
+L'assistant a indiqué "utilisez l'icône de réglages en haut à droite" alors que :
+- Le **filtre de catégories** est en **bas à gauche** (position fixe, flottante)
+- Le **bouton de géolocalisation** est en **haut à gauche** dans le header
+- Il n'y a **pas d'icône de réglages** dans l'interface
 
-| ID Place | Nom | Image locale disponible |
-|----------|-----|------------------------|
-| `col-las-lajas` | Sanctuaire de Las Lajas | `/src/assets/places/las-lajas.jpg` |
-| `ecu-san-francisco-quito` | Eglise de San Francisco de Quito | `/src/assets/places/iglesia-san-francisco-quito.jpg` |
-| `per-cusco-cathedral` | Cathedrale de Cusco | `/src/assets/places/cusco-cathedral.jpg` |
-| `per-compania-jesus-cusco` | Eglise de la Compagnie de Jesus | `/src/assets/places/compania-jesus-cusco.jpg` |
+L'assistant "hallucine" sur les positions des éléments car son prompt système ne contient aucune description précise du layout de l'interface.
 
-### 3. Places necessitant de nouvelles images (Wikipedia)
-Ces 12 places n'ont pas d'image locale ni d'URL - il faudra recuperer des images via Wikipedia ou les ajouter manuellement :
+## Solution proposée
 
-**Argentine :**
-- Manzana Jesuitique de Cordoba
-- Missions jesuites de San Ignacio Mini
+Ajouter une documentation détaillée de l'interface (UI Layout Guide) dans le prompt système de l'edge function `sacred-assistant`. Cette documentation sera **spécifique à chaque page** pour que l'assistant donne des indications précises.
 
-**Bolivie :**
-- Basilique Notre-Dame de Copacabana
-- Tiwanaku
+## Modifications à effectuer
 
-**Chili :**
-- Eglises de Chiloe
+### 1. Créer un guide de layout détaillé par page
 
-**Paraguay (6 missions jesuites) :**
-- Mission de Jesus de Tavarangue
-- Mission de San Cosme y San Damian
-- Mission de San Ignacio Guazu
-- Mission de Santa Maria de Fe
-- Mission de Santiago
-- Mission de la Santisima Trinidad de Parana
-
-**Perou :**
-- Qorikancha - Temple du Soleil
-
----
-
-## Plan d'implementation
-
-### Phase 1 : Correction du fichier toggle-group.tsx
-
-Restaurer le fichier avec le code JSX correct pour les deux composants :
-
-```tsx
-// ToggleGroup doit retourner le JSX du Provider avec les enfants
-// ToggleGroupItem doit retourner le ToggleGroupPrimitive.Item avec les props
-```
-
-### Phase 2 : Mise a jour des URLs d'images en base de donnees
-
-Executer une requete UPDATE pour les 4 places qui ont des images locales :
+Ajouter une constante `UI_LAYOUT_GUIDE` dans l'edge function avec la description exacte de chaque élément et sa position :
 
 ```text
-UPDATE places SET image_url = '/src/assets/places/las-lajas.jpg' WHERE id = 'col-las-lajas';
-UPDATE places SET image_url = '/src/assets/places/iglesia-san-francisco-quito.jpg' WHERE id = 'ecu-san-francisco-quito';
-UPDATE places SET image_url = '/src/assets/places/cusco-cathedral.jpg' WHERE id = 'per-cusco-cathedral';
-UPDATE places SET image_url = '/src/assets/places/compania-jesus-cusco.jpg' WHERE id = 'per-compania-jesus-cusco';
+PAGE /explore (Carte interactive) :
+- HEADER (en haut) :
+  - Gauche : Icône de ta tradition (grand cercle), compteur de badges, bouton de géolocalisation (petit cercle)
+  - Centre : Logo Sacred World
+  - Droite : Bouton micro (commande vocale), icône messages, bouton assistant (grand cercle turquoise)
+  
+- CARTE (centre) : Globe 3D interactif avec marqueurs des lieux sacrés
+
+- BOUTON DE FILTRE (en bas à gauche, flottant) :
+  - Permet de filtrer entre "Tous" et "Lieux sacrés"
+  - C'est le seul moyen de filtrer les catégories
+
+- ONGLETS (en bas, au-dessus de la navigation) :
+  - Carte | AR | Proche | Lieux | Défis | Rang
 ```
 
-### Phase 3 : Recuperation des images manquantes via Wikipedia
+### 2. Injecter le contexte UI dans le prompt
 
-Utiliser la Edge Function `fetch-wikipedia-image` existante pour recuperer automatiquement des images pour les 12 places restantes :
+Modifier la fonction pour injecter automatiquement le layout de la page actuelle dans le prompt système, afin que l'assistant sache exactement où se trouvent les éléments.
 
-| Place | Titre Wikipedia suggere |
-|-------|------------------------|
-| Manzana Jesuitique Cordoba | "Manzana Jesuítica" |
-| San Ignacio Mini | "San Ignacio Mini" |
-| Copacabana Basilica | "Basilica of Our Lady of Copacabana" |
-| Tiwanaku | "Tiwanaku" |
-| Chiloe Churches | "Churches of Chiloé" |
-| Missions Paraguay | "Jesuit Missions of Paraguay" |
-| Qorikancha | "Coricancha" |
+### 3. Fichier à modifier
 
-### Phase 4 : Verification du hook usePlaces
+**`supabase/functions/sacred-assistant/index.ts`** :
+- Ajouter la constante `UI_LAYOUT_GUIDE` avec les descriptions de chaque page
+- Ajouter une fonction `getUILayoutForRoute(route)` qui retourne le layout de la page
+- Injecter ce layout dans le `fullSystemPrompt` avant l'appel à l'IA
 
-Confirmer que le fallback dans `usePlaces.ts` fonctionne correctement :
-- La fonction `tryMatchLocalImage()` normalise les noms pour trouver des correspondances
-- Si aucune image n'est trouvee, elle utilise `/images/place-placeholder.jpg`
+## Exemple de résultat attendu
 
----
+Quand l'utilisateur demande "Aide-moi à filtrer", l'assistant répondra :
 
-## Fichiers a modifier
-
-1. **`src/components/ui/toggle-group.tsx`** - Restaurer le code JSX manquant
-2. **Base de donnees `places`** - Mise a jour des URLs pour 4 places
-3. **Base de donnees `places`** - Ajout des URLs Wikipedia pour 12 places
+> « Pour filtrer les lieux, regarde en **bas à gauche** de l'écran 🗺️
+> Tu verras un bouton avec "Tous" ou "Lieux sacrés".
+> Clique dessus pour changer le type de lieux affichés sur la carte ! ✨
+> 
+> Tu veux voir uniquement les lieux sacrés ou tous les lieux ? »
 
 ---
 
-## Resume des actions
+## Détails techniques
 
-| Etape | Action | Nombre de places |
-|-------|--------|-----------------|
-| 1 | Corriger erreur build toggle-group.tsx | 1 fichier |
-| 2 | Mettre a jour URLs images locales | 4 places |
-| 3 | Ajouter URLs images Wikipedia | 12 places |
-| **Total** | Places avec images corrigees | **16 places** |
+Le layout sera structuré ainsi pour chaque page clé :
+
+| Page | Éléments clés et positions |
+|------|---------------------------|
+| `/explore` | Filtre = bas gauche, Géoloc = header gauche, Assistant = header droite |
+| `/place/:id` | Bouton retour = header, Infos = scrollable au centre |
+| `/profile` | Avatar = haut, Stats = centre, Badges = tabs |
+| `/calendar` | Filtre événements = haut, Liste = centre |
+| `/traditions` | Grille de traditions = centre, Recherche = haut |
+
