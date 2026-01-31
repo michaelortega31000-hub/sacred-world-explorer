@@ -170,9 +170,9 @@ const UpcomingEventsWeek = ({ events, onEventClick, traditionColors }: UpcomingE
             {upcomingEvents.length} événement{upcomingEvents.length > 1 ? 's' : ''} dans les 7 prochains jours
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="px-3 sm:px-6">
           <ScrollArea className="h-[400px]">
-            <div className="space-y-3 pr-2">
+            <div className="space-y-3 pr-3">
               {upcomingEvents.map((event) => {
                 const countdown = getCountdown(event.date);
                 const hasReminderEnabled = hasReminder(event.id);
