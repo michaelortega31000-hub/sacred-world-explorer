@@ -15,7 +15,6 @@ const ChallengesTab = () => {
   const { userProgress, addPoints, userLocation, flyToLocation, updateStreak, getStreakBonus, awardQuestBadge } = useApp();
   const { data: allPlaces = [] } = usePlaces();
   const [claimedQuests, setClaimedQuests] = useState<string[]>(() => {
-  const [claimedQuests, setClaimedQuests] = useState<string[]>(() => {
     const saved = localStorage.getItem('claimedQuests');
     return saved ? JSON.parse(saved) : [];
   });
