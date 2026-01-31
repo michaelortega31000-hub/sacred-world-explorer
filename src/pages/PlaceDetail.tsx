@@ -113,7 +113,12 @@ const PlaceDetail = () => {
   const { place, isLoading: placeLoading } = usePlaceById(placeId);
 
   // Resolve via shared helper (fuzzy filename support)
-  const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
+  // External URLs (http/https) should be used as-is
+  const resolveImageUrl = (url?: string) => {
+    if (!url) return undefined;
+    if (url.startsWith('http://') || url.startsWith('https://')) return url;
+    return getImageUrl(url);
+  };
 
   useEffect(() => {
     if (!placeLoading && !place) {
@@ -597,7 +602,8 @@ const PlaceDetail = () => {
                         src={img}
                         alt={`${place.name} - Photo ${index + 1}`}
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.src = '/placeholder.svg'; }}
+                        referrerPolicy="no-referrer"
+                        onError={(e) => { e.currentTarget.src = '/images/place-placeholder.jpg'; }}
                       />
                     </div>
                   </CarouselItem>
