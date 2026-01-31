@@ -180,27 +180,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           longestStreak: data.longest_streak || 0
         };
 
-        // Merge localStorage trip data if it exists and is more recent
-        if (localProgress && localProgress.tripPlaces && localProgress.tripPlaces.length > 0) {
-          // Preserve local trip planning data if DB data is empty or different
+        // Merge localStorage data if it exists - particularly for religion and trip data
+        const needsSync = localProgress && (
+          (localProgress.tripPlaces && localProgress.tripPlaces.length > 0) ||
+          (localProgress.selectedReligion && !data.selected_religion)
+        );
+        
+        if (needsSync) {
+          // Preserve local trip planning and religion data if DB data is empty or different
           const mergedProgress = {
             ...dbProgress,
-            tripPlaces: localProgress.tripPlaces,
+            tripPlaces: localProgress.tripPlaces || dbProgress.tripPlaces,
             plannedRouteStartCity: localProgress.plannedRouteStartCity || dbProgress.plannedRouteStartCity,
-            showPlannedRoute: localProgress.showPlannedRoute ?? dbProgress.showPlannedRoute
+            showPlannedRoute: localProgress.showPlannedRoute ?? dbProgress.showPlannedRoute,
+            // Preserve local religion if DB is null
+            selectedReligion: dbProgress.selectedReligion || localProgress.selectedReligion || null
           };
           setUserProgress(mergedProgress);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(mergedProgress));
           
-          // Sync merged data back to DB
+          // Sync merged data back to DB including religion
           await supabase
             .from('user_progress')
             .update({
               trip_places: mergedProgress.tripPlaces,
               planned_route_start_city: mergedProgress.plannedRouteStartCity,
-              show_planned_route: mergedProgress.showPlannedRoute
+              show_planned_route: mergedProgress.showPlannedRoute,
+              selected_religion: mergedProgress.selectedReligion
             })
             .eq('user_id', session.user.id);
+            
+          logger.info('🔄 Synced local religion to DB:', mergedProgress.selectedReligion);
         } else {
           setUserProgress(dbProgress);
           localStorage.setItem(STORAGE_KEY, JSON.stringify(dbProgress));
