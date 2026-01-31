@@ -109,16 +109,15 @@ const Header = ({
               </TooltipProvider>
 
               {onAssistantClick && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={onAssistantClick} 
-                  className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" 
-                  aria-label="Assistant" 
+                <div
+                  onClick={onAssistantClick}
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/20 backdrop-blur-sm shadow-md border border-primary/40 overflow-hidden cursor-pointer hover:bg-primary/30 transition-colors"
                   title="Assistant Sacred World"
+                  role="button"
+                  aria-label="Assistant"
                 >
-                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
+                  <MessageCircle className="w-6 h-6 text-primary" />
+                </div>
               )}
 
               {location.pathname !== '/explore' && (
