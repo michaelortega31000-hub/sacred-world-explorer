@@ -35,7 +35,7 @@ export interface Place {
 export interface SavedPOI {
   id: string;
   name: string;
-  type: 'restaurant' | 'lodging' | 'fuel';
+  type: 'restaurant' | 'lodging' | 'fuel' | 'transport';
   address: string;
   coordinates: [number, number];
   placeId: string; // ID du lieu associé dans l'itinéraire
