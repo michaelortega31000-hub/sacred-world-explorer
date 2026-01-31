@@ -459,16 +459,16 @@ const PlaceDetail = () => {
     setNearbyPOIs([]);
     
     try {
-      // For restaurants, first try to get from database
+      const cityVariants = [
+        place.city,
+        place.city.toLowerCase(),
+        // Handle common variations (Barcelone/Barcelona, etc.)
+        place.city.replace(/e$/, 'a'), // Barcelone -> Barcelona
+        place.city.replace(/a$/, 'e'), // Barcelona -> Barcelone
+      ];
+      
+      // First try to get from database
       if (type === 'restaurant') {
-        const cityVariants = [
-          place.city,
-          place.city.toLowerCase(),
-          // Handle common variations (Barcelone/Barcelona, etc.)
-          place.city.replace(/e$/, 'a'), // Barcelone -> Barcelona
-          place.city.replace(/a$/, 'e'), // Barcelona -> Barcelone
-        ];
-        
         const { data: dbRestaurants, error } = await supabase
           .from('restaurants')
           .select('id, name, address, city, coordinates, cuisine, type')
@@ -490,7 +490,31 @@ const PlaceDetail = () => {
         }
       }
       
-      // Fallback to Mapbox for hotels or if no restaurants found in DB
+      // For hotels, first try to get from database
+      if (type === 'hotel') {
+        const { data: dbHotels, error } = await supabase
+          .from('hotels')
+          .select('id, name, address, city, coordinates, star_rating, price_range')
+          .eq('verified', true)
+          .or(cityVariants.map(c => `city.ilike.%${c}%`).join(','))
+          .order('star_rating', { ascending: false });
+        
+        if (!error && dbHotels && dbHotels.length > 0) {
+          const pois: SearchedPOI[] = dbHotels.slice(0, 10).map((h: any) => ({
+            id: h.id,
+            name: h.star_rating ? `${h.name} ${'⭐'.repeat(Math.min(h.star_rating, 5))}` : h.name,
+            type: 'lodging' as const,
+            address: h.address || `${h.city}`,
+            coordinates: h.coordinates ? [h.coordinates.lng, h.coordinates.lat] as [number, number] : place.coordinates
+          }));
+          
+          setNearbyPOIs(pois);
+          setSearchingPOIs(false);
+          return;
+        }
+      }
+      
+      // Fallback to Mapbox if no results found in DB
       const mapboxToken = getMapboxToken();
       const query = type === 'hotel' ? 'hotel hostel lodging' : 'restaurant';
       const [lon, lat] = place.coordinates;
