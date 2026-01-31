@@ -82,7 +82,7 @@ const Header = ({
             
             {/* Centre : Logo */}
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src={logo} alt="SacredWorld Logo" className="h-12 w-12 sm:h-14 sm:w-14 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
+              <img src={logo} alt="SacredWorld Logo" className="h-16 w-16 sm:h-20 sm:w-20 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
             </div>
             
             {/* Droite : Micro + Mail + Retour */}
