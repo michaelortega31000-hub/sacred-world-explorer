@@ -163,7 +163,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (data) {
         const dbProgress: UserProgress = {
-          selectedReligion: data.selected_religion as Religion | null,
+          // Préserver la religion locale si la valeur en base est null
+          selectedReligion: (data.selected_religion as Religion | null) || localProgress?.selectedReligion || null,
           language: data.language,
           totalPoints: data.total_points,
           visitedPlaces: data.visited_places,
