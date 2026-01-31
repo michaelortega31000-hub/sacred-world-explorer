@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { mockPlaces as placesData } from '@/data/placesData';
 import { usePlaces } from '@/hooks/usePlaces';
 import confetti from 'canvas-confetti';
+import DailyQuiz from './DailyQuiz';
 
 const ChallengesTab = () => {
   const { userProgress, addPoints, userLocation, flyToLocation, updateStreak, getStreakBonus, awardQuestBadge } = useApp();
@@ -495,6 +496,9 @@ const ChallengesTab = () => {
         </TabsList>
 
         <TabsContent value="daily" className="space-y-6">
+          {/* Quiz quotidien */}
+          <DailyQuiz />
+          
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent">
             <CardHeader>
               <div className="flex items-center justify-between">
