@@ -55,10 +55,10 @@ const Header = ({
               {/* 1. Indicateur de religion */}
               {userProgress.selectedReligion && (
                 <div
-                  className="flex items-center justify-center p-0.5 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20"
+                  className="flex items-center justify-center rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20 overflow-hidden"
                   title={userProgress.selectedReligion}
                 >
-                  <ReligionIcon religion={userProgress.selectedReligion} size="md" />
+                  <ReligionIcon religion={userProgress.selectedReligion} size="lg" />
                 </div>
               )}
               
