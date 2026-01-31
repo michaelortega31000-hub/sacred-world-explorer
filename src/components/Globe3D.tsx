@@ -18,8 +18,9 @@ import { useLocationHistory } from '@/hooks/useLocationHistory';
 import { useCountrySparkle } from '@/hooks/useCountrySparkle';
 import { toast } from 'sonner';
 import { getMapboxToken } from '@/lib/mapboxHelper';
-import type { Religion } from '@/contexts/AppContext';
+import type { Religion, PlaceCategory } from '@/contexts/AppContext';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import type { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
@@ -30,6 +31,7 @@ interface Globe3DProps {
   onPausedChange?: (paused: boolean) => void;
   onFullscreenChange?: (isFullscreen: boolean) => void;
   tripPlaces?: string[];
+  categoryFilter?: PlaceCategoryFilterValue;
 }
 interface PlaceFeature {
   type: 'Feature';
@@ -62,7 +64,8 @@ const Globe3D = ({
   onFlyToRef,
   onPausedChange,
   onFullscreenChange,
-  tripPlaces = []
+  tripPlaces = [],
+  categoryFilter = 'all'
 }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -157,13 +160,17 @@ const Globe3D = ({
   };
 
   // Build FeatureCollection from places with filters
-  const buildFeatureCollection = (places: any[], activeFilters: FilterOptions): PlacesCollection => {
+  const buildFeatureCollection = (places: any[], activeFilters: FilterOptions, activeCategoryFilter: PlaceCategoryFilterValue = 'all'): PlacesCollection => {
     const features: PlaceFeature[] = [];
     places.forEach(place => {
       const coords = sanitizeCoordinates(place.coordinates, place.id);
       if (!coords) return;
       const religion = (place.religion || inferReligionFromPlace(place.type, place.name)) as string;
       const isVisited = userProgress.visitedPlaces.includes(place.id);
+
+      // Apply category filter first
+      const placeCategory = place.placeCategory || 'religious_site';
+      if (activeCategoryFilter !== 'all' && placeCategory !== activeCategoryFilter) return;
 
       // Apply filters
       const matchesReligion = activeFilters.religions.length === 0 || activeFilters.religions.includes(religion as Religion);
@@ -432,9 +439,10 @@ const Globe3D = ({
   const updateMapData = () => {
     if (!map.current || !isMapReadyRef.current) return;
 
-    // Only show monuments when filters are active
+    // Only show monuments when filters are active OR a category filter is set
     const hasActiveFilters = filters.religions.length > 0 || filters.types.length > 0 || filters.countries.length > 0;
-    if (!showMonuments || !hasActiveFilters) {
+    const hasCategoryFilter = categoryFilter !== 'all';
+    if (!showMonuments || (!hasActiveFilters && !hasCategoryFilter)) {
       // Clear data when no filters active
       const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
       if (source) {
@@ -446,7 +454,7 @@ const Globe3D = ({
       setFilteredCount(0);
       return;
     }
-    const collection = buildFeatureCollection(allPlacesRef.current, filters);
+    const collection = buildFeatureCollection(allPlacesRef.current, filters, categoryFilter);
     const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
     if (source) {
       source.setData(collection);
@@ -1159,14 +1167,14 @@ const Globe3D = ({
     };
   }, []);
 
-  // Update data when filters or showMonuments change
+  // Update data when filters, categoryFilter, or showMonuments change
   useEffect(() => {
-    console.log('🔄 Effect triggered - isMapReady:', isMapReadyRef.current, 'tripPlaces:', tripPlaces);
+    console.log('🔄 Effect triggered - isMapReady:', isMapReadyRef.current, 'tripPlaces:', tripPlaces, 'categoryFilter:', categoryFilter);
     if (isMapReadyRef.current) {
       updateMapData();
       updateTripPlaces();
     }
-  }, [filters, showMonuments, userProgress.visitedPlaces, tripPlaces]);
+  }, [filters, showMonuments, userProgress.visitedPlaces, tripPlaces, categoryFilter]);
 
   // Update location trail with activity-based colors
   useEffect(() => {
