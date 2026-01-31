@@ -7,9 +7,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { religionColors } from '@/config/religionColors';
-import { Religion } from '@/contexts/AppContext';
+import { Religion, Place } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
-import { mockPlaces } from '@/data/placesData';
+import { usePlaces } from '@/hooks/usePlaces';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
@@ -53,11 +53,14 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
   const [showSavePreset, setShowSavePreset] = useState(false);
   const { toast } = useToast();
   
+  // Use merged places data (DB + local) for accurate counts
+  const { data: allPlaces = [], isLoading: placesLoading } = usePlaces();
+  
   const buttonRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const [panelPosition, setPanelPosition] = useState({ top: 0, left: 0 });
 
-  // Calculate religion counts from places data
+  // Calculate religion counts from merged places data (DB + local)
   const religionCounts = useMemo(() => {
     const counts: Record<Religion, number> = {
       christianity: 0,
@@ -70,19 +73,19 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       atheism: 0,
     };
 
-    mockPlaces.forEach(place => {
+    allPlaces.forEach(place => {
       const religion = place.religion || inferReligionFromPlace(place.type, place.name);
       counts[religion]++;
     });
 
     return counts;
-  }, []);
+  }, [allPlaces]);
 
-  // Calculate type counts from places data (for cultural types)
+  // Calculate type counts from merged places data (for cultural types)
   const culturalTypeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
 
-    mockPlaces.forEach(place => {
+    allPlaces.forEach(place => {
       const type = place.type;
       // Only count if it's a cultural type
       const matchingCultural = culturalTypes.find(ct => 
@@ -95,13 +98,13 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     });
 
     return counts;
-  }, []);
+  }, [allPlaces]);
 
   // Calculate type counts for religious monument types (for accordion)
   const religiousTypeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
 
-    mockPlaces.forEach(place => {
+    allPlaces.forEach(place => {
       const type = place.type;
       // Exclude cultural types
       const isCultural = culturalTypes.some(ct => 
@@ -114,7 +117,7 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     });
 
     return counts;
-  }, []);
+  }, [allPlaces]);
 
   // Get available religious monument types
   const availableReligiousTypes = useMemo(() => {
