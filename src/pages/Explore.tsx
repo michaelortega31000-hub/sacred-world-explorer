@@ -10,7 +10,8 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
-import PlaceCategoryFilter, { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
+import GeolocationToggle from '@/components/GeolocationToggle';
+import { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { normalizeCountryName } from '@/lib/countryNameMapping';
@@ -33,8 +34,13 @@ const Explore = () => {
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header - hidden in fullscreen mode */}
-      {!isFullscreen && <Header />}
+      {/* Header with category filter - hidden in fullscreen mode */}
+      {!isFullscreen && (
+        <Header 
+          categoryFilter={categoryFilter}
+          onCategoryChange={setCategoryFilter}
+        />
+      )}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         {/* Contenu qui remplit l'espace disponible */}
@@ -50,16 +56,6 @@ const Explore = () => {
                 onFullscreenChange={setIsFullscreen}
                 categoryFilter={categoryFilter}
               />
-              {/* Category filter overlay */}
-              {!isFullscreen && (
-                <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50">
-                  <PlaceCategoryFilter 
-                    value={categoryFilter}
-                    onChange={setCategoryFilter}
-                    persistKey="explore"
-                  />
-                </div>
-              )}
             </div>
           </TabsContent>
 
@@ -114,6 +110,9 @@ const Explore = () => {
           </TabsList>
         )}
       </Tabs>
+
+      {/* Geolocation toggle - floating bottom left, aligned with chatbot */}
+      {!isFullscreen && <GeolocationToggle />}
 
       {/* Bottom navigation - hidden in fullscreen mode */}
       {!isFullscreen && <BottomNavigation />}

@@ -1,39 +1,37 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Mail, MapPin, Award } from 'lucide-react';
+import { ArrowLeft, Mail, Award } from 'lucide-react';
 import logo from '@/assets/logo-glow.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
 import VoiceCommand from '@/components/VoiceCommand';
 import ReligionIcon from '@/components/ReligionIcon';
+import PlaceCategoryFilter, { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
+
 interface HeaderProps {
   showBack?: boolean;
   backTo?: string;
   backLabel?: string;
   children?: React.ReactNode;
   transparent?: boolean;
+  categoryFilter?: PlaceCategoryFilterValue;
+  onCategoryChange?: (value: PlaceCategoryFilterValue) => void;
 }
+
 const Header = ({
   showBack = false,
   backTo = '/',
   backLabel = 'Retour',
   children,
-  transparent = false
+  transparent = false,
+  categoryFilter,
+  onCategoryChange
 }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const {
-    unreadCount,
-    markAsRead
-  } = useUnreadMessages();
-  const {
-    userProgress,
-    toggleGeolocation,
-    userLocation
-  } = useApp();
+  const { unreadCount, markAsRead } = useUnreadMessages();
+  const { userProgress } = useApp();
 
   // Pages où on affiche uniquement le texte "Sacred World" sans logo
   const isTextOnlyPage = location.pathname === '/explore' || location.pathname === '/profile' || location.pathname.startsWith('/country') || location.pathname.startsWith('/place');
@@ -45,23 +43,16 @@ const Header = ({
     markAsRead();
     navigate('/journal');
   };
-  const handleGeolocationToggle = () => {
-    toggleGeolocation();
-  };
-  return <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
-      <div className="max-w-7xl mx-auto">
-        {isTextOnlyPage ?
-      // Header compact pour les pages Globe/Planifier/Journal/Classements
-      <div className="flex items-center justify-between gap-2 sm:gap-4">
-            {/* Gauche : Géolocalisation + Religion + Points + Badges */}
-            <div className="flex items-center gap-1.5 sm:gap-3">
-              {showExploreControls && (
-                <div className="flex items-center gap-2">
-                  <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
-                </div>
-              )}
 
-              {/* Indicateur de religion (entre géolocalisation et badges) */}
+  return (
+    <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
+      <div className="max-w-7xl mx-auto">
+        {isTextOnlyPage ? (
+          // Header compact pour les pages Globe/Planifier/Journal/Classements
+          <div className="flex items-center justify-between gap-2 sm:gap-4">
+            {/* Gauche : Religion + Badges + Filtre */}
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              {/* 1. Indicateur de religion */}
               {userProgress.selectedReligion && (
                 <div
                   className="flex items-center justify-center p-1 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20"
@@ -71,19 +62,22 @@ const Header = ({
                 </div>
               )}
               
-              {/* Points obtenus */}
-              <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
-                
-                
-              </div>
-              
-              {/* Badges obtenus */}
+              {/* 2. Badges obtenus */}
               <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
                 <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
                 <span className="text-xs sm:text-sm font-medium text-foreground">
                   {userProgress.badges.length}
                 </span>
               </div>
+
+              {/* 3. Filtre de catégorie */}
+              {showExploreControls && categoryFilter !== undefined && onCategoryChange && (
+                <PlaceCategoryFilter 
+                  value={categoryFilter}
+                  onChange={onCategoryChange}
+                  persistKey="explore"
+                />
+              )}
             </div>
             
             {/* Centre : Logo */}
@@ -121,9 +115,10 @@ const Header = ({
                 </Button>
               )}
             </div>
-          </div> :
-      // Header normal pour les autres pages
-      <>
+          </div>
+        ) : (
+          // Header normal pour les autres pages
+          <>
             <div className="flex flex-col items-center mb-4">
               <img src={logo} alt="SacredWorld Logo" className="h-16 w-16 object-contain cursor-pointer mb-2" onClick={() => navigate('/explore')} />
               <h1 className="font-serif text-foreground tracking-wide cursor-pointer text-2xl" onClick={() => navigate('/explore')}>
@@ -133,26 +128,15 @@ const Header = ({
             
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
-                {showBack && <Button variant="ghost" onClick={() => backTo ? navigate(backTo) : navigate(-1)} className="gap-2 text-foreground hover:bg-primary/10">
+                {showBack && (
+                  <Button variant="ghost" onClick={() => backTo ? navigate(backTo) : navigate(-1)} className="gap-2 text-foreground hover:bg-primary/10">
                     <ArrowLeft className="w-4 h-4" />
                     {backLabel}
-                  </Button>}
+                  </Button>
+                )}
               </div>
               
               <div className="flex items-center gap-2">
-                {showExploreControls && (
-                  <>
-                    <div className="flex items-center gap-2">
-                      <MapPin className={`w-4 h-4 ${userProgress.geolocationEnabled && userLocation ? 'text-primary' : 'text-muted-foreground'}`} />
-                      <Switch checked={userProgress.geolocationEnabled} onCheckedChange={handleGeolocationToggle} aria-label="Activer la géolocalisation" />
-                    </div>
-                    
-                    <VoiceCommand />
-                  </>
-                )}
-                
-                
-                
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
@@ -182,8 +166,11 @@ const Header = ({
                 {children}
               </div>
             </div>
-          </>}
+          </>
+        )}
       </div>
-    </div>;
+    </div>
+  );
 };
+
 export default Header;
