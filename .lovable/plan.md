@@ -1,139 +1,110 @@
 
 
-# Plan de Vérification et Correction des 316 Images de Lieux Sacrés
+# Plan : Ajouter le Quiz Quotidien dans l'onglet Défis de la page Explore
 
-## Résumé du Problème
+## Problème Identifié
 
-Après analyse approfondie du projet, voici la situation actuelle :
-- **316 lieux** sont définis dans `src/data/placesData.ts` (fichier local)
-- **54 lieux supplémentaires** sont dans la base de données Supabase (principalement des musées)
-- **209 images locales** existent dans `src/assets/places/`
-- **~107 lieux** n'ont potentiellement pas d'image locale correspondante
+Le quiz quotidien (`DailyQuiz`) existe et fonctionne correctement, mais il n'est **pas affiché** dans l'onglet "Défis" de la page Explore. Voici la situation actuelle :
 
-Le problème identifié : certaines images locales ne représentent pas correctement le lieu indiqué. Par exemple, la Cathédrale Saint-Étienne de Toulouse affiche une mauvaise image malgré l'existence d'un fichier `toulouse-st-etienne.jpg`.
+| Composant | Page | Quiz inclus ? |
+|-----------|------|---------------|
+| `ChallengesTab` | `/explore` (onglet Défis) | Non |
+| `WeeklyQuestTab` | `/country/:name` (onglet Quête) | Oui |
 
----
-
-## Stratégie de Correction
-
-### Phase 1 : Audit Complet des Images Locales (Priorité Haute)
-
-Vérifier manuellement les 209 images existantes dans `/src/assets/places/` pour identifier :
-- Images incorrectes (ne représentant pas le bon lieu)
-- Images de mauvaise qualité
-- Images dupliquées
-
-### Phase 2 : Récupération Automatisée via Wikipedia API
-
-Pour chaque lieu sans image ou avec image incorrecte :
-
-1. Utiliser l'edge function `fetch-wikipedia-image` existante
-2. Construire une recherche Wikipedia basée sur le nom du lieu
-3. Récupérer l'URL Wikimedia Commons officielle
-4. Mettre à jour le champ `image_url` dans Supabase
-
-### Phase 3 : Migration vers Base de Données
-
-Plutôt que de stocker 316 images locales, nous allons :
-
-1. **Migrer tous les lieux locaux vers Supabase** avec des URLs Wikipedia/Wikimedia valides
-2. **Stocker les URLs d'images directement dans la BDD** (champ `image_url`)
-3. **Conserver les images locales en fallback** pour les cas sans Wikipedia
+L'utilisateur s'attend à voir le quiz dans l'onglet "Défis" de la page Explore, mais actuellement il n'y est pas.
 
 ---
 
-## Implémentation Technique
+## Caractéristiques du Quiz Existant
 
-### Étape 1 : Créer un Script d'Audit Admin
+Le composant `DailyQuiz` possède déjà toutes les fonctionnalités demandées :
 
-Un nouvel outil admin pour :
-- Lister tous les lieux avec leur image actuelle
-- Afficher un aperçu de chaque image
-- Permettre la validation/correction manuelle
-- Récupérer automatiquement l'image Wikipedia si disponible
+- **5 questions** sélectionnées aléatoirement chaque jour
+- **4 réponses possibles** par question
+- **Rotation quotidienne** (basée sur `localStorage` avec la date du jour)
+- **Catégories variées** : Religion, Monument, Édifice, Anecdote
+- **Système de points** : +2 points par bonne réponse (10 points max)
+- **Explication pédagogique** après chaque réponse
+- **Persistance** : empêche de refaire le quiz le même jour
 
-### Étape 2 : Améliorer l'Edge Function Wikipedia
+---
 
-Modifier `fetch-wikipedia-image` pour :
-- Supporter les recherches multilingues (fr, en, es, de, it)
-- Fallback sur Wikimedia Commons direct
-- Retourner plusieurs images candidates
+## Solution
 
-### Étape 3 : Créer une Page Admin d'Audit d'Images
+Importer et afficher le composant `DailyQuiz` en haut de l'onglet "Journalière" dans `ChallengesTab.tsx`.
 
-Nouvelle page `/admin/audit-images` avec :
+### Modification Prévue
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  AUDIT DES IMAGES - 316 LIEUX                               │
+│  ONGLET DÉFIS (Explore)                                     │
 ├─────────────────────────────────────────────────────────────┤
-│  ☐ Afficher uniquement les problèmes                        │
-│  ☐ Trier par pays                                           │
+│  [Journalière] [Hebdomadaire] [Mensuelle] [Culture] [Proche]│
 ├─────────────────────────────────────────────────────────────┤
 │                                                             │
-│  🇫🇷 France (35 lieux)                                      │
-│  ┌─────────┬──────────────────────────────────────────────┐ │
-│  │ [Image] │ Notre-Dame de Paris                         │ │
-│  │         │ ✅ Image locale valide                       │ │
-│  │         │ [Voir Wikipedia] [Remplacer]                │ │
-│  └─────────┴──────────────────────────────────────────────┘ │
-│  ┌─────────┬──────────────────────────────────────────────┐ │
-│  │ [Image] │ Cathédrale Saint-Étienne de Toulouse        │ │
-│  │ ⚠️      │ ⚠️ Image potentiellement incorrecte          │ │
-│  │         │ [Charger depuis Wikipedia] [Upload]         │ │
-│  └─────────┴──────────────────────────────────────────────┘ │
+│  ╔═══════════════════════════════════════════════════════╗  │
+│  ║  🧠 QUIZ DU JOUR                      Question 1/5   ║  │
+│  ║  5 questions quotidiennes • 2 points par bonne rép.  ║  │
+│  ║                                                       ║  │
+│  ║  🕌 Religion                                          ║  │
+│  ║  Quel est le lieu de pèlerinage le plus sacré ?      ║  │
+│  ║                                                       ║  │
+│  ║  ○ Jérusalem                                          ║  │
+│  ║  ○ La Mecque                                          ║  │
+│  ║  ○ Médine                                             ║  │
+│  ║  ○ Le Caire                                           ║  │
+│  ║                                                       ║  │
+│  ║  [Valider]                                            ║  │
+│  ╚═══════════════════════════════════════════════════════╝  │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  🔥 Série : 5 jours • Bonus +10%                      │  │
+│  └───────────────────────────────────────────────────────┘  │
+│                                                             │
+│  ┌───────────────────────────────────────────────────────┐  │
+│  │  📍 Première Visite - Visitez 1 lieu aujourd'hui     │  │
+│  └───────────────────────────────────────────────────────┘  │
 │                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 
-### Étape 4 : Mise à Jour en Masse
+---
 
-Créer un bouton "Corriger automatiquement" qui :
-1. Parcourt les 316 lieux un par un
-2. Vérifie si une image Wikipedia existe
-3. Met à jour la BDD avec l'URL valide
-4. Génère un rapport des corrections
+## Fichier à Modifier
+
+| Fichier | Modification |
+|---------|--------------|
+| `src/components/ChallengesTab.tsx` | Importer `DailyQuiz` et l'afficher dans l'onglet "daily" |
 
 ---
 
-## Fichiers à Créer/Modifier
+## Détails Techniques
 
-| Fichier | Action |
-|---------|--------|
-| `src/pages/AdminAuditImages.tsx` | Créer - Interface d'audit des images |
-| `src/hooks/useImageAudit.ts` | Créer - Logique d'audit et correction |
-| `supabase/functions/batch-fetch-images/index.ts` | Créer - Récupération en masse Wikipedia |
-| `supabase/functions/fetch-wikipedia-image/index.ts` | Modifier - Améliorer la recherche |
-| `src/App.tsx` | Modifier - Ajouter la route admin |
-| Migration SQL | Exécuter - Migrer les lieux locaux vers BDD |
+1. Ajouter l'import du composant `DailyQuiz` en haut du fichier
+2. Insérer `<DailyQuiz />` au début du `TabsContent value="daily"` (avant les quêtes journalières)
 
----
+### Code à Ajouter
 
-## Avantages de Cette Approche
+```typescript
+// Import en haut du fichier
+import DailyQuiz from './DailyQuiz';
 
-1. **Vérification Visuelle** : Chaque image peut être validée par un admin
-2. **Sources Fiables** : Wikipedia/Wikimedia Commons = images vérifiées et libres de droits
-3. **Maintenabilité** : URLs en BDD plutôt que fichiers locaux
-4. **Scalabilité** : Facile d'ajouter de nouveaux lieux
-5. **Traçabilité** : Historique des corrections dans la BDD
-
----
-
-## Estimation du Travail
-
-- **Phase 1** (Interface Admin) : ~2 heures
-- **Phase 2** (Amélioration Edge Function) : ~1 heure
-- **Phase 3** (Migration des 316 lieux) : ~3 heures (semi-automatisé)
-- **Phase 4** (Vérification manuelle) : Variable selon les corrections nécessaires
+// Dans le TabsContent value="daily", ajouter en premier :
+<TabsContent value="daily" className="space-y-6">
+  {/* Quiz du jour */}
+  <DailyQuiz />
+  
+  {/* Reste du contenu existant... */}
+  <Card className="border-primary/20 ...">
+```
 
 ---
 
-## Note Importante
+## Résultat Attendu
 
-Cette tâche nécessite une vérification humaine car :
-- Les API Wikipedia ne garantissent pas toujours la bonne image
-- Certains lieux ont plusieurs images possibles
-- La qualité des images varie
-
-Je recommande de procéder pays par pays pour une validation progressive plutôt qu'une correction globale risquée.
+Après cette modification :
+- Le quiz sera visible dès l'ouverture de l'onglet "Défis" > "Journalière"
+- 5 questions avec 4 réponses chacune seront proposées
+- Le quiz changera automatiquement tous les jours à minuit
+- L'utilisateur ne pourra pas refaire le quiz le même jour
 
