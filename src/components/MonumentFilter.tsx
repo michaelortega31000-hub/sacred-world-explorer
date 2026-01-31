@@ -12,6 +12,7 @@ import { useToast } from '@/hooks/use-toast';
 import { usePlaces } from '@/hooks/usePlaces';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import ReligionIcon from '@/components/ReligionIcon';
 
 export interface FilterOptions {
   religions: Religion[];
@@ -471,12 +472,10 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
                       isChecked && "data-[state=checked]:bg-transparent"
                     )}
                   />
-                  <div
-                    className="w-2 h-2 rounded-full flex-shrink-0"
-                    style={{ 
-                      background: colorConfig.marker,
-                      boxShadow: `0 0 6px ${colorConfig.marker}80`
-                    }}
+                  <ReligionIcon 
+                    religion={religion.id} 
+                    size="sm" 
+                    className="w-5 h-5 flex-shrink-0"
                   />
                   <span className={cn(
                     "text-xs font-medium font-inter transition-colors flex-1 truncate",
