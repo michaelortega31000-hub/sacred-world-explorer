@@ -719,6 +719,12 @@ const Globe3D = ({
         }
       });
 
+      // Add country boundaries source for click detection
+      map.current.addSource('country-boundaries', {
+        type: 'vector',
+        url: 'mapbox://mapbox.country-boundaries-v1'
+      });
+
       // Add location trail source
       map.current.addSource('location-trail', {
         type: 'geojson',
@@ -841,6 +847,31 @@ const Globe3D = ({
           'line-opacity': 1
         }
       });
+
+      // Add invisible country fill layer for click detection (UNDER all other layers)
+      map.current.addLayer({
+        id: 'country-fills',
+        type: 'fill',
+        source: 'country-boundaries',
+        'source-layer': 'country_boundaries',
+        paint: {
+          'fill-color': 'transparent',
+          'fill-opacity': 0
+        }
+      }, 'location-trail'); // Insert below the location trail
+
+      // Add country hover highlight layer
+      map.current.addLayer({
+        id: 'country-fills-hover',
+        type: 'fill',
+        source: 'country-boundaries',
+        'source-layer': 'country_boundaries',
+        paint: {
+          'fill-color': '#34E0A1',
+          'fill-opacity': 0.15
+        },
+        filter: ['==', 'iso_3166_1', ''] // Empty filter = nothing shown by default
+      }, 'location-trail');
 
       // Add circle layer with religion-based colors
       map.current.addLayer({
@@ -1005,84 +1036,75 @@ const Globe3D = ({
         navigate(`/place/${e.detail}`);
       }) as EventListener);
       
-      // Country hover effect
-      map.current.on('mousemove', (e) => {
+      // Country hover effect using fill layer - covers entire country surface
+      map.current.on('mousemove', 'country-fills', (e) => {
         if (!map.current) return;
         
-        // First check if hovering over place markers (higher priority)
+        // Check if hovering over place markers (higher priority)
         const placeFeatures = map.current.queryRenderedFeatures(e.point, {
           layers: ['places-circles', 'trip-places-circles']
         });
         
         if (placeFeatures.length > 0) {
-          return; // Let place hover handler manage cursor
-        }
-        
-        // Query for country polygons/fills at cursor position
-        const countryFeatures = map.current.queryRenderedFeatures(e.point, {
-          layers: ['admin-0-boundary', 'admin-0-boundary-bg', 'country-label']
-        });
-        
-        if (countryFeatures.length > 0) {
-          map.current.getCanvas().style.cursor = 'pointer';
-        } else {
-          map.current.getCanvas().style.cursor = '';
-        }
-      });
-      
-      // Country click handler
-      map.current.on('click', (e) => {
-        if (!map.current || !onCountryClick) return;
-        
-        // First check if clicking on a place marker (higher priority)
-        const placeFeatures = map.current.queryRenderedFeatures(e.point, {
-          layers: ['places-circles', 'trip-places-circles']
-        });
-        
-        // If clicking on a place, let the place handler deal with it
-        if (placeFeatures.length > 0) {
+          // Reset hover highlight when over markers
+          map.current.setFilter('country-fills-hover', ['==', 'iso_3166_1', '']);
           return;
         }
         
-        // Query for country features at click position
-        const countryLayers = [
-          'admin-0-boundary',
-          'admin-0-boundary-bg',
-          'country-label',
-          'admin-0-boundary-disputed'
-        ];
+        map.current.getCanvas().style.cursor = 'pointer';
         
-        const countryFeatures = map.current.queryRenderedFeatures(e.point, {
-          layers: countryLayers
+        // Highlight the hovered country
+        if (e.features && e.features[0]) {
+          const iso = e.features[0].properties?.iso_3166_1;
+          if (iso) {
+            map.current.setFilter('country-fills-hover', ['==', 'iso_3166_1', iso]);
+          }
+        }
+      });
+      
+      map.current.on('mouseleave', 'country-fills', () => {
+        if (!map.current) return;
+        map.current.getCanvas().style.cursor = '';
+        map.current.setFilter('country-fills-hover', ['==', 'iso_3166_1', '']);
+      });
+      
+      // Country click handler using fill layer - entire country surface is clickable
+      map.current.on('click', 'country-fills', (e) => {
+        if (!map.current || !onCountryClick) return;
+        
+        // Check if clicking on a place marker (higher priority)
+        const placeFeatures = map.current.queryRenderedFeatures(e.point, {
+          layers: ['places-circles', 'trip-places-circles']
         });
         
-        if (countryFeatures.length > 0) {
-          const feature = countryFeatures[0];
+        if (placeFeatures.length > 0) {
+          return; // Let place handler manage the click
+        }
+        
+        if (!e.features || e.features.length === 0) return;
+        
+        const feature = e.features[0];
+        
+        // Extract country name from properties
+        const countryName = 
+          feature.properties?.name_en ||
+          feature.properties?.name ||
+          feature.properties?.name_fr ||
+          feature.properties?.iso_3166_1;
+        
+        if (countryName) {
+          // Trigger sparkle effect at click position
+          triggerSparkle(e.point.x, e.point.y);
           
-          // Extract country name from Mapbox properties
-          const countryName = 
-            feature.properties?.name_en ||
-            feature.properties?.name ||
-            feature.properties?.name_fr ||
-            feature.properties?.iso_3166_1 ||
-            feature.properties?.worldview;
-          
-          if (countryName) {
-            // Trigger sparkle effect at click position
-            triggerSparkle(e.point.x, e.point.y);
-            
-            console.log('🌍 Country clicked (raw from Mapbox):', {
-              name: feature.properties?.name,
-              name_en: feature.properties?.name_en,
-              name_fr: feature.properties?.name_fr,
-              iso_3166_1: feature.properties?.iso_3166_1,
-              worldview: feature.properties?.worldview,
-              selected: countryName
-            });
-            onCountryClick(countryName);
-          } else {
-            console.warn('⚠️ Country feature found but no name property:', feature.properties);
-          }
+          console.log('🌍 Country clicked (fill layer):', {
+            name: feature.properties?.name,
+            name_en: feature.properties?.name_en,
+            iso_3166_1: feature.properties?.iso_3166_1,
+            selected: countryName
+          });
+          onCountryClick(countryName);
+        } else {
+          console.warn('⚠️ Country feature found but no name property:', feature.properties);
         }
       });
       
