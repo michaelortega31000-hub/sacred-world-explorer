@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Mail, Award } from 'lucide-react';
-import logo from '@/assets/logo-glow.png';
+import logo from '@/assets/sacred-world-logo-header.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
 import VoiceCommand from '@/components/VoiceCommand';
