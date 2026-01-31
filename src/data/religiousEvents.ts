@@ -25,285 +25,473 @@ export interface ReligiousEvent {
   type?: 'celebration' | 'fasting' | 'pilgrimage' | 'prayer' | 'festival';
 }
 
-// Helper function to get dates for 2025
-const getDateFor2025 = (month: number, day: number) => new Date(2025, month - 1, day);
+// Helper function to get dates for 2026
+const getDateFor2026 = (month: number, day: number) => new Date(2026, month - 1, day);
 
-export const religiousEvents2025: ReligiousEvent[] = [
-  // Christian Events
+export const religiousEvents2026: ReligiousEvent[] = [
+  // ==================== CHRISTIANITY (7 events) ====================
   {
-    id: 'christmas-2025',
-    name: 'Christmas',
-    nameFr: 'Noël',
-    nameEn: 'Christmas',
-    description: 'Célébration de la naissance de Jésus-Christ',
-    descriptionFr: 'Célébration de la naissance de Jésus-Christ, fête majeure du christianisme célébrée dans le monde entier.',
-    descriptionEn: 'Celebration of the birth of Jesus Christ, major Christian holiday celebrated worldwide.',
+    id: 'epiphany-2026',
+    name: 'Epiphany',
+    nameFr: 'Épiphanie',
+    nameEn: 'Epiphany',
+    description: 'Fête des Rois Mages',
+    descriptionFr: 'Célébration de la visite des Rois Mages à l\'enfant Jésus, symbolisant la révélation du Christ aux nations.',
+    descriptionEn: 'Celebration of the visit of the Magi to the infant Jesus, symbolizing the revelation of Christ to the nations.',
     tradition: 'christianity',
-    date: getDateFor2025(12, 25),
+    date: getDateFor2026(1, 6),
     isRecurring: true,
-    color: '#C6A45A'
+    color: '#C6A45A',
+    type: 'celebration'
   },
   {
-    id: 'easter-2025',
+    id: 'easter-2026',
     name: 'Easter',
     nameFr: 'Pâques',
     nameEn: 'Easter',
     description: 'Résurrection de Jésus-Christ',
-    descriptionFr: 'Commémoration de la résurrection de Jésus-Christ, événement central de la foi chrétienne.',
-    descriptionEn: 'Commemoration of the resurrection of Jesus Christ, central event of the Christian faith.',
+    descriptionFr: 'Commémoration de la résurrection de Jésus-Christ, événement central de la foi chrétienne célébré dans le monde entier.',
+    descriptionEn: 'Commemoration of the resurrection of Jesus Christ, central event of the Christian faith celebrated worldwide.',
     tradition: 'christianity',
-    date: getDateFor2025(4, 20),
+    date: getDateFor2026(4, 5),
     isRecurring: true,
-    color: '#C6A45A'
+    color: '#C6A45A',
+    type: 'celebration'
   },
   {
-    id: 'ascension-2025',
+    id: 'ascension-2026',
     name: 'Ascension',
     nameFr: 'Ascension',
     nameEn: 'Ascension',
     description: 'Montée de Jésus au ciel',
-    descriptionFr: 'Célébration de la montée de Jésus au ciel, 40 jours après Pâques.',
-    descriptionEn: 'Celebration of Jesus ascending to heaven, 40 days after Easter.',
+    descriptionFr: 'Célébration de la montée de Jésus au ciel, 40 jours après Pâques, marquant la fin de son ministère terrestre.',
+    descriptionEn: 'Celebration of Jesus ascending to heaven, 40 days after Easter, marking the end of his earthly ministry.',
     tradition: 'christianity',
-    date: getDateFor2025(5, 29),
+    date: getDateFor2026(5, 14),
     isRecurring: true,
-    color: '#C6A45A'
+    color: '#C6A45A',
+    type: 'celebration'
   },
   {
-    id: 'pentecost-2025',
+    id: 'pentecost-2026',
     name: 'Pentecost',
     nameFr: 'Pentecôte',
     nameEn: 'Pentecost',
     description: 'Descente du Saint-Esprit',
-    descriptionFr: 'Célébration de la descente du Saint-Esprit sur les apôtres.',
-    descriptionEn: 'Celebration of the descent of the Holy Spirit upon the apostles.',
+    descriptionFr: 'Célébration de la descente du Saint-Esprit sur les apôtres, 50 jours après Pâques, naissance de l\'Église.',
+    descriptionEn: 'Celebration of the descent of the Holy Spirit upon the apostles, 50 days after Easter, birth of the Church.',
     tradition: 'christianity',
-    date: getDateFor2025(6, 8),
+    date: getDateFor2026(5, 24),
     isRecurring: true,
-    color: '#C6A45A'
+    color: '#C6A45A',
+    type: 'celebration'
   },
   {
-    id: 'all-saints-2025',
+    id: 'assumption-2026',
+    name: 'Assumption',
+    nameFr: 'Assomption',
+    nameEn: 'Assumption of Mary',
+    description: 'Assomption de la Vierge Marie',
+    descriptionFr: 'Célébration de l\'élévation de la Vierge Marie au ciel, corps et âme, fête majeure du catholicisme.',
+    descriptionEn: 'Celebration of the Virgin Mary being taken up to heaven, body and soul, a major Catholic feast.',
+    tradition: 'christianity',
+    date: getDateFor2026(8, 15),
+    isRecurring: true,
+    color: '#C6A45A',
+    type: 'celebration'
+  },
+  {
+    id: 'all-saints-2026',
     name: 'All Saints',
     nameFr: 'Toussaint',
-    nameEn: 'All Saints',
+    nameEn: 'All Saints\' Day',
     description: 'Fête de tous les saints',
-    descriptionFr: 'Fête catholique célébrant tous les saints connus et inconnus.',
-    descriptionEn: 'Catholic feast celebrating all known and unknown saints.',
+    descriptionFr: 'Fête catholique célébrant tous les saints connus et inconnus, jour de recueillement et de mémoire.',
+    descriptionEn: 'Catholic feast celebrating all known and unknown saints, a day of remembrance and reflection.',
     tradition: 'christianity',
-    date: getDateFor2025(11, 1),
+    date: getDateFor2026(11, 1),
     isRecurring: true,
-    color: '#C6A45A'
+    color: '#C6A45A',
+    type: 'celebration'
+  },
+  {
+    id: 'christmas-2026',
+    name: 'Christmas',
+    nameFr: 'Noël',
+    nameEn: 'Christmas',
+    description: 'Naissance de Jésus-Christ',
+    descriptionFr: 'Célébration de la naissance de Jésus-Christ, fête majeure du christianisme célébrée dans le monde entier.',
+    descriptionEn: 'Celebration of the birth of Jesus Christ, major Christian holiday celebrated worldwide.',
+    tradition: 'christianity',
+    date: getDateFor2026(12, 25),
+    isRecurring: true,
+    color: '#C6A45A',
+    type: 'celebration'
   },
 
-  // Islamic Events (2025)
+  // ==================== ISLAM (5 events) ====================
   {
-    id: 'ramadan-start-2025',
+    id: 'isra-miraj-2026',
+    name: 'Isra and Mi\'raj',
+    nameFr: 'Isra et Miraj',
+    nameEn: 'Isra and Mi\'raj',
+    description: 'Voyage nocturne du Prophète',
+    descriptionFr: 'Commémoration du voyage nocturne du Prophète Muhammad de La Mecque à Jérusalem et son ascension aux cieux.',
+    descriptionEn: 'Commemoration of Prophet Muhammad\'s night journey from Mecca to Jerusalem and his ascension to heaven.',
+    tradition: 'islam',
+    date: getDateFor2026(1, 16),
+    isRecurring: true,
+    color: '#00C6FF',
+    type: 'prayer'
+  },
+  {
+    id: 'ramadan-start-2026',
     name: 'Ramadan',
     nameFr: 'Début du Ramadan',
     nameEn: 'Start of Ramadan',
     description: 'Début du mois sacré du jeûne',
-    descriptionFr: 'Début du mois sacré du Ramadan, période de jeûne et de prière pour les musulmans.',
-    descriptionEn: 'Start of the holy month of Ramadan, period of fasting and prayer for Muslims.',
+    descriptionFr: 'Début du mois sacré du Ramadan, période de jeûne, de prière et de réflexion spirituelle pour les musulmans.',
+    descriptionEn: 'Start of the holy month of Ramadan, period of fasting, prayer and spiritual reflection for Muslims.',
     tradition: 'islam',
-    date: getDateFor2025(2, 28),
+    date: getDateFor2026(2, 18),
     isRecurring: true,
-    color: '#00C6FF'
+    color: '#00C6FF',
+    type: 'fasting'
   },
   {
-    id: 'eid-al-fitr-2025',
+    id: 'eid-al-fitr-2026',
     name: 'Eid al-Fitr',
     nameFr: 'Aïd al-Fitr',
     nameEn: 'Eid al-Fitr',
     description: 'Fête de la rupture du jeûne',
-    descriptionFr: 'Fête marquant la fin du Ramadan, célébration majeure de l\'islam.',
-    descriptionEn: 'Feast marking the end of Ramadan, major Islamic celebration.',
+    descriptionFr: 'Fête marquant la fin du Ramadan, célébration majeure de l\'islam avec prières, festins et partage.',
+    descriptionEn: 'Feast marking the end of Ramadan, major Islamic celebration with prayers, feasts and sharing.',
     tradition: 'islam',
-    date: getDateFor2025(3, 30),
+    date: getDateFor2026(3, 20),
     isRecurring: true,
-    color: '#00C6FF'
+    color: '#00C6FF',
+    type: 'celebration'
   },
   {
-    id: 'eid-al-adha-2025',
+    id: 'eid-al-adha-2026',
     name: 'Eid al-Adha',
     nameFr: 'Aïd al-Adha',
     nameEn: 'Eid al-Adha',
     description: 'Fête du sacrifice',
-    descriptionFr: 'Fête du sacrifice, commémorant le sacrifice d\'Abraham, la plus importante fête musulmane.',
-    descriptionEn: 'Feast of Sacrifice, commemorating Abraham\'s sacrifice, the most important Muslim feast.',
+    descriptionFr: 'Fête du sacrifice commémorant la soumission d\'Abraham à Dieu, la plus importante fête musulmane.',
+    descriptionEn: 'Feast of Sacrifice commemorating Abraham\'s submission to God, the most important Muslim feast.',
     tradition: 'islam',
-    date: getDateFor2025(6, 6),
+    date: getDateFor2026(5, 27),
     isRecurring: true,
-    color: '#00C6FF'
+    color: '#00C6FF',
+    type: 'celebration'
   },
   {
-    id: 'mawlid-2025',
+    id: 'mawlid-2026',
     name: 'Mawlid',
     nameFr: 'Mawlid an-Nabi',
     nameEn: 'Mawlid an-Nabi',
     description: 'Naissance du Prophète Muhammad',
-    descriptionFr: 'Célébration de la naissance du Prophète Muhammad.',
-    descriptionEn: 'Celebration of the birth of Prophet Muhammad.',
+    descriptionFr: 'Célébration de la naissance du Prophète Muhammad, jour de prières et de récitations du Coran.',
+    descriptionEn: 'Celebration of the birth of Prophet Muhammad, a day of prayers and Quran recitations.',
     tradition: 'islam',
-    date: getDateFor2025(9, 4),
+    date: getDateFor2026(8, 26),
     isRecurring: true,
-    color: '#00C6FF'
+    color: '#00C6FF',
+    type: 'celebration'
   },
 
-  // Jewish Events (2025)
+  // ==================== JUDAISM (7 events) ====================
   {
-    id: 'rosh-hashanah-2025',
-    name: 'Rosh Hashanah',
-    nameFr: 'Rosh Hashanah',
-    nameEn: 'Rosh Hashanah',
-    description: 'Nouvel an juif',
-    descriptionFr: 'Nouvel an juif, début des Jours redoutables.',
-    descriptionEn: 'Jewish New Year, beginning of the High Holy Days.',
+    id: 'purim-2026',
+    name: 'Purim',
+    nameFr: 'Pourim',
+    nameEn: 'Purim',
+    description: 'Fête des Sorts',
+    descriptionFr: 'Célébration de la délivrance des Juifs de Perse, fête joyeuse avec lectures du Livre d\'Esther et costumes.',
+    descriptionEn: 'Celebration of the deliverance of Jews from Persia, joyful feast with readings from the Book of Esther and costumes.',
     tradition: 'judaism',
-    date: getDateFor2025(9, 22),
+    date: getDateFor2026(3, 3),
     isRecurring: true,
-    color: '#4A90E2'
+    color: '#4A90E2',
+    type: 'festival'
   },
   {
-    id: 'yom-kippur-2025',
-    name: 'Yom Kippur',
-    nameFr: 'Yom Kippour',
-    nameEn: 'Yom Kippur',
-    description: 'Jour du Grand Pardon',
-    descriptionFr: 'Jour du Grand Pardon, jour le plus saint du judaïsme.',
-    descriptionEn: 'Day of Atonement, the holiest day in Judaism.',
-    tradition: 'judaism',
-    date: getDateFor2025(10, 1),
-    isRecurring: true,
-    color: '#4A90E2'
-  },
-  {
-    id: 'hanukkah-2025',
-    name: 'Hanukkah',
-    nameFr: 'Hanoucca',
-    nameEn: 'Hanukkah',
-    description: 'Fête des Lumières',
-    descriptionFr: 'Fête des Lumières, commémorant la réinauguration du Temple de Jérusalem.',
-    descriptionEn: 'Festival of Lights, commemorating the rededication of the Temple in Jerusalem.',
-    tradition: 'judaism',
-    date: getDateFor2025(12, 14),
-    isRecurring: true,
-    color: '#4A90E2'
-  },
-  {
-    id: 'passover-2025',
+    id: 'passover-2026',
     name: 'Passover',
     nameFr: 'Pessa\'h',
     nameEn: 'Passover',
     description: 'Fête de la Pâque juive',
-    descriptionFr: 'Pessa\'h, commémorant la libération des Hébreux de l\'esclavage en Égypte.',
-    descriptionEn: 'Passover, commemorating the liberation of the Hebrews from slavery in Egypt.',
+    descriptionFr: 'Pessa\'h commémore la libération des Hébreux de l\'esclavage en Égypte, avec le Seder et les matzot.',
+    descriptionEn: 'Passover commemorates the liberation of the Hebrews from slavery in Egypt, with the Seder and matzot.',
     tradition: 'judaism',
-    date: getDateFor2025(4, 12),
+    date: getDateFor2026(4, 2),
     isRecurring: true,
-    color: '#4A90E2'
+    color: '#4A90E2',
+    type: 'celebration'
+  },
+  {
+    id: 'shavuot-2026',
+    name: 'Shavuot',
+    nameFr: 'Shavouot',
+    nameEn: 'Shavuot',
+    description: 'Fête des Semaines',
+    descriptionFr: 'Célébration du don de la Torah au mont Sinaï, 50 jours après Pessa\'h, fête de la moisson.',
+    descriptionEn: 'Celebration of the giving of the Torah at Mount Sinai, 50 days after Passover, harvest festival.',
+    tradition: 'judaism',
+    date: getDateFor2026(5, 22),
+    isRecurring: true,
+    color: '#4A90E2',
+    type: 'celebration'
+  },
+  {
+    id: 'rosh-hashanah-2026',
+    name: 'Rosh Hashanah',
+    nameFr: 'Rosh Hashanah',
+    nameEn: 'Rosh Hashanah',
+    description: 'Nouvel an juif',
+    descriptionFr: 'Nouvel an juif, début des Jours redoutables, période d\'introspection et de repentance spirituelle.',
+    descriptionEn: 'Jewish New Year, beginning of the High Holy Days, period of introspection and spiritual repentance.',
+    tradition: 'judaism',
+    date: getDateFor2026(9, 12),
+    isRecurring: true,
+    color: '#4A90E2',
+    type: 'celebration'
+  },
+  {
+    id: 'yom-kippur-2026',
+    name: 'Yom Kippur',
+    nameFr: 'Yom Kippour',
+    nameEn: 'Yom Kippur',
+    description: 'Jour du Grand Pardon',
+    descriptionFr: 'Jour du Grand Pardon, jour le plus saint du judaïsme, consacré au jeûne et à la prière.',
+    descriptionEn: 'Day of Atonement, the holiest day in Judaism, devoted to fasting and prayer.',
+    tradition: 'judaism',
+    date: getDateFor2026(9, 21),
+    isRecurring: true,
+    color: '#4A90E2',
+    type: 'fasting'
+  },
+  {
+    id: 'sukkot-2026',
+    name: 'Sukkot',
+    nameFr: 'Soukkot',
+    nameEn: 'Sukkot',
+    description: 'Fête des Tabernacles',
+    descriptionFr: 'Fête des Tabernacles commémorant les 40 ans d\'errance dans le désert, avec construction de cabanes.',
+    descriptionEn: 'Feast of Tabernacles commemorating 40 years of wandering in the desert, with building of booths.',
+    tradition: 'judaism',
+    date: getDateFor2026(9, 26),
+    isRecurring: true,
+    color: '#4A90E2',
+    type: 'celebration'
+  },
+  {
+    id: 'hanukkah-2026',
+    name: 'Hanukkah',
+    nameFr: 'Hanoucca',
+    nameEn: 'Hanukkah',
+    description: 'Fête des Lumières',
+    descriptionFr: 'Fête des Lumières commémorant la réinauguration du Temple de Jérusalem, 8 jours de célébration.',
+    descriptionEn: 'Festival of Lights commemorating the rededication of the Temple in Jerusalem, 8 days of celebration.',
+    tradition: 'judaism',
+    date: getDateFor2026(12, 5),
+    isRecurring: true,
+    color: '#4A90E2',
+    type: 'festival'
   },
 
-  // Hindu Events (2025)
+  // ==================== HINDUISM (5 events) ====================
   {
-    id: 'diwali-2025',
-    name: 'Diwali',
-    nameFr: 'Diwali',
-    nameEn: 'Diwali',
-    description: 'Fête des Lumières',
-    descriptionFr: 'Diwali, la fête des Lumières, célébration majeure de l\'hindouisme.',
-    descriptionEn: 'Diwali, the Festival of Lights, major Hindu celebration.',
-    tradition: 'hinduism',
-    date: getDateFor2025(10, 20),
-    isRecurring: true,
-    color: '#FF69B4'
-  },
-  {
-    id: 'holi-2025',
+    id: 'holi-2026',
     name: 'Holi',
     nameFr: 'Holi',
     nameEn: 'Holi',
     description: 'Fête des Couleurs',
-    descriptionFr: 'Holi, la fête des Couleurs, célébrant l\'arrivée du printemps.',
-    descriptionEn: 'Holi, the Festival of Colors, celebrating the arrival of spring.',
+    descriptionFr: 'Holi, la fête des Couleurs, célébrant l\'arrivée du printemps et la victoire du bien sur le mal.',
+    descriptionEn: 'Holi, the Festival of Colors, celebrating the arrival of spring and the victory of good over evil.',
     tradition: 'hinduism',
-    date: getDateFor2025(3, 14),
+    date: getDateFor2026(3, 4),
     isRecurring: true,
-    color: '#FF69B4'
+    color: '#FF69B4',
+    type: 'festival'
   },
   {
-    id: 'navratri-2025',
+    id: 'ram-navami-2026',
+    name: 'Ram Navami',
+    nameFr: 'Ram Navami',
+    nameEn: 'Ram Navami',
+    description: 'Naissance du dieu Rama',
+    descriptionFr: 'Célébration de la naissance de Rama, incarnation de Vishnu, avec prières et lectures du Ramayana.',
+    descriptionEn: 'Celebration of the birth of Rama, incarnation of Vishnu, with prayers and readings from the Ramayana.',
+    tradition: 'hinduism',
+    date: getDateFor2026(3, 26),
+    isRecurring: true,
+    color: '#FF69B4',
+    type: 'celebration'
+  },
+  {
+    id: 'janmashtami-2026',
+    name: 'Janmashtami',
+    nameFr: 'Janmashtami',
+    nameEn: 'Krishna Janmashtami',
+    description: 'Naissance de Krishna',
+    descriptionFr: 'Célébration de la naissance de Krishna, l\'une des divinités les plus vénérées de l\'hindouisme.',
+    descriptionEn: 'Celebration of the birth of Krishna, one of the most revered deities in Hinduism.',
+    tradition: 'hinduism',
+    date: getDateFor2026(8, 15),
+    isRecurring: true,
+    color: '#FF69B4',
+    type: 'celebration'
+  },
+  {
+    id: 'navratri-2026',
     name: 'Navratri',
     nameFr: 'Navratri',
     nameEn: 'Navratri',
     description: 'Neuf nuits sacrées',
-    descriptionFr: 'Navratri, festival de neuf nuits dédié à la déesse Durga.',
-    descriptionEn: 'Navratri, nine-night festival dedicated to goddess Durga.',
+    descriptionFr: 'Navratri, festival de neuf nuits dédié à la déesse Durga, avec danses et célébrations.',
+    descriptionEn: 'Navratri, nine-night festival dedicated to goddess Durga, with dances and celebrations.',
     tradition: 'hinduism',
-    date: getDateFor2025(9, 22),
+    date: getDateFor2026(10, 10),
     isRecurring: true,
-    color: '#FF69B4'
+    color: '#FF69B4',
+    type: 'festival'
+  },
+  {
+    id: 'diwali-2026',
+    name: 'Diwali',
+    nameFr: 'Diwali',
+    nameEn: 'Diwali',
+    description: 'Fête des Lumières',
+    descriptionFr: 'Diwali, la fête des Lumières, célébration majeure symbolisant la victoire de la lumière sur les ténèbres.',
+    descriptionEn: 'Diwali, the Festival of Lights, major celebration symbolizing the victory of light over darkness.',
+    tradition: 'hinduism',
+    date: getDateFor2026(11, 8),
+    isRecurring: true,
+    color: '#FF69B4',
+    type: 'festival'
   },
 
-  // Buddhist Events (2025)
+  // ==================== BUDDHISM (5 events) ====================
   {
-    id: 'vesak-2025',
-    name: 'Vesak',
-    nameFr: 'Vesak',
-    nameEn: 'Vesak',
-    description: 'Anniversaire du Bouddha',
-    descriptionFr: 'Vesak, célébration de la naissance, l\'éveil et la mort du Bouddha.',
-    descriptionEn: 'Vesak, celebration of the birth, enlightenment and death of Buddha.',
-    tradition: 'buddhism',
-    date: getDateFor2025(5, 12),
-    isRecurring: true,
-    color: '#50C878'
-  },
-  {
-    id: 'magha-puja-2025',
+    id: 'magha-puja-2026',
     name: 'Magha Puja',
     nameFr: 'Magha Puja',
     nameEn: 'Magha Puja',
     description: 'Jour du Sangha',
-    descriptionFr: 'Magha Puja, commémoration de la première assemblée des disciples du Bouddha.',
-    descriptionEn: 'Magha Puja, commemoration of the first gathering of Buddha\'s disciples.',
+    descriptionFr: 'Magha Puja commémore la première assemblée des 1250 disciples du Bouddha, jour de mérite et de méditation.',
+    descriptionEn: 'Magha Puja commemorates the first gathering of 1250 disciples of Buddha, day of merit and meditation.',
     tradition: 'buddhism',
-    date: getDateFor2025(2, 12),
+    date: getDateFor2026(3, 3),
     isRecurring: true,
-    color: '#50C878'
+    color: '#50C878',
+    type: 'prayer'
+  },
+  {
+    id: 'vesak-2026',
+    name: 'Vesak',
+    nameFr: 'Vesak',
+    nameEn: 'Vesak',
+    description: 'Jour du Bouddha',
+    descriptionFr: 'Vesak célèbre la naissance, l\'éveil et le parinirvana du Bouddha, fête la plus sacrée du bouddhisme.',
+    descriptionEn: 'Vesak celebrates the birth, enlightenment and parinirvana of Buddha, the most sacred Buddhist festival.',
+    tradition: 'buddhism',
+    date: getDateFor2026(5, 31),
+    isRecurring: true,
+    color: '#50C878',
+    type: 'celebration'
+  },
+  {
+    id: 'asalha-puja-2026',
+    name: 'Asalha Puja',
+    nameFr: 'Asalha Puja',
+    nameEn: 'Asalha Puja',
+    description: 'Premier sermon du Bouddha',
+    descriptionFr: 'Commémoration du premier sermon du Bouddha à Sarnath, enseignant les Quatre Nobles Vérités.',
+    descriptionEn: 'Commemoration of Buddha\'s first sermon at Sarnath, teaching the Four Noble Truths.',
+    tradition: 'buddhism',
+    date: getDateFor2026(7, 29),
+    isRecurring: true,
+    color: '#50C878',
+    type: 'prayer'
+  },
+  {
+    id: 'vassa-start-2026',
+    name: 'Vassa',
+    nameFr: 'Début de Vassa',
+    nameEn: 'Start of Vassa',
+    description: 'Retraite monastique des pluies',
+    descriptionFr: 'Début de Vassa, la retraite monastique de trois mois pendant la saison des pluies.',
+    descriptionEn: 'Start of Vassa, the three-month monastic retreat during the rainy season.',
+    tradition: 'buddhism',
+    date: getDateFor2026(7, 30),
+    isRecurring: true,
+    color: '#50C878',
+    type: 'prayer'
+  },
+  {
+    id: 'bodhi-day-2026',
+    name: 'Bodhi Day',
+    nameFr: 'Bodhi Day',
+    nameEn: 'Bodhi Day',
+    description: 'Éveil du Bouddha',
+    descriptionFr: 'Célébration du jour où Siddhartha Gautama atteignit l\'éveil sous l\'arbre de la Bodhi.',
+    descriptionEn: 'Celebration of the day Siddhartha Gautama achieved enlightenment under the Bodhi tree.',
+    tradition: 'buddhism',
+    date: getDateFor2026(12, 8),
+    isRecurring: true,
+    color: '#50C878',
+    type: 'celebration'
   },
 
-  // Other / UNESCO
+  // ==================== OTHER / UNESCO (3 events) ====================
   {
-    id: 'earth-day-2025',
+    id: 'heritage-day-2026',
+    name: 'World Heritage Day',
+    nameFr: 'Journée du Patrimoine Mondial',
+    nameEn: 'World Heritage Day',
+    description: 'Journée internationale des monuments',
+    descriptionFr: 'Journée internationale des monuments et des sites, célébrée par l\'UNESCO pour la préservation du patrimoine.',
+    descriptionEn: 'International Day for Monuments and Sites, celebrated by UNESCO for heritage preservation.',
+    tradition: 'other',
+    date: getDateFor2026(4, 18),
+    isRecurring: true,
+    color: '#FFFFFF',
+    type: 'celebration'
+  },
+  {
+    id: 'earth-day-2026',
     name: 'Earth Day',
     nameFr: 'Jour de la Terre',
     nameEn: 'Earth Day',
     description: 'Journée mondiale de la Terre',
-    descriptionFr: 'Journée mondiale de la Terre, sensibilisation à la protection de l\'environnement.',
-    descriptionEn: 'World Earth Day, raising awareness for environmental protection.',
+    descriptionFr: 'Journée mondiale de la Terre, sensibilisation à la protection de l\'environnement et de la planète.',
+    descriptionEn: 'World Earth Day, raising awareness for environmental protection and the planet.',
     tradition: 'other',
-    date: getDateFor2025(4, 22),
+    date: getDateFor2026(4, 22),
     isRecurring: true,
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+    type: 'celebration'
   },
   {
-    id: 'heritage-day-2025',
-    name: 'World Heritage Day',
-    nameFr: 'Journée du Patrimoine Mondial',
-    nameEn: 'World Heritage Day',
-    description: 'Journée internationale des monuments et des sites',
-    descriptionFr: 'Journée internationale des monuments et des sites, célébrée par l\'UNESCO.',
-    descriptionEn: 'International Day for Monuments and Sites, celebrated by UNESCO.',
+    id: 'peace-day-2026',
+    name: 'International Day of Peace',
+    nameFr: 'Journée de la Paix',
+    nameEn: 'International Day of Peace',
+    description: 'Journée mondiale de la paix',
+    descriptionFr: 'Journée internationale de la paix des Nations Unies, appelant à un cessez-le-feu mondial.',
+    descriptionEn: 'United Nations International Day of Peace, calling for a global ceasefire.',
     tradition: 'other',
-    date: getDateFor2025(4, 18),
+    date: getDateFor2026(9, 21),
     isRecurring: true,
-    color: '#FFFFFF'
+    color: '#FFFFFF',
+    type: 'celebration'
   }
 ];
 
 export const getEventsByDate = (date: Date): ReligiousEvent[] => {
-  return religiousEvents2025.filter(event => {
+  return religiousEvents2026.filter(event => {
     return (
       event.date.getDate() === date.getDate() &&
       event.date.getMonth() === date.getMonth() &&
@@ -313,10 +501,10 @@ export const getEventsByDate = (date: Date): ReligiousEvent[] => {
 };
 
 export const getEventsByTradition = (tradition: string): ReligiousEvent[] => {
-  if (tradition === 'all') return religiousEvents2025;
-  return religiousEvents2025.filter(event => event.tradition === tradition);
+  if (tradition === 'all') return religiousEvents2026;
+  return religiousEvents2026.filter(event => event.tradition === tradition);
 };
 
 export const getAllEventDates = (): Date[] => {
-  return religiousEvents2025.map(event => event.date);
+  return religiousEvents2026.map(event => event.date);
 };

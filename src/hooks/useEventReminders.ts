@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { religiousEvents2025, ReligiousEvent } from '@/data/religiousEvents';
+import { religiousEvents2026, ReligiousEvent } from '@/data/religiousEvents';
 import { differenceInDays, isToday, startOfDay } from 'date-fns';
 import { playNotificationSound, resumeAudioContext } from '@/utils/audioEffects';
 
@@ -69,7 +69,7 @@ export const useEventReminders = (userSelectedReligion?: string | null) => {
         allowedTraditions = new Set(prefs.filter_traditions);
       }
 
-      religiousEvents2025.forEach(event => {
+      religiousEvents2026.forEach(event => {
         // Filter by tradition
         if (allowedTraditions && !allowedTraditions.has(event.tradition)) {
           return;
