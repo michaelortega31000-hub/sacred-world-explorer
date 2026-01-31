@@ -571,7 +571,7 @@ const Country = () => {
           <WeeklyQuestTab />
         </TabsContent>
 
-        <TabsContent value="trip" className="flex-1 m-0">
+        <TabsContent value="trip" className="flex-1 m-0 overflow-y-auto">
           <TripPlannerTab />
         </TabsContent>
 
