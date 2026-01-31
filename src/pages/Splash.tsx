@@ -255,8 +255,8 @@ const Splash = () => {
         fetchPriority="high"
       />
       
-      {/* Boutons Mode hors ligne, Tutoriel et Déconnexion - En bas avec espacement mobile optimisé */}
-      <div className="absolute bottom-6 sm:bottom-8 left-0 right-0 z-10 px-4 sm:px-6">
+      {/* Boutons Mode hors ligne, Tutoriel et Déconnexion - En haut */}
+      <div className="absolute top-4 sm:top-6 left-0 right-0 z-10 px-4 sm:px-6">
         <div className="max-w-lg mx-auto flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
           {/* Bouton Mode hors ligne */}
           <Button
@@ -296,7 +296,7 @@ const Splash = () => {
       </div>
       
       {/* Clickable zones overlay - transparent areas positioned on the image */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pt-20">
         {/* Empty space for logo and text - centered */}
         <div className="flex-1 flex items-center justify-center w-full max-w-2xl">
           {/* This space contains the logo and text from the image */}
