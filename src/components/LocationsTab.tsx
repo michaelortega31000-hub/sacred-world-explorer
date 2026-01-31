@@ -443,7 +443,7 @@ const LocationsTab = () => {
     }
   }, [optimizedRoute, reorderTrip]);
 
-  // Search for POIs near each place in the itinerary - with limiting and abort support
+  // Search for POIs near each place in the itinerary - prioritize internal DB
   const searchPOIsAlongRoute = useCallback(async (places: typeof plannedPlaces, abortSignal?: AbortSignal) => {
     if (places.length === 0) {
       setPois([]);
@@ -451,70 +451,100 @@ const LocationsTab = () => {
     }
     setLoadingPOIs(true);
     const foundPOIs: POI[] = [];
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token') || 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
-    if (!mapboxToken) {
-      console.warn('Mapbox token not configured');
-      setLoadingPOIs(false);
-      return;
-    }
+    
     try {
       // LIMIT: Only search POIs for the first 5 places to avoid too many API calls
       const maxPlacesToSearch = Math.min(places.length, 5);
       
-      // Search for POIs near EACH place in the itinerary (limited)
       for (let i = 0; i < maxPlacesToSearch; i++) {
-        // Check if we should abort
         if (abortSignal?.aborted) {
           console.log('POI search aborted');
           return;
         }
         
         const place = places[i];
-        const coords = place.coordinates as [number, number];
-
-        // Search for different types of POIs near this place - only restaurant and hotel (skip fuel to reduce calls)
-        const poiTypes = [{
-          query: 'restaurant',
-          type: 'restaurant' as const
-        }, {
-          query: 'hotel',
-          type: 'lodging' as const
-        }];
+        const placeCity = place.city?.toLowerCase().trim() || '';
+        const placeCoords = place.coordinates as [number, number];
         
-        for (const { query, type } of poiTypes) {
-          // Check if we should abort before each request
-          if (abortSignal?.aborted) {
-            console.log('POI search aborted');
-            return;
-          }
+        // 1. Search in internal database FIRST - restaurants
+        try {
+          const { data: dbRestaurants } = await supabase
+            .from('restaurants')
+            .select('id, name, address, city, coordinates')
+            .eq('verified', true)
+            .ilike('city', `%${placeCity}%`)
+            .limit(3);
           
-          try {
-            const response = await fetch(
-              `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` + 
-              `proximity=${coords[0]},${coords[1]}&limit=2&access_token=${mapboxToken}`,
-              { signal: abortSignal }
-            );
-            if (response.ok) {
-              const data = await response.json();
-              data.features?.forEach((feature: any) => {
-                foundPOIs.push({
-                  id: feature.id,
-                  name: feature.text,
-                  type,
-                  address: feature.place_name,
-                  coordinates: feature.center,
-                  segmentIndex: i,
-                  placeId: place.id
-                });
+          if (dbRestaurants && dbRestaurants.length > 0) {
+            dbRestaurants.forEach((r: any) => {
+              const coords = r.coordinates as { lat: number; lng: number } | null;
+              foundPOIs.push({
+                id: `db-rest-${r.id}`,
+                name: r.name,
+                type: 'restaurant',
+                address: `${r.address}, ${r.city}`,
+                coordinates: coords ? [coords.lng, coords.lat] : placeCoords,
+                segmentIndex: i,
+                placeId: place.id
               });
-            }
-          } catch (error: any) {
-            if (error.name === 'AbortError') {
-              console.log('POI fetch aborted');
-              return;
-            }
-            console.error(`Error fetching ${type} POIs:`, error);
+            });
           }
+        } catch (error) {
+          console.error('Error fetching DB restaurants:', error);
+        }
+        
+        // 2. Search in internal database - hotels
+        try {
+          const { data: dbHotels } = await supabase
+            .from('hotels')
+            .select('id, name, address, city, coordinates')
+            .eq('verified', true)
+            .ilike('city', `%${placeCity}%`)
+            .limit(3);
+          
+          if (dbHotels && dbHotels.length > 0) {
+            dbHotels.forEach((h: any) => {
+              const coords = h.coordinates as { lat: number; lng: number } | null;
+              foundPOIs.push({
+                id: `db-hotel-${h.id}`,
+                name: h.name,
+                type: 'lodging',
+                address: `${h.address}, ${h.city}`,
+                coordinates: coords ? [coords.lng, coords.lat] : placeCoords,
+                segmentIndex: i,
+                placeId: place.id
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching DB hotels:', error);
+        }
+        
+        // 3. Search in internal database - transport stops
+        try {
+          const { data: dbTransports } = await supabase
+            .from('transport_stops')
+            .select('id, name, city, transport_type, coordinates')
+            .eq('verified', true)
+            .ilike('city', `%${placeCity}%`)
+            .limit(3);
+          
+          if (dbTransports && dbTransports.length > 0) {
+            dbTransports.forEach((t: any) => {
+              const coords = t.coordinates as { lat: number; lng: number } | null;
+              foundPOIs.push({
+                id: `db-transport-${t.id}`,
+                name: `${t.name} (${t.transport_type})`,
+                type: 'transport',
+                address: t.city,
+                coordinates: coords ? [coords.lng, coords.lat] : placeCoords,
+                segmentIndex: i,
+                placeId: place.id
+              });
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching DB transports:', error);
         }
       }
       
@@ -1110,7 +1140,7 @@ const LocationsTab = () => {
                               Points d'arrêt suggérés
                             </CardTitle>
                             <CardDescription>
-                              Restaurants, hébergements et stations-service le long du parcours
+                              Restaurants, hébergements et transports vérifiés près de vos destinations
                             </CardDescription>
                           </CardHeader>
                           <CardContent>
@@ -1216,6 +1246,28 @@ const LocationsTab = () => {
                                             </div>
                                             <div className="space-y-2 ml-6">
                                               {placePOIs.filter(p => p.type === 'fuel').map(poi => {
+                                const saved = isPOISaved(poi.id);
+                                return <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
+                                                    <div>
+                                                      <div className="font-medium">{poi.name}</div>
+                                                      <div className="text-xs text-muted-foreground">{poi.address}</div>
+                                                    </div>
+                                                    <Button size="sm" variant={saved ? "secondary" : "ghost"} className="h-6 w-6 p-0 flex-shrink-0" onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}>
+                                                      {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+                                                    </Button>
+                                                  </div>;
+                              })}
+                                            </div>
+                                          </div>}
+                                        
+                                        {/* Transports */}
+                                        {placePOIs.filter(p => p.type === 'transport').length > 0 && <div>
+                                            <div className="flex items-center gap-2 text-sm font-medium mb-2 text-blue-500">
+                                              <Train className="w-4 h-4" />
+                                              Transports
+                                            </div>
+                                            <div className="space-y-2 ml-6">
+                                              {placePOIs.filter(p => p.type === 'transport').map(poi => {
                                 const saved = isPOISaved(poi.id);
                                 return <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
                                                     <div>
