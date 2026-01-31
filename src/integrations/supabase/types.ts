@@ -442,6 +442,66 @@ export type Database = {
           },
         ]
       }
+      hotels: {
+        Row: {
+          address: string
+          amenities: string[] | null
+          city: string
+          coordinates: Json
+          country: string
+          created_at: string
+          created_by: string | null
+          description: string | null
+          hotel_type: string[] | null
+          id: string
+          name: string
+          phone: string | null
+          price_range: string | null
+          star_rating: number | null
+          updated_at: string
+          verified: boolean | null
+          website: string | null
+        }
+        Insert: {
+          address: string
+          amenities?: string[] | null
+          city: string
+          coordinates?: Json
+          country: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          hotel_type?: string[] | null
+          id?: string
+          name: string
+          phone?: string | null
+          price_range?: string | null
+          star_rating?: number | null
+          updated_at?: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Update: {
+          address?: string
+          amenities?: string[] | null
+          city?: string
+          coordinates?: Json
+          country?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          hotel_type?: string[] | null
+          id?: string
+          name?: string
+          phone?: string | null
+          price_range?: string | null
+          star_rating?: number | null
+          updated_at?: string
+          verified?: boolean | null
+          website?: string | null
+        }
+        Relationships: []
+      }
       leaderboard_achievements: {
         Row: {
           achieved_at: string
@@ -1076,6 +1136,57 @@ export type Database = {
           name?: string
           price_monthly?: number | null
           stripe_price_id?: string | null
+        }
+        Relationships: []
+      }
+      transport_stops: {
+        Row: {
+          accessibility: boolean | null
+          city: string
+          connections: string[] | null
+          coordinates: Json
+          country: string
+          created_at: string
+          description: string | null
+          id: string
+          line_name: string | null
+          name: string
+          operator: string | null
+          transport_type: string
+          updated_at: string
+          verified: boolean | null
+        }
+        Insert: {
+          accessibility?: boolean | null
+          city: string
+          connections?: string[] | null
+          coordinates?: Json
+          country: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          line_name?: string | null
+          name: string
+          operator?: string | null
+          transport_type: string
+          updated_at?: string
+          verified?: boolean | null
+        }
+        Update: {
+          accessibility?: boolean | null
+          city?: string
+          connections?: string[] | null
+          coordinates?: Json
+          country?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          line_name?: string | null
+          name?: string
+          operator?: string | null
+          transport_type?: string
+          updated_at?: string
+          verified?: boolean | null
         }
         Relationships: []
       }

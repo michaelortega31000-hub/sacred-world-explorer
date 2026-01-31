@@ -232,19 +232,16 @@ Pour chaque grande ville, ajouter :
 
 ## Ordre d'exécution
 
-1. **Migration DB** : Créer les tables `hotels` et `transport_stops`
-2. **Insertion données** : Ajouter hôtels et transports pour toutes les villes
-3. **Hooks** : Créer `useHotels.ts` et `useTransports.ts`
-4. **Context** : Mettre à jour `AppContext.tsx` avec les types transport
-5. **UI PlaceDetail** : Ajouter onglet transports et bouton d'accès rapide
-6. **UI TripPlanner** : Afficher transports sauvegardés dans l'itinéraire
+1. ✅ **Migration DB** : Tables `hotels` et `transport_stops` créées avec RLS
+2. ✅ **Insertion données** : 78 hôtels + 82 transports (35 villes, 11 pays)
+3. ✅ **Hooks** : `useHotels.ts` et `useTransports.ts` créés
+4. ⏳ **Context** : Ajouter type `'transport'` à `SavedPOI` dans `AppContext.tsx`
+5. ⏳ **UI PlaceDetail** : Ajouter onglet transports et bouton d'accès rapide
+6. ⏳ **UI TripPlanner** : Afficher transports sauvegardés dans l'itinéraire
 
 ---
 
-## Estimation
+## Prochaines étapes
 
-- **Tables et migrations** : 1 étape
-- **Insertion des données** : 2-3 étapes (par lots de villes)
-- **Hooks et logique** : 1 étape
-- **Interface utilisateur** : 2 étapes
+Les 3 dernières tâches (Context, PlaceDetail UI, TripPlanner UI) sont à implémenter.
 
