@@ -8,7 +8,7 @@ import logo from '@/assets/sacredworld-logo.png';
 import { logger } from '@/lib/logger';
 import { getIconicImageForReligion, getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { ImageBackground } from '@/components/ImageBackground';
-import { useApp } from '@/contexts/AppContext';
+import { useApp, type Religion } from '@/contexts/AppContext';
 import crossBubbleIcon from '@/assets/animations/cross-bubble.png';
 import crescentIcon from '@/assets/animations/crescent.png';
 import starDavidIcon from '@/assets/animations/star-david.png';
@@ -77,7 +77,7 @@ const interests = [{
   icon: BookOpen
 }];
 const Traditions = () => {
-  const { userProgress } = useApp();
+  const { userProgress, updateReligion } = useApp();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [selectedMain, setSelectedMain] = useState<string | null>(null);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
@@ -89,7 +89,18 @@ const Traditions = () => {
     setSelectedInterests(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   };
   const handleContinue = () => {
-    // TODO: Sauvegarder les préférences dans le contexte ou Supabase
+    // Sauvegarder les préférences dans le contexte (utilisé par le Header)
+    const toReligion = (id: string | null): Religion | null => {
+      if (!id) return null;
+      if (id === 'other') return 'traditional';
+      if (id === 'curious') return 'astronomy';
+      // ids déjà compatibles avec le type Religion
+      return id as Religion;
+    };
+
+    const mapped = toReligion(selectedMain);
+    if (mapped) updateReligion(mapped);
+
     logger.log({
       main: selectedMain,
       interests: selectedInterests
