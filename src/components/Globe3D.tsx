@@ -1549,7 +1549,7 @@ const Globe3D = ({
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                variant={geolocationEnabled ? "default" : "secondary"} 
+                variant="secondary" 
                 size="icon" 
                 onClick={handleRecenter} 
                 disabled={!geolocationEnabled}
