@@ -216,17 +216,17 @@ const TripPlannerTab = () => {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      {/* Globe 3D en arrière-plan */}
+    <div className="relative h-full overflow-y-auto">
+      {/* Globe 3D en arrière-plan - fixed position */}
       {tripPlaces.length > 0 && (
-        <>
+        <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 0 }}>
           <ItineraryGlobe places={itineraryGlobePlaces} autoRotateSpeed={0.18} />
-          <div className="absolute inset-0 bg-background/60 pointer-events-none" />
-        </>
+          <div className="absolute inset-0 bg-background/70" />
+        </div>
       )}
       
-      {/* Contenu au premier plan */}
-      <div className="relative z-10 p-6 max-w-6xl mx-auto">
+      {/* Contenu au premier plan - scrollable */}
+      <div className="relative z-10 p-4 md:p-6 max-w-6xl mx-auto pb-24">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -572,6 +572,8 @@ const TripPlannerTab = () => {
         </CardContent>
       </Card>
       </div>
+      {/* Extra padding to ensure last content is visible above navigation */}
+      <div className="h-16" />
     </div>
   );
 };

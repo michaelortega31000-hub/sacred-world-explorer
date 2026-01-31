@@ -31,7 +31,7 @@ const Explore = () => {
     navigate(`/country/${encodeURIComponent(normalizedName)}`);
   };
   
-  console.log('🌍 Explore Page - userProgress.tripPlaces:', userProgress.tripPlaces);
+  // Debug log removed to prevent performance issues
   
   return (
     <div className="min-h-screen bg-background flex flex-col">
