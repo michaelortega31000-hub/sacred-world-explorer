@@ -579,16 +579,19 @@ const PlaceDetail = () => {
               )}
             </Carousel>
 
-            {/* AR Toggle - top left */}
+            {/* Restaurants shortcut - top left */}
             <div className="absolute top-4 left-4 z-10">
               <Button
                 size="lg"
-                variant={isARMode ? "default" : "outline"}
-                className="gap-2 shadow-lg"
-                onClick={handleARToggle}
+                variant="outline"
+                className="gap-2 shadow-lg bg-background/90 backdrop-blur-sm"
+                onClick={() => {
+                  const servicesSection = document.getElementById('services-section');
+                  servicesSection?.scrollIntoView({ behavior: 'smooth' });
+                }}
               >
-                <Camera className="w-5 h-5" />
-                {isARMode ? "AR 3D activé" : "Activer AR 3D"}
+                <Utensils className="w-5 h-5" />
+                Restaurants
               </Button>
             </div>
 
@@ -718,7 +721,7 @@ const PlaceDetail = () => {
           </Card>
 
           {/* Services à Proximité */}
-          <Card>
+          <Card id="services-section">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <MapPinned className="w-5 h-5" />
