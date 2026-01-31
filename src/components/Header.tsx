@@ -7,7 +7,8 @@ import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
 import VoiceCommand from '@/components/VoiceCommand';
 import ReligionIcon from '@/components/ReligionIcon';
-import PlaceCategoryFilter, { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
+import GeolocationToggle from '@/components/GeolocationToggle';
+import { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 
 interface HeaderProps {
   showBack?: boolean;
@@ -70,13 +71,9 @@ const Header = ({
                 </span>
               </div>
 
-              {/* 3. Filtre de catégorie */}
-              {showExploreControls && categoryFilter !== undefined && onCategoryChange && (
-                <PlaceCategoryFilter 
-                  value={categoryFilter}
-                  onChange={onCategoryChange}
-                  persistKey="explore"
-                />
+              {/* 3. Géolocalisation toggle */}
+              {showExploreControls && (
+                <GeolocationToggle className="flex items-center" />
               )}
             </div>
             
