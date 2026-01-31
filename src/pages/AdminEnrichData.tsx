@@ -126,6 +126,24 @@ const AdminEnrichData = () => {
     }
   };
 
+  const fetchWikipediaImage = async (sourceUrl: string): Promise<string | null> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('fetch-wikipedia-image', {
+        body: { url: sourceUrl }
+      });
+      
+      if (error) {
+        console.error('Error fetching Wikipedia image:', error);
+        return null;
+      }
+      
+      return data?.imageUrl || null;
+    } catch (err) {
+      console.error('Failed to fetch Wikipedia image:', err);
+      return null;
+    }
+  };
+
   const handleSave = async () => {
     if (!formData.name || !formData.country || !formData.city || !formData.type) {
       toast({
@@ -145,6 +163,25 @@ const AdminEnrichData = () => {
       const placeId = formData.id || generateId(formData.name, formData.country);
       const validSourceUrls = formData.sourceUrls.filter(url => url.trim() !== '');
 
+      // Auto-fetch image from Wikipedia if no image URL provided
+      let imageUrl = formData.imageUrl || null;
+      if (!imageUrl && validSourceUrls.length > 0) {
+        const wikipediaUrl = validSourceUrls.find(url => url.includes('wikipedia.org'));
+        if (wikipediaUrl) {
+          toast({
+            title: "Récupération de l'image...",
+            description: "Extraction de la photo depuis Wikipedia en cours."
+          });
+          imageUrl = await fetchWikipediaImage(wikipediaUrl);
+          if (imageUrl) {
+            toast({
+              title: "Image trouvée !",
+              description: "Une photo a été extraite automatiquement de Wikipedia."
+            });
+          }
+        }
+      }
+
       const { error } = await supabase
         .from('places')
         .upsert({
@@ -156,7 +193,7 @@ const AdminEnrichData = () => {
           religion: formData.religion || null,
           description: formData.description || null,
           coordinates: formData.coordinates,
-          image_url: formData.imageUrl || null,
+          image_url: imageUrl,
           source_urls: validSourceUrls.length > 0 ? validSourceUrls : null,
           data_source: formData.dataSource,
           verified_by: user.id,
