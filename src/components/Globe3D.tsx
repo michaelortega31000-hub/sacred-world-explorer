@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Calendar, Locate, Search, X, Loader2, AlertCircle, Route, Trash2, Maximize2, Minimize2 } from 'lucide-react';
+import { Calendar, Locate, X, Loader2, AlertCircle, Route, Trash2, Maximize2, Minimize2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { getImageUrl } from '@/lib/imageHelper';
 import { useApp } from '@/contexts/AppContext';
@@ -100,7 +100,9 @@ const Globe3D = ({
   } = useGeolocation(geolocationEnabled);
 
   // Sparkle effect on country click
-  const { triggerSparkle } = useCountrySparkle();
+  const {
+    triggerSparkle
+  } = useCountrySparkle();
 
   // Location history tracking
   const {
@@ -154,7 +156,6 @@ const Globe3D = ({
       console.error(`❌ Invalid coordinates for ${placeId}:`, coords, '-> After processing:', [first, second]);
       return null;
     }
-    
     console.log(`✅ Valid coords for ${placeId}: [lng=${first}, lat=${second}]`);
     return [first, second]; // [lng, lat]
   };
@@ -214,34 +215,37 @@ const Globe3D = ({
       console.log('⚠️ Trip places update skipped - map not ready');
       return;
     }
-    
     console.log('🗺️ === TRIP PLACES UPDATE START ===');
     console.log('📍 Trip places IDs received:', tripPlaces);
     console.log('📦 Total places in allPlacesRef:', allPlacesRef.current.length);
     console.log('📦 Sample place IDs:', allPlacesRef.current.slice(0, 10).map(p => p.id));
-    
     if (!tripPlaces || tripPlaces.length === 0) {
       console.log('⚠️ No trip places - clearing sources');
       // Clear trip data when empty
       const source = map.current.getSource('trip-places') as mapboxgl.GeoJSONSource;
       const routeSource = map.current.getSource('trip-route') as mapboxgl.GeoJSONSource;
       if (source) {
-        source.setData({ type: 'FeatureCollection', features: [] });
+        source.setData({
+          type: 'FeatureCollection',
+          features: []
+        });
       }
       if (routeSource) {
-        routeSource.setData({ type: 'FeatureCollection', features: [] });
+        routeSource.setData({
+          type: 'FeatureCollection',
+          features: []
+        });
       }
-      
+
       // Clear timeout
       if (endMarkerTimeout.current) {
         clearTimeout(endMarkerTimeout.current);
         endMarkerTimeout.current = null;
       }
-      
+
       // Remove all trip markers
       tripMarkers.current.forEach(marker => marker.remove());
       tripMarkers.current = [];
-      
       if (tripStartMarker.current) {
         tripStartMarker.current.remove();
         tripStartMarker.current = null;
@@ -250,7 +254,6 @@ const Globe3D = ({
         tripEndMarker.current.remove();
         tripEndMarker.current = null;
       }
-      
       return;
     }
 
@@ -258,9 +261,10 @@ const Globe3D = ({
     let tripFeatures: PlaceFeature[] = [];
     let routeCoordinates: [number, number][] = [];
     const notFound: string[] = [];
-
-    const foundPlaces: { place: any; coords: [number, number] }[] = [];
-
+    const foundPlaces: {
+      place: any;
+      coords: [number, number];
+    }[] = [];
     tripPlaces.forEach(tripPlaceId => {
       console.log(`🔍 Looking for trip place: ${tripPlaceId}`);
       const place = allPlacesRef.current.find(p => p.id === tripPlaceId);
@@ -271,7 +275,10 @@ const Globe3D = ({
       }
       const coords = sanitizeCoordinates(place.coordinates, place.id);
       if (!coords) return;
-      foundPlaces.push({ place, coords });
+      foundPlaces.push({
+        place,
+        coords
+      });
     });
 
     // Use tripPlaces order directly - it's already optimized by LocationsTab
@@ -280,7 +287,10 @@ const Globe3D = ({
     // Build features with order/isStart/isEnd properties
     tripFeatures = foundPlaces.map((fp, idx) => ({
       type: 'Feature',
-      geometry: { type: 'Point', coordinates: fp.coords },
+      geometry: {
+        type: 'Point',
+        coordinates: fp.coords
+      },
       properties: {
         id: fp.place.id,
         name: fp.place.name,
@@ -296,10 +306,7 @@ const Globe3D = ({
         isEnd: idx === foundPlaces.length - 1
       }
     }));
-
     routeCoordinates = tripFeatures.map(f => f.geometry.coordinates as [number, number]);
-
-
     console.log('📊 Trip places processing summary:');
     console.log(`  - Requested: ${tripPlaces.length}`);
     console.log(`  - Found: ${tripFeatures.length}`);
@@ -344,9 +351,14 @@ const Globe3D = ({
       }
       tripMarkers.current.forEach(m => m.remove());
       tripMarkers.current = [];
-      if (tripStartMarker.current) { tripStartMarker.current.remove(); tripStartMarker.current = null; }
-      if (tripEndMarker.current) { tripEndMarker.current.remove(); tripEndMarker.current = null; }
-
+      if (tripStartMarker.current) {
+        tripStartMarker.current.remove();
+        tripStartMarker.current = null;
+      }
+      if (tripEndMarker.current) {
+        tripEndMarker.current.remove();
+        tripEndMarker.current = null;
+      }
       console.log(`✅ Trip source updated with ${routeCoordinates.length} points (labels rendered via symbol layer)`);
     } else if (!routeSource) {
       console.error('❌ trip-route source not found!');
@@ -355,7 +367,6 @@ const Globe3D = ({
       // Clear all markers if no route
       tripMarkers.current.forEach(marker => marker.remove());
       tripMarkers.current = [];
-      
       if (tripStartMarker.current) {
         tripStartMarker.current.remove();
         tripStartMarker.current = null;
@@ -365,73 +376,37 @@ const Globe3D = ({
         tripEndMarker.current = null;
       }
     }
-
     console.log('🗺️ === TRIP PLACES UPDATE COMPLETE ===\n');
   };
 
   // Function to animate route line drawing
   const animateRouteLine = () => {
     if (!map.current) return;
-
     const duration = 2000; // 2 seconds animation
     const startTime = Date.now();
-
     const animate = () => {
       if (!map.current) return;
-
       const elapsed = Date.now() - startTime;
       const progress = Math.min(elapsed / duration, 1);
 
       // Update line-gradient for all route layers
-      const layerIds = [
-        'trip-route-glow-outer',
-        'trip-route-glow-inner',
-        'trip-route-main',
-        'trip-route-highlight'
-      ];
-
+      const layerIds = ['trip-route-glow-outer', 'trip-route-glow-inner', 'trip-route-main', 'trip-route-highlight'];
       layerIds.forEach(layerId => {
         if (map.current!.getLayer(layerId)) {
-          map.current!.setPaintProperty(layerId, 'line-gradient', [
-            'interpolate',
-            ['linear'],
-            ['line-progress'],
-            0,
-            'transparent',
-            progress,
-            layerId.includes('highlight') 
-              ? 'hsl(48, 95%, 85%)' 
-              : 'hsl(43, 76%, 70%)',
-            1,
-            'transparent'
-          ]);
+          map.current!.setPaintProperty(layerId, 'line-gradient', ['interpolate', ['linear'], ['line-progress'], 0, 'transparent', progress, layerId.includes('highlight') ? 'hsl(48, 95%, 85%)' : 'hsl(43, 76%, 70%)', 1, 'transparent']);
         }
       });
-
       if (progress < 1) {
         requestAnimationFrame(animate);
       } else {
         // Animation complete - set final gradient to full visibility
         layerIds.forEach(layerId => {
           if (map.current!.getLayer(layerId)) {
-            map.current!.setPaintProperty(layerId, 'line-gradient', [
-              'interpolate',
-              ['linear'],
-              ['line-progress'],
-              0,
-              layerId.includes('highlight') 
-                ? 'hsl(48, 95%, 85%)' 
-                : 'hsl(43, 76%, 70%)',
-              1,
-              layerId.includes('highlight') 
-                ? 'hsl(48, 95%, 85%)' 
-                : 'hsl(43, 76%, 70%)'
-            ]);
+            map.current!.setPaintProperty(layerId, 'line-gradient', ['interpolate', ['linear'], ['line-progress'], 0, layerId.includes('highlight') ? 'hsl(48, 95%, 85%)' : 'hsl(43, 76%, 70%)', 1, layerId.includes('highlight') ? 'hsl(48, 95%, 85%)' : 'hsl(43, 76%, 70%)']);
           }
         });
       }
     };
-
     animate();
   };
 
@@ -442,7 +417,7 @@ const Globe3D = ({
     // Only show monuments when filters are active OR a category filter is set
     const hasActiveFilters = filters.religions.length > 0 || filters.types.length > 0 || filters.countries.length > 0;
     const hasCategoryFilter = categoryFilter !== 'all';
-    if (!showMonuments || (!hasActiveFilters && !hasCategoryFilter)) {
+    if (!showMonuments || !hasActiveFilters && !hasCategoryFilter) {
       // Clear data when no filters active
       const source = map.current.getSource('places') as mapboxgl.GeoJSONSource;
       if (source) {
@@ -541,29 +516,32 @@ const Globe3D = ({
     // Map error handler with filtering for non-critical errors
     map.current.on('error', e => {
       if (!map.current) return;
-      
       const errorMsg = (e?.error?.message || '').toLowerCase();
-      
+
       // List of non-critical errors to ignore
-      const nonFatalPatterns = [
-        'events.mapbox.com',     // Tracking blocked by ad blockers
-        'glyph',                  // Font loading issues
-        'sprite',                 // Icon sprite loading
-        'tile',                   // Tile loading (often temporary)
-        'not found',              // 404 errors
-        'forbidden',              // 403 errors
-        'rate limit',             // Rate limiting (handled differently)
-        'networkerror'            // Temporary network issues
+      const nonFatalPatterns = ['events.mapbox.com',
+      // Tracking blocked by ad blockers
+      'glyph',
+      // Font loading issues
+      'sprite',
+      // Icon sprite loading
+      'tile',
+      // Tile loading (often temporary)
+      'not found',
+      // 404 errors
+      'forbidden',
+      // 403 errors
+      'rate limit',
+      // Rate limiting (handled differently)
+      'networkerror' // Temporary network issues
       ];
-      
       const isNonFatal = nonFatalPatterns.some(pattern => errorMsg.includes(pattern));
-      
+
       // Only show error overlay if map hasn't loaded AND error is critical
       if (isNonFatal || map.current.isStyleLoaded() || isMapReadyRef.current) {
         console.warn('⚠️ Non-critical map error (ignored):', errorMsg);
         return;
       }
-      
       console.error('❌ Critical map error:', e);
       setMapError('Échec du chargement de la carte. Vérifiez votre connexion.');
       setIsMapLoading(false);
@@ -572,7 +550,6 @@ const Globe3D = ({
     // Watchdog: if style doesn't load within 5 seconds, try fallback
     const styleLoadTimeout = setTimeout(() => {
       if (!map.current || isMapReadyRef.current || map.current.isStyleLoaded()) return;
-      
       console.warn('⏱️ Style load timeout - attempting fallback to streets style');
       try {
         map.current.setStyle('mapbox://styles/mapbox/streets-v12');
@@ -631,24 +608,27 @@ const Globe3D = ({
       });
 
       // Load places data from merged hook
-      const { usePlaces } = await import('@/hooks/usePlaces');
+      const {
+        usePlaces
+      } = await import('@/hooks/usePlaces');
       // We can't use hooks directly here, so we'll import the mock and fetch from DB
-      const { mockPlaces } = await import('@/data/placesData');
-      const { supabase } = await import('@/integrations/supabase/client');
-      
+      const {
+        mockPlaces
+      } = await import('@/data/placesData');
+      const {
+        supabase
+      } = await import('@/integrations/supabase/client');
+
       // Fetch verified places from DB
       let mergedPlaces = [...mockPlaces];
       try {
-        const { data: dbPlaces } = await supabase
-          .from('places')
-          .select('*')
-          .eq('verification_status', 'verified');
-        
+        const {
+          data: dbPlaces
+        } = await supabase.from('places').select('*').eq('verification_status', 'verified');
         if (dbPlaces && dbPlaces.length > 0) {
           // Normalize DB places and merge
           const dbIds = new Set(dbPlaces.map(p => p.id));
           const uniqueLocal = mockPlaces.filter(p => !dbIds.has(p.id));
-          
           const normalizedDb = dbPlaces.map(p => {
             const coords = p.coordinates as any;
             let normalizedCoords: [number, number];
@@ -659,7 +639,6 @@ const Globe3D = ({
             } else {
               normalizedCoords = [0, 0];
             }
-            
             return {
               id: p.id,
               name: p.name,
@@ -670,17 +649,15 @@ const Globe3D = ({
               points: p.points_value || 50,
               coordinates: normalizedCoords,
               imageUrl: p.image_url || '/placeholder.svg',
-              religion: p.religion || undefined,
+              religion: p.religion || undefined
             } as any; // Cast to Place type
           });
-          
           mergedPlaces = [...normalizedDb, ...uniqueLocal];
           console.log(`📍 Globe: Merged ${mergedPlaces.length} places (${normalizedDb.length} from DB)`);
         }
       } catch (err) {
         console.warn('Failed to fetch DB places for globe:', err);
       }
-      
       allPlacesRef.current = mergedPlaces;
       console.log('📦 Loaded places:', mergedPlaces.length);
       console.log('📦 Sample places:', mergedPlaces.slice(0, 5).map(p => ({
@@ -689,7 +666,7 @@ const Globe3D = ({
         coords: p.coordinates,
         religion: p.religion || inferReligionFromPlace(p.type, p.name)
       })));
-      
+
       // Search for trip place IDs specifically
       if (tripPlaces && tripPlaces.length > 0) {
         console.log('🔍 Searching for trip places in loaded data:');
@@ -776,13 +753,7 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-gradient': [
-            'interpolate',
-            ['linear'],
-            ['line-progress'],
-            0, 'transparent',
-            1, 'transparent'
-          ],
+          'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'transparent', 1, 'transparent'],
           'line-width': 12,
           'line-blur': 8,
           'line-opacity': 0.3
@@ -799,13 +770,7 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-gradient': [
-            'interpolate',
-            ['linear'],
-            ['line-progress'],
-            0, 'transparent',
-            1, 'transparent'
-          ],
+          'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'transparent', 1, 'transparent'],
           'line-width': 8,
           'line-blur': 4,
           'line-opacity': 0.5
@@ -822,13 +787,7 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-gradient': [
-            'interpolate',
-            ['linear'],
-            ['line-progress'],
-            0, 'transparent',
-            1, 'transparent'
-          ],
+          'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'transparent', 1, 'transparent'],
           'line-width': 5,
           'line-opacity': 0.95
         }
@@ -844,13 +803,7 @@ const Globe3D = ({
           'line-cap': 'round'
         },
         paint: {
-          'line-gradient': [
-            'interpolate',
-            ['linear'],
-            ['line-progress'],
-            0, 'transparent',
-            1, 'transparent'
-          ],
+          'line-gradient': ['interpolate', ['linear'], ['line-progress'], 0, 'transparent', 1, 'transparent'],
           'line-width': 2,
           'line-opacity': 1
         }
@@ -903,15 +856,7 @@ const Globe3D = ({
         type: 'circle',
         source: 'trip-places',
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['get', 'points'],
-            0, 12,
-            50, 16,
-            100, 20,
-            150, 24
-          ],
+          'circle-radius': ['interpolate', ['linear'], ['get', 'points'], 0, 12, 50, 16, 100, 20, 150, 24],
           'circle-color': '#F4C542',
           'circle-opacity': 0.3,
           'circle-blur': 0.8
@@ -924,20 +869,8 @@ const Globe3D = ({
         type: 'circle',
         source: 'trip-places',
         paint: {
-          'circle-radius': [
-            'interpolate',
-            ['linear'],
-            ['get', 'points'],
-            0, 8,
-            50, 10,
-            100, 12,
-            150, 14
-          ],
-          'circle-color': ['case',
-            ['to-boolean', ['get', 'isStart']], 'hsl(142, 76%, 45%)',
-            ['to-boolean', ['get', 'isEnd']], 'hsl(0, 84%, 60%)',
-            '#F4C542'
-          ],
+          'circle-radius': ['interpolate', ['linear'], ['get', 'points'], 0, 8, 50, 10, 100, 12, 150, 14],
+          'circle-color': ['case', ['to-boolean', ['get', 'isStart']], 'hsl(142, 76%, 45%)', ['to-boolean', ['get', 'isEnd']], 'hsl(0, 84%, 60%)', '#F4C542'],
           'circle-stroke-color': '#FFFFFF',
           'circle-stroke-width': 3,
           'circle-opacity': 1,
@@ -957,21 +890,17 @@ const Globe3D = ({
       map.current.on('mouseenter', 'trip-places-circles', () => {
         if (map.current) map.current.getCanvas().style.cursor = 'pointer';
       });
-
       map.current.on('mouseleave', 'trip-places-circles', () => {
         if (map.current) map.current.getCanvas().style.cursor = '';
       });
-
       map.current.on('click', 'trip-places-circles', e => {
         if (!e.features || e.features.length === 0) return;
         const feature = e.features[0];
         const props = feature.properties as PlaceFeature['properties'];
         const coords = (feature.geometry as any).coordinates as [number, number];
-
         if (currentPopup.current) {
           currentPopup.current.remove();
         }
-
         const imageUrl = props.imageUrl ? getImageUrl(props.imageUrl) : '/placeholder.svg';
         const popup = new mapboxgl.Popup({
           offset: 15,
@@ -998,7 +927,6 @@ const Globe3D = ({
             </div>
           </div>
         `).addTo(map.current!);
-
         currentPopup.current = popup;
       });
 
@@ -1043,24 +971,22 @@ const Globe3D = ({
       window.addEventListener('navigateToPlace', ((e: CustomEvent) => {
         navigate(`/place/${e.detail}`);
       }) as EventListener);
-      
+
       // Country hover effect using fill layer - covers entire country surface
-      map.current.on('mousemove', 'country-fills', (e) => {
+      map.current.on('mousemove', 'country-fills', e => {
         if (!map.current) return;
-        
+
         // Check if hovering over place markers (higher priority)
         const placeFeatures = map.current.queryRenderedFeatures(e.point, {
           layers: ['places-circles', 'trip-places-circles']
         });
-        
         if (placeFeatures.length > 0) {
           // Reset hover highlight when over markers
           map.current.setFilter('country-fills-hover', ['==', 'iso_3166_1', '']);
           return;
         }
-        
         map.current.getCanvas().style.cursor = 'pointer';
-        
+
         // Highlight the hovered country
         if (e.features && e.features[0]) {
           const iso = e.features[0].properties?.iso_3166_1;
@@ -1069,41 +995,31 @@ const Globe3D = ({
           }
         }
       });
-      
       map.current.on('mouseleave', 'country-fills', () => {
         if (!map.current) return;
         map.current.getCanvas().style.cursor = '';
         map.current.setFilter('country-fills-hover', ['==', 'iso_3166_1', '']);
       });
-      
+
       // Country click handler using fill layer - entire country surface is clickable
-      map.current.on('click', 'country-fills', (e) => {
+      map.current.on('click', 'country-fills', e => {
         if (!map.current || !onCountryClick) return;
-        
+
         // Check if clicking on a place marker (higher priority)
         const placeFeatures = map.current.queryRenderedFeatures(e.point, {
           layers: ['places-circles', 'trip-places-circles']
         });
-        
         if (placeFeatures.length > 0) {
           return; // Let place handler manage the click
         }
-        
         if (!e.features || e.features.length === 0) return;
-        
         const feature = e.features[0];
-        
+
         // Extract country name from properties
-        const countryName = 
-          feature.properties?.name_en ||
-          feature.properties?.name ||
-          feature.properties?.name_fr ||
-          feature.properties?.iso_3166_1;
-        
+        const countryName = feature.properties?.name_en || feature.properties?.name || feature.properties?.name_fr || feature.properties?.iso_3166_1;
         if (countryName) {
           // Trigger sparkle effect at click position
           triggerSparkle(e.point.x, e.point.y);
-          
           console.log('🌍 Country clicked (fill layer):', {
             name: feature.properties?.name,
             name_en: feature.properties?.name_en,
@@ -1115,7 +1031,6 @@ const Globe3D = ({
           console.warn('⚠️ Country feature found but no name property:', feature.properties);
         }
       });
-      
       isMapReadyRef.current = true;
 
       // Execute pending fly-to if any
@@ -1137,11 +1052,11 @@ const Globe3D = ({
         clearTimeout(endMarkerTimeout.current);
         endMarkerTimeout.current = null;
       }
-      
+
       // Remove all trip markers
       tripMarkers.current.forEach(marker => marker.remove());
       tripMarkers.current = [];
-      
+
       // Remove trip markers
       if (tripStartMarker.current) {
         tripStartMarker.current.remove();
@@ -1151,13 +1066,13 @@ const Globe3D = ({
         tripEndMarker.current.remove();
         tripEndMarker.current = null;
       }
-      
+
       // Remove user location marker
       if (userLocationMarker.current) {
         userLocationMarker.current.remove();
         userLocationMarker.current = null;
       }
-      
+
       // Remove map
       if (map.current) {
         map.current.remove();
@@ -1241,10 +1156,12 @@ const Globe3D = ({
       hasInitiallyZoomed.current = false;
       return;
     }
-    
     if (userPosition) {
-      const { latitude, longitude } = userPosition;
-      
+      const {
+        latitude,
+        longitude
+      } = userPosition;
+
       // Create or update the marker
       if (!userLocationMarker.current) {
         const el = document.createElement('div');
@@ -1263,7 +1180,7 @@ const Globe3D = ({
       } else {
         userLocationMarker.current.setLngLat([longitude, latitude]);
       }
-      
+
       // Only zoom and show toast ONCE on first position
       if (!hasInitiallyZoomed.current) {
         hasInitiallyZoomed.current = true;
@@ -1275,13 +1192,12 @@ const Globe3D = ({
         toast.success(t('location.enabled'));
       }
     }
-    
     if (geolocationError) {
       // Show detailed error message with instructions
-      const errorMessage = geolocationError.code === 1 
-        ? 'Géolocalisation refusée. Allez dans les paramètres de votre navigateur pour l\'activer.'
-        : t('location.error');
-      toast.error(errorMessage, { duration: 5000 });
+      const errorMessage = geolocationError.code === 1 ? 'Géolocalisation refusée. Allez dans les paramètres de votre navigateur pour l\'activer.' : t('location.error');
+      toast.error(errorMessage, {
+        duration: 5000
+      });
       // Don't disable geolocation immediately - let user retry
     }
   }, [userPosition, geolocationError, geolocationEnabled, t]);
@@ -1290,20 +1206,19 @@ const Globe3D = ({
   const handleFlyTo = (lat: number, lng: number, zoom: number = 12, preserveView: boolean = false) => {
     if (map.current && isMapReadyRef.current) {
       setIsPaused(true);
-      
       const flyToOptions: any = {
         center: [lng, lat],
         zoom: zoom,
-        duration: 1000, // Réduit de 2000ms à 1000ms
+        duration: 1000,
+        // Réduit de 2000ms à 1000ms
         essential: true
       };
-      
+
       // Ne réinitialiser pitch/bearing QUE si preserveView est false
       if (!preserveView) {
         flyToOptions.pitch = 0;
         flyToOptions.bearing = 0;
       }
-      
       map.current.flyTo(flyToOptions);
     } else {
       pendingFlyTo.current = {
@@ -1504,43 +1419,40 @@ const Globe3D = ({
             <h3 className="text-lg font-semibold mb-2">Impossible de charger la carte</h3>
             <p className="text-sm text-muted-foreground mb-4">{mapError}</p>
             <Button onClick={() => {
-              if (!map.current) {
-                window.location.reload();
-                return;
+          if (!map.current) {
+            window.location.reload();
+            return;
+          }
+
+          // Reset error state and try reloading the style
+          setMapError(null);
+          setIsMapLoading(true);
+          console.log('🔄 Attempting to reload map style...');
+          try {
+            // First try satellite-streets again
+            map.current.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
+
+            // If satellite fails, the error handler will catch it
+            // and we can fallback to streets
+            const fallbackTimeout = setTimeout(() => {
+              if (map.current && !map.current.isStyleLoaded()) {
+                console.log('🔄 Satellite style failed, trying streets fallback...');
+                map.current.setStyle('mapbox://styles/mapbox/streets-v12');
               }
-              
-              // Reset error state and try reloading the style
-              setMapError(null);
-              setIsMapLoading(true);
-              
-              console.log('🔄 Attempting to reload map style...');
-              
-              try {
-                // First try satellite-streets again
-                map.current.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
-                
-                // If satellite fails, the error handler will catch it
-                // and we can fallback to streets
-                const fallbackTimeout = setTimeout(() => {
-                  if (map.current && !map.current.isStyleLoaded()) {
-                    console.log('🔄 Satellite style failed, trying streets fallback...');
-                    map.current.setStyle('mapbox://styles/mapbox/streets-v12');
-                  }
-                }, 3000);
-                
-                // Clear timeout once style loads
-                const cleanup = () => {
-                  clearTimeout(fallbackTimeout);
-                  map.current?.off('style.load', cleanup);
-                };
-                map.current.once('style.load', cleanup);
-                
-              } catch (err) {
-                console.error('❌ Style reload failed:', err);
-                setMapError('Échec du rechargement. Veuillez réessayer.');
-                setIsMapLoading(false);
-              }
-            }}>Recharger</Button>
+            }, 3000);
+
+            // Clear timeout once style loads
+            const cleanup = () => {
+              clearTimeout(fallbackTimeout);
+              map.current?.off('style.load', cleanup);
+            };
+            map.current.once('style.load', cleanup);
+          } catch (err) {
+            console.error('❌ Style reload failed:', err);
+            setMapError('Échec du rechargement. Veuillez réessayer.');
+            setIsMapLoading(false);
+          }
+        }}>Recharger</Button>
           </div>
         </div>}
       
@@ -1554,7 +1466,7 @@ const Globe3D = ({
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-10 w-full max-w-md px-4">
         <div className="relative">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            
             
             {searchTerm && <Button variant="ghost" size="icon" className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7" onClick={() => {
             setSearchTerm('');
@@ -1610,16 +1522,11 @@ const Globe3D = ({
         <TooltipProvider>
           <Tooltip>
             <TooltipTrigger asChild>
-              <Button 
-                variant="secondary" 
-                size="icon" 
-                onClick={() => {
-                  const newState = !isFullscreen;
-                  setIsFullscreen(newState);
-                  onFullscreenChange?.(newState);
-                }} 
-                className="rounded-full shadow-lg h-9 w-9"
-              >
+              <Button variant="secondary" size="icon" onClick={() => {
+              const newState = !isFullscreen;
+              setIsFullscreen(newState);
+              onFullscreenChange?.(newState);
+            }} className="rounded-full shadow-lg h-9 w-9">
                 {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
               </Button>
             </TooltipTrigger>
