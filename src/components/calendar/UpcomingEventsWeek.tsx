@@ -171,8 +171,8 @@ const UpcomingEventsWeek = ({ events, onEventClick, traditionColors }: UpcomingE
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <ScrollArea className="h-[400px] pr-4">
-            <div className="space-y-3">
+          <ScrollArea className="h-[400px]">
+            <div className="space-y-3 pr-2">
               {upcomingEvents.map((event) => {
                 const countdown = getCountdown(event.date);
                 const hasReminderEnabled = hasReminder(event.id);
