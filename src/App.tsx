@@ -26,6 +26,7 @@ import NotFound from "./pages/NotFound";
 import Admin from "./pages/Admin";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminEnrichData from "./pages/AdminEnrichData";
+import AdminAuditImages from "./pages/AdminAuditImages";
 import Reminders from "./pages/Reminders";
 import SecurityTest from "./pages/SecurityTest";
 
@@ -89,6 +90,7 @@ const AppContent = () => {
           <Route path="/admin" element={<Admin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/admin/enrich-data" element={<AdminEnrichData />} />
+          <Route path="/admin/audit-images" element={<AdminAuditImages />} />
           <Route path="/reminders" element={<Reminders />} />
           <Route path="/security-test" element={<SecurityTest />} />
 
