@@ -126,6 +126,53 @@ DISPOSITION DE L'INTERFACE :
 
 - NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil`,
 
+  '/journal': `
+PAGE ACTUELLE : Mon Espace Social (Journal)
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (en haut) : Bouton retour (flèche) à gauche
+
+- TITRE : "Mon Espace Social" avec sous-titre "Souvenirs, amis, messages et discussions"
+
+- ONGLETS (barre horizontale scrollable) :
+  • Actus : Fil d'activité de la communauté (visites, badges, etc.)
+  • Souvenirs : Tes photos et notes de voyage
+  • Amis : Liste d'amis et demandes d'amitié
+  • Messages : Messagerie privée avec tes amis
+  • Forum : Discussions de la communauté
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil
+
+ASTUCE : Les onglets Messages et Forum affichent un badge rouge s'il y a des nouveaux messages non lus.`,
+
+  '/badges': `
+PAGE ACTUELLE : Collection de Badges
+
+DISPOSITION DE L'INTERFACE :
+- HEADER (en haut) : Bouton retour (flèche) vers le profil
+
+- TITRE : "Collection de Badges" avec le nombre de badges débloqués
+
+- STATISTIQUES (4 cartes en grille) :
+  • Badges totaux
+  • Pourcentage de complétion
+  • Badges rares (or, platine, diamant)
+  • Classement parmi les utilisateurs
+
+- BARRE DE PROGRESSION : Progression globale avec ton rang
+
+- GRAPHIQUE : Évolution de ta collection sur les 6 derniers mois
+
+- FILTRES (boutons) : Tous | Quêtes | Religions | Culture
+
+- ONGLETS :
+  • Débloqués : Les badges que tu as gagnés
+  • À Débloquer : Les objectifs à atteindre
+
+- NAVIGATION PRINCIPALE (tout en bas) : Explorer | Traditions | Calendrier | Journal | Profil
+
+ASTUCE : Les badges ont différents niveaux de rareté : bronze, argent, or, platine et diamant.`,
+
   'default': `
 NAVIGATION GÉNÉRALE DE L'APPLICATION :
 
@@ -155,6 +202,8 @@ const getUILayoutForRoute = (route: string): string => {
   if (route.startsWith('/profile')) return UI_LAYOUT_GUIDE['/profile'];
   if (route.startsWith('/place/')) return UI_LAYOUT_GUIDE['/place'];
   if (route.startsWith('/country/')) return UI_LAYOUT_GUIDE['/country'];
+  if (route.startsWith('/journal')) return UI_LAYOUT_GUIDE['/journal'];
+  if (route.startsWith('/badges')) return UI_LAYOUT_GUIDE['/badges'];
   
   return UI_LAYOUT_GUIDE['default'];
 };
@@ -246,6 +295,24 @@ const getQuickReplies = (route: string, mode: string): string => {
   <lov-suggestion message="Quels sont les lieux sacrés de ce pays ?">🗺️ Lieux sacrés</lov-suggestion>
   <lov-suggestion message="Parle-moi des traditions de ce pays.">📚 Traditions</lov-suggestion>
   <lov-suggestion message="Donne-moi 3 faits historiques.">📅 3 faits</lov-suggestion>
+</lov-actions>`;
+  }
+
+  if (route.startsWith('/journal')) {
+    return `
+<lov-actions>
+  <lov-suggestion message="Comment ajouter un souvenir ?">📚 Ajouter souvenir</lov-suggestion>
+  <lov-suggestion message="Comment trouver des amis ?">🔎 Trouver amis</lov-suggestion>
+  <lov-suggestion message="Où sont mes messages privés ?">✨ Messages</lov-suggestion>
+</lov-actions>`;
+  }
+
+  if (route.startsWith('/badges')) {
+    return `
+<lov-actions>
+  <lov-suggestion message="Comment gagner plus de badges ?">🗺️ Gagner badges</lov-suggestion>
+  <lov-suggestion message="C'est quoi les badges rares ?">✨ Badges rares</lov-suggestion>
+  <lov-suggestion message="Comment améliorer mon classement ?">📅 Classement</lov-suggestion>
 </lov-actions>`;
   }
   
