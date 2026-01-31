@@ -1,132 +1,169 @@
 
-
-# Plan : Icône de tradition personnalisée + Badges visibles sur mobile
+# Plan : Réorganisation des contrôles Header + Zone Globe
 
 ## Objectif
-1. Remplacer les icônes Lucide par des images personnalisées pour chaque tradition dans le header
-2. Afficher le compteur de badges sur mobile (actuellement masqué)
-3. Corriger la persistance de la sélection de religion
+Réorganiser les éléments de contrôle sur la page `/explore` :
+1. Déplacer le filtre de catégorie en haut à gauche du header
+2. Descendre le bouton de géolocalisation et l'aligner avec le chatbot (en bas de l'écran)
+3. Garder l'icône de religion + badge tout à gauche du header
+
+---
+
+## Structure actuelle vs. Structure cible
+
+```text
+ACTUEL:
+┌─────────────────────────────────────────┐
+│ [Géoloc] [Religion] [Badge]  [Logo]  [Actions] │  ← Header
+├─────────────────────────────────────────┤
+│           [Filtre Catégorie]            │  ← Au-dessus du globe (centre)
+│                                         │
+│              Globe 3D                   │
+│                                         │
+│                              [Chatbot]  │  ← Bas droite (fixed)
+├─────────────────────────────────────────┤
+│        [Onglets exploration]            │
+└─────────────────────────────────────────┘
+
+CIBLE:
+┌─────────────────────────────────────────┐
+│ [Religion] [Badge] [Filtre]  [Logo]  [Actions] │  ← Header (filtre ajouté)
+├─────────────────────────────────────────┤
+│                                         │
+│              Globe 3D                   │
+│                                         │
+│  [Géoloc]                    [Chatbot]  │  ← Bas (géoloc à gauche, chatbot à droite)
+├─────────────────────────────────────────┤
+│        [Onglets exploration]            │
+└─────────────────────────────────────────┘
+```
 
 ---
 
 ## Modifications a apporter
 
-### 1. Ajouter les images des traditions
-
-**Fichiers a creer** : Copier l'image uploadee et ajouter les autres images de tradition
-
-| Tradition | Image existante | Source |
-|-----------|-----------------|--------|
-| Christianisme | NON - A AJOUTER | Image uploadee par l'utilisateur |
-| Islam | crescent.png | src/assets/animations/ |
-| Judaisme | star-david.png | src/assets/animations/ |
-| Bouddhisme | lotus.png | src/assets/animations/ |
-| Hindouisme | om.png | src/assets/animations/ |
-| Traditionnel | spirit.png | src/assets/animations/ |
-| Atheisme | stars.png | src/assets/animations/ |
-
-Action : Copier `user-uploads://ChatGPT_Image_31_janv._2026_16_17_26.png` vers `src/assets/icons/cross-golden.png`
-
----
-
-### 2. Creer un nouveau composant ReligionIcon
-
-**Fichier** : `src/components/ReligionIcon.tsx`
-
-Ce composant affichera l'image correspondant a la religion selectionnee :
-
-```typescript
-import { Religion } from '@/contexts/AppContext';
-import crossGolden from '@/assets/icons/cross-golden.png';
-import crescent from '@/assets/animations/crescent.png';
-import starDavid from '@/assets/animations/star-david.png';
-import lotus from '@/assets/animations/lotus.png';
-import om from '@/assets/animations/om.png';
-import spirit from '@/assets/animations/spirit.png';
-import stars from '@/assets/animations/stars.png';
-
-const religionImages: Record<Religion, string> = {
-  christianity: crossGolden,
-  islam: crescent,
-  judaism: starDavid,
-  buddhism: lotus,
-  hinduism: om,
-  traditional: spirit,
-  atheism: stars,
-  astronomy: stars, // Fallback
-};
-
-export const ReligionIcon = ({ religion, size = 'md' }) => {
-  const imageSrc = religionImages[religion];
-  const sizeClass = size === 'sm' ? 'w-6 h-6' : 'w-8 h-8';
-  
-  return (
-    <img 
-      src={imageSrc} 
-      alt={religion} 
-      className={`${sizeClass} object-contain`}
-    />
-  );
-};
-```
-
----
-
-### 3. Modifier le Header
+### 1. Modifier le Header pour inclure le filtre de catégorie
 
 **Fichier** : `src/components/Header.tsx`
 
-**Changements** :
+Changements :
+- Ajouter une prop `categoryFilter` et `onCategoryChange` pour recevoir le filtre
+- Retirer le switch de géolocalisation du header
+- Ajouter le composant `PlaceCategoryFilter` après les badges
+- Réorganiser l'ordre des éléments
 
-a) Remplacer l'icone Lucide par le nouveau composant ReligionIcon
-
-Avant (ligne 84-102) :
 ```tsx
-{userProgress.selectedReligion && religionColor ? (
-  <div className={`... ${religionColor.bg} ...`}>
-    <div className={religionColor.text}>
-      {getReligionIcon(userProgress.selectedReligion)}
+interface HeaderProps {
+  showBack?: boolean;
+  backTo?: string;
+  backLabel?: string;
+  children?: React.ReactNode;
+  transparent?: boolean;
+  // Nouvelles props pour le filtre
+  categoryFilter?: PlaceCategoryFilterValue;
+  onCategoryChange?: (value: PlaceCategoryFilterValue) => void;
+}
+```
+
+Layout gauche du header :
+```tsx
+<div className="flex items-center gap-1.5 sm:gap-3">
+  {/* 1. Indicateur de religion */}
+  {userProgress.selectedReligion && (
+    <div className="...">
+      <ReligionIcon religion={userProgress.selectedReligion} size="sm" />
     </div>
+  )}
+  
+  {/* 2. Badges obtenus */}
+  <div className="flex items-center ...">
+    <Award className="..." />
+    <span>{userProgress.badges.length}</span>
   </div>
-) : ...}
-```
-
-Apres :
-```tsx
-{userProgress.selectedReligion && (
-  <div 
-    className="flex items-center justify-center p-1 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20"
-    title={userProgress.selectedReligion}
-  >
-    <ReligionIcon religion={userProgress.selectedReligion} size="sm" />
-  </div>
-)}
-```
-
-b) Afficher les badges sur mobile (ligne 117)
-
-Avant :
-```tsx
-<div className="hidden sm:flex items-center gap-1.5 ...">
-```
-
-Apres :
-```tsx
-<div className="flex items-center gap-1 sm:gap-1.5 ...">
+  
+  {/* 3. Filtre de catégorie (nouveau) */}
+  {showExploreControls && categoryFilter !== undefined && (
+    <PlaceCategoryFilter 
+      value={categoryFilter}
+      onChange={onCategoryChange}
+      persistKey="explore"
+    />
+  )}
+</div>
 ```
 
 ---
 
-### 4. Verifier la persistance de la religion
+### 2. Créer un nouveau composant GeolocationToggle flottant
 
-**Fichier** : `src/contexts/AppContext.tsx`
+**Fichier** : `src/components/GeolocationToggle.tsx` (nouveau)
 
-La correction precedente (ligne 167) devrait deja preserver la valeur locale :
-```typescript
-selectedReligion: (data.selected_religion as Religion | null) || localProgress?.selectedReligion || null,
+Ce composant sera positionné en bas à gauche, aligné avec le chatbot :
+
+```tsx
+import { Switch } from '@/components/ui/switch';
+import { MapPin } from 'lucide-react';
+import { useApp } from '@/contexts/AppContext';
+
+const GeolocationToggle = () => {
+  const { userProgress, toggleGeolocation, userLocation } = useApp();
+  
+  return (
+    <div className="fixed bottom-24 left-4 z-50 flex items-center gap-2 bg-card/90 backdrop-blur-sm rounded-full px-3 py-2 shadow-lg border border-border/50">
+      <MapPin className={`w-4 h-4 ${
+        userProgress.geolocationEnabled && userLocation 
+          ? 'text-primary' 
+          : 'text-muted-foreground'
+      }`} />
+      <Switch 
+        checked={userProgress.geolocationEnabled} 
+        onCheckedChange={toggleGeolocation} 
+        aria-label="Activer la géolocalisation" 
+      />
+    </div>
+  );
+};
+
+export default GeolocationToggle;
 ```
 
-Mais si le probleme persiste, nous ajouterons un log de debug pour identifier la cause exacte.
+Position : `fixed bottom-24 left-4` (symétrique au chatbot qui est `fixed bottom-24 right-4`)
+
+---
+
+### 3. Modifier la page Explore
+
+**Fichier** : `src/pages/Explore.tsx`
+
+Changements :
+- Retirer le `PlaceCategoryFilter` de l'overlay du globe
+- Passer le filtre au Header via les nouvelles props
+- Ajouter le composant `GeolocationToggle` flottant
+
+```tsx
+import GeolocationToggle from '@/components/GeolocationToggle';
+
+// Dans le return:
+{!isFullscreen && (
+  <>
+    <Header 
+      categoryFilter={categoryFilter}
+      onCategoryChange={setCategoryFilter}
+    />
+    <GeolocationToggle />
+  </>
+)}
+```
+
+Retirer le bloc de l'overlay :
+```tsx
+// SUPPRIMER ce bloc :
+{!isFullscreen && (
+  <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50">
+    <PlaceCategoryFilter ... />
+  </div>
+)}
+```
 
 ---
 
@@ -134,28 +171,20 @@ Mais si le probleme persiste, nous ajouterons un log de debug pour identifier la
 
 ```text
 src/
-  assets/
-    icons/
-      cross-golden.png  ← NOUVEAU (image uploadee)
   components/
-    ReligionIcon.tsx    ← NOUVEAU
-    Header.tsx          ← MODIFIE
+    GeolocationToggle.tsx  ← NOUVEAU
+    Header.tsx             ← MODIFIE
+  pages/
+    Explore.tsx            ← MODIFIE
 ```
 
 ---
 
-## Resultat attendu
+## Résultat attendu
 
-- En haut a gauche du header sur `/explore` :
-  - Icone de tradition (image doree pour Christianisme)
-  - Switch de geolocalisation
-  - Compteur de badges (visible aussi sur mobile)
-  
-- L'icone reste visible meme apres rechargement de la page
+Sur la page `/explore` :
+- **Header (haut)** : [Croix dorée] [Badge: X] [Filtre: Tous/Sacrés/Musées] ... [Logo] ... [Micro] [Mail]
+- **Bas gauche** : Bouton géolocalisation flottant (aligné avec le chatbot)
+- **Bas droite** : Bouton chatbot (position inchangée)
 
----
-
-## Impact visuel
-
-L'indicateur de tradition sera plus visible et distinctif avec une image personnalisee plutot qu'une simple icone vectorielle. La croix doree avec rayons lumineux correspondra mieux a l'identite visuelle de l'application.
-
+Le bouton géolocalisation sera visuellement similaire au chatbot (arrondi, avec ombre) pour une cohérence visuelle.
