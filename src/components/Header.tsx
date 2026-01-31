@@ -8,7 +8,6 @@ import { useApp } from '@/contexts/AppContext';
 import VoiceCommand from '@/components/VoiceCommand';
 import ReligionIcon from '@/components/ReligionIcon';
 import PlaceCategoryFilter, { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
-import MonumentFilter, { FilterOptions } from '@/components/MonumentFilter';
 
 interface HeaderProps {
   showBack?: boolean;
@@ -18,8 +17,6 @@ interface HeaderProps {
   transparent?: boolean;
   categoryFilter?: PlaceCategoryFilterValue;
   onCategoryChange?: (value: PlaceCategoryFilterValue) => void;
-  filters?: FilterOptions;
-  onFilterChange?: (filters: FilterOptions) => void;
 }
 
 const Header = ({
@@ -29,9 +26,7 @@ const Header = ({
   children,
   transparent = false,
   categoryFilter,
-  onCategoryChange,
-  filters,
-  onFilterChange
+  onCategoryChange
 }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -55,9 +50,9 @@ const Header = ({
         {isTextOnlyPage ? (
           // Header compact pour les pages Globe/Planifier/Journal/Classements
           <div className="flex items-center justify-between gap-2 sm:gap-4">
-            {/* Gauche : Religion + Filtre + Badges */}
-            <div className="flex flex-col gap-1.5">
-              {/* Row 1: Religion icon */}
+            {/* Gauche : Religion + Badges + Filtre */}
+            <div className="flex items-center gap-1.5 sm:gap-3">
+{/* 1. Indicateur de religion */}
               {userProgress.selectedReligion && (
                 <div
                   className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20 overflow-hidden"
@@ -67,21 +62,22 @@ const Header = ({
                 </div>
               )}
               
-              {/* Row 2: Monument Filter button (under the circle) */}
-              {showExploreControls && onFilterChange && (
-                <MonumentFilter 
-                  onFilterChange={onFilterChange}
-                  externalFilters={filters}
+              {/* 2. Badges obtenus */}
+              <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
+                <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
+                <span className="text-xs sm:text-sm font-medium text-foreground">
+                  {userProgress.badges.length}
+                </span>
+              </div>
+
+              {/* 3. Filtre de catégorie */}
+              {showExploreControls && categoryFilter !== undefined && onCategoryChange && (
+                <PlaceCategoryFilter 
+                  value={categoryFilter}
+                  onChange={onCategoryChange}
+                  persistKey="explore"
                 />
               )}
-            </div>
-            
-            {/* Badges obtenus */}
-            <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full self-start">
-              <Award className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-primary" />
-              <span className="text-xs sm:text-sm font-medium text-foreground">
-                {userProgress.badges.length}
-              </span>
             </div>
             
             {/* Centre : Logo */}

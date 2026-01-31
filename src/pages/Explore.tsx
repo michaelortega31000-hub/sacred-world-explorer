@@ -12,7 +12,6 @@ import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
 import GeolocationToggle from '@/components/GeolocationToggle';
 import { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
-import { FilterOptions } from '@/components/MonumentFilter';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { normalizeCountryName } from '@/lib/countryNameMapping';
@@ -21,7 +20,6 @@ const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<PlaceCategoryFilterValue>('all');
-  const [filters, setFilters] = useState<FilterOptions>({ religions: [], types: [] });
   const { userProgress } = useApp();
   const navigate = useNavigate();
   
@@ -41,8 +39,6 @@ const Explore = () => {
         <Header 
           categoryFilter={categoryFilter}
           onCategoryChange={setCategoryFilter}
-          filters={filters}
-          onFilterChange={setFilters}
         />
       )}
       
@@ -59,7 +55,6 @@ const Explore = () => {
                 onCountryClick={handleCountryClick}
                 onFullscreenChange={setIsFullscreen}
                 categoryFilter={categoryFilter}
-                externalFilters={filters}
               />
             </div>
           </TabsContent>

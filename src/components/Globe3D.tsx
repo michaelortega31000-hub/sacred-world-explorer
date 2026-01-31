@@ -32,7 +32,6 @@ interface Globe3DProps {
   onFullscreenChange?: (isFullscreen: boolean) => void;
   tripPlaces?: string[];
   categoryFilter?: PlaceCategoryFilterValue;
-  externalFilters?: FilterOptions;
 }
 interface PlaceFeature {
   type: 'Feature';
@@ -66,8 +65,7 @@ const Globe3D = ({
   onPausedChange,
   onFullscreenChange,
   tripPlaces = [],
-  categoryFilter = 'all',
-  externalFilters
+  categoryFilter = 'all'
 }: Globe3DProps) => {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<mapboxgl.Map | null>(null);
@@ -87,12 +85,10 @@ const Globe3D = ({
   } = useApp();
   const [showMonuments, setShowMonuments] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
-  // Use external filters if provided, otherwise use local state
-  const [localFilters, setLocalFilters] = useState<FilterOptions>({
+  const [filters, setFilters] = useState<FilterOptions>({
     religions: [],
     types: [],
   });
-  const filters = externalFilters || localFilters;
   const [filteredCount, setFilteredCount] = useState<number>(0);
   const [geolocationEnabled, setGeolocationEnabled] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
@@ -1381,9 +1377,9 @@ const Globe3D = ({
     }
   };
 
-  // Handle filter changes from local fallback (when no externalFilters provided)
-  const handleLocalFilterChange = (newFilters: FilterOptions) => {
-    setLocalFilters(newFilters);
+  // Handle filter changes
+  const handleFilterChange = (newFilters: FilterOptions) => {
+    setFilters(newFilters);
     if (newFilters.religions.length > 0 || newFilters.types.length > 0) {
       setShowMonuments(true);
     }
@@ -1585,13 +1581,12 @@ const Globe3D = ({
           </div>}
       </div>
 
-      {/* Monument filter - only show fallback if no external filters provided */}
-      {!externalFilters && filterControlContainer && createPortal(<MonumentFilter onFilterChange={handleLocalFilterChange} externalFilters={filters} />, filterControlContainer)}
-      {!externalFilters && !filterControlContainer && (
-        <div className="absolute top-4 left-4 z-[200]">
-          <MonumentFilter onFilterChange={handleLocalFilterChange} externalFilters={filters} />
-        </div>
-      )}
+      {/* Monument filter */}
+      {filterControlContainer ? createPortal(<MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />, filterControlContainer) :
+    // Fallback overlay if control not yet mounted
+    <div className="absolute top-4 left-4 z-[200]">
+            <MonumentFilter onFilterChange={handleFilterChange} externalFilters={filters} />
+        </div>}
 
       {/* Clear history confirmation dialog */}
       <AlertDialog open={showClearDialog} onOpenChange={setShowClearDialog}>
