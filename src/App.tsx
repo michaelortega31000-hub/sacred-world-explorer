@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,8 +31,26 @@ import SecurityTest from "./pages/SecurityTest";
 
 const queryClient = new QueryClient();
 
+// Create a context for the assistant
+import { createContext, useContext } from "react";
+
+interface AssistantContextType {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+const AssistantContext = createContext<AssistantContextType | null>(null);
+
+export const useAssistant = () => {
+  const context = useContext(AssistantContext);
+  if (!context) {
+    throw new Error("useAssistant must be used within AssistantProvider");
+  }
+  return context;
+};
+
 // Wrapper component to conditionally render AssistantChat
-const AssistantWrapper = () => {
+const AssistantWrapper = ({ isOpen, setIsOpen }: { isOpen: boolean; setIsOpen: (open: boolean) => void }) => {
   const location = useLocation();
   const hiddenPaths = ["/", "/auth"];
   
@@ -39,16 +58,18 @@ const AssistantWrapper = () => {
     return null;
   }
   
-  return <AssistantChat />;
+  return <AssistantChat isOpen={isOpen} onOpenChange={setIsOpen} />;
 };
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <AppProvider>
+const AppContent = () => {
+  const [assistantOpen, setAssistantOpen] = useState(false);
+  
+  return (
+    <AssistantContext.Provider value={{ isOpen: assistantOpen, setIsOpen: setAssistantOpen }}>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <AssistantWrapper />
+        <AssistantWrapper isOpen={assistantOpen} setIsOpen={setAssistantOpen} />
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
@@ -82,6 +103,14 @@ const App = () => (
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
+    </AssistantContext.Provider>
+  );
+};
+
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <AppProvider>
+      <AppContent />
     </AppProvider>
   </QueryClientProvider>
 );

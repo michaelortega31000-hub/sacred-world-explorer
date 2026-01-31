@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Mail, Award } from 'lucide-react';
+import { ArrowLeft, Mail, Award, MessageCircle } from 'lucide-react';
 import logo from '@/assets/sacred-world-logo-header.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
@@ -18,6 +18,7 @@ interface HeaderProps {
   transparent?: boolean;
   categoryFilter?: PlaceCategoryFilterValue;
   onCategoryChange?: (value: PlaceCategoryFilterValue) => void;
+  onAssistantClick?: () => void;
 }
 
 const Header = ({
@@ -27,7 +28,8 @@ const Header = ({
   children,
   transparent = false,
   categoryFilter,
-  onCategoryChange
+  onCategoryChange,
+  onAssistantClick
 }: HeaderProps) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -82,7 +84,7 @@ const Header = ({
               <img src={logo} alt="SacredWorld Logo" className="h-24 w-24 sm:h-28 sm:w-28 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
             </div>
             
-            {/* Droite : Micro + Mail + Retour */}
+            {/* Droite : Micro + Mail + Assistant + Retour */}
             <div className="flex items-center gap-1 sm:gap-2">
               {showExploreControls && <VoiceCommand />}
 
@@ -105,6 +107,19 @@ const Header = ({
                   )}
                 </Tooltip>
               </TooltipProvider>
+
+              {onAssistantClick && (
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={onAssistantClick} 
+                  className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" 
+                  aria-label="Assistant" 
+                  title="Assistant Sacred World"
+                >
+                  <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                </Button>
+              )}
 
               {location.pathname !== '/explore' && (
                 <Button variant="ghost" size="sm" onClick={() => navigate('/explore')} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Retour au globe" title="Retour au globe">
@@ -153,6 +168,19 @@ const Header = ({
                     )}
                   </Tooltip>
                 </TooltipProvider>
+
+                {onAssistantClick && (
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={onAssistantClick} 
+                    className="p-2 text-foreground hover:bg-primary/10" 
+                    aria-label="Assistant" 
+                    title="Assistant Sacred World"
+                  >
+                    <MessageCircle className="w-5 h-5" />
+                  </Button>
+                )}
 
                 {location.pathname !== '/explore' && (
                   <Button variant="ghost" size="sm" onClick={() => navigate('/explore')} className="p-2 text-foreground hover:bg-primary/10" aria-label="Retour au globe" title="Retour au globe">

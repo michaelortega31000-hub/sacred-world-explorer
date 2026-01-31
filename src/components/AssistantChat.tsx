@@ -10,7 +10,6 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -132,8 +131,12 @@ const getInitialSuggestions = (route: string, mode: Mode): Suggestion[] => {
   }
 };
 
-const AssistantChat = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface AssistantChatProps {
+  isOpen: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<Mode>("help");
@@ -218,15 +221,7 @@ const AssistantChat = () => {
   };
 
   return (
-    <Sheet open={isOpen} onOpenChange={setIsOpen}>
-      <SheetTrigger asChild>
-        <Button
-          size="icon"
-          className="fixed bottom-24 right-4 z-50 h-14 w-14 rounded-full shadow-lg bg-primary hover:bg-primary/90 animate-pulse hover:animate-none"
-        >
-          <MessageCircle className="h-6 w-6" />
-        </Button>
-      </SheetTrigger>
+    <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md flex flex-col h-full p-0">
         <SheetHeader className="p-4 border-b">
           <SheetTitle className="flex items-center gap-2">

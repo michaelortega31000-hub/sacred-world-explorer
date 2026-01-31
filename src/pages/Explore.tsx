@@ -12,6 +12,7 @@ import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
 import PlaceCategoryFilter, { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 import { useApp } from '@/contexts/AppContext';
+import { useAssistant } from '@/App';
 import { toast } from 'sonner';
 import { normalizeCountryName } from '@/lib/countryNameMapping';
 
@@ -20,6 +21,7 @@ const Explore = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<PlaceCategoryFilterValue>('all');
   const { userProgress } = useApp();
+  const { setIsOpen: setAssistantOpen } = useAssistant();
   const navigate = useNavigate();
   
   const handleCountryClick = (countryName: string) => {
@@ -38,6 +40,7 @@ const Explore = () => {
         <Header 
           categoryFilter={categoryFilter}
           onCategoryChange={setCategoryFilter}
+          onAssistantClick={() => setAssistantOpen(true)}
         />
       )}
       
