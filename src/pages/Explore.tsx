@@ -10,8 +10,7 @@ import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
 import ProximityDetector from '@/components/ProximityDetector';
 import ARCameraView from '@/components/ARCameraView';
-import GeolocationToggle from '@/components/GeolocationToggle';
-import { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
+import PlaceCategoryFilter, { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 import { useApp } from '@/contexts/AppContext';
 import { toast } from 'sonner';
 import { normalizeCountryName } from '@/lib/countryNameMapping';
@@ -111,8 +110,16 @@ const Explore = () => {
         )}
       </Tabs>
 
-      {/* Geolocation toggle - floating bottom left, aligned with chatbot */}
-      {!isFullscreen && <GeolocationToggle />}
+      {/* Category filter - floating bottom left, aligned with chatbot */}
+      {!isFullscreen && (
+        <div className="fixed bottom-24 left-4 z-50">
+          <PlaceCategoryFilter 
+            value={categoryFilter}
+            onChange={setCategoryFilter}
+            persistKey="explore"
+          />
+        </div>
+      )}
 
       {/* Bottom navigation - hidden in fullscreen mode */}
       {!isFullscreen && <BottomNavigation />}

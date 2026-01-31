@@ -2,11 +2,15 @@ import { Switch } from '@/components/ui/switch';
 import { MapPin } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 
-const GeolocationToggle = () => {
+interface GeolocationToggleProps {
+  className?: string;
+}
+
+const GeolocationToggle = ({ className = '' }: GeolocationToggleProps) => {
   const { userProgress, toggleGeolocation } = useApp();
   
   return (
-    <div className="fixed bottom-24 left-4 z-50">
+    <div className={className}>
       <Switch 
         checked={userProgress.geolocationEnabled} 
         onCheckedChange={toggleGeolocation} 
