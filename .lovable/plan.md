@@ -1,78 +1,142 @@
 
-# Plan: Hybrid Places Display System (Database + Local File)
+# Plan : Améliorer la détection des clics sur les pays dans le Globe 3D
 
-## ✅ STATUS: IMPLEMENTED
+## Problème identifié
 
-This plan has been successfully implemented on 2026-01-30.
+Actuellement, pour cliquer sur un pays (comme le Brésil), l'utilisateur doit cliquer **exactement** sur :
+- Les lignes de frontière (`admin-0-boundary`, `admin-0-boundary-bg`)
+- Les labels des pays (`country-label`)
 
----
+Ces éléments sont très petits et difficiles à cibler, surtout sur mobile ou pour les grands pays.
 
-## Problem Summary
+## Solution proposée
 
-The 20 monuments added to Paraguay and South America are stored in the Lovable Cloud database, but the application doesn't display them because it only reads from the local `mockPlaces` file and ignores the `places` table entirely.
+Ajouter une **couche de remplissage invisible** (fill layer) qui couvre toute la surface de chaque pays, permettant de cliquer n'importe où sur le territoire.
 
-## Solution Overview
-
-Created a **hybrid system** that merges local data (`mockPlaces`) with database data (`places` table), with:
-- Database entries taking priority (newer/verified)
-- Deduplication by place ID
-- Filter to show only verified places (`verification_status = 'verified'`)
-- Automatic image fallback with placeholder when missing
-
----
-
-## Implementation Completed
-
-### ✅ Step 1: Created `usePlaces` Hook
-
-**New file**: `src/hooks/usePlaces.ts`
-
-This React Query hook:
-- Fetches verified places from Supabase (`places` table)
-- Merges with `mockPlaces` (deduplication by ID, DB priority)
-- Normalizes coordinates from `{lat, lng}` to `[lng, lat]`
-- Auto-matches local images when available
-- Provides helper hooks: `usePlacesByCountry`, `usePlaceById`, `useAllCountries`, `useInvalidatePlaces`
-
-### ✅ Step 2: Updated Consumer Components
-
-| Component | Change |
-|-----------|--------|
-| `src/pages/Country.tsx` | Uses `usePlacesByCountry()` and `useAllCountries()` |
-| `src/pages/PlaceDetail.tsx` | Uses `usePlaceById()` |
-| `src/components/Globe3D.tsx` | Fetches and merges DB places inline |
-| `src/components/LocationsStatsTab.tsx` | Uses `usePlaces()` |
-| `src/pages/AdminEnrichData.tsx` | Calls `invalidatePlaces()` after saving |
-
-### ✅ Step 3: Cache Invalidation
-
-After successful addition in `AdminEnrichData.tsx`:
-```typescript
-const invalidatePlaces = useInvalidatePlaces();
-// ... after save success ...
-invalidatePlaces();
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ AVANT (actuel)                  │ APRÈS (proposé)           │
+├─────────────────────────────────┼───────────────────────────┤
+│                                 │                           │
+│    ┌──────────────────┐         │    ┌──────────────────┐   │
+│    │      Brésil      │         │    │██████████████████│   │
+│    │                  │ ← clic  │    │██████████████████│   │
+│    │       ✗         │   raté   │    │███████ ✓ ███████│   │
+│    │                  │         │    │██████████████████│   │
+│    └──────────────────┘         │    └──────────────────┘   │
+│         ↑                       │         ↑                 │
+│    Frontière seule              │    Zone cliquable = 100%  │
+│    détectable                   │    de la surface          │
+└─────────────────────────────────┴───────────────────────────┘
 ```
 
----
+## Étapes techniques
 
-## Files Modified
+### 1. Ajouter une source de données pour les frontières des pays
 
-| File | Action |
-|------|--------|
-| `src/hooks/usePlaces.ts` | **Created** - Main merge hook |
-| `src/pages/Country.tsx` | **Modified** - Uses hybrid data |
-| `src/pages/PlaceDetail.tsx` | **Modified** - Uses hybrid data |
-| `src/components/Globe3D.tsx` | **Modified** - Loads merged data |
-| `src/components/LocationsStatsTab.tsx` | **Modified** - Uses hybrid data |
-| `src/pages/AdminEnrichData.tsx` | **Modified** - Invalidates cache |
+Utiliser la source Mapbox `mapbox://mapbox.country-boundaries-v1` qui contient les polygones complets de chaque pays.
 
----
+```typescript
+map.current.addSource('country-boundaries', {
+  type: 'vector',
+  url: 'mapbox://mapbox.country-boundaries-v1'
+});
+```
 
-## Expected Result
+### 2. Créer une couche de remplissage invisible
 
-After implementation:
-- ✅ `/country/Paraguay` displays the 10 added monuments from DB
-- ✅ The 3D globe shows markers for all verified places
-- ✅ New admin additions appear immediately after saving
-- ✅ Missing images show a placeholder
-- ✅ Existing local data remains functional (fallback)
+Ajouter une couche `fill` transparente mais cliquable :
+
+```typescript
+map.current.addLayer({
+  id: 'country-fills',
+  type: 'fill',
+  source: 'country-boundaries',
+  'source-layer': 'country_boundaries',
+  paint: {
+    'fill-color': 'transparent',
+    'fill-opacity': 0
+  }
+}, 'places-circles'); // Insérer sous les marqueurs
+```
+
+### 3. Ajouter une couche de survol (hover)
+
+Pour donner un retour visuel à l'utilisateur quand il survole un pays :
+
+```typescript
+map.current.addLayer({
+  id: 'country-fills-hover',
+  type: 'fill',
+  source: 'country-boundaries',
+  'source-layer': 'country_boundaries',
+  paint: {
+    'fill-color': '#34E0A1',
+    'fill-opacity': 0.15
+  },
+  filter: ['==', 'iso_3166_1', ''] // Vide par défaut
+});
+```
+
+### 4. Mettre à jour les gestionnaires d'événements
+
+Modifier les événements `mousemove` et `click` pour utiliser la nouvelle couche :
+
+**Hover :**
+```typescript
+map.current.on('mousemove', 'country-fills', (e) => {
+  map.current.getCanvas().style.cursor = 'pointer';
+  if (e.features && e.features[0]) {
+    const iso = e.features[0].properties?.iso_3166_1;
+    map.current.setFilter('country-fills-hover', ['==', 'iso_3166_1', iso]);
+  }
+});
+
+map.current.on('mouseleave', 'country-fills', () => {
+  map.current.getCanvas().style.cursor = '';
+  map.current.setFilter('country-fills-hover', ['==', 'iso_3166_1', '']);
+});
+```
+
+**Clic :**
+```typescript
+map.current.on('click', 'country-fills', (e) => {
+  // Vérifier d'abord si on clique sur un marqueur
+  const placeFeatures = map.current.queryRenderedFeatures(e.point, {
+    layers: ['places-circles', 'trip-places-circles']
+  });
+  if (placeFeatures.length > 0) return;
+
+  // Récupérer le nom du pays
+  const countryName = e.features[0].properties?.name_en || 
+                      e.features[0].properties?.name;
+  if (countryName) {
+    triggerSparkle(e.point.x, e.point.y);
+    onCountryClick(countryName);
+  }
+});
+```
+
+### 5. Supprimer les anciens gestionnaires
+
+Retirer les gestionnaires génériques `mousemove` et `click` sur toute la carte qui utilisaient `queryRenderedFeatures` avec les couches de frontières.
+
+## Fichiers à modifier
+
+| Fichier | Modifications |
+|---------|--------------|
+| `src/components/Globe3D.tsx` | Ajouter source + layers + gestionnaires d'événements |
+
+## Avantages de cette solution
+
+1. **Toute la surface du pays est cliquable** - Plus besoin de viser précisément
+2. **Retour visuel au survol** - L'utilisateur voit quel pays sera sélectionné
+3. **Meilleure expérience mobile** - Les zones tactiles sont beaucoup plus grandes
+4. **Compatible avec les marqueurs existants** - Les monuments restent prioritaires
+5. **Performance identique** - Les couches fill sont très légères
+
+## Comportement attendu
+
+1. Survoler un pays → le pays se met en surbrillance légère (vert transparent)
+2. Cliquer n'importe où sur le pays → navigation vers la page du pays
+3. Cliquer sur un marqueur de monument → popup du monument (priorité)
