@@ -12,7 +12,7 @@ import { useApp, Place } from '@/contexts/AppContext';
 import { usePlacesByCountry, useAllCountries } from '@/hooks/usePlaces';
 import RankingTab from '@/components/RankingTab';
 import CountryRankingTab from '@/components/CountryRankingTab';
-import ReligionRankingTab from '@/components/ReligionRankingTab';
+import FriendsRankingTab from '@/components/FriendsRankingTab';
 import WeeklyQuestTab from '@/components/WeeklyQuestTab';
 import TripPlannerTab from '@/components/TripPlannerTab';
 import RestaurantsTab from '@/components/RestaurantsTab';
@@ -546,9 +546,9 @@ const Country = () => {
                   <Flag className="w-4 h-4" />
                   {t('tabs.countryRanking')}
                 </TabsTrigger>
-                <TabsTrigger value="religion" className="gap-2">
+                <TabsTrigger value="friends" className="gap-2">
                   <Users className="w-4 h-4" />
-                  {t('tabs.religionRanking')}
+                  Classement amis
                 </TabsTrigger>
               </TabsList>
 
@@ -560,8 +560,8 @@ const Country = () => {
                 <CountryRankingTab />
               </TabsContent>
 
-              <TabsContent value="religion">
-                <ReligionRankingTab />
+              <TabsContent value="friends">
+                <FriendsRankingTab />
               </TabsContent>
             </Tabs>
           </div>

@@ -3,7 +3,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Trophy, Flag, Users } from 'lucide-react';
 import RankingTab from './RankingTab';
 import CountryRankingTab from './CountryRankingTab';
-import ReligionRankingTab from './ReligionRankingTab';
+import FriendsRankingTab from './FriendsRankingTab';
 
 const RankingsTab = () => {
   const { t } = useTranslation();
@@ -34,11 +34,11 @@ const RankingsTab = () => {
           
           <TabsList className="w-full bg-transparent p-0 h-auto">
             <TabsTrigger 
-              value="religion" 
+              value="friends" 
               className="gap-2 w-full justify-start data-[state=active]:bg-primary data-[state=active]:text-primary-foreground rounded-lg py-3"
             >
               <Users className="w-4 h-4" />
-              {t('tabs.religionRanking')}
+              Classement amis
             </TabsTrigger>
           </TabsList>
         </div>
@@ -51,8 +51,8 @@ const RankingsTab = () => {
           <CountryRankingTab />
         </TabsContent>
 
-        <TabsContent value="religion">
-          <ReligionRankingTab />
+        <TabsContent value="friends">
+          <FriendsRankingTab />
         </TabsContent>
       </Tabs>
     </div>
