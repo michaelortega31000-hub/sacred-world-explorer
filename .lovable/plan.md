@@ -1,131 +1,139 @@
 
-# Plan : Remplacer le classement par religion par un classement des amis
 
-## Resume
+# Plan de Vérification et Correction des 316 Images de Lieux Sacrés
 
-Transformer l'onglet "Classement par religion" en "Classement amis et communaute" qui affichera un classement des amis de l'utilisateur connecte, bases sur leurs points.
+## Résumé du Problème
+
+Après analyse approfondie du projet, voici la situation actuelle :
+- **316 lieux** sont définis dans `src/data/placesData.ts` (fichier local)
+- **54 lieux supplémentaires** sont dans la base de données Supabase (principalement des musées)
+- **209 images locales** existent dans `src/assets/places/`
+- **~107 lieux** n'ont potentiellement pas d'image locale correspondante
+
+Le problème identifié : certaines images locales ne représentent pas correctement le lieu indiqué. Par exemple, la Cathédrale Saint-Étienne de Toulouse affiche une mauvaise image malgré l'existence d'un fichier `toulouse-st-etienne.jpg`.
 
 ---
 
-## Modifications
+## Stratégie de Correction
 
-### 1. Renommer et modifier `ReligionRankingTab.tsx` → `FriendsRankingTab.tsx`
+### Phase 1 : Audit Complet des Images Locales (Priorité Haute)
 
-**Nouveau composant** qui :
-- Recupere les amis de l'utilisateur connecte depuis la table `friendships`
-- Recupere leurs points depuis la vue `public_user_stats`
-- Affiche un classement trie par points (decroissant)
-- Affiche la position de l'utilisateur dans ce classement
+Vérifier manuellement les 209 images existantes dans `/src/assets/places/` pour identifier :
+- Images incorrectes (ne représentant pas le bon lieu)
+- Images de mauvaise qualité
+- Images dupliquées
 
-**Structure du composant** :
+### Phase 2 : Récupération Automatisée via Wikipedia API
 
-```text
-┌─────────────────────────────────────────────┐
-│  👥 Classement Amis                         │
-│  Comparez-vous à vos amis                   │
-├─────────────────────────────────────────────┤
-│  🥇 #1  Sophie      1,250 pts  ████████     │
-│  🥈 #2  Marc          890 pts  ██████       │
-│  🥉 #3  Julie         720 pts  █████        │
-│  ⭐ #4  VOUS          450 pts  ███   ← vous │
-│     #5  Thomas        320 pts  ██           │
-├─────────────────────────────────────────────┤
-│  💡 Ajoutez des amis pour les defier !      │
-│     [Ajouter des amis]                      │
-└─────────────────────────────────────────────┘
+Pour chaque lieu sans image ou avec image incorrecte :
+
+1. Utiliser l'edge function `fetch-wikipedia-image` existante
+2. Construire une recherche Wikipedia basée sur le nom du lieu
+3. Récupérer l'URL Wikimedia Commons officielle
+4. Mettre à jour le champ `image_url` dans Supabase
+
+### Phase 3 : Migration vers Base de Données
+
+Plutôt que de stocker 316 images locales, nous allons :
+
+1. **Migrer tous les lieux locaux vers Supabase** avec des URLs Wikipedia/Wikimedia valides
+2. **Stocker les URLs d'images directement dans la BDD** (champ `image_url`)
+3. **Conserver les images locales en fallback** pour les cas sans Wikipedia
+
+---
+
+## Implémentation Technique
+
+### Étape 1 : Créer un Script d'Audit Admin
+
+Un nouvel outil admin pour :
+- Lister tous les lieux avec leur image actuelle
+- Afficher un aperçu de chaque image
+- Permettre la validation/correction manuelle
+- Récupérer automatiquement l'image Wikipedia si disponible
+
+### Étape 2 : Améliorer l'Edge Function Wikipedia
+
+Modifier `fetch-wikipedia-image` pour :
+- Supporter les recherches multilingues (fr, en, es, de, it)
+- Fallback sur Wikimedia Commons direct
+- Retourner plusieurs images candidates
+
+### Étape 3 : Créer une Page Admin d'Audit d'Images
+
+Nouvelle page `/admin/audit-images` avec :
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  AUDIT DES IMAGES - 316 LIEUX                               │
+├─────────────────────────────────────────────────────────────┤
+│  ☐ Afficher uniquement les problèmes                        │
+│  ☐ Trier par pays                                           │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  🇫🇷 France (35 lieux)                                      │
+│  ┌─────────┬──────────────────────────────────────────────┐ │
+│  │ [Image] │ Notre-Dame de Paris                         │ │
+│  │         │ ✅ Image locale valide                       │ │
+│  │         │ [Voir Wikipedia] [Remplacer]                │ │
+│  └─────────┴──────────────────────────────────────────────┘ │
+│  ┌─────────┬──────────────────────────────────────────────┐ │
+│  │ [Image] │ Cathédrale Saint-Étienne de Toulouse        │ │
+│  │ ⚠️      │ ⚠️ Image potentiellement incorrecte          │ │
+│  │         │ [Charger depuis Wikipedia] [Upload]         │ │
+│  └─────────┴──────────────────────────────────────────────┘ │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-**Donnees affichees** :
-- Avatar + nom d'utilisateur
-- Points totaux
-- Barre de progression (relative au meilleur score)
-- Position dans le classement
-- L'utilisateur actuel est mis en evidence
+### Étape 4 : Mise à Jour en Masse
 
-**Cas particuliers** :
-- Si pas d'amis : message invitant a en ajouter avec un bouton vers l'onglet Social
-- Si non connecte : message demandant de se connecter
+Créer un bouton "Corriger automatiquement" qui :
+1. Parcourt les 316 lieux un par un
+2. Vérifie si une image Wikipedia existe
+3. Met à jour la BDD avec l'URL valide
+4. Génère un rapport des corrections
 
 ---
 
-### 2. Modifier `RankingsTab.tsx`
-
-**Changements** :
-- Remplacer l'import de `ReligionRankingTab` par `FriendsRankingTab`
-- Changer l'icone de `Users` (deja correcte) 
-- Mettre a jour le libelle du tab : "Classement amis"
-- Mettre a jour la valeur du tab de `religion` → `friends`
-
----
-
-### 3. Creer `FriendsRankingTab.tsx`
-
-**Logique de recuperation des donnees** :
-
-1. Recuperer l'ID de l'utilisateur connecte depuis `session`
-2. Recuperer tous les amis acceptes depuis `friendships` (user_id OU friend_id)
-3. Recuperer les stats de ces amis + l'utilisateur depuis `public_user_stats`
-4. Trier par `total_points` decroissant
-5. Afficher avec mise en evidence de l'utilisateur
-
-**Requete principale** :
-- D'abord recuperer les IDs des amis depuis `friendships`
-- Puis recuperer leurs stats depuis `public_user_stats`
-- Inclure l'utilisateur actuel dans le classement
-
----
-
-### 4. Supprimer `ReligionRankingTab.tsx`
-
-Le fichier ne sera plus utilise une fois remplace.
-
----
-
-## Fichiers concernes
+## Fichiers à Créer/Modifier
 
 | Fichier | Action |
 |---------|--------|
-| `src/components/FriendsRankingTab.tsx` | Creer (nouveau) |
-| `src/components/RankingsTab.tsx` | Modifier (import + tab) |
-| `src/components/ReligionRankingTab.tsx` | Supprimer |
+| `src/pages/AdminAuditImages.tsx` | Créer - Interface d'audit des images |
+| `src/hooks/useImageAudit.ts` | Créer - Logique d'audit et correction |
+| `supabase/functions/batch-fetch-images/index.ts` | Créer - Récupération en masse Wikipedia |
+| `supabase/functions/fetch-wikipedia-image/index.ts` | Modifier - Améliorer la recherche |
+| `src/App.tsx` | Modifier - Ajouter la route admin |
+| Migration SQL | Exécuter - Migrer les lieux locaux vers BDD |
 
 ---
 
-## Details techniques
+## Avantages de Cette Approche
 
-### Structure du nouveau composant FriendsRankingTab
-
-```tsx
-// Hooks utilises
-const { session } = useApp();
-const [friends, setFriends] = useState([]);
-const [loading, setLoading] = useState(true);
-
-// Requete Supabase
-1. SELECT friend_id FROM friendships WHERE user_id = currentUser AND status = 'accepted'
-2. SELECT user_id FROM friendships WHERE friend_id = currentUser AND status = 'accepted'
-3. Combiner les IDs uniques
-4. SELECT * FROM public_user_stats WHERE id IN (friendIds + currentUserId)
-5. Trier par total_points DESC
-```
-
-### Affichage conditionnel
-
-- **Non connecte** : Message "Connectez-vous pour voir le classement de vos amis"
-- **Pas d'amis** : Message "Vous n'avez pas encore d'amis" + Bouton "Trouver des amis"
-- **Avec amis** : Liste classee avec l'utilisateur mis en surbrillance
+1. **Vérification Visuelle** : Chaque image peut être validée par un admin
+2. **Sources Fiables** : Wikipedia/Wikimedia Commons = images vérifiées et libres de droits
+3. **Maintenabilité** : URLs en BDD plutôt que fichiers locaux
+4. **Scalabilité** : Facile d'ajouter de nouveaux lieux
+5. **Traçabilité** : Historique des corrections dans la BDD
 
 ---
 
-## Comportement final
+## Estimation du Travail
 
-| Element | Description |
-|---------|-------------|
-| Onglet "Mon classement" | Inchange - vos stats personnelles |
-| Onglet "Par pays" | Inchange - classement par pays |
-| Onglet "Amis" | Nouveau - classement entre amis |
+- **Phase 1** (Interface Admin) : ~2 heures
+- **Phase 2** (Amélioration Edge Function) : ~1 heure
+- **Phase 3** (Migration des 316 lieux) : ~3 heures (semi-automatisé)
+- **Phase 4** (Vérification manuelle) : Variable selon les corrections nécessaires
 
-L'utilisateur peut :
-- Voir sa position parmi ses amis
-- Cliquer sur un ami pour voir son profil
-- Ajouter des amis s'il n'en a pas encore
+---
+
+## Note Importante
+
+Cette tâche nécessite une vérification humaine car :
+- Les API Wikipedia ne garantissent pas toujours la bonne image
+- Certains lieux ont plusieurs images possibles
+- La qualité des images varie
+
+Je recommande de procéder pays par pays pour une validation progressive plutôt qu'une correction globale risquée.
+
