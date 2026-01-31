@@ -65,14 +65,6 @@ const PlaceCategoryFilter = ({
         <span className="hidden sm:inline">Lieux sacrés</span>
       </ToggleGroupItem>
       
-      <ToggleGroupItem
-        value="museum"
-        aria-label="Musées culturels"
-        className="gap-1.5 px-3 py-2 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground rounded-md text-sm font-medium"
-      >
-        <Building2 className="w-4 h-4" />
-        <span className="hidden sm:inline">Musées</span>
-      </ToggleGroupItem>
     </ToggleGroup>
   );
 };
