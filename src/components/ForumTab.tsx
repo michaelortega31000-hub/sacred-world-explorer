@@ -11,7 +11,9 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff, Trash2 } from 'lucide-react';
+import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff, Trash2, Users, Globe, Lock } from 'lucide-react';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
@@ -66,6 +68,8 @@ interface Topic {
   created_at: string;
   views_count: number;
   posts_count: number;
+  visibility: 'private' | 'public';
+  religion: string | null;
   author?: {
     username: string;
   };
@@ -100,13 +104,15 @@ interface Report {
 
 const ForumTab = () => {
   const { t } = useTranslation();
-  const { session } = useApp();
+  const { session, userProgress } = useApp();
   const { checkRateLimit } = useRateLimit();
   const [topics, setTopics] = useState<Topic[]>([]);
+  const [forumTab, setForumTab] = useState<'friends' | 'public'>('public');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState('');
   const [newTopicDescription, setNewTopicDescription] = useState('');
+  const [newTopicVisibility, setNewTopicVisibility] = useState<'private' | 'public'>('public');
   const [newPostContent, setNewPostContent] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [reportPostId, setReportPostId] = useState<string | null>(null);
@@ -302,6 +308,7 @@ const ForumTab = () => {
         body: {
           title: validation.data.title,
           description: validation.data.description,
+          visibility: newTopicVisibility,
         },
       });
 
@@ -318,6 +325,7 @@ const ForumTab = () => {
       toast.success('Topic créé avec succès');
       setNewTopicTitle('');
       setNewTopicDescription('');
+      setNewTopicVisibility('public');
       setIsCreateDialogOpen(false);
       loadTopics();
     } catch (err) {
@@ -680,7 +688,53 @@ const ForumTab = () => {
                       onChange={(e) => setNewTopicDescription(e.target.value)}
                       rows={4}
                     />
-                    <Button onClick={createTopic} className="w-full">
+                    
+                    {/* Visibility selection */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-medium">Visibilité</Label>
+                      <RadioGroup
+                        value={newTopicVisibility}
+                        onValueChange={(v) => setNewTopicVisibility(v as 'private' | 'public')}
+                        className="flex flex-col gap-2"
+                      >
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                          <RadioGroupItem value="private" id="private" />
+                          <Label htmlFor="private" className="flex items-center gap-2 cursor-pointer flex-1">
+                            <Lock className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">Privé (Amis)</p>
+                              <p className="text-xs text-muted-foreground">Visible uniquement par vos amis</p>
+                            </div>
+                          </Label>
+                        </div>
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                          <RadioGroupItem value="public" id="public" />
+                          <Label htmlFor="public" className="flex items-center gap-2 cursor-pointer flex-1">
+                            <Globe className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">Public (Par religion)</p>
+                              <p className="text-xs text-muted-foreground">
+                                Visible par les utilisateurs de la même religion
+                                {userProgress.selectedReligion && (
+                                  <span className="ml-1 text-primary">({userProgress.selectedReligion})</span>
+                                )}
+                              </p>
+                            </div>
+                          </Label>
+                        </div>
+                      </RadioGroup>
+                      {newTopicVisibility === 'public' && !userProgress.selectedReligion && (
+                        <p className="text-xs text-destructive">
+                          ⚠️ Vous devez sélectionner une religion dans votre profil pour créer un topic public
+                        </p>
+                      )}
+                    </div>
+                    
+                    <Button 
+                      onClick={createTopic} 
+                      className="w-full"
+                      disabled={newTopicVisibility === 'public' && !userProgress.selectedReligion}
+                    >
                       Créer le topic
                     </Button>
                   </div>
@@ -688,23 +742,79 @@ const ForumTab = () => {
               </Dialog>
             </div>
 
-            {topics.length === 0 ? (
+            {/* Forum sub-tabs: Friends / By Religion */}
+            <div className="flex gap-2 border-b border-border pb-2">
+              <Button
+                variant={forumTab === 'friends' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setForumTab('friends')}
+                className="gap-2"
+              >
+                <Users className="w-4 h-4" />
+                Mes amis
+              </Button>
+              <Button
+                variant={forumTab === 'public' ? 'default' : 'ghost'}
+                size="sm"
+                onClick={() => setForumTab('public')}
+                className="gap-2"
+              >
+                <Globe className="w-4 h-4" />
+                Par religion
+                {userProgress.selectedReligion && (
+                  <Badge variant="secondary" className="ml-1 text-xs">
+                    {userProgress.selectedReligion}
+                  </Badge>
+                )}
+              </Button>
+            </div>
+
+            {/* Filtered topics display */}
+            {topics.filter(t => t.visibility === (forumTab === 'friends' ? 'private' : 'public')).length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <MessageSquare className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                  <p className="text-muted-foreground">
-                    Aucun topic pour le moment. Soyez le premier à créer une discussion !
-                  </p>
+                  {forumTab === 'friends' ? (
+                    <>
+                      <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        Aucun topic privé pour le moment. Créez une discussion visible par vos amis !
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <Globe className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        {userProgress.selectedReligion 
+                          ? `Aucun topic pour ${userProgress.selectedReligion}. Soyez le premier à créer une discussion !`
+                          : 'Sélectionnez une religion dans votre profil pour voir les topics de votre communauté.'
+                        }
+                      </p>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             ) : (
               <div className="space-y-3">
-                {topics.map((topic) => (
+                {topics
+                  .filter(t => t.visibility === (forumTab === 'friends' ? 'private' : 'public'))
+                  .map((topic) => (
                   <Card key={topic.id} className="cursor-pointer hover:bg-accent transition-colors" onClick={() => setSelectedTopic(topic)}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
                         <div className="flex-1">
-                          <CardTitle className="text-lg">{topic.title}</CardTitle>
+                          <div className="flex items-center gap-2 mb-1">
+                            <CardTitle className="text-lg">{topic.title}</CardTitle>
+                            {topic.visibility === 'private' ? (
+                              <Badge variant="outline" className="text-xs gap-1">
+                                <Lock className="w-3 h-3" />
+                                Amis
+                              </Badge>
+                            ) : topic.religion && (
+                              <Badge variant="secondary" className="text-xs">
+                                {topic.religion}
+                              </Badge>
+                            )}
+                          </div>
                           <CardDescription className="mt-1">
                             Par {topic.author?.username} • {formatDistanceToNow(new Date(topic.created_at), { addSuffix: true, locale: fr })}
                           </CardDescription>

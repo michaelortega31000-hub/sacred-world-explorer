@@ -282,9 +282,11 @@ export type Database = {
           description: string | null
           id: string
           posts_count: number
+          religion: string | null
           title: string
           updated_at: string
           views_count: number
+          visibility: string
         }
         Insert: {
           author_id: string
@@ -292,9 +294,11 @@ export type Database = {
           description?: string | null
           id?: string
           posts_count?: number
+          religion?: string | null
           title: string
           updated_at?: string
           views_count?: number
+          visibility?: string
         }
         Update: {
           author_id?: string
@@ -302,9 +306,11 @@ export type Database = {
           description?: string | null
           id?: string
           posts_count?: number
+          religion?: string | null
           title?: string
           updated_at?: string
           views_count?: number
+          visibility?: string
         }
         Relationships: [
           {
@@ -1819,6 +1825,7 @@ export type Database = {
           subscription_tier: string
         }[]
       }
+      get_user_religion: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1843,6 +1850,10 @@ export type Database = {
         }
       }
       is_admin: { Args: never; Returns: boolean }
+      is_friend_of: {
+        Args: { _author_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_user_banned: { Args: { p_user_id: string }; Returns: boolean }
       process_expired_bans: { Args: never; Returns: number }
       set_active_avatar: { Args: { p_avatar_id: string }; Returns: undefined }
