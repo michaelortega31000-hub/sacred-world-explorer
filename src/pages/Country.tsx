@@ -25,6 +25,8 @@ import { cn } from '@/lib/utils';
 import { getImageUrl } from '@/lib/imageHelper';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getImagesByCountry } from '@/lib/religionImageHelper';
+import { useAssistant } from '@/App';
+import { MessageCircle } from 'lucide-react';
 
 
 const Country = () => {
@@ -50,6 +52,7 @@ const Country = () => {
   // Use the hybrid hook to get merged places (DB + local)
   const { places, isLoading: placesLoading } = usePlacesByCountry(country);
   const { countries: allCountries, isLoading: countriesLoading } = useAllCountries();
+  const { setIsOpen: openAssistant } = useAssistant();
   
   const sortedCountries = allCountries.sort((a, b) => {
     const nameA = t(`countries.${a}`, a);
@@ -279,7 +282,17 @@ const Country = () => {
         <BackButton to="/world" />
       
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm px-4 py-3">
-        <div className="max-w-7xl mx-auto flex items-center gap-4">
+        <div className="max-w-7xl mx-auto flex items-center gap-3">
+          {/* Assistant Chat Button */}
+          <Button
+            onClick={() => openAssistant(true)}
+            size="icon"
+            className="w-12 h-12 rounded-full bg-secondary hover:bg-secondary/90 text-secondary-foreground shadow-lg"
+          >
+            <MessageCircle className="w-5 h-5" />
+          </Button>
+          
+          {/* Country Selector */}
           <Select value={country} onValueChange={handleCountryChange}>
             <SelectTrigger className="w-[200px] bg-card border-border">
               <Globe className="w-4 h-4 mr-2" />
