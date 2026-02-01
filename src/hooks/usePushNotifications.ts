@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { logger } from '@/lib/logger';
 
 const VAPID_PUBLIC_KEY = 'BDnKQA2QfHMm_M6I1p2PJQVrCTYyfjxswloaw8UZ9fsxI_AXOEoFu5cCqOJv7AxRbj_TZBy8i2EzmFQxfVj_bvc';
 
@@ -23,7 +24,7 @@ export const usePushNotifications = () => {
   const registerServiceWorker = async () => {
     try {
       const reg = await navigator.serviceWorker.register('/sw.js');
-      console.log('[Push] Service Worker registered:', reg);
+      logger.log('[Push] Service Worker registered:', reg);
       setRegistration(reg);
 
       // Check if already subscribed
@@ -77,7 +78,7 @@ export const usePushNotifications = () => {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
 
-      console.log('[Push] Subscribed:', subscription);
+      logger.log('[Push] Subscribed:', subscription);
 
       // Send subscription to backend
       const { data: { user } } = await supabase.auth.getUser();

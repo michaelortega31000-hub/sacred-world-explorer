@@ -2,6 +2,7 @@ import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { mockPlaces } from '@/data/placesData';
 import { getImageUrl } from '@/lib/imageHelper';
+import { logger } from '@/lib/logger';
 import type { Place, Religion, PlaceCategory } from '@/contexts/AppContext';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -139,7 +140,7 @@ export const usePlaces = () => {
         // Merge with local data (cast dbPlaces to our interface)
         const merged = mergePlaces((dbPlaces || []) as unknown as DBPlace[], mockPlaces);
         
-        console.log(`📍 Places merged: ${merged.length} total (${dbPlaces?.length || 0} from DB, ${mockPlaces.length} local, ${merged.length - mockPlaces.length} new from DB)`);
+        logger.log(`📍 Places merged: ${merged.length} total (${dbPlaces?.length || 0} from DB, ${mockPlaces.length} local, ${merged.length - mockPlaces.length} new from DB)`);
         
         return merged;
       } catch (err) {
