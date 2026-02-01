@@ -12,6 +12,7 @@ serve(async (req) => {
   }
 
   try {
+    const hasKey1 = Boolean(Deno.env.get('ELEVENLABS_API_KEY_1'));
     const ELEVENLABS_API_KEY = Deno.env.get('ELEVENLABS_API_KEY_1') || Deno.env.get('ELEVENLABS_API_KEY');
     if (!ELEVENLABS_API_KEY) {
       return new Response(
@@ -19,6 +20,8 @@ serve(async (req) => {
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+    // Do not log key value; only the source.
+    console.log(`[elevenlabs-tts] Using key: ${hasKey1 ? 'ELEVENLABS_API_KEY_1' : 'ELEVENLABS_API_KEY'}`);
 
     const { text, voiceId = 'FGY2WhTYpPnrIDTdsKH5', placeId } = await req.json();
 
@@ -58,6 +61,13 @@ serve(async (req) => {
       const errorText = await response.text();
       console.error('ElevenLabs API error:', response.status, errorText);
       
+      if (response.status === 401 || response.status === 403) {
+        return new Response(
+          JSON.stringify({ error: 'Accès ElevenLabs refusé (clé invalide ou compte bloqué)' }),
+          { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'Limite API atteinte. Réessayez plus tard.' }),
