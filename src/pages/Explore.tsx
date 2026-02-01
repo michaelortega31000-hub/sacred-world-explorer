@@ -15,6 +15,7 @@ import { useApp } from '@/contexts/AppContext';
 import { useAssistant } from '@/App';
 import { toast } from 'sonner';
 import { normalizeCountryName } from '@/lib/countryNameMapping';
+import { logger } from '@/lib/logger';
 
 const Explore = () => {
   const [activeTab, setActiveTab] = useState('map');
@@ -26,7 +27,7 @@ const Explore = () => {
   
   const handleCountryClick = (countryName: string) => {
     const normalizedName = normalizeCountryName(countryName);
-    console.log('🌍 Country clicked:', countryName, '→ normalized:', normalizedName);
+    logger.log('🌍 Country clicked:', countryName, '→ normalized:', normalizedName);
     toast.info(`Navigation vers ${normalizedName}...`);
     navigate(`/country/${encodeURIComponent(normalizedName)}`);
   };

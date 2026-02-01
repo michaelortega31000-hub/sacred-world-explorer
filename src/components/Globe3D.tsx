@@ -153,16 +153,16 @@ const Globe3D = ({
     // If first value looks like latitude (|first| <= 90) and second looks like longitude (|second| > 90),
     // then swap them
     if (Math.abs(first) <= 90 && Math.abs(second) > 90) {
-      console.log(`🔄 Swapping coords for ${placeId}: [${first}, ${second}] -> [${second}, ${first}]`);
+      logger.log(`🔄 Swapping coords for ${placeId}: [${first}, ${second}] -> [${second}, ${first}]`);
       [first, second] = [second, first];
     }
 
     // Validate final coordinates
     if (isNaN(first) || isNaN(second) || Math.abs(second) > 90 || Math.abs(first) > 180) {
-      console.error(`❌ Invalid coordinates for ${placeId}:`, coords, '-> After processing:', [first, second]);
+      logger.error(`❌ Invalid coordinates for ${placeId}:`, coords, '-> After processing:', [first, second]);
       return null;
     }
-    console.log(`✅ Valid coords for ${placeId}: [lng=${first}, lat=${second}]`);
+    logger.log(`✅ Valid coords for ${placeId}: [lng=${first}, lat=${second}]`);
     return [first, second]; // [lng, lat]
   };
 
@@ -217,15 +217,15 @@ const Globe3D = ({
   // Function to update trip places on map
   const updateTripPlaces = () => {
     if (!map.current || !isMapReadyRef.current) {
-      console.log('⚠️ Trip places update skipped - map not ready');
+      logger.log('⚠️ Trip places update skipped - map not ready');
       return;
     }
-    console.log('🗺️ === TRIP PLACES UPDATE START ===');
-    console.log('📍 Trip places IDs received:', tripPlaces);
-    console.log('📦 Total places in allPlacesRef:', allPlacesRef.current.length);
-    console.log('📦 Sample place IDs:', allPlacesRef.current.slice(0, 10).map(p => p.id));
+    logger.log('🗺️ === TRIP PLACES UPDATE START ===');
+    logger.log('📍 Trip places IDs received:', tripPlaces);
+    logger.log('📦 Total places in allPlacesRef:', allPlacesRef.current.length);
+    logger.log('📦 Sample place IDs:', allPlacesRef.current.slice(0, 10).map(p => p.id));
     if (!tripPlaces || tripPlaces.length === 0) {
-      console.log('⚠️ No trip places - clearing sources');
+      logger.log('⚠️ No trip places - clearing sources');
       // Clear trip data when empty
       const source = map.current.getSource('trip-places') as mapboxgl.GeoJSONSource;
       const routeSource = map.current.getSource('trip-route') as mapboxgl.GeoJSONSource;
@@ -271,10 +271,10 @@ const Globe3D = ({
       coords: [number, number];
     }[] = [];
     tripPlaces.forEach(tripPlaceId => {
-      console.log(`🔍 Looking for trip place: ${tripPlaceId}`);
+      logger.log(`🔍 Looking for trip place: ${tripPlaceId}`);
       const place = allPlacesRef.current.find(p => p.id === tripPlaceId);
       if (!place) {
-        console.warn(`❌ Trip place NOT FOUND in allPlaces: ${tripPlaceId}`);
+        logger.warn(`❌ Trip place NOT FOUND in allPlaces: ${tripPlaceId}`);
         notFound.push(tripPlaceId);
         return;
       }
@@ -312,11 +312,11 @@ const Globe3D = ({
       }
     }));
     routeCoordinates = tripFeatures.map(f => f.geometry.coordinates as [number, number]);
-    console.log('📊 Trip places processing summary:');
-    console.log(`  - Requested: ${tripPlaces.length}`);
-    console.log(`  - Found: ${tripFeatures.length}`);
-    console.log(`  - Not found: ${notFound.length}`, notFound);
-    console.log(`  - Places:`, tripFeatures.map(f => ({
+    logger.log('📊 Trip places processing summary:');
+    logger.log(`  - Requested: ${tripPlaces.length}`);
+    logger.log(`  - Found: ${tripFeatures.length}`);
+    logger.log(`  - Not found: ${notFound.length}`, notFound);
+    logger.log(`  - Places:`, tripFeatures.map(f => ({
       name: f.properties.name,
       coords: f.geometry.coordinates
     })));
@@ -324,19 +324,19 @@ const Globe3D = ({
     // Update trip places source
     const source = map.current.getSource('trip-places') as mapboxgl.GeoJSONSource;
     if (source) {
-      console.log('✅ Updating trip-places source with', tripFeatures.length, 'features');
+      logger.log('✅ Updating trip-places source with', tripFeatures.length, 'features');
       source.setData({
         type: 'FeatureCollection',
         features: tripFeatures
       });
     } else {
-      console.error('❌ trip-places source not found!');
+      logger.error('❌ trip-places source not found!');
     }
 
     // Update route line
     const routeSource = map.current.getSource('trip-route') as mapboxgl.GeoJSONSource;
     if (routeSource && routeCoordinates.length > 1) {
-      console.log('✅ Updating trip-route with', routeCoordinates.length, 'points');
+      logger.log('✅ Updating trip-route with', routeCoordinates.length, 'points');
       routeSource.setData({
         type: 'Feature',
         geometry: {
@@ -364,11 +364,11 @@ const Globe3D = ({
         tripEndMarker.current.remove();
         tripEndMarker.current = null;
       }
-      console.log(`✅ Trip source updated with ${routeCoordinates.length} points (labels rendered via symbol layer)`);
+      logger.log(`✅ Trip source updated with ${routeCoordinates.length} points (labels rendered via symbol layer)`);
     } else if (!routeSource) {
-      console.error('❌ trip-route source not found!');
+      logger.error('❌ trip-route source not found!');
     } else {
-      console.log('⚠️ Not enough coordinates for route line:', routeCoordinates.length);
+      logger.log('⚠️ Not enough coordinates for route line:', routeCoordinates.length);
       // Clear all markers if no route
       tripMarkers.current.forEach(marker => marker.remove());
       tripMarkers.current = [];
@@ -381,7 +381,7 @@ const Globe3D = ({
         tripEndMarker.current = null;
       }
     }
-    console.log('🗺️ === TRIP PLACES UPDATE COMPLETE ===\n');
+    logger.log('🗺️ === TRIP PLACES UPDATE COMPLETE ===\n');
   };
 
   // Function to animate route line drawing
@@ -446,7 +446,7 @@ const Globe3D = ({
         acc[r] = (acc[r] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
-      console.log('🗺️ Map updated:', {
+      logger.log('🗺️ Map updated:', {
         total: collection.features.length,
         filters: filters,
         byReligion,
@@ -509,7 +509,7 @@ const Globe3D = ({
         bearing: 0
       });
     } catch (error) {
-      console.error('❌ Map initialization error:', error);
+      logger.error('❌ Map initialization error:', error);
       setMapError('Échec de l\'initialisation de la carte: ' + (error as Error).message);
       setIsMapLoading(false);
       return;
@@ -547,10 +547,10 @@ const Globe3D = ({
 
       // Only show error overlay if map hasn't loaded AND error is critical
       if (isNonFatal || map.current.isStyleLoaded() || isMapReadyRef.current) {
-        console.warn('⚠️ Non-critical map error (ignored):', errorMsg);
+        logger.warn('⚠️ Non-critical map error (ignored):', errorMsg);
         return;
       }
-      console.error('❌ Critical map error:', e);
+      logger.error('❌ Critical map error:', e);
       setMapError('Échec du chargement de la carte. Vérifiez votre connexion.');
       setIsMapLoading(false);
     });
@@ -558,11 +558,11 @@ const Globe3D = ({
     // Watchdog: if style doesn't load within 5 seconds, try fallback
     const styleLoadTimeout = setTimeout(() => {
       if (!map.current || isMapReadyRef.current || map.current.isStyleLoaded()) return;
-      console.warn('⏱️ Style load timeout - attempting fallback to streets style');
+      logger.warn('⏱️ Style load timeout - attempting fallback to streets style');
       try {
         map.current.setStyle('mapbox://styles/mapbox/streets-v12');
       } catch (err) {
-        console.error('❌ Fallback style failed:', err);
+        logger.error('❌ Fallback style failed:', err);
         setMapError('Impossible de charger la carte. Vérifiez votre connexion.');
         setIsMapLoading(false);
       }
@@ -572,7 +572,7 @@ const Globe3D = ({
     map.current.on('style.load', async () => {
       clearTimeout(styleLoadTimeout);
       if (!map.current) return;
-      console.log('✅ Map style loaded successfully');
+      logger.log('✅ Map style loaded successfully');
       setIsMapLoading(false);
 
       // Add React control for MonumentFilter with responsive positioning
@@ -603,7 +603,7 @@ const Globe3D = ({
         map.current?.addControl(reactControl as any, position);
         setFilterControlContainer((reactControl as any)._container);
       } catch (e) {
-        console.warn('Failed to add filter control', e);
+        logger.warn('Failed to add filter control', e);
       }
 
       // Apply atmosphere based on user preferences
@@ -664,14 +664,14 @@ const Globe3D = ({
             } as any; // Cast to Place type
           });
           mergedPlaces = [...normalizedDb, ...uniqueLocal];
-          console.log(`📍 Globe: Merged ${mergedPlaces.length} places (${normalizedDb.length} from DB)`);
+          logger.log(`📍 Globe: Merged ${mergedPlaces.length} places (${normalizedDb.length} from DB)`);
         }
       } catch (err) {
-        console.warn('Failed to fetch DB places for globe:', err);
+        logger.warn('Failed to fetch DB places for globe:', err);
       }
       allPlacesRef.current = mergedPlaces;
-      console.log('📦 Loaded places:', mergedPlaces.length);
-      console.log('📦 Sample places:', mergedPlaces.slice(0, 5).map(p => ({
+      logger.log('📦 Loaded places:', mergedPlaces.length);
+      logger.log('📦 Sample places:', mergedPlaces.slice(0, 5).map(p => ({
         id: p.id,
         name: p.name,
         coords: p.coordinates,
@@ -680,10 +680,10 @@ const Globe3D = ({
 
       // Search for trip place IDs specifically
       if (tripPlaces && tripPlaces.length > 0) {
-        console.log('🔍 Searching for trip places in loaded data:');
+        logger.log('🔍 Searching for trip places in loaded data:');
         tripPlaces.forEach(id => {
           const found = mergedPlaces.find(p => p.id === id);
-          console.log(`  ${id}:`, found ? `✅ ${found.name}` : '❌ NOT FOUND');
+          logger.log(`  ${id}:`, found ? `✅ ${found.name}` : '❌ NOT FOUND');
         });
       }
 
@@ -1031,7 +1031,7 @@ const Globe3D = ({
         if (countryName) {
           // Trigger sparkle effect at click position
           triggerSparkle(e.point.x, e.point.y);
-          console.log('🌍 Country clicked (fill layer):', {
+          logger.log('🌍 Country clicked (fill layer):', {
             name: feature.properties?.name,
             name_en: feature.properties?.name_en,
             iso_3166_1: feature.properties?.iso_3166_1,
@@ -1039,7 +1039,7 @@ const Globe3D = ({
           });
           onCountryClick(countryName);
         } else {
-          console.warn('⚠️ Country feature found but no name property:', feature.properties);
+          logger.warn('⚠️ Country feature found but no name property:', feature.properties);
         }
       });
       isMapReadyRef.current = true;
@@ -1095,7 +1095,7 @@ const Globe3D = ({
 
   // Update data when filters, categoryFilter, or showMonuments change
   useEffect(() => {
-    console.log('🔄 Effect triggered - isMapReady:', isMapReadyRef.current, 'tripPlaces:', tripPlaces, 'categoryFilter:', categoryFilter);
+    logger.log('🔄 Effect triggered - isMapReady:', isMapReadyRef.current, 'tripPlaces:', tripPlaces, 'categoryFilter:', categoryFilter);
     if (isMapReadyRef.current) {
       updateMapData();
       updateTripPlaces();
@@ -1294,7 +1294,7 @@ const Globe3D = ({
     // We save the current style key in a data attribute to track
     const currentStyleKey = (map.current as any)._currentStyleKey;
     if (currentStyleKey !== globeSettings.mapStyle) {
-      console.log('🎨 Changing map style to:', globeSettings.mapStyle);
+      logger.log('🎨 Changing map style to:', globeSettings.mapStyle);
       (map.current as any)._currentStyleKey = globeSettings.mapStyle;
       
       // We need to preserve layers/sources, so we listen for style.load
@@ -1498,7 +1498,7 @@ const Globe3D = ({
           // Reset error state and try reloading the style
           setMapError(null);
           setIsMapLoading(true);
-          console.log('🔄 Attempting to reload map style...');
+          logger.log('🔄 Attempting to reload map style...');
           try {
             // First try satellite-streets again
             map.current.setStyle('mapbox://styles/mapbox/satellite-streets-v12');
@@ -1507,7 +1507,7 @@ const Globe3D = ({
             // and we can fallback to streets
             const fallbackTimeout = setTimeout(() => {
               if (map.current && !map.current.isStyleLoaded()) {
-                console.log('🔄 Satellite style failed, trying streets fallback...');
+                logger.log('🔄 Satellite style failed, trying streets fallback...');
                 map.current.setStyle('mapbox://styles/mapbox/streets-v12');
               }
             }, 3000);
@@ -1519,7 +1519,7 @@ const Globe3D = ({
             };
             map.current.once('style.load', cleanup);
           } catch (err) {
-            console.error('❌ Style reload failed:', err);
+            logger.error('❌ Style reload failed:', err);
             setMapError('Échec du rechargement. Veuillez réessayer.');
             setIsMapLoading(false);
           }
