@@ -13,6 +13,11 @@ export default defineConfig(({ mode }) => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      // Force a single React instance (fixes "Invalid hook call" in some Vite/iframe preview setups)
+      react: path.resolve(__dirname, "node_modules/react"),
+      "react-dom": path.resolve(__dirname, "node_modules/react-dom"),
+      "react-dom/client": path.resolve(__dirname, "node_modules/react-dom/client"),
+      scheduler: path.resolve(__dirname, "node_modules/scheduler"),
     },
     dedupe: [
       "react",
@@ -30,15 +35,11 @@ export default defineConfig(({ mode }) => ({
     include: [
       "react",
       "react-dom",
+      "react-dom/client",
       "react/jsx-runtime",
-      "react/jsx-dev-runtime"
+      "react/jsx-dev-runtime",
+      "scheduler"
     ],
-    exclude: [],
     force: true,
-    esbuildOptions: {
-      define: {
-        global: 'globalThis'
-      }
-    }
   },
 }));
