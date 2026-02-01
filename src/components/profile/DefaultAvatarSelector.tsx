@@ -131,7 +131,7 @@ export const DefaultAvatarSelector = ({
     spiritual: 'Spirituels',
     nature: 'Nature',
     modern: 'Modernes',
-    abstract: 'Abstraits',
+    museum: 'Musées',
     general: 'Général',
     legendary: 'Légendaires',
     epic: 'Épiques',
