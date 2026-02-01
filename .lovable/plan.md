@@ -1,235 +1,209 @@
 
+# Plan : Corriger l'audioguide sur la page Country
 
-# Plan : Implémenter l'Audioguide avec ElevenLabs TTS
+## Problème Identifié
 
-## Résumé
+L'audioguide fonctionne sur la page **PlaceDetail.tsx** (route `/place/:placeId`), mais **pas sur la page Country.tsx** (route `/country/:countryName`) où un modal de détail de lieu affiche aussi une section audioguide.
 
-Quand l'utilisateur clique sur "Écouter" dans la section Audio-guide d'un lieu sacré, le texte de la section "À savoir" (description du lieu) sera converti en audio via l'API ElevenLabs et lu à haute voix.
-
----
-
-## Architecture Technique
-
-```text
-┌─────────────────────────────────────────────────────────────┐
-│                    PlaceDetail.tsx                         │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │ "À savoir"                                            │ │
-│  │ Chef-d'œuvre de l'architecture gothique française...  │ │
-│  └───────────────────────────────────────────────────────┘ │
-│                           │                                 │
-│                           ▼                                 │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │ 🎧 Audio-guide           [▶ Écouter] [⬇ Télécharger]  │ │
-│  │ ████████░░░░░░░░░░░░░░░░░░░  35%  1:12 / 2:05         │ │
-│  └───────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼ POST { text, voiceId }
-┌─────────────────────────────────────────────────────────────┐
-│           Edge Function: elevenlabs-tts                     │
-│  ┌───────────────────────────────────────────────────────┐ │
-│  │ 1. Authentifie l'utilisateur                          │ │
-│  │ 2. Vérifie le rate limit (50 requêtes/jour)           │ │
-│  │ 3. Appelle ElevenLabs API                             │ │
-│  │ 4. Retourne le blob audio MP3                         │ │
-│  └───────────────────────────────────────────────────────┘ │
-└─────────────────────────────────────────────────────────────┘
-                           │
-                           ▼ audio/mpeg blob
-┌─────────────────────────────────────────────────────────────┐
-│                   Navigateur                                │
-│  new Audio(URL.createObjectURL(blob)).play()               │
-└─────────────────────────────────────────────────────────────┘
-```
-
----
-
-## Fichiers à Créer/Modifier
-
-| Fichier | Action | Description |
-|---------|--------|-------------|
-| `supabase/functions/elevenlabs-tts/index.ts` | Créer | Edge function pour convertir texte → audio |
-| `src/hooks/useAudioGuide.ts` | Créer | Hook React pour gérer la lecture audio |
-| `src/pages/PlaceDetail.tsx` | Modifier | Intégrer le hook et améliorer le lecteur |
-
----
-
-## Partie 1 : Edge Function ElevenLabs TTS
-
-### Fichier : `supabase/functions/elevenlabs-tts/index.ts`
-
-Cette function serveur protège la clé API et gère :
-- Authentification utilisateur
-- Rate limiting (50 requêtes/jour par utilisateur)
-- Appel à l'API ElevenLabs
-- Retour du blob audio MP3
-
-**Paramètres :**
-- `text` : Le texte à convertir (description du lieu)
-- `voiceId` : ID de la voix ElevenLabs (défaut : voix française "Laura")
-
-**Voix recommandée :** `FGY2WhTYpPnrIDTdsKH5` (Laura) - voix féminine française naturelle
-
----
-
-## Partie 2 : Hook useAudioGuide
-
-### Fichier : `src/hooks/useAudioGuide.ts`
-
-Hook personnalisé pour gérer l'état complet du lecteur audio :
-
+**Code actuel (Country.tsx, lignes 258-264) :**
 ```typescript
-interface AudioGuideState {
-  isLoading: boolean;      // Chargement en cours
-  isPlaying: boolean;      // Lecture en cours
-  isPaused: boolean;       // En pause
-  progress: number;        // Progression (0-100)
-  currentTime: number;     // Temps actuel (secondes)
-  duration: number;        // Durée totale (secondes)
-  error: string | null;    // Message d'erreur
-}
-
-interface UseAudioGuideReturn {
-  state: AudioGuideState;
-  play: (text: string) => Promise<void>;
-  pause: () => void;
-  resume: () => void;
-  stop: () => void;
-  seek: (time: number) => void;
-  download: () => void;
-}
-```
-
-**Fonctionnalités :**
-- Génère l'audio via l'edge function
-- Met en cache l'audio généré (évite les appels répétés)
-- Gère play/pause/stop/seek
-- Affiche progression et temps restant
-- Permet le téléchargement du fichier MP3
-
----
-
-## Partie 3 : Amélioration du Lecteur Audio
-
-### Modifications dans `PlaceDetail.tsx`
-
-**Avant :**
-```tsx
 const handleAudioToggle = () => {
   setIsAudioPlaying(!isAudioPlaying);
-  // TODO: Implémenter avec ElevenLabs
-  toast({ title: "Fonctionnalité audio à venir" });
+  toastHook({
+    title: isAudioPlaying ? "Audio en pause" : "Lecture audio",
+    description: "Fonctionnalité audio à venir", // ← Ce toast !
+  });
 };
 ```
 
-**Après :**
-```tsx
-const audioGuide = useAudioGuide();
+Ce code affiche le toast "Fonctionnalité audio à venir" au lieu d'utiliser le hook `useAudioGuide`.
 
+---
+
+## Solution
+
+Intégrer le hook `useAudioGuide` dans Country.tsx de la même manière que dans PlaceDetail.tsx.
+
+---
+
+## Modifications dans `src/pages/Country.tsx`
+
+### 1. Ajouter l'import du hook
+
+```typescript
+// Ligne 1-30 (section imports)
+import { useAudioGuide } from '@/hooks/useAudioGuide';
+```
+
+### 2. Initialiser le hook
+
+```typescript
+// Après les autres hooks (ligne ~45)
+const audioGuide = useAudioGuide();
+```
+
+### 3. Supprimer l'état local inutile
+
+```typescript
+// Supprimer cette ligne (ligne 43)
+const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+```
+
+### 4. Remplacer la fonction handleAudioToggle
+
+```typescript
 const handleAudioToggle = () => {
+  if (!selectedPlace?.description) {
+    toastHook({
+      title: "Aucun contenu audio",
+      description: "Ce lieu n'a pas de description disponible",
+      variant: "destructive"
+    });
+    return;
+  }
+
   if (audioGuide.state.isPlaying) {
     audioGuide.pause();
   } else if (audioGuide.state.isPaused) {
     audioGuide.resume();
   } else {
-    audioGuide.play(place.description);
+    audioGuide.play(selectedPlace.description, selectedPlace.id);
   }
 };
 ```
 
-### Interface Utilisateur Améliorée
+### 5. Ajouter les fonctions utilitaires
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│  🎧 Audio-guide                                             │
-│                                                             │
-│  Écoutez l'histoire fascinante de ce lieu                   │
-│                                                             │
-│  ┌─────────────────────────────────────────────────────────┐│
-│  │ ████████████░░░░░░░░░░░░░░░░░░░░░░░  35%               ││
-│  └─────────────────────────────────────────────────────────┘│
-│  1:12                                              2:05     │
-│                                                             │
-│  [⏸ Pause]  [⬇ Télécharger]  [🔊 Volume]                  │
-│                                                             │
-│  Voix : Laura (FR)                                          │
-└─────────────────────────────────────────────────────────────┘
+```typescript
+const formatTime = (seconds: number): string => {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+  if (!audioGuide.state.duration) return;
+  const rect = e.currentTarget.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const percentage = x / rect.width;
+  const time = percentage * audioGuide.state.duration;
+  audioGuide.seek(time);
+};
 ```
 
-**Éléments UI :**
-1. **Barre de progression** cliquable (seek)
-2. **Affichage temps** : temps écoulé / durée totale
-3. **Bouton dynamique** : ▶ Écouter / ⏸ Pause / ▶ Reprendre
-4. **Bouton télécharger** : Sauvegarde le MP3 localement
-5. **État de chargement** : Spinner pendant la génération
+### 6. Mettre à jour l'interface du lecteur audio (lignes 700-740)
+
+**Avant :**
+```jsx
+<div className="flex items-center gap-4">
+  <Button onClick={handleAudioToggle} variant="outline" size="lg" className="gap-2">
+    {isAudioPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
+    {isAudioPlaying ? 'Pause' : 'Écouter'}
+  </Button>
+  <Button variant="ghost" size="lg" className="gap-2">
+    <Download className="w-5 h-5" />
+    Télécharger
+  </Button>
+</div>
+{isAudioPlaying && (
+  <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
+    <div className="h-full bg-primary animate-pulse w-1/3" />
+  </div>
+)}
+```
+
+**Après :**
+```jsx
+<div className="flex items-center gap-4">
+  <Button
+    onClick={handleAudioToggle}
+    variant="outline"
+    size="lg"
+    className="gap-2"
+    disabled={audioGuide.state.isLoading}
+  >
+    {audioGuide.state.isLoading ? (
+      <>
+        <Loader2 className="w-5 h-5 animate-spin" />
+        Chargement...
+      </>
+    ) : audioGuide.state.isPlaying ? (
+      <>
+        <Pause className="w-5 h-5" />
+        Pause
+      </>
+    ) : audioGuide.state.isPaused ? (
+      <>
+        <Play className="w-5 h-5" />
+        Reprendre
+      </>
+    ) : (
+      <>
+        <Play className="w-5 h-5" />
+        Écouter
+      </>
+    )}
+  </Button>
+  <Button
+    variant="ghost"
+    size="lg"
+    className="gap-2"
+    onClick={() => selectedPlace && audioGuide.download(selectedPlace.name)}
+    disabled={!audioGuide.state.duration}
+  >
+    <Download className="w-5 h-5" />
+    Télécharger
+  </Button>
+</div>
+
+{/* Barre de progression */}
+{(audioGuide.state.isPlaying || audioGuide.state.isPaused || audioGuide.state.progress > 0) && (
+  <div className="space-y-2">
+    <div 
+      className="w-full h-2 bg-muted rounded-full overflow-hidden cursor-pointer"
+      onClick={handleProgressClick}
+    >
+      <div 
+        className="h-full bg-primary transition-all duration-300" 
+        style={{ width: `${audioGuide.state.progress}%` }}
+      />
+    </div>
+    <div className="flex justify-between text-xs text-muted-foreground">
+      <span>{formatTime(audioGuide.state.currentTime)}</span>
+      <span>{formatTime(audioGuide.state.duration)}</span>
+    </div>
+  </div>
+)}
+```
+
+### 7. Arrêter l'audio quand le modal se ferme
+
+Ajouter un useEffect pour nettoyer l'audio :
+
+```typescript
+// Stopper l'audio quand on ferme le modal
+useEffect(() => {
+  if (!selectedPlace) {
+    audioGuide.stop();
+  }
+}, [selectedPlace]);
+```
 
 ---
 
-## Partie 4 : Secret API ElevenLabs
+## Fichiers Modifiés
 
-Une clé API ElevenLabs sera nécessaire pour faire fonctionner l'audioguide.
-
-**Variable d'environnement :** `ELEVENLABS_API_KEY`
-
-L'utilisateur devra :
-1. Créer un compte sur elevenlabs.io
-2. Obtenir une clé API depuis le dashboard
-3. La configurer dans les secrets du projet
-
----
-
-## Gestion des Erreurs
-
-| Scénario | Comportement |
-|----------|--------------|
-| Pas connecté | Toast "Connexion requise" |
-| Rate limit atteint | Toast "Limite de 50 écoutes/jour atteinte" |
-| Clé API manquante | Toast "Service audio non disponible" |
-| Erreur réseau | Toast avec option de réessayer |
-| Texte trop long (>5000 car) | Découpage automatique en segments |
-
----
-
-## Mise en Cache
-
-Pour éviter les appels API répétés :
-
-1. **Cache mémoire** : L'audio généré est stocké en mémoire pendant la session
-2. **Clé de cache** : `placeId` (un audio par lieu)
-3. **Comportement** : Si l'audio existe déjà, lecture directe sans appel API
-
----
-
-## Estimation des Coûts
-
-| Élément | Valeur |
-|---------|--------|
-| Longueur moyenne description | ~150 mots (~800 caractères) |
-| Durée audio estimée | ~1-2 minutes |
-| Coût ElevenLabs | ~$0.0003 par caractère (Starter) |
-| Coût par lieu | ~$0.24 |
-| 316 lieux (si tous écoutés) | ~$76 total |
-
-**Optimisation :** Le rate limit de 50/jour par utilisateur limite naturellement les coûts.
-
----
-
-## Prérequis
-
-Avant de commencer l'implémentation, il faudra :
-
-1. **Configurer le secret ElevenLabs** : Une clé API ElevenLabs devra être ajoutée au projet
-2. **Choisir une voix** : Laura (FR) recommandée, mais d'autres voix françaises sont disponibles
+| Fichier | Modifications |
+|---------|--------------|
+| `src/pages/Country.tsx` | Import du hook, remplacement de la logique audio, UI améliorée |
 
 ---
 
 ## Résultat Attendu
 
-Après cette implémentation :
-- L'utilisateur clique sur "Écouter" sur n'importe quel lieu
-- Le texte "À savoir" est converti en audio naturel
-- Un lecteur audio complet s'affiche avec progression
-- L'audio peut être mis en pause, repris, ou téléchargé
-- Fonctionne pour les 316 lieux de l'application
-
+Après cette correction :
+- Le bouton "Écouter" sur le modal de détail de lieu (page Country) génèrera l'audio via ElevenLabs
+- L'état de chargement sera affiché pendant la génération
+- La barre de progression sera cliquable pour naviguer dans l'audio
+- Le téléchargement fonctionnera correctement
+- L'audio s'arrêtera automatiquement quand le modal se ferme
