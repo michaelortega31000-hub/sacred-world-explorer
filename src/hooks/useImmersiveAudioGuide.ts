@@ -1,6 +1,6 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { Religion } from '@/contexts/AppContext';
+import type { Religion } from '@/contexts/AppContext';
 
 interface AudioGuideState {
   isLoading: boolean;
