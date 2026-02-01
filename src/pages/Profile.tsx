@@ -281,11 +281,7 @@ const Profile = () => {
         title: 'Photo de profil mise à jour',
         description: 'Votre photo de profil a été mise à jour avec succès',
       });
-
-      // Refresh avatar to ensure UI is up to date
-      if (userId) {
-        await fetchAvatar(userId);
-      }
+      // Note: No fetchAvatar() call here - the state is already updated locally with cache buster
     } catch (error) {
       logger.error('Error uploading avatar:', error);
       toast({
