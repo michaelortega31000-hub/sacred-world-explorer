@@ -8,7 +8,7 @@ interface SavedPOI {
   id: string;
   name: string;
   address: string;
-  type: 'restaurant' | 'lodging' | 'fuel' | 'transport';
+  type: 'restaurant' | 'lodging' | 'transport';
   coordinates: [number, number];
   placeId: string;
 }

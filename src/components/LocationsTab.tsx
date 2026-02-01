@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Fuel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -42,7 +42,7 @@ interface RouteSegment {
 interface POI {
   id: string;
   name: string;
-  type: 'restaurant' | 'lodging' | 'fuel' | 'transport';
+  type: 'restaurant' | 'lodging' | 'transport';
   address: string;
   coordinates: [number, number];
   segmentIndex: number; // index of the place this POI is near
@@ -79,7 +79,7 @@ const LocationsTab = () => {
   const [loadingRouteInfo, setLoadingRouteInfo] = useState(false);
   const [pois, setPois] = useState<POI[]>([]);
   const [loadingPOIs, setLoadingPOIs] = useState(false);
-  const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'fuel' | 'transport'>>(new Set(['restaurant', 'lodging', 'fuel', 'transport']));
+  const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'transport'>>(new Set(['restaurant', 'lodging', 'transport']));
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   const [transportMode, setTransportMode] = useState<'driving' | 'cycling' | 'walking'>('driving');
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
@@ -93,7 +93,7 @@ const LocationsTab = () => {
   const setShowOptimizedRoute = (show: boolean) => {
     updatePlannedRoute(userProgress.plannedRouteStartCity, show);
   };
-  const togglePOIType = (type: 'restaurant' | 'lodging' | 'fuel' | 'transport') => {
+  const togglePOIType = (type: 'restaurant' | 'lodging' | 'transport') => {
     setSelectedPOITypes(prev => {
       const newSet = new Set(prev);
       if (newSet.has(type)) {
@@ -1148,9 +1148,9 @@ const LocationsTab = () => {
                                              </div>
                                              {getPOIsForPlace(place.id).map(poi => <div key={poi.id} className="flex items-start justify-between gap-2 p-2 bg-background rounded text-sm">
                                                  <div className="flex items-start gap-2 flex-1">
-                                                   {poi.type === 'restaurant' && <Utensils className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />}
-                                                   {poi.type === 'lodging' && <Hotel className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />}
-                                                   {poi.type === 'fuel' && <Fuel className="w-4 h-4 text-accent flex-shrink-0 mt-0.5" />}
+                                                    {poi.type === 'restaurant' && <Utensils className="w-4 h-4 text-primary flex-shrink-0 mt-0.5" />}
+                                                    {poi.type === 'lodging' && <Hotel className="w-4 h-4 text-secondary flex-shrink-0 mt-0.5" />}
+                                                    {poi.type === 'transport' && <Train className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />}
                                                    <div className="flex-1">
                                                      <div className="font-medium">{poi.name}</div>
                                                      <div className="text-xs text-muted-foreground line-clamp-1">{poi.address}</div>
@@ -1251,13 +1251,6 @@ const LocationsTab = () => {
                                     </Label>
                                   </div>
                                   <div className="flex items-center gap-2">
-                                    <Checkbox id="filter-fuel" checked={selectedPOITypes.has('fuel')} onCheckedChange={() => togglePOIType('fuel')} />
-                                    <Label htmlFor="filter-fuel" className="text-sm font-normal cursor-pointer flex items-center gap-1">
-                                      <Fuel className="w-4 h-4 text-accent" />
-                                      Stations-service
-                                    </Label>
-                                  </div>
-                                  <div className="flex items-center gap-2">
                                     <Checkbox id="filter-transport" checked={selectedPOITypes.has('transport')} onCheckedChange={() => togglePOIType('transport')} />
                                     <Label htmlFor="filter-transport" className="text-sm font-normal cursor-pointer flex items-center gap-1">
                                       <Train className="w-4 h-4 text-blue-500" />
@@ -1330,28 +1323,6 @@ const LocationsTab = () => {
                                                           </Badge>
                                                         )}
                                                       </div>
-                                                    </div>
-                                                    <Button size="sm" variant={saved ? "secondary" : "ghost"} className="h-6 w-6 p-0 flex-shrink-0" onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}>
-                                                      {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
-                                                    </Button>
-                                                  </div>;
-                              })}
-                                            </div>
-                                          </div>}
-                                        
-                                        {/* Stations-service */}
-                                        {placePOIs.filter(p => p.type === 'fuel').length > 0 && <div>
-                                            <div className="flex items-center gap-2 text-sm font-medium mb-2 text-accent">
-                                              <Fuel className="w-4 h-4" />
-                                              Stations-service
-                                            </div>
-                                            <div className="space-y-2 ml-6">
-                                              {placePOIs.filter(p => p.type === 'fuel').map(poi => {
-                                const saved = isPOISaved(poi.id);
-                                return <div key={poi.id} className="flex items-start justify-between gap-2 text-sm bg-muted/30 p-2 rounded">
-                                                    <div>
-                                                      <div className="font-medium">{poi.name}</div>
-                                                      <div className="text-xs text-muted-foreground">{poi.address}</div>
                                                     </div>
                                                     <Button size="sm" variant={saved ? "secondary" : "ghost"} className="h-6 w-6 p-0 flex-shrink-0" onClick={() => saved ? removePOI(poi.id) : handleSavePOI(poi, place.id)}>
                                                       {saved ? <X className="w-3 h-3" /> : <Plus className="w-3 h-3" />}

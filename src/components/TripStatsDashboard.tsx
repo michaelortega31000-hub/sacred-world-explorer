@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend, LineChart, Line } from 'recharts';
-import { MapPin, Clock, Route, TrendingUp, Utensils, Hotel, Fuel } from 'lucide-react';
+import { MapPin, Clock, Route, TrendingUp, Utensils, Hotel, Train } from 'lucide-react';
 import type { Place, SavedPOI } from '@/contexts/AppContext';
 
 interface RouteSegment {
@@ -18,7 +18,7 @@ interface TripStatsDashboardProps {
 const COLORS = {
   restaurant: 'hsl(var(--primary))',
   lodging: 'hsl(var(--secondary))',
-  fuel: 'hsl(var(--accent))',
+  transport: 'hsl(var(--accent))',
 };
 
 const TripStatsDashboard = ({ places, segments, savedPOIs, transportMode }: TripStatsDashboardProps) => {
@@ -41,14 +41,14 @@ const TripStatsDashboard = ({ places, segments, savedPOIs, transportMode }: Trip
   const poiCounts = {
     restaurant: savedPOIs.filter(p => p.type === 'restaurant').length,
     lodging: savedPOIs.filter(p => p.type === 'lodging').length,
-    fuel: savedPOIs.filter(p => p.type === 'fuel').length,
+    transport: savedPOIs.filter(p => p.type === 'transport').length,
   };
 
   // Data for POI distribution pie chart
   const poiDistributionData = [
     { name: 'Restaurants', value: poiCounts.restaurant, icon: '🍴' },
     { name: 'Hébergements', value: poiCounts.lodging, icon: '🏨' },
-    { name: 'Stations-service', value: poiCounts.fuel, icon: '⛽' },
+    { name: 'Transports', value: poiCounts.transport, icon: '🚆' },
   ].filter(item => item.value > 0);
 
   // Data for segment distances chart
@@ -214,7 +214,7 @@ const TripStatsDashboard = ({ places, segments, savedPOIs, transportMode }: Trip
                         key={`cell-${index}`} 
                         fill={entry.name.includes('Restaurant') ? COLORS.restaurant : 
                               entry.name.includes('Hébergement') ? COLORS.lodging : 
-                              COLORS.fuel} 
+                              COLORS.transport} 
                       />
                     ))}
                   </Pie>
@@ -234,10 +234,10 @@ const TripStatsDashboard = ({ places, segments, savedPOIs, transportMode }: Trip
                     <span className="text-sm">{poiCounts.lodging}</span>
                   </div>
                 )}
-                {poiCounts.fuel > 0 && (
+                {poiCounts.transport > 0 && (
                   <div className="flex items-center gap-2">
-                    <Fuel className="w-4 h-4 text-accent" />
-                    <span className="text-sm">{poiCounts.fuel}</span>
+                    <Train className="w-4 h-4 text-accent" />
+                    <span className="text-sm">{poiCounts.transport}</span>
                   </div>
                 )}
               </div>
