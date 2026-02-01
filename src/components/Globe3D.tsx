@@ -866,7 +866,7 @@ const Globe3D = ({
         type: 'circle',
         source: 'trip-places',
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['get', 'points'], 0, 12, 50, 16, 100, 20, 150, 24],
+          'circle-radius': ['interpolate', ['linear'], ['get', 'points'], 0, 6, 50, 8, 100, 10, 150, 12],
           'circle-color': '#F4C542',
           'circle-opacity': 0.3,
           'circle-blur': 0.8
@@ -879,10 +879,10 @@ const Globe3D = ({
         type: 'circle',
         source: 'trip-places',
         paint: {
-          'circle-radius': ['interpolate', ['linear'], ['get', 'points'], 0, 8, 50, 10, 100, 12, 150, 14],
+          'circle-radius': ['interpolate', ['linear'], ['get', 'points'], 0, 4, 50, 5, 100, 6, 150, 7],
           'circle-color': ['case', ['to-boolean', ['get', 'isStart']], 'hsl(142, 76%, 45%)', ['to-boolean', ['get', 'isEnd']], 'hsl(0, 84%, 60%)', '#F4C542'],
           'circle-stroke-color': '#FFFFFF',
-          'circle-stroke-width': 3,
+          'circle-stroke-width': 1.5,
           'circle-opacity': 1,
           'circle-stroke-opacity': 1
         }
