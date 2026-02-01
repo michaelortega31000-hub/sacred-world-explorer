@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, Clock, Utensils, Loader2, Building2, Church } from 'lucide-react';
+import { MapPin, Trophy, Flag, Users, Target, CheckCircle2, Book, Plus, Calendar, Globe, Camera, Share2, Play, Pause, Download, Info, Sparkles, Clock, Utensils, Loader2, Building2, Church, Hotel, Bus } from 'lucide-react';
 import { useApp, Place } from '@/contexts/AppContext';
 import { usePlacesByCountry, useAllCountries } from '@/hooks/usePlaces';
 import RankingTab from '@/components/RankingTab';
@@ -692,6 +692,58 @@ const Country = () => {
                         <Clock className="w-4 h-4" />
                         <span>Temps moyen de visite : 1h30</span>
                       </p>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Services à proximité */}
+                <Card className="border border-border/50 bg-gradient-to-br from-card to-card/80">
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-primary" />
+                      Services à proximité
+                    </CardTitle>
+                    <CardDescription>
+                      Trouvez restaurants, hôtels et transports près de ce lieu
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-3 gap-3">
+                      <Button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          navigate(`/country/${country}?tab=restaurants&lat=${selectedPlace.coordinates[1]}&lng=${selectedPlace.coordinates[0]}`);
+                        }}
+                        variant="outline"
+                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-primary/10 hover:border-primary/50"
+                      >
+                        <Utensils className="w-6 h-6 text-amber-500" />
+                        <span className="text-xs font-medium">Restaurants</span>
+                      </Button>
+                      
+                      <Button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          navigate(`/place/${selectedPlace.id}?scrollTo=services`);
+                        }}
+                        variant="outline"
+                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-primary/10 hover:border-primary/50"
+                      >
+                        <Hotel className="w-6 h-6 text-blue-500" />
+                        <span className="text-xs font-medium">Hôtels</span>
+                      </Button>
+                      
+                      <Button
+                        onClick={() => {
+                          setSelectedPlace(null);
+                          navigate(`/place/${selectedPlace.id}?scrollTo=services`);
+                        }}
+                        variant="outline"
+                        className="flex flex-col items-center gap-2 h-auto py-4 hover:bg-primary/10 hover:border-primary/50"
+                      >
+                        <Bus className="w-6 h-6 text-green-500" />
+                        <span className="text-xs font-medium">Transports</span>
+                      </Button>
                     </div>
                   </CardContent>
                 </Card>
