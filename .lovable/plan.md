@@ -1,99 +1,105 @@
 
-# Plan : Mise à jour des avatars par défaut
 
-## Problème identifié
+# Plan : Enrichir et améliorer la galerie d'avatars
 
-Les avatars actuels ne correspondent pas à leurs catégories :
+## Résumé des demandes
 
-| Catégorie | Style actuel | Problème |
-|-----------|--------------|----------|
-| Spirituels | `bottts` (robots) | Des robots pour la spiritualité ! |
-| Nature | `thumbs` (pouces) | Aucun rapport avec la nature |
-| Modernes | `lorelei` | Pas vraiment "moderne" |
-| Abstraits | `shapes` | Correct |
-
-## Solution proposée
-
-Utiliser des styles DiceBear plus appropriés et des emojis/symboles cohérents avec le thème de SacredWorld :
-
-### Catégorie "Spirituels" (3 avatars)
-Utiliser le style `identicon` ou `initials` avec des couleurs apaisantes, ou mieux : des emojis spirituels via OpenMoji :
-
-| Avatar | Nouveau style | Description |
-|--------|---------------|-------------|
-| Spirituel 1 | 🕉️ Om | Symbole hindou/bouddhiste |
-| Spirituel 2 | ☯️ Yin-Yang | Harmonie et équilibre |
-| Spirituel 3 | 🪷 Lotus | Fleur sacrée |
-
-**URLs suggérées (OpenMoji SVG) :**
-- `https://openmoji.org/data/color/svg/1F549.svg` (Om)
-- `https://openmoji.org/data/color/svg/262F.svg` (Yin-Yang)
-- `https://openmoji.org/data/color/svg/1FAB7.svg` (Lotus)
-
-### Catégorie "Nature" (2 avatars)
-| Avatar | Nouveau style | Description |
-|--------|---------------|-------------|
-| Nature 1 | 🌳 Arbre | Symbole de vie |
-| Nature 2 | 🌸 Fleur | Nature en floraison |
-
-**URLs suggérées :**
-- `https://openmoji.org/data/color/svg/1F333.svg` (Arbre)
-- `https://openmoji.org/data/color/svg/1F338.svg` (Fleur de cerisier)
-
-### Catégorie "Modernes" (2 avatars)
-| Avatar | Nouveau style | Description |
-|--------|---------------|-------------|
-| Moderne 1 | 🌐 Globe | Exploration mondiale |
-| Moderne 2 | ✨ Étoiles | Découverte |
-
-**URLs suggérées :**
-- `https://openmoji.org/data/color/svg/1F310.svg` (Globe)
-- `https://openmoji.org/data/color/svg/2728.svg` (Étoiles scintillantes)
-
-### Catégorie "Abstraits" (2 avatars)
-Garder les formes géométriques mais avec des seeds plus élégants.
+| Action | Détail |
+|--------|--------|
+| **Spirituels** | Ajouter croix latine ✝️, Main de Fatma (Hamsa) 🪬, Étoile de David ✡️, Croissant ☪️ |
+| **Nature** | Ajouter plus de fleurs, arbres, feuilles 🌿🌺🌻 |
+| **Moderne** | Ajouter boussole 🧭, fusée 🚀, diamant 💎 |
+| **Statues/Musées** | Nouvelle catégorie avec statues 🗿, colonnes 🏛️, amphore 🏺 |
+| **Abstraits** | **Supprimer** cette catégorie |
 
 ---
 
-## Modification en base de données
+## Nouveaux avatars à ajouter
 
-Migration SQL pour mettre à jour les URLs des avatars existants :
+### Catégorie "Spirituels" (4 nouveaux)
 
-```sql
-UPDATE default_avatars SET avatar_url = 'https://openmoji.org/data/color/svg/1F549.svg', name = 'Om' WHERE id = '3c728cb5-8b8b-4693-ab0a-6fbd7fbfeaf4';
-UPDATE default_avatars SET avatar_url = 'https://openmoji.org/data/color/svg/262F.svg', name = 'Yin-Yang' WHERE id = 'c444e437-065c-4ce4-9968-393c08ebfaae';
--- etc.
+| Emoji | Nom | Code OpenMoji | URL |
+|-------|-----|---------------|-----|
+| ✝️ | Croix Latine | 271D | `https://openmoji.org/data/color/svg/271D.svg` |
+| 🪬 | Main de Fatma | 1FAAC | `https://openmoji.org/data/color/svg/1FAAC.svg` |
+| ✡️ | Étoile de David | 2721 | `https://openmoji.org/data/color/svg/2721.svg` |
+| ☪️ | Croissant | 262A | `https://openmoji.org/data/color/svg/262A.svg` |
+
+### Catégorie "Nature" (4 nouveaux)
+
+| Emoji | Nom | Code OpenMoji | URL |
+|-------|-----|---------------|-----|
+| 🌿 | Feuille | 1F33F | `https://openmoji.org/data/color/svg/1F33F.svg` |
+| 🌺 | Hibiscus | 1F33A | `https://openmoji.org/data/color/svg/1F33A.svg` |
+| 🌻 | Tournesol | 1F33B | `https://openmoji.org/data/color/svg/1F33B.svg` |
+| 🌴 | Palmier | 1F334 | `https://openmoji.org/data/color/svg/1F334.svg` |
+
+### Catégorie "Moderne" (3 nouveaux)
+
+| Emoji | Nom | Code OpenMoji | URL |
+|-------|-----|---------------|-----|
+| 🧭 | Boussole | 1F9ED | `https://openmoji.org/data/color/svg/1F9ED.svg` |
+| 🚀 | Fusée | 1F680 | `https://openmoji.org/data/color/svg/1F680.svg` |
+| 💎 | Diamant | 1F48E | `https://openmoji.org/data/color/svg/1F48E.svg` |
+
+### Nouvelle catégorie "Musées" (4 avatars)
+
+| Emoji | Nom | Code OpenMoji | URL |
+|-------|-----|---------------|-----|
+| 🗿 | Moaï | 1F5FF | `https://openmoji.org/data/color/svg/1F5FF.svg` |
+| 🏛️ | Temple Grec | 1F3DB | `https://openmoji.org/data/color/svg/1F3DB.svg` |
+| 🏺 | Amphore | 1F3FA | `https://openmoji.org/data/color/svg/1F3FA.svg` |
+| 🎭 | Masques | 1F3AD | `https://openmoji.org/data/color/svg/1F3AD.svg` |
+
+---
+
+## Avatars à supprimer
+
+| ID | Nom | Catégorie |
+|----|-----|-----------|
+| `5b260771-f86a-4f15-a673-3fff262fc66a` | Cyclone | abstract |
+| `efd78e90-b6e5-468b-b4e7-fe1f2d3a6aba` | Étincelle | abstract |
+
+---
+
+## Mise à jour du code
+
+Le fichier `src/pages/AvatarsGallery.tsx` et `src/components/profile/DefaultAvatarSelector.tsx` contiennent les labels de catégories. Il faudra ajouter :
+
+```typescript
+const categoryLabels: Record<string, string> = {
+  spiritual: 'Spirituels',
+  nature: 'Nature',
+  modern: 'Modernes',
+  museum: 'Musées',  // ← Nouvelle catégorie
+  // abstract: supprimé
+  legendary: 'Légendaires',
+  epic: 'Épiques',
+  rare: 'Rares',
+  achievement: 'Accomplissements'
+};
 ```
 
 ---
 
-## Catégories concernées
+## Résumé final
 
-| Catégorie | Nombre d'avatars | Action |
-|-----------|------------------|--------|
-| Spirituels | 3 | Remplacer par emojis spirituels |
-| Nature | 2 | Remplacer par emojis nature |
-| Modernes | 2 | Remplacer par emojis exploration |
-| Abstraits | 2 | Améliorer légèrement |
-| Légendaires | 4 | Garder (exclusifs) |
-| Épiques | 2 | Garder (exclusifs) |
-| Rares | 2 | Garder (exclusifs) |
-| Accomplissements | 3 | Garder (exclusifs) |
+| Catégorie | Avant | Après |
+|-----------|-------|-------|
+| Spirituels | 3 | **7** (+4) |
+| Nature | 2 | **6** (+4) |
+| Moderne | 2 | **5** (+3) |
+| Musées | 0 | **4** (nouveau) |
+| Abstraits | 2 | **0** (supprimé) |
+| **Total accessible** | **9** | **22** |
 
 ---
 
-## Impact
+## Fichiers à modifier
 
-- **Expérience utilisateur** : Avatars cohérents avec le thème spirituel/culturel de SacredWorld
-- **Pas de code à modifier** : Seules les URLs en base de données changent
-- **Rétrocompatibilité** : Les utilisateurs ayant ces avatars verront automatiquement les nouveaux
-
----
-
-## Alternative
-
-Si les URLs OpenMoji posent problème (CORS, disponibilité), on peut utiliser :
-1. **Twemoji** de Twitter : `https://twemoji.maxcdn.com/v/latest/svg/`
-2. **Noto Emoji** de Google
-3. **Uploader les SVG** dans le bucket Supabase
+| Fichier | Modification |
+|---------|--------------|
+| Migration SQL | INSERT nouveaux avatars, DELETE abstraits |
+| `src/pages/AvatarsGallery.tsx` | Ajouter label "museum", supprimer "abstract" |
+| `src/components/profile/DefaultAvatarSelector.tsx` | Idem |
 
