@@ -24,6 +24,8 @@ import type { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter'
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { mapStyleUrls, atmospherePresets } from '@/types/globeSettings';
+
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
   onRecenterRef?: (fn: () => void) => void;
@@ -490,10 +492,13 @@ const Globe3D = ({
       return;
     }
     try {
+      // Get user's preferred map style
+      const preferredStyle = mapStyleUrls[userProgress.globeSettings?.mapStyle || 'satellite'];
+      
       // Create map
       map.current = new mapboxgl.Map({
         container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/satellite-streets-v12',
+        style: preferredStyle,
         projection: {
           name: 'globe'
         },
@@ -600,13 +605,16 @@ const Globe3D = ({
         console.warn('Failed to add filter control', e);
       }
 
-      // Add atmosphere
+      // Apply atmosphere based on user preferences
+      const atmosphereConfig = atmospherePresets[userProgress.globeSettings?.atmosphere || 'classic'];
+      const starIntensity = (userProgress.globeSettings?.starIntensity ?? 0.6) * atmosphereConfig.starIntensityMultiplier;
+      
       map.current.setFog({
-        color: 'rgb(186, 210, 235)',
-        'high-color': 'rgb(36, 92, 223)',
+        color: atmosphereConfig.fogColor,
+        'high-color': atmosphereConfig.highColor,
         'horizon-blend': 0.02,
-        'space-color': 'rgb(11, 11, 25)',
-        'star-intensity': 0.6
+        'space-color': atmosphereConfig.spaceColor,
+        'star-intensity': Math.min(starIntensity, 1)
       });
 
       // Load places data from merged hook
@@ -1269,6 +1277,60 @@ const Globe3D = ({
       onPausedChange(isPaused);
     }
   }, [isPaused, onPausedChange]);
+
+  // Update globe settings dynamically when user changes preferences
+  useEffect(() => {
+    if (!map.current || !isMapReadyRef.current) return;
+    
+    const globeSettings = userProgress.globeSettings;
+    if (!globeSettings) return;
+
+    // Update map style if changed
+    const newStyle = mapStyleUrls[globeSettings.mapStyle];
+    const currentStyle = map.current.getStyle()?.sprite;
+    
+    // Only change style if it's actually different (check by mapStyle key, not full URL)
+    // We save the current style key in a data attribute to track
+    const currentStyleKey = (map.current as any)._currentStyleKey;
+    if (currentStyleKey !== globeSettings.mapStyle) {
+      console.log('🎨 Changing map style to:', globeSettings.mapStyle);
+      (map.current as any)._currentStyleKey = globeSettings.mapStyle;
+      
+      // We need to preserve layers/sources, so we listen for style.load
+      const onStyleLoad = () => {
+        if (!map.current) return;
+        
+        // Reapply atmosphere
+        const atmosphereConfig = atmospherePresets[globeSettings.atmosphere];
+        const starIntensity = globeSettings.starIntensity * atmosphereConfig.starIntensityMultiplier;
+        
+        map.current.setFog({
+          color: atmosphereConfig.fogColor,
+          'high-color': atmosphereConfig.highColor,
+          'horizon-blend': 0.02,
+          'space-color': atmosphereConfig.spaceColor,
+          'star-intensity': Math.min(starIntensity, 1)
+        });
+        
+        map.current.off('style.load', onStyleLoad);
+      };
+      
+      map.current.on('style.load', onStyleLoad);
+      map.current.setStyle(newStyle);
+    } else {
+      // Just update atmosphere without changing style
+      const atmosphereConfig = atmospherePresets[globeSettings.atmosphere];
+      const starIntensity = globeSettings.starIntensity * atmosphereConfig.starIntensityMultiplier;
+      
+      map.current.setFog({
+        color: atmosphereConfig.fogColor,
+        'high-color': atmosphereConfig.highColor,
+        'horizon-blend': 0.02,
+        'space-color': atmosphereConfig.spaceColor,
+        'star-intensity': Math.min(starIntensity, 1)
+      });
+    }
+  }, [userProgress.globeSettings?.mapStyle, userProgress.globeSettings?.atmosphere, userProgress.globeSettings?.starIntensity]);
 
   // Handle search
   useEffect(() => {

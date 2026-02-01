@@ -11,6 +11,7 @@ import {
   playRemoveFromTripSound,
   resumeAudioContext 
 } from '@/utils/audioEffects';
+import { GlobeSettings, defaultGlobeSettings } from '@/types/globeSettings';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
@@ -56,6 +57,7 @@ export interface UserProgress {
   currentStreak: number;
   lastQuestDate: string;
   longestStreak: number;
+  globeSettings: GlobeSettings;
 }
 
 interface AppContextType {
@@ -85,6 +87,7 @@ interface AppContextType {
   updateStreak: () => void;
   getStreakBonus: () => number;
   awardQuestBadge: (questId: string, questName: string, questDescription: string, questIcon: string) => Promise<boolean>;
+  updateGlobeSettings: (settings: Partial<GlobeSettings>) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -101,7 +104,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const parsed = JSON.parse(stored);
       return {
         ...parsed,
-        geolocationEnabled: parsed.geolocationEnabled ?? false
+        geolocationEnabled: parsed.geolocationEnabled ?? false,
+        globeSettings: parsed.globeSettings ?? defaultGlobeSettings
       };
     }
     return {
@@ -118,7 +122,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       showPlannedRoute: false,
       currentStreak: 0,
       lastQuestDate: '',
-      longestStreak: 0
+      longestStreak: 0,
+      globeSettings: defaultGlobeSettings
     };
   });
 
@@ -177,7 +182,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           showPlannedRoute: data.show_planned_route || false,
           currentStreak: data.current_streak || 0,
           lastQuestDate: data.last_quest_date || '',
-          longestStreak: data.longest_streak || 0
+          longestStreak: data.longest_streak || 0,
+          globeSettings: localProgress?.globeSettings ?? defaultGlobeSettings
         };
 
         // Merge localStorage data if it exists - particularly for religion and trip data
@@ -574,6 +580,13 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const updateGlobeSettings = (settings: Partial<GlobeSettings>) => {
+    setUserProgress(prev => ({
+      ...prev,
+      globeSettings: { ...prev.globeSettings, ...settings }
+    }));
+  };
+
   return (
     <AppContext.Provider value={{
       userProgress,
@@ -601,7 +614,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setFlyToFunction,
       updateStreak,
       getStreakBonus,
-      awardQuestBadge
+      awardQuestBadge,
+      updateGlobeSettings
     }}>
       {children}
     </AppContext.Provider>
