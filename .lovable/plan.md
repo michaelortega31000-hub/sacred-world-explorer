@@ -1,110 +1,111 @@
 
-
-# Plan : Ajouter le Quiz Quotidien dans l'onglet Défis de la page Explore
+# Plan : Supprimer la catégorie "Autres" et harmoniser les continents
 
 ## Problème Identifié
 
-Le quiz quotidien (`DailyQuiz`) existe et fonctionne correctement, mais il n'est **pas affiché** dans l'onglet "Défis" de la page Explore. Voici la situation actuelle :
+Le composant `LocationsStatsTab.tsx` utilise **son propre mapping pays→continent incomplet** au lieu d'utiliser les fonctions exportées par `placesData.ts`.
 
-| Composant | Page | Quiz inclus ? |
-|-----------|------|---------------|
-| `ChallengesTab` | `/explore` (onglet Défis) | Non |
-| `WeeklyQuestTab` | `/country/:name` (onglet Quête) | Oui |
+| Fichier | Mapping | Noms Continents | Complet ? |
+|---------|---------|-----------------|-----------|
+| `placesData.ts` (L.3108-3154) | 70+ pays | Anglais (Asia, Europe...) | Oui |
+| `LocationsStatsTab.tsx` (L.23-102) | ~50 pays | Français (Asie, Moyen-Orient...) | Non |
 
-L'utilisateur s'attend à voir le quiz dans l'onglet "Défis" de la page Explore, mais actuellement il n'y est pas.
-
----
-
-## Caractéristiques du Quiz Existant
-
-Le composant `DailyQuiz` possède déjà toutes les fonctionnalités demandées :
-
-- **5 questions** sélectionnées aléatoirement chaque jour
-- **4 réponses possibles** par question
-- **Rotation quotidienne** (basée sur `localStorage` avec la date du jour)
-- **Catégories variées** : Religion, Monument, Édifice, Anecdote
-- **Système de points** : +2 points par bonne réponse (10 points max)
-- **Explication pédagogique** après chaque réponse
-- **Persistance** : empêche de refaire le quiz le même jour
+### Conséquence
+Les pays non répertoriés dans le mapping de `LocationsStatsTab` (comme **Ecuador**) tombent dans le fallback `'Autre'` (ligne 106).
 
 ---
 
 ## Solution
 
-Importer et afficher le composant `DailyQuiz` en haut de l'onglet "Journalière" dans `ChallengesTab.tsx`.
+Supprimer le mapping local de `LocationsStatsTab.tsx` et utiliser la fonction `getContinent()` de `placesData.ts`, puis traduire les noms de continents en français.
 
-### Modification Prévue
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│  ONGLET DÉFIS (Explore)                                     │
-├─────────────────────────────────────────────────────────────┤
-│  [Journalière] [Hebdomadaire] [Mensuelle] [Culture] [Proche]│
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ╔═══════════════════════════════════════════════════════╗  │
-│  ║  🧠 QUIZ DU JOUR                      Question 1/5   ║  │
-│  ║  5 questions quotidiennes • 2 points par bonne rép.  ║  │
-│  ║                                                       ║  │
-│  ║  🕌 Religion                                          ║  │
-│  ║  Quel est le lieu de pèlerinage le plus sacré ?      ║  │
-│  ║                                                       ║  │
-│  ║  ○ Jérusalem                                          ║  │
-│  ║  ○ La Mecque                                          ║  │
-│  ║  ○ Médine                                             ║  │
-│  ║  ○ Le Caire                                           ║  │
-│  ║                                                       ║  │
-│  ║  [Valider]                                            ║  │
-│  ╚═══════════════════════════════════════════════════════╝  │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  🔥 Série : 5 jours • Bonus +10%                      │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-│  ┌───────────────────────────────────────────────────────┐  │
-│  │  📍 Première Visite - Visitez 1 lieu aujourd'hui     │  │
-│  └───────────────────────────────────────────────────────┘  │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
-```
+### Avantages
+- Un seul mapping centralisé à maintenir
+- Pas de catégorie "Autres" parasite
+- Cohérence avec les 7 continents standards
 
 ---
 
-## Fichier à Modifier
+## Continents Finaux (sans "Autres")
+
+| Continent (Anglais) | Continent (Français) |
+|---------------------|----------------------|
+| Africa | Afrique |
+| Asia | Asie |
+| Europe | Europe |
+| North America | Amérique du Nord |
+| South America | Amérique du Sud |
+| Oceania | Océanie |
+| Antarctica | Antarctique |
+
+Note : Pas de catégorie "Moyen-Orient" séparée - ces pays seront classés en **Asie** conformément à la classification géographique standard.
+
+---
+
+## Fichiers à Modifier
 
 | Fichier | Modification |
 |---------|--------------|
-| `src/components/ChallengesTab.tsx` | Importer `DailyQuiz` et l'afficher dans l'onglet "daily" |
+| `src/components/LocationsStatsTab.tsx` | Supprimer le mapping local, importer `getContinent` de placesData, ajouter traduction FR |
 
 ---
 
-## Détails Techniques
+## Implémentation Technique
 
-1. Ajouter l'import du composant `DailyQuiz` en haut du fichier
-2. Insérer `<DailyQuiz />` au début du `TabsContent value="daily"` (avant les quêtes journalières)
-
-### Code à Ajouter
-
+### 1. Import de la fonction centralisée
 ```typescript
-// Import en haut du fichier
-import DailyQuiz from './DailyQuiz';
-
-// Dans le TabsContent value="daily", ajouter en premier :
-<TabsContent value="daily" className="space-y-6">
-  {/* Quiz du jour */}
-  <DailyQuiz />
-  
-  {/* Reste du contenu existant... */}
-  <Card className="border-primary/20 ...">
+import { getContinent } from '@/data/placesData';
 ```
+
+### 2. Ajout d'un mapping de traduction des continents
+```typescript
+const continentTranslations: Record<string, string> = {
+  'Africa': 'Afrique',
+  'Asia': 'Asie',
+  'Europe': 'Europe',
+  'North America': 'Amérique du Nord',
+  'South America': 'Amérique du Sud',
+  'Oceania': 'Océanie',
+  'Antarctica': 'Antarctique',
+  'Other': 'Autre' // Fallback au cas où
+};
+```
+
+### 3. Modification du calcul des statistiques par continent
+```typescript
+// Statistiques par continent
+const continentStats = allPlaces.reduce((acc, place) => {
+  const continentEN = getContinent(place.country);
+  const continentFR = continentTranslations[continentEN] || continentEN;
+  
+  if (!acc[continentFR]) {
+    acc[continentFR] = { count: 0, countries: new Set<string>() };
+  }
+  acc[continentFR].count++;
+  acc[continentFR].countries.add(place.country);
+  return acc;
+}, {} as Record<string, { count: number; countries: Set<string> }>);
+```
+
+### 4. Suppression
+- Supprimer le mapping local `countryToContinentMap` (lignes 24-102)
+- Supprimer la référence à ce mapping dans les filtres de pays
 
 ---
 
 ## Résultat Attendu
 
-Après cette modification :
-- Le quiz sera visible dès l'ouverture de l'onglet "Défis" > "Journalière"
-- 5 questions avec 4 réponses chacune seront proposées
-- Le quiz changera automatiquement tous les jours à minuit
-- L'utilisateur ne pourra pas refaire le quiz le même jour
+```
+┌─────────────────────────────────────────────────────────────┐
+│  CONTINENTS                                                 │
+├─────────────────────────────────────────────────────────────┤
+│  🌍 Afrique           - 6 pays • 25 lieux                  │
+│  🌏 Amérique du Nord  - 3 pays • 18 lieux                  │
+│  🌎 Amérique du Sud   - 5 pays • 15 lieux                  │
+│  🌍 Asie              - 15 pays • 85 lieux                 │
+│  🌍 Europe            - 35 pays • 180 lieux                │
+│  🌏 Océanie           - 2 pays • 3 lieux                   │
+└─────────────────────────────────────────────────────────────┘
+```
 
+**Plus de catégorie "Autres"** - tous les lieux sont correctement classés dans les 6 continents où des lieux sacrés sont recensés.
