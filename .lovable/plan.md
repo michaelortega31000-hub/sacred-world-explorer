@@ -1,159 +1,122 @@
 
+# Plan : Actions rapides sur les popups du globe
 
-# Plan : Ajout de photos dans le forum (Topics et Réponses)
+## Contexte
 
-## Objectif
+Actuellement, lorsqu'on clique sur un lieu depuis le globe 3D, une popup s'affiche avec :
+- L'image du lieu
+- Le nom, type et pays
+- La description (150 caracteres)
+- Les points
+- Le statut "visite" si applicable
 
-Permettre aux utilisateurs de :
-1. **Ajouter des photos** lors de la création d'un nouveau topic
-2. **Ajouter des photos** lors de la réponse à un topic
-3. **Visualiser les photos** en grand (lightbox) en cliquant dessus
+**Probleme identifie** : L'utilisateur ne peut pas directement :
+1. Ajouter le lieu a son itineraire
+2. Acceder aux services de proximite (restaurants, hotels, transports)
 
----
-
-## Architecture technique
-
-### 1. Nouveau bucket de stockage
-
-Créer un bucket dédié pour les photos du forum :
-
-| Bucket | Public | Taille max | Types autorisés |
-|--------|--------|------------|-----------------|
-| `forum-photos` | Non (private) | 5MB | JPEG, PNG, WebP |
-
-### 2. Modifications de la base de données
-
-Ajouter une colonne `image_urls` aux deux tables :
-
-```text
-forum_topics
-├── image_urls: TEXT[] (nullable, max 3 images)
-└── ... (colonnes existantes)
-
-forum_posts
-├── image_urls: TEXT[] (nullable, max 3 images)
-└── ... (colonnes existantes)
-```
-
-### 3. Mise à jour des Edge Functions
-
-**`create-forum-topic`** : Accepter un tableau `imageUrls` optionnel
-**`create-forum-post`** : Accepter un tableau `imageUrls` optionnel
-
-### 4. Mise à jour du frontend (ForumTab.tsx)
-
-| Composant | Modification |
-|-----------|--------------|
-| Dialog "Nouveau topic" | Ajouter zone d'upload photo (max 3) |
-| Zone de réponse | Ajouter bouton + preview photo |
-| Affichage topic | Afficher les images avec miniatures cliquables |
-| Affichage posts | Afficher les images avec miniatures cliquables |
-| Lightbox | Réutiliser ImageLightbox existant |
+Il doit obligatoirement naviguer vers la page de detail du lieu pour effectuer ces actions.
 
 ---
 
-## Flux d'upload
+## Solution proposee
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ 1. Utilisateur sélectionne photo(s)                         │
-├─────────────────────────────────────────────────────────────┤
-│ 2. Preview locale (FileReader)                              │
-├─────────────────────────────────────────────────────────────┤
-│ 3. Upload via secureUpload() → forum-photos bucket          │
-├─────────────────────────────────────────────────────────────┤
-│ 4. Récupération des paths                                   │
-├─────────────────────────────────────────────────────────────┤
-│ 5. Envoi topic/post avec imageUrls au edge function         │
-├─────────────────────────────────────────────────────────────┤
-│ 6. Edge function valide et stocke dans DB                   │
-└─────────────────────────────────────────────────────────────┘
-```
+Enrichir les popups du globe avec des boutons d'action rapide pour :
+- **Ajouter/retirer de l'itineraire** (bouton + ou checkmark)
+- **Voir les services a proximite** (bouton couverts/hotel)
+- **Acceder a la page detail** (garder le comportement actuel sur clic image)
 
 ---
 
-## Interface utilisateur
+## Implementation technique
 
-### Création de topic
+### 1. Modifier la popup des lieux standards (places-circles)
+
+**Fichier** : `src/components/Globe3D.tsx` (lignes ~944-979)
+
+Ajouter une barre d'actions en bas de la popup avec :
 
 ```text
-┌─────────────────────────────────────────────┐
-│ Créer un nouveau topic                      │
-├─────────────────────────────────────────────┤
-│ Titre: [________________________]           │
-├─────────────────────────────────────────────┤
-│ Description: [                              │
-│              ________________________       │
-│              ________________________]      │
-├─────────────────────────────────────────────┤
-│ Visibilité: ○ Privé ○ Communauté ○ Public  │
-├─────────────────────────────────────────────┤
-│ Photos (0/3):                               │
-│ [📷 Ajouter des photos]                     │
-│                                             │
-│ [img1] [img2] [img3] (miniatures)           │
-├─────────────────────────────────────────────┤
-│         [Créer le topic]                    │
-└─────────────────────────────────────────────┘
++-----------------------------------------------+
+|  [Image cliquable -> page detail]             |
+|  Nom du lieu                                  |
+|  Type - Pays                                  |
+|  Description...                               |
+|  Points          Statut visite                |
++-----------------------------------------------+
+|  [+ Itineraire]  [Couverts]  [Hotel]  [Bus]   |
++-----------------------------------------------+
 ```
 
-### Zone de réponse
+### 2. Gerer les evenements depuis le HTML inline
+
+Comme les popups Mapbox utilisent du HTML inline, on utilisera des `CustomEvent` dispatches sur `window` pour communiquer avec React :
+
+- `addToTripFromGlobe` : Ajouter a l'itineraire
+- `removeFromTripFromGlobe` : Retirer de l'itineraire  
+- `openServicesFromGlobe` : Ouvrir les services (restaurant/hotel/transport)
+- `navigateToPlace` : Naviguer vers la page detail (deja existant)
+
+### 3. Ajouter les event listeners dans l'effet d'initialisation
 
 ```text
-┌─────────────────────────────────────────────┐
-│ [Écrire une réponse...               ] 📷  │
-│                                             │
-│ [img1] ×  (preview si photo sélectionnée)   │
-├─────────────────────────────────────────────┤
-│         [📤 Envoyer]                        │
-└─────────────────────────────────────────────┘
+window.addEventListener('addToTripFromGlobe', ...)
+window.addEventListener('removeFromTripFromGlobe', ...)
+window.addEventListener('openServicesFromGlobe', ...)
 ```
 
-### Affichage d'un post avec photo
+### 4. Modifier la popup de l'itineraire (trip-places-circles)
+
+Pour les lieux deja dans l'itineraire, proposer :
+- **Retirer de l'itineraire** (bouton X)
+- **Voir les services**
+- **Ouvrir la page**
+
+---
+
+## Details de la popup modifiee
+
+### Boutons d'action (style inline)
+
+| Action | Icone | Couleur | Comportement |
+|--------|-------|---------|--------------|
+| Ajouter itineraire | + | Vert | Ajoute et affiche toast |
+| Retirer itineraire | X | Rouge | Retire et affiche toast |
+| Restaurants | Couverts | Blanc | Navigue vers `/country/{pays}?tab=restaurants&city={ville}` |
+| Hotels | Lit | Blanc | Navigue vers `/place/{id}` puis scroll vers services |
+| Transports | Bus | Blanc | Idem |
+
+### Contrainte technique
+
+Comme la popup est du HTML inline (pas du React), on passera les donnees necessaires dans les attributs `onclick` et on ecoutera les evenements sur `window`.
+
+---
+
+## Fichiers a modifier
+
+| Fichier | Modifications |
+|---------|---------------|
+| `src/components/Globe3D.tsx` | Ajouter boutons dans les popups HTML, ajouter event listeners pour les actions |
+
+---
+
+## Flux utilisateur ameliore
 
 ```text
-┌─────────────────────────────────────────────┐
-│ 👤 Username • il y a 2h                     │
-├─────────────────────────────────────────────┤
-│ Voici ma photo de la cathédrale...          │
-│                                             │
-│ ┌───────┐ ┌───────┐                         │
-│ │ 📷    │ │ 📷    │  ← Cliquable            │
-│ │ mini  │ │ mini  │                         │
-│ └───────┘ └───────┘                         │
-└─────────────────────────────────────────────┘
+1. L'utilisateur clique sur un lieu depuis le globe
+2. Une popup s'affiche avec :
+   - Image + infos du lieu
+   - Barre d'actions rapides en bas
+3. L'utilisateur peut :
+   a) Cliquer sur l'image -> Page detail complete
+   b) Cliquer sur [+] -> Ajoute a l'itineraire (toast confirmation)
+   c) Cliquer sur [Couverts] -> Page pays, onglet restaurants filtre par ville
+   d) Cliquer sur [Hotel/Transport] -> Page detail, scroll vers services
 ```
 
 ---
 
-## Fichiers à modifier
+## Avantages
 
-| Fichier | Modification |
-|---------|--------------|
-| **Migration SQL** | Créer bucket `forum-photos`, ajouter colonnes `image_urls` |
-| **`src/lib/secureUpload.ts`** | Ajouter bucket 'forum-photos' au type |
-| **`supabase/functions/upload-file/index.ts`** | Ajouter config pour 'forum-photos' |
-| **`supabase/functions/create-forum-topic/index.ts`** | Accepter et stocker `imageUrls` |
-| **`supabase/functions/create-forum-post/index.ts`** | Accepter et stocker `imageUrls` |
-| **`src/components/ForumTab.tsx`** | Upload photos + affichage + lightbox |
-
----
-
-## Sécurité
-
-- **Upload validé côté serveur** via `upload-file` edge function (taille, type, signature)
-- **Quota utilisateur** respecté (stockage limité par user)
-- **Bucket privé** : les URLs sont signées (expiration 1h)
-- **Validation HTML** : les URLs sont des paths internes, pas d'injection possible
-
----
-
-## Limites
-
-| Élément | Limite |
-|---------|--------|
-| Photos par topic | 3 max |
-| Photos par post | 3 max |
-| Taille par photo | 5 MB |
-| Types acceptés | JPEG, PNG, WebP |
-
+- **Gain de temps** : Plus besoin de naviguer vers la page detail pour des actions simples
+- **Coherence** : Memes actions disponibles partout (globe, page pays, page detail)
+- **Accessibilite** : Options de reservation/services immediatement visibles
