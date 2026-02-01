@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/contexts/AppContext';
@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff, Trash2, Users, Globe, Lock } from 'lucide-react';
+import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff, Trash2, Users, Globe, Lock, Search, ArrowUpDown, Clock, TrendingUp, Loader2 } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { fr } from 'date-fns/locale';
 import { z } from 'zod';
 import { useRateLimit } from '@/hooks/useRateLimit';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 // Validation schemas with HTML sanitization
 const noHtmlRegex = /<[^>]*>/g;
@@ -122,6 +123,15 @@ const ForumTab = () => {
   const [hidePostId, setHidePostId] = useState<string | null>(null);
   const [hideReason, setHideReason] = useState('');
   const [deleteTopicId, setDeleteTopicId] = useState<string | null>(null);
+  
+  // Search and sorting state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'active'>('recent');
+  
+  // Prevent double submission refs
+  const isCreatingTopicRef = useRef(false);
+  const isCreatingPostRef = useRef(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     loadTopics();
@@ -285,6 +295,12 @@ const ForumTab = () => {
   };
 
   const createTopic = async () => {
+    // Prevent double submission
+    if (isCreatingTopicRef.current) {
+      console.log('[Forum] Topic creation already in progress, ignoring');
+      return;
+    }
+    
     if (!session?.user) {
       toast.error('Vous devez être connecté');
       return;
@@ -301,6 +317,9 @@ const ForumTab = () => {
       toast.error(error.message);
       return;
     }
+
+    isCreatingTopicRef.current = true;
+    setIsSubmitting(true);
 
     try {
       // Call server-side edge function with rate limiting enforcement
@@ -331,10 +350,19 @@ const ForumTab = () => {
     } catch (err) {
       console.error('Error creating topic:', err);
       toast.error('Erreur lors de la création du topic');
+    } finally {
+      isCreatingTopicRef.current = false;
+      setIsSubmitting(false);
     }
   };
 
   const createPost = async () => {
+    // Prevent double submission
+    if (isCreatingPostRef.current) {
+      console.log('[Forum] Post creation already in progress, ignoring');
+      return;
+    }
+    
     if (!session?.user || !selectedTopic) {
       toast.error('Vous devez être connecté');
       return;
@@ -350,6 +378,9 @@ const ForumTab = () => {
       toast.error(error.message);
       return;
     }
+
+    isCreatingPostRef.current = true;
+    setIsSubmitting(true);
 
     try {
       // Call server-side edge function with rate limiting enforcement
@@ -376,6 +407,38 @@ const ForumTab = () => {
     } catch (err) {
       console.error('Error creating post:', err);
       toast.error('Erreur lors de l\'envoi du message');
+    } finally {
+      isCreatingPostRef.current = false;
+      setIsSubmitting(false);
+    }
+  };
+  // Helper function to filter and sort topics
+  const getFilteredAndSortedTopics = () => {
+    const visibilityFilter = forumTab === 'friends' ? 'private' : 'public';
+    
+    let filtered = topics.filter(t => t.visibility === visibilityFilter);
+    
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim();
+      filtered = filtered.filter(t => 
+        t.title.toLowerCase().includes(query) ||
+        t.description.toLowerCase().includes(query) ||
+        t.author?.username?.toLowerCase().includes(query)
+      );
+    }
+    
+    // Apply sorting
+    switch (sortBy) {
+      case 'popular':
+        return filtered.sort((a, b) => b.views_count - a.views_count);
+      case 'active':
+        return filtered.sort((a, b) => b.posts_count - a.posts_count);
+      case 'recent':
+      default:
+        return filtered.sort((a, b) => 
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
     }
   };
 
@@ -624,9 +687,18 @@ const ForumTab = () => {
                 onChange={(e) => setNewPostContent(e.target.value)}
                 rows={3}
               />
-              <Button onClick={createPost}>
-                <Send className="w-4 h-4 mr-2" />
-                Envoyer
+              <Button onClick={createPost} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    Envoi...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4 mr-2" />
+                    Envoyer
+                  </>
+                )}
               </Button>
             </div>
           </CardContent>
@@ -733,9 +805,16 @@ const ForumTab = () => {
                     <Button 
                       onClick={createTopic} 
                       className="w-full"
-                      disabled={newTopicVisibility === 'public' && !userProgress.selectedReligion}
+                      disabled={(newTopicVisibility === 'public' && !userProgress.selectedReligion) || isSubmitting}
                     >
-                      Créer le topic
+                      {isSubmitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                          Création...
+                        </>
+                      ) : (
+                        'Créer le topic'
+                      )}
                     </Button>
                   </div>
                 </DialogContent>
@@ -769,11 +848,57 @@ const ForumTab = () => {
               </Button>
             </div>
 
+            {/* Search and Sort Controls */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher un topic..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
+              </div>
+              <Select value={sortBy} onValueChange={(v) => setSortBy(v as 'recent' | 'popular' | 'active')}>
+                <SelectTrigger className="w-full sm:w-[180px]">
+                  <ArrowUpDown className="w-4 h-4 mr-2" />
+                  <SelectValue placeholder="Trier par" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recent">
+                    <span className="flex items-center gap-2">
+                      <Clock className="w-4 h-4" />
+                      Plus récents
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="popular">
+                    <span className="flex items-center gap-2">
+                      <Eye className="w-4 h-4" />
+                      Plus vus
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="active">
+                    <span className="flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" />
+                      Plus actifs
+                    </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
             {/* Filtered topics display */}
-            {topics.filter(t => t.visibility === (forumTab === 'friends' ? 'private' : 'public')).length === 0 ? (
+            {getFilteredAndSortedTopics().length === 0 ? (
               <Card>
                 <CardContent className="py-12 text-center">
-                  {forumTab === 'friends' ? (
+                  {searchQuery.trim() ? (
+                    <>
+                      <Search className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        Aucun résultat pour "{searchQuery}"
+                      </p>
+                    </>
+                  ) : forumTab === 'friends' ? (
                     <>
                       <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground">
@@ -795,9 +920,17 @@ const ForumTab = () => {
               </Card>
             ) : (
               <div className="space-y-3">
-                {topics
-                  .filter(t => t.visibility === (forumTab === 'friends' ? 'private' : 'public'))
-                  .map((topic) => (
+                {/* Topic count and info */}
+                <div className="flex items-center justify-between text-sm text-muted-foreground">
+                  <span>{getFilteredAndSortedTopics().length} topic{getFilteredAndSortedTopics().length > 1 ? 's' : ''}</span>
+                  {searchQuery.trim() && (
+                    <Button variant="ghost" size="sm" onClick={() => setSearchQuery('')}>
+                      Effacer la recherche
+                    </Button>
+                  )}
+                </div>
+                
+                {getFilteredAndSortedTopics().map((topic) => (
                   <Card key={topic.id} className="cursor-pointer hover:bg-accent transition-colors" onClick={() => setSelectedTopic(topic)}>
                     <CardHeader>
                       <div className="flex justify-between items-start">
