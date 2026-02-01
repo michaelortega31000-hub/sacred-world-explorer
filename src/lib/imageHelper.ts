@@ -35,11 +35,3 @@ export const getImageUrl = (path: string): string => {
 
 // Get all images for easy access
 export const getAllPlaceImages = () => images;
-
-// Get image for a place object
-export const getPlaceImage = (place: { imageUrl?: string; name?: string }): string => {
-  if (place.imageUrl) {
-    return getImageUrl(place.imageUrl);
-  }
-  return '/placeholder.svg';
-};

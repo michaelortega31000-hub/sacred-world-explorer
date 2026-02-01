@@ -30,7 +30,6 @@ import AdminAuditImages from "./pages/AdminAuditImages";
 import Reminders from "./pages/Reminders";
 import SecurityTest from "./pages/SecurityTest";
 import OfflineManager from "./pages/OfflineManager";
-import TravelJournal from "./pages/TravelJournal";
 
 const queryClient = new QueryClient();
 
@@ -95,8 +94,6 @@ const AppContent = () => {
           <Route path="/admin/audit-images" element={<AdminAuditImages />} />
           <Route path="/reminders" element={<Reminders />} />
           <Route path="/security-test" element={<SecurityTest />} />
-          <Route path="/offline" element={<OfflineManager />} />
-          <Route path="/travel-journal" element={<TravelJournal />} />
           <Route path="/offline" element={<OfflineManager />} />
 
           {/* Legacy paths redirects */}
