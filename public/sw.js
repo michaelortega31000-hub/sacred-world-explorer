@@ -1,16 +1,149 @@
-// Service Worker for Web Push Notifications
-const CACHE_NAME = 'sacred-world-v1';
+// Service Worker for Web Push Notifications and Offline Mode
+const CACHE_NAME = 'sacred-world-v2';
+const STATIC_CACHE = 'sacred-world-static-v1';
+const DYNAMIC_CACHE = 'sacred-world-dynamic-v1';
+const MAP_CACHE = 'sacred-world-maps-v1';
 
-// Install event
+// Static assets to cache on install
+const STATIC_ASSETS = [
+  '/',
+  '/index.html',
+  '/manifest.json',
+  '/favicon.ico',
+  '/placeholder.svg',
+  '/images/place-placeholder.jpg'
+];
+
+// Install event - cache static assets
 self.addEventListener('install', (event) => {
-  console.log('[SW] Service Worker installed');
-  self.skipWaiting();
+  console.log('[SW] Service Worker installing...');
+  event.waitUntil(
+    caches.open(STATIC_CACHE)
+      .then((cache) => {
+        console.log('[SW] Caching static assets');
+        return cache.addAll(STATIC_ASSETS);
+      })
+      .then(() => self.skipWaiting())
+  );
 });
 
-// Activate event
+// Activate event - clean old caches
 self.addEventListener('activate', (event) => {
-  console.log('[SW] Service Worker activated');
-  event.waitUntil(self.clients.claim());
+  console.log('[SW] Service Worker activating...');
+  event.waitUntil(
+    caches.keys()
+      .then((cacheNames) => {
+        return Promise.all(
+          cacheNames
+            .filter((name) => {
+              return name.startsWith('sacred-world-') && 
+                     name !== CACHE_NAME && 
+                     name !== STATIC_CACHE && 
+                     name !== DYNAMIC_CACHE &&
+                     name !== MAP_CACHE;
+            })
+            .map((name) => {
+              console.log('[SW] Deleting old cache:', name);
+              return caches.delete(name);
+            })
+        );
+      })
+      .then(() => self.clients.claim())
+  );
+});
+
+// Fetch event - serve from cache, fallback to network
+self.addEventListener('fetch', (event) => {
+  const { request } = event;
+  const url = new URL(request.url);
+
+  // Skip non-GET requests
+  if (request.method !== 'GET') return;
+
+  // Handle Mapbox tile requests
+  if (url.hostname.includes('mapbox.com') && url.pathname.includes('/tiles/')) {
+    event.respondWith(
+      caches.open(MAP_CACHE).then((cache) => {
+        return cache.match(request).then((cachedResponse) => {
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          return fetch(request).then((networkResponse) => {
+            if (networkResponse.ok) {
+              cache.put(request, networkResponse.clone());
+            }
+            return networkResponse;
+          }).catch(() => {
+            // Return placeholder for failed tile requests
+            return new Response('', { status: 404 });
+          });
+        });
+      })
+    );
+    return;
+  }
+
+  // Handle API requests - network first, fallback to cache
+  if (url.pathname.includes('/rest/') || url.pathname.includes('/functions/')) {
+    event.respondWith(
+      fetch(request)
+        .then((response) => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return response;
+        })
+        .catch(() => {
+          return caches.match(request);
+        })
+    );
+    return;
+  }
+
+  // Handle image requests
+  if (request.destination === 'image') {
+    event.respondWith(
+      caches.match(request).then((cachedResponse) => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(request).then((networkResponse) => {
+          if (networkResponse.ok) {
+            const responseClone = networkResponse.clone();
+            caches.open(DYNAMIC_CACHE).then((cache) => {
+              cache.put(request, responseClone);
+            });
+          }
+          return networkResponse;
+        }).catch(() => {
+          // Return placeholder for failed image requests
+          return caches.match('/images/place-placeholder.jpg');
+        });
+      })
+    );
+    return;
+  }
+
+  // Default: cache first, fallback to network
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        return cachedResponse;
+      }
+      return fetch(request).then((networkResponse) => {
+        if (networkResponse.ok && request.url.startsWith(self.location.origin)) {
+          const responseClone = networkResponse.clone();
+          caches.open(DYNAMIC_CACHE).then((cache) => {
+            cache.put(request, responseClone);
+          });
+        }
+        return networkResponse;
+      });
+    })
+  );
 });
 
 // Push event - handle incoming push notifications
@@ -54,13 +187,11 @@ self.addEventListener('notificationclick', (event) => {
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Check if a window is already open
         for (const client of clientList) {
           if (client.url.includes(urlToOpen) && 'focus' in client) {
             return client.focus();
           }
         }
-        // Open a new window
         if (clients.openWindow) {
           return clients.openWindow(urlToOpen);
         }
@@ -78,4 +209,42 @@ self.addEventListener('pushsubscriptionchange', (event) => {
         return subscription;
       })
   );
+});
+
+// Message handler for cache management
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'CLEAR_CACHE') {
+    event.waitUntil(
+      caches.keys().then((cacheNames) => {
+        return Promise.all(
+          cacheNames.map((cacheName) => caches.delete(cacheName))
+        );
+      }).then(() => {
+        event.ports[0].postMessage({ success: true });
+      })
+    );
+  }
+  
+  if (event.data && event.data.type === 'CACHE_URLS') {
+    const urls = event.data.urls || [];
+    event.waitUntil(
+      caches.open(DYNAMIC_CACHE).then((cache) => {
+        return Promise.all(
+          urls.map((url) => {
+            return fetch(url).then((response) => {
+              if (response.ok) {
+                return cache.put(url, response);
+              }
+            }).catch(() => {
+              console.log('[SW] Failed to cache:', url);
+            });
+          })
+        );
+      }).then(() => {
+        if (event.ports[0]) {
+          event.ports[0].postMessage({ success: true });
+        }
+      })
+    );
+  }
 });

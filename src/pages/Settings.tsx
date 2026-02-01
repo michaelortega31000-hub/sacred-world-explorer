@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw, Download, WifiOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next';
@@ -463,6 +463,32 @@ const Settings = () => {
                     Réinitialiser la progression
                   </Button>
                 </div>
+              </div>
+            </div>
+          </Card>
+
+          {/* Mode Hors-ligne */}
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <WifiOff className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <Label className="text-lg font-semibold text-foreground mb-2 block">
+                  Mode Hors-ligne
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Téléchargez les données d'un pays pour y accéder sans connexion internet
+                </p>
+                <Button
+                  onClick={() => navigate('/offline')}
+                  variant="outline"
+                  className="w-full"
+                  size="sm"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Gérer les téléchargements
+                </Button>
               </div>
             </div>
           </Card>
