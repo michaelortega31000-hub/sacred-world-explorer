@@ -32,7 +32,8 @@ import {
   Loader2,
   MapPinned,
   Map as MapIcon,
-  Square
+  Square,
+  Bus
 } from 'lucide-react';
 import POIMiniMap from '@/components/POIMiniMap';
 import { BackButton } from '@/components/BackButton';
@@ -98,13 +99,14 @@ const PlaceDetail = () => {
   interface SearchedPOI {
     id: string;
     name: string;
-    type: 'restaurant' | 'lodging';
+    type: 'restaurant' | 'lodging' | 'transport';
     address: string;
     coordinates: [number, number];
+    transportType?: string;
   }
   const [nearbyPOIs, setNearbyPOIs] = useState<SearchedPOI[]>([]);
   const [searchingPOIs, setSearchingPOIs] = useState(false);
-  const [selectedPOIType, setSelectedPOIType] = useState<'restaurant' | 'hotel' | null>(null);
+  const [selectedPOIType, setSelectedPOIType] = useState<'restaurant' | 'hotel' | 'transport' | null>(null);
   
   const { userProgress } = useApp();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
@@ -478,8 +480,8 @@ const PlaceDetail = () => {
     });
   };
 
-  // Search for nearby POIs (restaurants or hotels) - first from database, then Mapbox fallback
-  const searchNearbyPOIs = async (type: 'restaurant' | 'hotel') => {
+  // Search for nearby POIs (restaurants, hotels, or transports) - first from database, then Mapbox fallback
+  const searchNearbyPOIs = async (type: 'restaurant' | 'hotel' | 'transport') => {
     if (!place) return;
     
     setSearchingPOIs(true);
@@ -542,7 +544,56 @@ const PlaceDetail = () => {
         }
       }
       
-      // Fallback to Mapbox if no results found in DB
+      // For transports, get from database
+      if (type === 'transport') {
+        const { data: dbTransports, error } = await supabase
+          .from('transport_stops')
+          .select('id, name, city, coordinates, transport_type, line_name, operator')
+          .eq('verified', true)
+          .or(cityVariants.map(c => `city.ilike.%${c}%`).join(','))
+          .order('transport_type');
+        
+        if (!error && dbTransports && dbTransports.length > 0) {
+          const transportIcons: Record<string, string> = {
+            metro: '🚇',
+            bus: '🚌',
+            tram: '🚃',
+            train: '🚆',
+            airport: '✈️',
+            ferry: '⛴️',
+          };
+          
+          const pois: SearchedPOI[] = dbTransports.slice(0, 15).map((t: any) => ({
+            id: t.id,
+            name: `${transportIcons[t.transport_type] || '🚏'} ${t.name}`,
+            type: 'transport' as const,
+            address: t.line_name ? `${t.line_name}${t.operator ? ` - ${t.operator}` : ''}` : t.city,
+            coordinates: t.coordinates ? [t.coordinates.lng, t.coordinates.lat] as [number, number] : place.coordinates,
+            transportType: t.transport_type
+          }));
+          
+          setNearbyPOIs(pois);
+          setSearchingPOIs(false);
+          
+          if (pois.length === 0) {
+            toast({
+              title: "Aucun résultat",
+              description: `Aucun transport trouvé à ${place.city}`,
+            });
+          }
+          return;
+        } else {
+          // No transports found
+          setSearchingPOIs(false);
+          toast({
+            title: "Aucun résultat",
+            description: `Aucun transport trouvé à ${place.city}`,
+          });
+          return;
+        }
+      }
+      
+      // Fallback to Mapbox if no results found in DB (for restaurants and hotels only)
       const mapboxToken = getMapboxToken();
       const query = type === 'hotel' ? 'hotel hostel lodging' : 'restaurant';
       const [lon, lat] = place.coordinates;
@@ -819,11 +870,11 @@ const PlaceDetail = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               {/* Search buttons */}
-              <div className="flex gap-3">
+              <div className="grid grid-cols-3 gap-2">
                 <Button
                   onClick={() => searchNearbyPOIs('restaurant')}
                   variant={selectedPOIType === 'restaurant' ? 'default' : 'outline'}
-                  className="flex-1 gap-2"
+                  className="flex flex-col items-center gap-1 h-auto py-3"
                   disabled={searchingPOIs}
                   style={selectedPOIType === 'restaurant' ? {
                     background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
@@ -831,17 +882,17 @@ const PlaceDetail = () => {
                   } : undefined}
                 >
                   {searchingPOIs && selectedPOIType === 'restaurant' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <Utensils className="w-4 h-4" />
+                    <Utensils className="w-5 h-5" />
                   )}
-                  Restaurants
+                  <span className="text-xs">Restaurants</span>
                 </Button>
                 
                 <Button
                   onClick={() => searchNearbyPOIs('hotel')}
                   variant={selectedPOIType === 'hotel' ? 'default' : 'outline'}
-                  className="flex-1 gap-2"
+                  className="flex flex-col items-center gap-1 h-auto py-3"
                   disabled={searchingPOIs}
                   style={selectedPOIType === 'hotel' ? {
                     background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
@@ -849,11 +900,29 @@ const PlaceDetail = () => {
                   } : undefined}
                 >
                   {searchingPOIs && selectedPOIType === 'hotel' ? (
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <Hotel className="w-4 h-4" />
+                    <Hotel className="w-5 h-5" />
                   )}
-                  Hôtels
+                  <span className="text-xs">Hôtels</span>
+                </Button>
+                
+                <Button
+                  onClick={() => searchNearbyPOIs('transport')}
+                  variant={selectedPOIType === 'transport' ? 'default' : 'outline'}
+                  className="flex flex-col items-center gap-1 h-auto py-3"
+                  disabled={searchingPOIs}
+                  style={selectedPOIType === 'transport' ? {
+                    background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                    color: 'black'
+                  } : undefined}
+                >
+                  {searchingPOIs && selectedPOIType === 'transport' ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Bus className="w-5 h-5" />
+                  )}
+                  <span className="text-xs">Transports</span>
                 </Button>
               </div>
 
@@ -926,6 +995,8 @@ const PlaceDetail = () => {
                         <div className="flex items-center gap-2 min-w-0">
                           {poi.type === 'restaurant' ? (
                             <Utensils className="w-4 h-4 text-success shrink-0" />
+                          ) : poi.type === 'transport' ? (
+                            <Bus className="w-4 h-4 text-success shrink-0" />
                           ) : (
                             <Hotel className="w-4 h-4 text-success shrink-0" />
                           )}
@@ -970,7 +1041,7 @@ const PlaceDetail = () => {
               {/* Empty state */}
               {!searchingPOIs && nearbyPOIs.length === 0 && savedPOIsForPlace.length === 0 && (
                 <p className="text-sm text-muted-foreground text-center py-2">
-                  Recherchez des restaurants ou hôtels à {place.city} pour les ajouter à votre itinéraire
+                  Recherchez des restaurants, hôtels ou transports à {place.city} pour les ajouter à votre itinéraire
                 </p>
               )}
             </CardContent>

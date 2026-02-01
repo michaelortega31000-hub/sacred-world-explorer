@@ -93,14 +93,23 @@ const POIMiniMap = ({ placeCoordinates, placeName, savedPOIs }: POIMiniMapProps)
       savedPOIs.forEach((poi) => {
         const poiMarkerEl = document.createElement('div');
         const isRestaurant = poi.type === 'restaurant';
+        const isTransport = poi.type === 'transport';
+        
+        // Determine color based on type
+        let bgColor: string;
+        if (isRestaurant) {
+          bgColor = 'linear-gradient(135deg, hsl(24, 95%, 53%) 0%, hsl(24, 95%, 65%) 100%)';
+        } else if (isTransport) {
+          bgColor = 'linear-gradient(135deg, hsl(142, 76%, 36%) 0%, hsl(142, 76%, 50%) 100%)';
+        } else {
+          bgColor = 'linear-gradient(135deg, hsl(221, 83%, 53%) 0%, hsl(221, 83%, 65%) 100%)';
+        }
         
         poiMarkerEl.style.cssText = `
           width: 36px;
           height: 36px;
           border-radius: 50%;
-          background: ${isRestaurant 
-            ? 'linear-gradient(135deg, hsl(24, 95%, 53%) 0%, hsl(24, 95%, 65%) 100%)' 
-            : 'linear-gradient(135deg, hsl(221, 83%, 53%) 0%, hsl(221, 83%, 65%) 100%)'};
+          background: ${bgColor};
           border: 2px solid white;
           box-shadow: 0 2px 8px rgba(0,0,0,0.3);
           display: flex;
@@ -108,9 +117,19 @@ const POIMiniMap = ({ placeCoordinates, placeName, savedPOIs }: POIMiniMapProps)
           justify-content: center;
           cursor: pointer;
         `;
-        poiMarkerEl.innerHTML = isRestaurant 
-          ? '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>'
-          : '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/><path d="M12 7h.01"/><path d="M12 11h.01"/><path d="M16 11h.01"/><path d="M8 11h.01"/><path d="M10 22v-6.5m4 0V22"/></svg>';
+        
+        // SVG icons for each type
+        const restaurantSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2v0a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>';
+        const hotelSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z"/><path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16"/><path d="M8 7h.01"/><path d="M16 7h.01"/><path d="M12 7h.01"/><path d="M12 11h.01"/><path d="M16 11h.01"/><path d="M8 11h.01"/><path d="M10 22v-6.5m4 0V22"/></svg>';
+        const transportSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></svg>';
+        
+        if (isRestaurant) {
+          poiMarkerEl.innerHTML = restaurantSvg;
+        } else if (isTransport) {
+          poiMarkerEl.innerHTML = transportSvg;
+        } else {
+          poiMarkerEl.innerHTML = hotelSvg;
+        }
 
         // Create popup content safely using DOM elements (prevents XSS)
         const poiPopupContent = document.createElement('div');
@@ -127,9 +146,18 @@ const POIMiniMap = ({ placeCoordinates, placeName, savedPOIs }: POIMiniMapProps)
         
         const poiTypeDiv = document.createElement('div');
         poiTypeDiv.style.fontSize = '11px';
-        poiTypeDiv.style.color = isRestaurant ? 'hsl(24, 95%, 53%)' : 'hsl(221, 83%, 53%)';
         poiTypeDiv.style.marginTop = '4px';
-        poiTypeDiv.textContent = isRestaurant ? '🍽️ Restaurant' : '🏨 Hôtel';
+        
+        if (isRestaurant) {
+          poiTypeDiv.style.color = 'hsl(24, 95%, 53%)';
+          poiTypeDiv.textContent = '🍽️ Restaurant';
+        } else if (isTransport) {
+          poiTypeDiv.style.color = 'hsl(142, 76%, 36%)';
+          poiTypeDiv.textContent = '🚌 Transport';
+        } else {
+          poiTypeDiv.style.color = 'hsl(221, 83%, 53%)';
+          poiTypeDiv.textContent = '🏨 Hôtel';
+        }
         
         poiPopupContent.appendChild(poiNameDiv);
         poiPopupContent.appendChild(poiAddressDiv);
