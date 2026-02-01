@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ImageBackground } from '@/components/ImageBackground';
 import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
+import { Progress } from '@/components/ui/progress';
 import { 
   MapPin, 
   Clock, 
@@ -30,7 +31,8 @@ import {
   X,
   Loader2,
   MapPinned,
-  Map as MapIcon
+  Map as MapIcon,
+  Square
 } from 'lucide-react';
 import POIMiniMap from '@/components/POIMiniMap';
 import { BackButton } from '@/components/BackButton';
@@ -56,6 +58,7 @@ import { AROverlay } from '@/components/ar/AROverlay';
 import { ARFilters, type FilterType } from '@/components/ar/ARFilters';
 import { captureARScene, saveARCapture, shareARCapture } from '@/utils/arCapture';
 import { hapticFeedback } from '@/hooks/useARGestures';
+import { useAudioGuide } from '@/hooks/useAudioGuide';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -63,9 +66,9 @@ const PlaceDetail = () => {
   const { t } = useTranslation();
   const { toast } = useToast();
   const { visitPlace, isPlaceVisited, savePOI, removePOI, getPOIsForPlace } = useApp();
+  const audioGuide = useAudioGuide();
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [communityPhotos, setCommunityPhotos] = useState<any[]>([]);
@@ -338,12 +341,37 @@ const PlaceDetail = () => {
   };
 
   const handleAudioToggle = () => {
-    setIsAudioPlaying(!isAudioPlaying);
-    // TODO: Implémenter la lecture audio avec ElevenLabs
-    toast({
-      title: isAudioPlaying ? "Audio en pause" : "Lecture audio",
-      description: "Fonctionnalité audio à venir",
-    });
+    if (!place.description) {
+      toast({
+        title: "Aucun contenu audio",
+        description: "Ce lieu n'a pas de description disponible",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (audioGuide.state.isPlaying) {
+      audioGuide.pause();
+    } else if (audioGuide.state.isPaused) {
+      audioGuide.resume();
+    } else {
+      audioGuide.play(place.description, placeId!);
+    }
+  };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioGuide.state.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = x / rect.width;
+    const time = percentage * audioGuide.state.duration;
+    audioGuide.seek(time);
   };
 
   const handleARToggle = async () => {
@@ -1016,36 +1044,100 @@ const PlaceDetail = () => {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-sm text-muted-foreground">
-                Écoutez l'histoire fascinante de ce lieu (2 min)
+                Écoutez l'histoire fascinante de ce lieu
               </p>
               
-              <div className="flex items-center gap-4">
+              {/* Contrôles audio */}
+              <div className="flex items-center gap-3">
                 <Button
                   onClick={handleAudioToggle}
-                  variant="outline"
+                  disabled={audioGuide.state.isLoading}
                   size="lg"
                   className="gap-2"
+                  style={{
+                    background: audioGuide.state.isPlaying 
+                      ? 'hsl(var(--muted))' 
+                      : 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                    color: audioGuide.state.isPlaying ? 'hsl(var(--foreground))' : 'black'
+                  }}
                 >
-                  {isAudioPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                  {isAudioPlaying ? 'Pause' : 'Écouter'}
+                  {audioGuide.state.isLoading ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                      Génération...
+                    </>
+                  ) : audioGuide.state.isPlaying ? (
+                    <>
+                      <Pause className="w-5 h-5" />
+                      Pause
+                    </>
+                  ) : audioGuide.state.isPaused ? (
+                    <>
+                      <Play className="w-5 h-5" />
+                      Reprendre
+                    </>
+                  ) : (
+                    <>
+                      <Play className="w-5 h-5" />
+                      Écouter
+                    </>
+                  )}
                 </Button>
                 
+                {(audioGuide.state.isPlaying || audioGuide.state.isPaused) && (
+                  <Button
+                    onClick={() => audioGuide.stop()}
+                    variant="outline"
+                    size="lg"
+                    className="gap-2"
+                  >
+                    <Square className="w-4 h-4" />
+                    Stop
+                  </Button>
+                )}
+                
                 <Button
+                  onClick={() => audioGuide.download(place.name)}
                   variant="ghost"
                   size="lg"
                   className="gap-2"
+                  disabled={!audioGuide.state.duration}
                 >
                   <Download className="w-5 h-5" />
-                  Télécharger
+                  <span className="hidden sm:inline">Télécharger</span>
                 </Button>
               </div>
 
-              {/* Barre de progression audio (si en lecture) */}
-              {isAudioPlaying && (
-                <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                  <div className="h-full bg-primary animate-pulse w-1/3" />
+              {/* Barre de progression audio */}
+              {(audioGuide.state.isPlaying || audioGuide.state.isPaused || audioGuide.state.progress > 0) && (
+                <div className="space-y-2">
+                  <div 
+                    className="w-full h-3 bg-muted rounded-full overflow-hidden cursor-pointer"
+                    onClick={handleProgressClick}
+                  >
+                    <div 
+                      className="h-full transition-all duration-200"
+                      style={{ 
+                        width: `${audioGuide.state.progress}%`,
+                        background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)'
+                      }} 
+                    />
+                  </div>
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>{formatTime(audioGuide.state.currentTime)}</span>
+                    <span>{formatTime(audioGuide.state.duration)}</span>
+                  </div>
                 </div>
               )}
+
+              {/* Message d'erreur */}
+              {audioGuide.state.error && (
+                <p className="text-sm text-destructive">{audioGuide.state.error}</p>
+              )}
+
+              <p className="text-xs text-muted-foreground">
+                Voix : Laura (FR) • ElevenLabs
+              </p>
             </CardContent>
           </Card>
 
