@@ -12,6 +12,7 @@ const BUCKET_LIMITS: Record<string, number> = {
   'memory-photos': 10 * 1024 * 1024, // 10MB for memory photos
   'ar-captures': 5 * 1024 * 1024,    // 5MB for AR captures
   'visit-photos': 5 * 1024 * 1024,   // 5MB for visit photos
+  'forum-photos': 5 * 1024 * 1024,   // 5MB for forum photos
 };
 
 // Allowed MIME types per bucket
@@ -20,6 +21,7 @@ const ALLOWED_TYPES: Record<string, string[]> = {
   'memory-photos': ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
   'ar-captures': ['image/png'],
   'visit-photos': ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
+  'forum-photos': ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'],
 };
 
 // Magic number validation for common image formats
@@ -236,7 +238,7 @@ serve(async (req) => {
     // Get the URL based on bucket type
     let fileUrl: string;
     
-    if (bucket === 'ar-captures' || bucket === 'memory-photos') {
+    if (bucket === 'ar-captures' || bucket === 'memory-photos' || bucket === 'forum-photos') {
       // Private buckets - use signed URL
       const { data: signedUrlData, error: signedUrlError } = await supabaseClient.storage
         .from(bucket)

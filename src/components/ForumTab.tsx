@@ -11,7 +11,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
-import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff, Trash2, Users, Globe, Lock, Search, ArrowUpDown, Clock, TrendingUp, Loader2 } from 'lucide-react';
+import { MessageSquare, Plus, Send, Eye, Flag, Shield, EyeOff, Trash2, Users, Globe, Lock, Search, ArrowUpDown, Clock, TrendingUp, Loader2, Image, X } from 'lucide-react';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
@@ -20,6 +20,9 @@ import { fr } from 'date-fns/locale';
 import { z } from 'zod';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { secureUpload, validateFileClientSide } from '@/lib/secureUpload';
+import { ImageLightbox } from '@/components/profile/ImageLightbox';
+import { ForumImageDisplay } from '@/components/forum/ForumImageDisplay';
 
 // Validation schemas with HTML sanitization
 const noHtmlRegex = /<[^>]*>/g;
@@ -71,6 +74,7 @@ interface Topic {
   posts_count: number;
   visibility: 'private' | 'public' | 'global';
   religion: string | null;
+  image_urls: string[] | null;
   author?: {
     username: string;
   };
@@ -84,6 +88,7 @@ interface Post {
   is_hidden: boolean;
   hidden_reason?: string;
   hidden_at?: string;
+  image_urls: string[] | null;
   author?: {
     username: string;
   };
@@ -127,6 +132,20 @@ const ForumTab = () => {
   // Search and sorting state
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState<'recent' | 'popular' | 'active'>('recent');
+  
+  // Photo upload states
+  const [topicPhotos, setTopicPhotos] = useState<File[]>([]);
+  const [topicPhotosPreviews, setTopicPhotosPreviews] = useState<string[]>([]);
+  const [postPhotos, setPostPhotos] = useState<File[]>([]);
+  const [postPhotosPreviews, setPostPhotosPreviews] = useState<string[]>([]);
+  const [uploadingPhotos, setUploadingPhotos] = useState(false);
+  const topicPhotoInputRef = useRef<HTMLInputElement>(null);
+  const postPhotoInputRef = useRef<HTMLInputElement>(null);
+  
+  // Lightbox state
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [lightboxImages, setLightboxImages] = useState<Array<{ url: string; name: string; id: string }>>([]);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   
   // Prevent double submission refs
   const isCreatingTopicRef = useRef(false);
@@ -279,6 +298,125 @@ const ForumTab = () => {
     setReports(enrichedReports);
   };
 
+  // Photo handling functions
+  const handleTopicPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remainingSlots = 3 - topicPhotos.length;
+    const filesToAdd = files.slice(0, remainingSlots);
+    
+    for (const file of filesToAdd) {
+      const validation = validateFileClientSide(file, 5, ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
+    }
+    
+    setTopicPhotos(prev => [...prev, ...filesToAdd]);
+    
+    // Create previews
+    filesToAdd.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setTopicPhotosPreviews(prev => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    if (e.target) e.target.value = '';
+  };
+
+  const removeTopicPhoto = (index: number) => {
+    setTopicPhotos(prev => prev.filter((_, i) => i !== index));
+    setTopicPhotosPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const handlePostPhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    const remainingSlots = 3 - postPhotos.length;
+    const filesToAdd = files.slice(0, remainingSlots);
+    
+    for (const file of filesToAdd) {
+      const validation = validateFileClientSide(file, 5, ['image/jpeg', 'image/jpg', 'image/png', 'image/webp']);
+      if (!validation.valid) {
+        toast.error(validation.error);
+        return;
+      }
+    }
+    
+    setPostPhotos(prev => [...prev, ...filesToAdd]);
+    
+    // Create previews
+    filesToAdd.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setPostPhotosPreviews(prev => [...prev, e.target?.result as string]);
+      };
+      reader.readAsDataURL(file);
+    });
+    
+    if (e.target) e.target.value = '';
+  };
+
+  const removePostPhoto = (index: number) => {
+    setPostPhotos(prev => prev.filter((_, i) => i !== index));
+    setPostPhotosPreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const uploadPhotos = async (files: File[], prefix: string): Promise<string[]> => {
+    if (!session?.user) return [];
+    
+    const uploadedUrls: string[] = [];
+    
+    for (const file of files) {
+      const fileExt = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `${session.user.id}/${prefix}/${fileName}`;
+      
+      const result = await secureUpload({
+        bucket: 'forum-photos',
+        filePath,
+        file,
+        upsert: false,
+      });
+      
+      if (result.success) {
+        uploadedUrls.push(result.path);
+      } else {
+        throw new Error(result.error || 'Erreur lors de l\'upload');
+      }
+    }
+    
+    return uploadedUrls;
+  };
+
+  const getSignedUrl = async (path: string): Promise<string> => {
+    const { data } = await supabase.storage
+      .from('forum-photos')
+      .createSignedUrl(path, 3600);
+    return data?.signedUrl || '';
+  };
+
+  const openLightbox = async (imageUrls: string[], startIndex: number = 0) => {
+    const images = await Promise.all(
+      imageUrls.map(async (path, index) => {
+        const url = await getSignedUrl(path);
+        return { url, name: `Photo ${index + 1}`, id: path };
+      })
+    );
+    setLightboxImages(images);
+    setLightboxIndex(startIndex);
+    setLightboxOpen(true);
+  };
+
+  const handleLightboxNavigate = (direction: 'prev' | 'next') => {
+    if (direction === 'prev') {
+      setLightboxIndex(prev => (prev > 0 ? prev - 1 : lightboxImages.length - 1));
+    } else {
+      setLightboxIndex(prev => (prev < lightboxImages.length - 1 ? prev + 1 : 0));
+    }
+  };
+
   const incrementViewCount = async (topicId: string) => {
     const { data: topic } = await supabase
       .from('forum_topics')
@@ -322,12 +460,27 @@ const ForumTab = () => {
     setIsSubmitting(true);
 
     try {
+      // Upload photos if any
+      let uploadedImageUrls: string[] = [];
+      if (topicPhotos.length > 0) {
+        setUploadingPhotos(true);
+        try {
+          uploadedImageUrls = await uploadPhotos(topicPhotos, 'topics');
+        } catch (uploadErr) {
+          toast.error('Erreur lors de l\'upload des photos');
+          return;
+        } finally {
+          setUploadingPhotos(false);
+        }
+      }
+
       // Call server-side edge function with rate limiting enforcement
       const { data, error } = await supabase.functions.invoke('create-forum-topic', {
         body: {
           title: validation.data.title,
           description: validation.data.description,
           visibility: newTopicVisibility,
+          imageUrls: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
         },
       });
 
@@ -345,6 +498,8 @@ const ForumTab = () => {
       setNewTopicTitle('');
       setNewTopicDescription('');
       setNewTopicVisibility('public');
+      setTopicPhotos([]);
+      setTopicPhotosPreviews([]);
       setIsCreateDialogOpen(false);
       loadTopics();
     } catch (err) {
@@ -383,11 +538,26 @@ const ForumTab = () => {
     setIsSubmitting(true);
 
     try {
+      // Upload photos if any
+      let uploadedImageUrls: string[] = [];
+      if (postPhotos.length > 0) {
+        setUploadingPhotos(true);
+        try {
+          uploadedImageUrls = await uploadPhotos(postPhotos, 'posts');
+        } catch (uploadErr) {
+          toast.error('Erreur lors de l\'upload des photos');
+          return;
+        } finally {
+          setUploadingPhotos(false);
+        }
+      }
+
       // Call server-side edge function with rate limiting enforcement
       const { data, error } = await supabase.functions.invoke('create-forum-post', {
         body: {
           topicId: selectedTopic.id,
           content: validation.data.content,
+          imageUrls: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
         },
       });
 
@@ -402,6 +572,8 @@ const ForumTab = () => {
       }
 
       setNewPostContent('');
+      setPostPhotos([]);
+      setPostPhotosPreviews([]);
       loadPosts(selectedTopic.id);
       loadTopics(); // Refresh to update post count
     } catch (err) {
@@ -603,6 +775,15 @@ const ForumTab = () => {
               Par {selectedTopic.author?.username} • {formatDistanceToNow(new Date(selectedTopic.created_at), { addSuffix: true, locale: fr })}
             </CardDescription>
             <p className="text-sm mt-2">{selectedTopic.description}</p>
+            
+            {/* Topic images */}
+            {selectedTopic.image_urls && selectedTopic.image_urls.length > 0 && (
+              <ForumImageDisplay 
+                imageUrls={selectedTopic.image_urls} 
+                onImageClick={openLightbox}
+              />
+            )}
+            
             <div className="flex gap-4 text-sm text-muted-foreground mt-2">
               <span className="flex items-center gap-1">
                 <Eye className="w-4 h-4" />
@@ -644,6 +825,15 @@ const ForumTab = () => {
                       )}
                     </div>
                     <p className="text-sm">{post.content}</p>
+                    
+                    {/* Post images */}
+                    {post.image_urls && post.image_urls.length > 0 && (
+                      <ForumImageDisplay 
+                        imageUrls={post.image_urls} 
+                        onImageClick={openLightbox}
+                      />
+                    )}
+                    
                     {post.is_hidden && post.hidden_reason && isModerator && (
                       <p className="text-xs text-muted-foreground mt-2 italic">
                         Raison: {post.hidden_reason}
@@ -690,29 +880,81 @@ const ForumTab = () => {
 
         <Card>
           <CardContent className="pt-4">
-            <div className="space-y-2">
+            <div className="space-y-3">
               <Textarea
                 placeholder="Écrire une réponse..."
                 value={newPostContent}
                 onChange={(e) => setNewPostContent(e.target.value)}
                 rows={3}
               />
-              <Button onClick={createPost} disabled={isSubmitting}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Envoi...
-                  </>
-                ) : (
-                  <>
-                    <Send className="w-4 h-4 mr-2" />
-                    Envoyer
-                  </>
-                )}
-              </Button>
+              
+              {/* Photo previews */}
+              {postPhotosPreviews.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {postPhotosPreviews.map((preview, index) => (
+                    <div key={index} className="relative">
+                      <img 
+                        src={preview} 
+                        alt={`Preview ${index + 1}`}
+                        className="h-16 w-16 object-cover rounded-lg border border-border"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removePostPhoto(index)}
+                        className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="flex gap-2">
+                <Button onClick={createPost} disabled={isSubmitting || uploadingPhotos}>
+                  {isSubmitting || uploadingPhotos ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      {uploadingPhotos ? 'Upload...' : 'Envoi...'}
+                    </>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4 mr-2" />
+                      Envoyer
+                    </>
+                  )}
+                </Button>
+                
+                <input
+                  type="file"
+                  ref={postPhotoInputRef}
+                  onChange={handlePostPhotoSelect}
+                  accept="image/jpeg,image/png,image/webp"
+                  multiple
+                  className="hidden"
+                />
+                <Button 
+                  type="button"
+                  variant="outline"
+                  onClick={() => postPhotoInputRef.current?.click()}
+                  disabled={postPhotos.length >= 3}
+                >
+                  <Image className="w-4 h-4 mr-2" />
+                  Photo ({postPhotos.length}/3)
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>
+
+        {/* Lightbox */}
+        <ImageLightbox
+          isOpen={lightboxOpen}
+          onClose={() => setLightboxOpen(false)}
+          images={lightboxImages}
+          currentIndex={lightboxIndex}
+          onNavigate={handleLightboxNavigate}
+        />
       </div>
     );
   }
@@ -822,15 +1064,64 @@ const ForumTab = () => {
                       )}
                     </div>
                     
+                    {/* Photo upload section */}
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Photos ({topicPhotos.length}/3)</Label>
+                      
+                      {/* Photo previews */}
+                      {topicPhotosPreviews.length > 0 && (
+                        <div className="flex flex-wrap gap-2">
+                          {topicPhotosPreviews.map((preview, index) => (
+                            <div key={index} className="relative">
+                              <img 
+                                src={preview} 
+                                alt={`Preview ${index + 1}`}
+                                className="h-16 w-16 object-cover rounded-lg border border-border"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => removeTopicPhoto(index)}
+                                className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1 hover:bg-destructive/80"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      <input
+                        type="file"
+                        ref={topicPhotoInputRef}
+                        onChange={handleTopicPhotoSelect}
+                        accept="image/jpeg,image/png,image/webp"
+                        multiple
+                        className="hidden"
+                      />
+                      <Button 
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => topicPhotoInputRef.current?.click()}
+                        disabled={topicPhotos.length >= 3}
+                      >
+                        <Image className="w-4 h-4 mr-2" />
+                        Ajouter des photos
+                      </Button>
+                      <p className="text-xs text-muted-foreground">
+                        JPEG, PNG ou WebP • 5MB max par photo
+                      </p>
+                    </div>
+                    
                     <Button 
                       onClick={createTopic} 
                       className="w-full"
-                      disabled={(newTopicVisibility === 'public' && !userProgress.selectedReligion) || isSubmitting}
+                      disabled={(newTopicVisibility === 'public' && !userProgress.selectedReligion) || isSubmitting || uploadingPhotos}
                     >
-                      {isSubmitting ? (
+                      {isSubmitting || uploadingPhotos ? (
                         <>
                           <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Création...
+                          {uploadingPhotos ? 'Upload des photos...' : 'Création...'}
                         </>
                       ) : (
                         'Créer le topic'
@@ -1157,6 +1448,15 @@ const ForumTab = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Lightbox for forum */}
+      <ImageLightbox
+        isOpen={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        images={lightboxImages}
+        currentIndex={lightboxIndex}
+        onNavigate={handleLightboxNavigate}
+      />
     </>
   );
 };

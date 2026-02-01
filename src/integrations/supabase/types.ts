@@ -202,6 +202,7 @@ export type Database = {
           hidden_by: string | null
           hidden_reason: string | null
           id: string
+          image_urls: string[] | null
           is_hidden: boolean
           topic_id: string
           updated_at: string
@@ -214,6 +215,7 @@ export type Database = {
           hidden_by?: string | null
           hidden_reason?: string | null
           id?: string
+          image_urls?: string[] | null
           is_hidden?: boolean
           topic_id: string
           updated_at?: string
@@ -226,6 +228,7 @@ export type Database = {
           hidden_by?: string | null
           hidden_reason?: string | null
           id?: string
+          image_urls?: string[] | null
           is_hidden?: boolean
           topic_id?: string
           updated_at?: string
@@ -281,6 +284,7 @@ export type Database = {
           created_at: string
           description: string | null
           id: string
+          image_urls: string[] | null
           posts_count: number
           religion: string | null
           title: string
@@ -293,6 +297,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_urls?: string[] | null
           posts_count?: number
           religion?: string | null
           title: string
@@ -305,6 +310,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           id?: string
+          image_urls?: string[] | null
           posts_count?: number
           religion?: string | null
           title?: string
