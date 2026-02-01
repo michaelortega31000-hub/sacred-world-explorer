@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
       "react-dom",
       "react/jsx-runtime",
       "react/jsx-dev-runtime",
+      "scheduler",
       "three",
       "@react-three/fiber",
       "@react-three/drei",
@@ -26,7 +27,18 @@ export default defineConfig(({ mode }) => ({
     ],
   },
   optimizeDeps: {
-    include: ["react", "react-dom"],
+    include: [
+      "react",
+      "react-dom",
+      "react/jsx-runtime",
+      "react/jsx-dev-runtime"
+    ],
+    exclude: [],
     force: true,
+    esbuildOptions: {
+      define: {
+        global: 'globalThis'
+      }
+    }
   },
 }));
