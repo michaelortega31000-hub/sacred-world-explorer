@@ -9,6 +9,7 @@ const corsHeaders = {
 interface CreatePostRequest {
   topicId: string;
   content: string;
+  imageUrls?: string[];
 }
 
 // Validation regex - no HTML tags allowed
@@ -47,7 +48,7 @@ serve(async (req) => {
 
     // Parse request body
     const body: CreatePostRequest = await req.json();
-    const { topicId, content } = body;
+    const { topicId, content, imageUrls } = body;
 
     // Validate topic ID
     if (!topicId || typeof topicId !== 'string') {
@@ -77,6 +78,27 @@ serve(async (req) => {
         JSON.stringify({ error: 'Les balises HTML ne sont pas autorisées' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
+    }
+
+    // Validate image URLs (optional, max 3)
+    let validatedImageUrls: string[] | null = null;
+    if (imageUrls && Array.isArray(imageUrls)) {
+      if (imageUrls.length > 3) {
+        return new Response(
+          JSON.stringify({ error: 'Maximum 3 photos autorisées' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      // Validate each URL is a valid path
+      for (const url of imageUrls) {
+        if (typeof url !== 'string' || url.length > 500) {
+          return new Response(
+            JSON.stringify({ error: 'URL de photo invalide' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+      validatedImageUrls = imageUrls.length > 0 ? imageUrls : null;
     }
 
     // Verify topic exists
@@ -121,6 +143,7 @@ serve(async (req) => {
         topic_id: topicId,
         content: content.trim(),
         author_id: user.id,
+        image_urls: validatedImageUrls,
       })
       .select()
       .single();

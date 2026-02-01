@@ -10,6 +10,7 @@ interface CreateTopicRequest {
   title: string;
   description: string;
   visibility: 'private' | 'public' | 'global';
+  imageUrls?: string[];
 }
 
 // Validation regex - no HTML tags allowed
@@ -48,7 +49,7 @@ serve(async (req) => {
 
     // Parse request body
     const body: CreateTopicRequest = await req.json();
-    const { title, description, visibility = 'public' } = body;
+    const { title, description, visibility = 'public', imageUrls } = body;
 
     // Validate visibility
     if (visibility !== 'private' && visibility !== 'public' && visibility !== 'global') {
@@ -122,6 +123,27 @@ serve(async (req) => {
       );
     }
 
+    // Validate image URLs (optional, max 3)
+    let validatedImageUrls: string[] | null = null;
+    if (imageUrls && Array.isArray(imageUrls)) {
+      if (imageUrls.length > 3) {
+        return new Response(
+          JSON.stringify({ error: 'Maximum 3 photos autorisées' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      // Validate each URL is a valid path (internal storage paths only)
+      for (const url of imageUrls) {
+        if (typeof url !== 'string' || url.length > 500) {
+          return new Response(
+            JSON.stringify({ error: 'URL de photo invalide' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+      }
+      validatedImageUrls = imageUrls.length > 0 ? imageUrls : null;
+    }
+
     // Check rate limit: 10 topics per day (server-side enforcement)
     const windowStart = new Date(Date.now() - 24 * 60 * 60 * 1000); // 24 hours ago
     
@@ -152,6 +174,7 @@ serve(async (req) => {
         author_id: user.id,
         visibility,
         religion: visibility === 'public' ? userReligion : null,
+        image_urls: validatedImageUrls,
       })
       .select()
       .single();

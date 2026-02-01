@@ -1,7 +1,7 @@
 import { supabase } from '@/integrations/supabase/client';
 
 export interface UploadOptions {
-  bucket: 'avatars' | 'memory-photos' | 'ar-captures' | 'visit-photos';
+  bucket: 'avatars' | 'memory-photos' | 'ar-captures' | 'visit-photos' | 'forum-photos';
   filePath: string;
   file: File;
   upsert?: boolean;
