@@ -993,14 +993,14 @@ const ForumTab = () => {
                     Nouveau topic
                   </Button>
                 </DialogTrigger>
-                <DialogContent>
+                <DialogContent className="max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Créer un nouveau topic</DialogTitle>
                     <DialogDescription>
                       Partagez vos idées et commencez une discussion
                     </DialogDescription>
                   </DialogHeader>
-                  <div className="space-y-4">
+                  <div className="space-y-4 pb-4">
                     <Input
                       placeholder="Titre du topic"
                       value={newTopicTitle}
