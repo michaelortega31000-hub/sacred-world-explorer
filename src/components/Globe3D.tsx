@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { logger } from '@/lib/logger';
 import mapboxgl from 'mapbox-gl';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import { createPortal } from 'react-dom';
@@ -482,7 +483,7 @@ const Globe3D = ({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
     const token = getMapboxToken();
-    console.log('🗺️ Initializing Mapbox with token:', token.substring(0, 20) + '...');
+    logger.log('🗺️ Initializing Mapbox with token:', token.substring(0, 20) + '...');
     mapboxgl.accessToken = token;
     if (!mapboxgl.supported()) {
       const error = "WebGL n'est pas supporté par votre navigateur";
