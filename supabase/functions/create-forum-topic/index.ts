@@ -9,7 +9,7 @@ const corsHeaders = {
 interface CreateTopicRequest {
   title: string;
   description: string;
-  visibility: 'private' | 'public';
+  visibility: 'private' | 'public' | 'global';
 }
 
 // Validation regex - no HTML tags allowed
@@ -51,14 +51,14 @@ serve(async (req) => {
     const { title, description, visibility = 'public' } = body;
 
     // Validate visibility
-    if (visibility !== 'private' && visibility !== 'public') {
+    if (visibility !== 'private' && visibility !== 'public' && visibility !== 'global') {
       return new Response(
         JSON.stringify({ error: 'Visibilité invalide' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
 
-    // Get user's selected religion for public topics
+    // Get user's selected religion for public (community) topics only
     let userReligion: string | null = null;
     if (visibility === 'public') {
       const { data: progressData } = await supabaseClient
@@ -71,11 +71,13 @@ serve(async (req) => {
       
       if (!userReligion) {
         return new Response(
-          JSON.stringify({ error: 'Veuillez d\'abord sélectionner une religion dans votre profil pour créer un topic public' }),
+          JSON.stringify({ error: 'Veuillez d\'abord sélectionner une religion dans votre profil pour créer un topic communauté' }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
     }
+    // For 'global' visibility, religion is not stored (accessible to everyone)
+    // For 'private' visibility, religion is also not stored
 
     // Validate input
     if (!title || typeof title !== 'string' || title.trim().length === 0) {

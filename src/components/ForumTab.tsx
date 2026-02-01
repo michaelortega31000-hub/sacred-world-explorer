@@ -69,7 +69,7 @@ interface Topic {
   created_at: string;
   views_count: number;
   posts_count: number;
-  visibility: 'private' | 'public';
+  visibility: 'private' | 'public' | 'global';
   religion: string | null;
   author?: {
     username: string;
@@ -113,7 +113,7 @@ const ForumTab = () => {
   const [posts, setPosts] = useState<Post[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState('');
   const [newTopicDescription, setNewTopicDescription] = useState('');
-  const [newTopicVisibility, setNewTopicVisibility] = useState<'private' | 'public'>('public');
+  const [newTopicVisibility, setNewTopicVisibility] = useState<'private' | 'public' | 'global'>('public');
   const [newPostContent, setNewPostContent] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [reportPostId, setReportPostId] = useState<string | null>(null);
@@ -414,9 +414,19 @@ const ForumTab = () => {
   };
   // Helper function to filter and sort topics
   const getFilteredAndSortedTopics = () => {
-    const visibilityFilter = forumTab === 'friends' ? 'private' : 'public';
+    let filtered: Topic[];
     
-    let filtered = topics.filter(t => t.visibility === visibilityFilter);
+    if (forumTab === 'friends') {
+      // Onglet "Mes amis" : uniquement les topics privés
+      filtered = topics.filter(t => t.visibility === 'private');
+    } else {
+      // Onglet "Par religion" : topics globaux OU topics de ma religion
+      const userReligion = userProgress.selectedReligion;
+      filtered = topics.filter(t => 
+        t.visibility === 'global' || 
+        (t.visibility === 'public' && t.religion === userReligion)
+      );
+    }
     
     // Apply search filter
     if (searchQuery.trim()) {
@@ -766,7 +776,7 @@ const ForumTab = () => {
                       <Label className="text-sm font-medium">Visibilité</Label>
                       <RadioGroup
                         value={newTopicVisibility}
-                        onValueChange={(v) => setNewTopicVisibility(v as 'private' | 'public')}
+                        onValueChange={(v) => setNewTopicVisibility(v as 'private' | 'public' | 'global')}
                         className="flex flex-col gap-2"
                       >
                         <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
@@ -782,9 +792,9 @@ const ForumTab = () => {
                         <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
                           <RadioGroupItem value="public" id="public" />
                           <Label htmlFor="public" className="flex items-center gap-2 cursor-pointer flex-1">
-                            <Globe className="w-4 h-4 text-muted-foreground" />
+                            <Users className="w-4 h-4 text-muted-foreground" />
                             <div>
-                              <p className="font-medium">Public (Par religion)</p>
+                              <p className="font-medium">Communauté</p>
                               <p className="text-xs text-muted-foreground">
                                 Visible par les utilisateurs de la même religion
                                 {userProgress.selectedReligion && (
@@ -794,10 +804,20 @@ const ForumTab = () => {
                             </div>
                           </Label>
                         </div>
+                        <div className="flex items-center space-x-2 p-3 border rounded-lg hover:bg-accent cursor-pointer">
+                          <RadioGroupItem value="global" id="global" />
+                          <Label htmlFor="global" className="flex items-center gap-2 cursor-pointer flex-1">
+                            <Globe className="w-4 h-4 text-muted-foreground" />
+                            <div>
+                              <p className="font-medium">Tout public</p>
+                              <p className="text-xs text-muted-foreground">Visible par tout le monde</p>
+                            </div>
+                          </Label>
+                        </div>
                       </RadioGroup>
                       {newTopicVisibility === 'public' && !userProgress.selectedReligion && (
                         <p className="text-xs text-destructive">
-                          ⚠️ Vous devez sélectionner une religion dans votre profil pour créer un topic public
+                          ⚠️ Vous devez sélectionner une religion dans votre profil pour créer un topic communauté
                         </p>
                       )}
                     </div>
@@ -941,6 +961,11 @@ const ForumTab = () => {
                               <Badge variant="outline" className="text-xs gap-1">
                                 <Lock className="w-3 h-3" />
                                 Amis
+                              </Badge>
+                            ) : topic.visibility === 'global' ? (
+                              <Badge variant="secondary" className="text-xs gap-1">
+                                <Globe className="w-3 h-3" />
+                                Tout public
                               </Badge>
                             ) : topic.religion && (
                               <Badge variant="secondary" className="text-xs">
