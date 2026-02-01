@@ -390,6 +390,9 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
                 ? parseQuickReplies(message.content)
                 : { text: message.content, suggestions: [] };
               
+              // Hide assistant text when autoSpeak is enabled (show only audio indicator)
+              const hideAssistantText = message.role === "assistant" && autoSpeak;
+              
               return (
                 <div key={message.id}>
                   <div
@@ -402,7 +405,14 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
                           : "bg-muted"
                       }`}
                     >
-                      <p className="text-sm whitespace-pre-wrap">{text}</p>
+                      {hideAssistantText ? (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Volume2 className={`h-4 w-4 ${isLastAssistant && isSpeaking ? 'animate-pulse text-primary' : ''}`} />
+                          <span>{isLastAssistant && isSpeaking ? "Lecture en cours..." : "Réponse vocale"}</span>
+                        </div>
+                      ) : (
+                        <p className="text-sm whitespace-pre-wrap">{text}</p>
+                      )}
                     </div>
                   </div>
                   
