@@ -80,13 +80,21 @@ const Globe3D = ({
   const endMarkerTimeout = useRef<NodeJS.Timeout | null>(null);
   const hasInitiallyZoomed = useRef(false);
   const pendingRecenter = useRef(false);
+  
+  // Event handler refs for cleanup
+  const handleNavigateToPlaceRef = useRef<EventListener | null>(null);
+  const handleAddToTripRef = useRef<EventListener | null>(null);
+  const handleRemoveFromTripRef = useRef<EventListener | null>(null);
+  const handleOpenServicesRef = useRef<EventListener | null>(null);
   const navigate = useNavigate();
   const {
     t
   } = useTranslation();
   const {
     userProgress,
-    toggleGeolocation
+    toggleGeolocation,
+    addToTrip,
+    removeFromTrip
   } = useApp();
   const [showMonuments, setShowMonuments] = useState(true);
   const [isPaused, setIsPaused] = useState(false);
@@ -913,6 +921,7 @@ const Globe3D = ({
           currentPopup.current.remove();
         }
         const imageUrl = props.imageUrl ? getImageUrl(props.imageUrl) : '/placeholder.svg';
+        const escapedCountry = encodeURIComponent(props.country);
         const popup = new mapboxgl.Popup({
           offset: 15,
           maxWidth: '320px',
@@ -932,9 +941,39 @@ const Globe3D = ({
             <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #142B4F;">${props.name}</h3>
             <p style="margin: 0 0 12px 0; font-size: 13px; color: #142B4F;">${props.type} • ${props.country}</p>
             ${props.description ? `<p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #142B4F;">${props.description.substring(0, 150)}...</p>` : ''}
-            <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
               <span style="font-size: 13px; font-weight: 600; color: #142B4F;">✨ ${props.points} points</span>
-              ${props.isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
+              ${props.isVisited ? '<span style="font-size: 12px; color: #065f46;">✓ Visité</span>' : ''}
+            </div>
+            <div style="display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(20, 43, 79, 0.2);">
+              <button 
+                onclick="window.dispatchEvent(new CustomEvent('removeFromTripFromGlobe', { detail: '${props.id}' }))"
+                style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px; background: #dc2626; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 500;"
+                title="Retirer de l'itinéraire"
+              >
+                ✕ Retirer
+              </button>
+              <button 
+                onclick="window.dispatchEvent(new CustomEvent('openServicesFromGlobe', { detail: { placeId: '${props.id}', country: '${escapedCountry}', type: 'restaurant' } }))"
+                style="padding: 8px 12px; background: #142B4F; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;"
+                title="Restaurants"
+              >
+                🍽️
+              </button>
+              <button 
+                onclick="window.dispatchEvent(new CustomEvent('openServicesFromGlobe', { detail: { placeId: '${props.id}', country: '${escapedCountry}', type: 'hotel' } }))"
+                style="padding: 8px 12px; background: #142B4F; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;"
+                title="Hôtels"
+              >
+                🏨
+              </button>
+              <button 
+                onclick="window.dispatchEvent(new CustomEvent('openServicesFromGlobe', { detail: { placeId: '${props.id}', country: '${escapedCountry}', type: 'transport' } }))"
+                style="padding: 8px 12px; background: #142B4F; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 14px;"
+                title="Transports"
+              >
+                🚌
+              </button>
             </div>
           </div>
         `).addTo(map.current!);
@@ -953,6 +992,7 @@ const Globe3D = ({
           currentPopup.current.remove();
         }
         const imageUrl = props.imageUrl ? getImageUrl(props.imageUrl) : '/placeholder.svg';
+        const escapedCountry = encodeURIComponent(props.country);
         const popup = new mapboxgl.Popup({
           offset: 15,
           maxWidth: '320px',
@@ -969,9 +1009,39 @@ const Globe3D = ({
               <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600; color: #F5F5F5; font-family: 'Playfair Display', serif;">${props.name}</h3>
               <p style="margin: 0 0 12px 0; font-size: 13px; color: #34E0A1;">${props.type} • ${props.country}</p>
               ${props.description ? `<p style="margin: 0 0 12px 0; font-size: 13px; line-height: 1.6; color: #EAD7B5; max-height: 100px; overflow-y: auto;">${props.description.substring(0, 150)}...</p>` : ''}
-              <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <span style="font-size: 13px; font-weight: 600; color: #F4C542;">✨ ${props.points} points</span>
                 ${props.isVisited ? '<span style="font-size: 12px; color: #34E0A1;">✓ Visité</span>' : ''}
+              </div>
+              <div style="display: flex; gap: 8px; padding-top: 12px; border-top: 1px solid rgba(52, 224, 161, 0.2);">
+                <button 
+                  onclick="window.dispatchEvent(new CustomEvent('addToTripFromGlobe', { detail: '${props.id}' }))"
+                  style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 8px; background: #34E0A1; color: #142B4F; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: 600;"
+                  title="Ajouter à l'itinéraire"
+                >
+                  + Itinéraire
+                </button>
+                <button 
+                  onclick="window.dispatchEvent(new CustomEvent('openServicesFromGlobe', { detail: { placeId: '${props.id}', country: '${escapedCountry}', type: 'restaurant' } }))"
+                  style="padding: 8px 12px; background: rgba(244, 197, 66, 0.2); color: #F4C542; border: 1px solid rgba(244, 197, 66, 0.4); border-radius: 6px; cursor: pointer; font-size: 14px;"
+                  title="Restaurants"
+                >
+                  🍽️
+                </button>
+                <button 
+                  onclick="window.dispatchEvent(new CustomEvent('openServicesFromGlobe', { detail: { placeId: '${props.id}', country: '${escapedCountry}', type: 'hotel' } }))"
+                  style="padding: 8px 12px; background: rgba(244, 197, 66, 0.2); color: #F4C542; border: 1px solid rgba(244, 197, 66, 0.4); border-radius: 6px; cursor: pointer; font-size: 14px;"
+                  title="Hôtels"
+                >
+                  🏨
+                </button>
+                <button 
+                  onclick="window.dispatchEvent(new CustomEvent('openServicesFromGlobe', { detail: { placeId: '${props.id}', country: '${escapedCountry}', type: 'transport' } }))"
+                  style="padding: 8px 12px; background: rgba(244, 197, 66, 0.2); color: #F4C542; border: 1px solid rgba(244, 197, 66, 0.4); border-radius: 6px; cursor: pointer; font-size: 14px;"
+                  title="Transports"
+                >
+                  🚌
+                </button>
               </div>
             </div>
           `).addTo(map.current!);
@@ -979,9 +1049,51 @@ const Globe3D = ({
       });
 
       // Listen for navigation events from popup
-      window.addEventListener('navigateToPlace', ((e: CustomEvent) => {
+      handleNavigateToPlaceRef.current = ((e: CustomEvent) => {
         navigate(`/place/${e.detail}`);
-      }) as EventListener);
+      }) as EventListener;
+      
+      handleAddToTripRef.current = ((e: CustomEvent) => {
+        const placeId = e.detail;
+        addToTrip(placeId);
+        toast.success('Lieu ajouté à votre itinéraire', {
+          description: 'Retrouvez-le dans l\'onglet "Mon itinéraire"',
+          duration: 3000
+        });
+        // Close popup after action
+        if (currentPopup.current) {
+          currentPopup.current.remove();
+          currentPopup.current = null;
+        }
+      }) as EventListener;
+      
+      handleRemoveFromTripRef.current = ((e: CustomEvent) => {
+        const placeId = e.detail;
+        removeFromTrip(placeId);
+        toast.success('Lieu retiré de votre itinéraire', { duration: 3000 });
+        // Close popup after action
+        if (currentPopup.current) {
+          currentPopup.current.remove();
+          currentPopup.current = null;
+        }
+      }) as EventListener;
+      
+      handleOpenServicesRef.current = ((e: CustomEvent) => {
+        const { placeId, country, type } = e.detail;
+        const decodedCountry = decodeURIComponent(country);
+        if (type === 'restaurant') {
+          // Navigate to country page with restaurants tab
+          navigate(`/country/${decodedCountry}?tab=restaurants`);
+        } else {
+          // Navigate to place detail and scroll to services section
+          navigate(`/place/${placeId}?scrollTo=services`);
+        }
+      }) as EventListener;
+      
+      window.addEventListener('navigateToPlace', handleNavigateToPlaceRef.current);
+      window.addEventListener('addToTripFromGlobe', handleAddToTripRef.current);
+      window.addEventListener('removeFromTripFromGlobe', handleRemoveFromTripRef.current);
+      window.addEventListener('openServicesFromGlobe', handleOpenServicesRef.current);
 
       // Country hover effect using fill layer - covers entire country surface
       map.current.on('mousemove', 'country-fills', e => {
@@ -1058,6 +1170,20 @@ const Globe3D = ({
 
     // Cleanup
     return () => {
+      // Remove event listeners
+      if (handleNavigateToPlaceRef.current) {
+        window.removeEventListener('navigateToPlace', handleNavigateToPlaceRef.current);
+      }
+      if (handleAddToTripRef.current) {
+        window.removeEventListener('addToTripFromGlobe', handleAddToTripRef.current);
+      }
+      if (handleRemoveFromTripRef.current) {
+        window.removeEventListener('removeFromTripFromGlobe', handleRemoveFromTripRef.current);
+      }
+      if (handleOpenServicesRef.current) {
+        window.removeEventListener('openServicesFromGlobe', handleOpenServicesRef.current);
+      }
+      
       // Clear timeout for end marker
       if (endMarkerTimeout.current) {
         clearTimeout(endMarkerTimeout.current);
