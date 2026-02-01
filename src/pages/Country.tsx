@@ -1,4 +1,5 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { useAudioGuide } from '@/hooks/useAudioGuide';
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -40,7 +41,7 @@ const Country = () => {
   const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
-  const [isAudioPlaying, setIsAudioPlaying] = useState(false);
+  const audioGuide = useAudioGuide();
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   
@@ -256,12 +257,45 @@ const Country = () => {
   };
 
   const handleAudioToggle = () => {
-    setIsAudioPlaying(!isAudioPlaying);
-    toastHook({
-      title: isAudioPlaying ? "Audio en pause" : "Lecture audio",
-      description: "Fonctionnalité audio à venir",
-    });
+    if (!selectedPlace?.description) {
+      toastHook({
+        title: "Aucun contenu audio",
+        description: "Ce lieu n'a pas de description disponible",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (audioGuide.state.isPlaying) {
+      audioGuide.pause();
+    } else if (audioGuide.state.isPaused) {
+      audioGuide.resume();
+    } else {
+      audioGuide.play(selectedPlace.description, selectedPlace.id);
+    }
   };
+
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const handleProgressClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!audioGuide.state.duration) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const percentage = x / rect.width;
+    const time = percentage * audioGuide.state.duration;
+    audioGuide.seek(time);
+  };
+
+  // Stopper l'audio quand on ferme le modal
+  useEffect(() => {
+    if (!selectedPlace) {
+      audioGuide.stop();
+    }
+  }, [selectedPlace]);
 
   const handleReport = () => {
     toastHook({
@@ -716,24 +750,58 @@ const Country = () => {
                         variant="outline"
                         size="lg"
                         className="gap-2"
+                        disabled={audioGuide.state.isLoading}
                       >
-                        {isAudioPlaying ? <Pause className="w-5 h-5" /> : <Play className="w-5 h-5" />}
-                        {isAudioPlaying ? 'Pause' : 'Écouter'}
+                        {audioGuide.state.isLoading ? (
+                          <>
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                            Chargement...
+                          </>
+                        ) : audioGuide.state.isPlaying ? (
+                          <>
+                            <Pause className="w-5 h-5" />
+                            Pause
+                          </>
+                        ) : audioGuide.state.isPaused ? (
+                          <>
+                            <Play className="w-5 h-5" />
+                            Reprendre
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-5 h-5" />
+                            Écouter
+                          </>
+                        )}
                       </Button>
                       
                       <Button
                         variant="ghost"
                         size="lg"
                         className="gap-2"
+                        onClick={() => selectedPlace && audioGuide.download(selectedPlace.name)}
+                        disabled={!audioGuide.state.duration}
                       >
                         <Download className="w-5 h-5" />
                         Télécharger
                       </Button>
                     </div>
 
-                    {isAudioPlaying && (
-                      <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
-                        <div className="h-full bg-primary animate-pulse w-1/3" />
+                    {(audioGuide.state.isPlaying || audioGuide.state.isPaused || audioGuide.state.progress > 0) && (
+                      <div className="space-y-2">
+                        <div 
+                          className="w-full h-2 bg-muted rounded-full overflow-hidden cursor-pointer"
+                          onClick={handleProgressClick}
+                        >
+                          <div 
+                            className="h-full bg-primary transition-all duration-300" 
+                            style={{ width: `${audioGuide.state.progress}%` }}
+                          />
+                        </div>
+                        <div className="flex justify-between text-xs text-muted-foreground">
+                          <span>{formatTime(audioGuide.state.currentTime)}</span>
+                          <span>{formatTime(audioGuide.state.duration)}</span>
+                        </div>
                       </div>
                     )}
                   </CardContent>
