@@ -28,11 +28,20 @@ export const useSpeechSynthesis = (): UseSpeechSynthesisReturn => {
     // Cancel any ongoing speech
     window.speechSynthesis.cancel();
 
-    // Clean text from any markdown or special characters
+    // Clean text from any markdown, special characters, and emojis
     const cleanText = text
       .replace(/[#*_`~]/g, '')
       .replace(/<[^>]*>/g, '')
       .replace(/\n+/g, '. ')
+      // Remove emojis (Unicode ranges for common emoji blocks)
+      .replace(/[\u{1F300}-\u{1F9FF}]/gu, '')
+      .replace(/[\u{2600}-\u{26FF}]/gu, '')
+      .replace(/[\u{2700}-\u{27BF}]/gu, '')
+      .replace(/[\u{1F600}-\u{1F64F}]/gu, '')
+      .replace(/[\u{1F680}-\u{1F6FF}]/gu, '')
+      .replace(/[\u{1F1E0}-\u{1F1FF}]/gu, '')
+      // Clean up extra spaces left by removed emojis
+      .replace(/\s{2,}/g, ' ')
       .trim();
 
     if (!cleanText) return;
