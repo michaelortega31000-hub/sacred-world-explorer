@@ -1,72 +1,99 @@
 
-# Plan : Correction de l'affichage de la photo de profil
+# Plan : Mise à jour des avatars par défaut
 
 ## Problème identifié
 
-L'upload de la photo de profil réussit (message de succès affiché), mais l'image ne s'affiche pas. Deux causes ont été identifiées :
+Les avatars actuels ne correspondent pas à leurs catégories :
 
-### Cause 1 : Bucket de stockage privé
-Le bucket `avatars` est actuellement configuré en mode **privé** (`public: false`), mais le code génère des URLs publiques. Résultat : le navigateur ne peut pas charger l'image car l'URL publique d'un bucket privé renvoie une erreur 403.
-
-### Cause 2 : Problème de synchronisation de l'état
-Après l'upload, le code :
-1. Met à jour l'état avec un cache buster : `setAvatarUrl(url?t=123)`
-2. Puis appelle immédiatement `fetchAvatar()` qui écrase cette valeur
-
----
+| Catégorie | Style actuel | Problème |
+|-----------|--------------|----------|
+| Spirituels | `bottts` (robots) | Des robots pour la spiritualité ! |
+| Nature | `thumbs` (pouces) | Aucun rapport avec la nature |
+| Modernes | `lorelei` | Pas vraiment "moderne" |
+| Abstraits | `shapes` | Correct |
 
 ## Solution proposée
 
-### Étape 1 : Rendre le bucket avatars public
-Le bucket avatars doit être public car les photos de profil sont visibles par tous les utilisateurs (classements, profils publics, etc.).
+Utiliser des styles DiceBear plus appropriés et des emojis/symboles cohérents avec le thème de SacredWorld :
+
+### Catégorie "Spirituels" (3 avatars)
+Utiliser le style `identicon` ou `initials` avec des couleurs apaisantes, ou mieux : des emojis spirituels via OpenMoji :
+
+| Avatar | Nouveau style | Description |
+|--------|---------------|-------------|
+| Spirituel 1 | 🕉️ Om | Symbole hindou/bouddhiste |
+| Spirituel 2 | ☯️ Yin-Yang | Harmonie et équilibre |
+| Spirituel 3 | 🪷 Lotus | Fleur sacrée |
+
+**URLs suggérées (OpenMoji SVG) :**
+- `https://openmoji.org/data/color/svg/1F549.svg` (Om)
+- `https://openmoji.org/data/color/svg/262F.svg` (Yin-Yang)
+- `https://openmoji.org/data/color/svg/1FAB7.svg` (Lotus)
+
+### Catégorie "Nature" (2 avatars)
+| Avatar | Nouveau style | Description |
+|--------|---------------|-------------|
+| Nature 1 | 🌳 Arbre | Symbole de vie |
+| Nature 2 | 🌸 Fleur | Nature en floraison |
+
+**URLs suggérées :**
+- `https://openmoji.org/data/color/svg/1F333.svg` (Arbre)
+- `https://openmoji.org/data/color/svg/1F338.svg` (Fleur de cerisier)
+
+### Catégorie "Modernes" (2 avatars)
+| Avatar | Nouveau style | Description |
+|--------|---------------|-------------|
+| Moderne 1 | 🌐 Globe | Exploration mondiale |
+| Moderne 2 | ✨ Étoiles | Découverte |
+
+**URLs suggérées :**
+- `https://openmoji.org/data/color/svg/1F310.svg` (Globe)
+- `https://openmoji.org/data/color/svg/2728.svg` (Étoiles scintillantes)
+
+### Catégorie "Abstraits" (2 avatars)
+Garder les formes géométriques mais avec des seeds plus élégants.
+
+---
+
+## Modification en base de données
+
+Migration SQL pour mettre à jour les URLs des avatars existants :
 
 ```sql
-UPDATE storage.buckets 
-SET public = true 
-WHERE id = 'avatars';
-```
-
-### Étape 2 : Corriger la logique de rafraîchissement
-Dans `Profile.tsx`, supprimer l'appel à `fetchAvatar()` après l'upload réussi, car l'état est déjà mis à jour localement avec le cache buster.
-
-**Avant :**
-```typescript
-setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
-toast({ ... });
-if (userId) {
-  await fetchAvatar(userId); // ❌ Écrase la valeur
-}
-```
-
-**Après :**
-```typescript
-setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
-toast({ ... });
-// Pas de fetchAvatar() ici - l'état est déjà à jour
+UPDATE default_avatars SET avatar_url = 'https://openmoji.org/data/color/svg/1F549.svg', name = 'Om' WHERE id = '3c728cb5-8b8b-4693-ab0a-6fbd7fbfeaf4';
+UPDATE default_avatars SET avatar_url = 'https://openmoji.org/data/color/svg/262F.svg', name = 'Yin-Yang' WHERE id = 'c444e437-065c-4ce4-9968-393c08ebfaae';
+-- etc.
 ```
 
 ---
 
-## Fichiers à modifier
+## Catégories concernées
 
-| Fichier | Modification |
-|---------|--------------|
-| Migration SQL | Remettre le bucket avatars en public |
-| `src/pages/Profile.tsx` | Supprimer l'appel à `fetchAvatar()` après upload |
+| Catégorie | Nombre d'avatars | Action |
+|-----------|------------------|--------|
+| Spirituels | 3 | Remplacer par emojis spirituels |
+| Nature | 2 | Remplacer par emojis nature |
+| Modernes | 2 | Remplacer par emojis exploration |
+| Abstraits | 2 | Améliorer légèrement |
+| Légendaires | 4 | Garder (exclusifs) |
+| Épiques | 2 | Garder (exclusifs) |
+| Rares | 2 | Garder (exclusifs) |
+| Accomplissements | 3 | Garder (exclusifs) |
 
 ---
 
 ## Impact
 
-- **Base de données** : Le bucket avatars sera accessible publiquement (comportement attendu pour les photos de profil)
-- **Sécurité** : Les politiques RLS existantes restent en place pour contrôler qui peut upload/modifier/supprimer
-- **UX** : L'avatar s'affichera immédiatement après l'upload sans nécessiter de rafraîchissement
+- **Expérience utilisateur** : Avatars cohérents avec le thème spirituel/culturel de SacredWorld
+- **Pas de code à modifier** : Seules les URLs en base de données changent
+- **Rétrocompatibilité** : Les utilisateurs ayant ces avatars verront automatiquement les nouveaux
 
 ---
 
-## Vérification
+## Alternative
 
-Après correction :
-1. Uploader une nouvelle photo de profil
-2. L'avatar doit s'afficher immédiatement dans l'interface
-3. L'URL doit être accessible publiquement
+Si les URLs OpenMoji posent problème (CORS, disponibilité), on peut utiliser :
+1. **Twemoji** de Twitter : `https://twemoji.maxcdn.com/v/latest/svg/`
+2. **Noto Emoji** de Google
+3. **Uploader les SVG** dans le bucket Supabase
+
