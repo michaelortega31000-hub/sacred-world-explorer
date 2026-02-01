@@ -60,6 +60,7 @@ import { ARFilters, type FilterType } from '@/components/ar/ARFilters';
 import { captureARScene, saveARCapture, shareARCapture } from '@/utils/arCapture';
 import { hapticFeedback } from '@/hooks/useARGestures';
 import { useAudioGuide } from '@/hooks/useAudioGuide';
+import ImmersiveAudioPlayer from '@/components/ImmersiveAudioPlayer';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
@@ -845,8 +846,17 @@ const PlaceDetail = () => {
                 À savoir
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               <p className="leading-relaxed">{place.description}</p>
+              
+              {/* Immersive Audio Guide */}
+              <ImmersiveAudioPlayer
+                text={place.description}
+                placeId={placeId!}
+                placeName={place.name}
+                placeType={place.type}
+                religion={place.religion}
+              />
               
               <div className="pt-3 border-t space-y-2">
                 <p className="text-sm text-muted-foreground">
