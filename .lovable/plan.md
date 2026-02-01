@@ -1,32 +1,72 @@
 
-# Plan : Réduire la taille des points d'itinéraire sur la carte
+# Plan : Correction de l'affichage de la photo de profil
 
 ## Problème identifié
-Les marqueurs de l'itinéraire sur le globe sont trop volumineux, ce qui nuit à la lisibilité de la carte, particulièrement quand plusieurs étapes sont proches géographiquement.
 
-## Valeurs actuelles vs proposées
+L'upload de la photo de profil réussit (message de succès affiché), mais l'image ne s'affiche pas. Deux causes ont été identifiées :
 
-### Layer `trip-places-pulse` (effet de halo/lueur)
-| Points | Actuel | Nouveau |
-|--------|--------|---------|
-| 0      | 12px   | 6px     |
-| 50     | 16px   | 8px     |
-| 100    | 20px   | 10px    |
-| 150    | 24px   | 12px    |
+### Cause 1 : Bucket de stockage privé
+Le bucket `avatars` est actuellement configuré en mode **privé** (`public: false`), mais le code génère des URLs publiques. Résultat : le navigateur ne peut pas charger l'image car l'URL publique d'un bucket privé renvoie une erreur 403.
 
-### Layer `trip-places-circles` (cercle principal)
-| Points | Actuel | Nouveau |
-|--------|--------|---------|
-| 0      | 8px    | 4px     |
-| 50     | 10px   | 5px     |
-| 100    | 12px   | 6px     |
-| 150    | 14px   | 7px     |
+### Cause 2 : Problème de synchronisation de l'état
+Après l'upload, le code :
+1. Met à jour l'état avec un cache buster : `setAvatarUrl(url?t=123)`
+2. Puis appelle immédiatement `fetchAvatar()` qui écrase cette valeur
 
-### Ajustement complémentaire
-- **`circle-stroke-width`** : 3px → 1.5px (contour blanc proportionnel)
+---
 
-## Fichier à modifier
-`src/components/Globe3D.tsx` (lignes 864-889)
+## Solution proposée
 
-## Aperçu visuel attendu
-Les points seront environ **2x plus petits**, permettant une meilleure vue d'ensemble de l'itinéraire sans masquer les détails de la carte.
+### Étape 1 : Rendre le bucket avatars public
+Le bucket avatars doit être public car les photos de profil sont visibles par tous les utilisateurs (classements, profils publics, etc.).
+
+```sql
+UPDATE storage.buckets 
+SET public = true 
+WHERE id = 'avatars';
+```
+
+### Étape 2 : Corriger la logique de rafraîchissement
+Dans `Profile.tsx`, supprimer l'appel à `fetchAvatar()` après l'upload réussi, car l'état est déjà mis à jour localement avec le cache buster.
+
+**Avant :**
+```typescript
+setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
+toast({ ... });
+if (userId) {
+  await fetchAvatar(userId); // ❌ Écrase la valeur
+}
+```
+
+**Après :**
+```typescript
+setAvatarUrl(`${publicUrl}?t=${Date.now()}`);
+toast({ ... });
+// Pas de fetchAvatar() ici - l'état est déjà à jour
+```
+
+---
+
+## Fichiers à modifier
+
+| Fichier | Modification |
+|---------|--------------|
+| Migration SQL | Remettre le bucket avatars en public |
+| `src/pages/Profile.tsx` | Supprimer l'appel à `fetchAvatar()` après upload |
+
+---
+
+## Impact
+
+- **Base de données** : Le bucket avatars sera accessible publiquement (comportement attendu pour les photos de profil)
+- **Sécurité** : Les politiques RLS existantes restent en place pour contrôler qui peut upload/modifier/supprimer
+- **UX** : L'avatar s'affichera immédiatement après l'upload sans nécessiter de rafraîchissement
+
+---
+
+## Vérification
+
+Après correction :
+1. Uploader une nouvelle photo de profil
+2. L'avatar doit s'afficher immédiatement dans l'interface
+3. L'URL doit être accessible publiquement
