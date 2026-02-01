@@ -1,114 +1,127 @@
 
 
-# Plan : Correction du filtrage des topics par religion + option "Tout public"
+# Plan : Ajout de photos dans le forum (Topics et Réponses)
 
-## Problème identifié
+## Objectif
 
-Actuellement, quand un utilisateur choisit "Islam" :
-- Il voit encore les topics "Christianity" dans l'onglet "Par religion"
-- Le frontend filtre uniquement par `visibility` (private/public), pas par `religion`
-- Les RLS policies existent mais ne suffisent pas car la requête retourne quand même les données
-
-### Données actuelles en base
-
-| Topic | Religion | Visibility |
-|-------|----------|------------|
-| messe | christianity | public |
-| pelerinage | null | public |
-
-L'utilisateur avec `selected_religion: islam` voit les deux topics alors qu'il ne devrait voir que ceux de sa religion.
+Permettre aux utilisateurs de :
+1. **Ajouter des photos** lors de la création d'un nouveau topic
+2. **Ajouter des photos** lors de la réponse à un topic
+3. **Visualiser les photos** en grand (lightbox) en cliquant dessus
 
 ---
 
-## Solution proposée
+## Architecture technique
 
-### 1. Modifier les options de visibilité (3 choix au lieu de 2)
+### 1. Nouveau bucket de stockage
 
-| Option | Comportement |
-|--------|--------------|
-| **Privé (Amis)** | Visible uniquement par les amis |
-| **Communauté** | Visible uniquement par les utilisateurs de la même religion |
-| **Tout public** | Visible par tout le monde |
+Créer un bucket dédié pour les photos du forum :
 
-### 2. Modifier la structure de données
+| Bucket | Public | Taille max | Types autorisés |
+|--------|--------|------------|-----------------|
+| `forum-photos` | Non (private) | 5MB | JPEG, PNG, WebP |
 
-Ajouter une nouvelle valeur `visibility: 'global'` pour les topics accessibles à tous :
+### 2. Modifications de la base de données
 
-```typescript
-visibility: 'private' | 'public' | 'global'
+Ajouter une colonne `image_urls` aux deux tables :
+
+```text
+forum_topics
+├── image_urls: TEXT[] (nullable, max 3 images)
+└── ... (colonnes existantes)
+
+forum_posts
+├── image_urls: TEXT[] (nullable, max 3 images)
+└── ... (colonnes existantes)
 ```
 
-- `private` = amis seulement
-- `public` = même religion (comportement actuel)
-- `global` = tout le monde
+### 3. Mise à jour des Edge Functions
 
-### 3. Mettre à jour le frontend (`ForumTab.tsx`)
+**`create-forum-topic`** : Accepter un tableau `imageUrls` optionnel
+**`create-forum-post`** : Accepter un tableau `imageUrls` optionnel
 
-Modifier `getFilteredAndSortedTopics()` pour filtrer correctement :
+### 4. Mise à jour du frontend (ForumTab.tsx)
 
-```typescript
-const getFilteredAndSortedTopics = () => {
-  let filtered = topics;
-  
-  if (forumTab === 'friends') {
-    // Onglet "Mes amis" : uniquement les topics privés
-    filtered = topics.filter(t => t.visibility === 'private');
-  } else {
-    // Onglet "Par religion" : topics de ma religion OU globaux
-    const userReligion = userProgress.selectedReligion;
-    filtered = topics.filter(t => 
-      t.visibility === 'global' || 
-      (t.visibility === 'public' && t.religion === userReligion)
-    );
-  }
-  // ... reste du code (search, sort)
-};
+| Composant | Modification |
+|-----------|--------------|
+| Dialog "Nouveau topic" | Ajouter zone d'upload photo (max 3) |
+| Zone de réponse | Ajouter bouton + preview photo |
+| Affichage topic | Afficher les images avec miniatures cliquables |
+| Affichage posts | Afficher les images avec miniatures cliquables |
+| Lightbox | Réutiliser ImageLightbox existant |
+
+---
+
+## Flux d'upload
+
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ 1. Utilisateur sélectionne photo(s)                         │
+├─────────────────────────────────────────────────────────────┤
+│ 2. Preview locale (FileReader)                              │
+├─────────────────────────────────────────────────────────────┤
+│ 3. Upload via secureUpload() → forum-photos bucket          │
+├─────────────────────────────────────────────────────────────┤
+│ 4. Récupération des paths                                   │
+├─────────────────────────────────────────────────────────────┤
+│ 5. Envoi topic/post avec imageUrls au edge function         │
+├─────────────────────────────────────────────────────────────┤
+│ 6. Edge function valide et stocke dans DB                   │
+└─────────────────────────────────────────────────────────────┘
 ```
 
-### 4. Mettre à jour l'UI de création de topic
+---
 
+## Interface utilisateur
+
+### Création de topic
+
+```text
+┌─────────────────────────────────────────────┐
+│ Créer un nouveau topic                      │
+├─────────────────────────────────────────────┤
+│ Titre: [________________________]           │
+├─────────────────────────────────────────────┤
+│ Description: [                              │
+│              ________________________       │
+│              ________________________]      │
+├─────────────────────────────────────────────┤
+│ Visibilité: ○ Privé ○ Communauté ○ Public  │
+├─────────────────────────────────────────────┤
+│ Photos (0/3):                               │
+│ [📷 Ajouter des photos]                     │
+│                                             │
+│ [img1] [img2] [img3] (miniatures)           │
+├─────────────────────────────────────────────┤
+│         [Créer le topic]                    │
+└─────────────────────────────────────────────┘
 ```
-┌─────────────────────────────────────────┐
-│ 🔒 Privé (Amis)                         │
-│    Visible uniquement par vos amis      │
-├─────────────────────────────────────────┤
-│ 👥 Communauté (Islam)                   │
-│    Visible par les utilisateurs Islam   │
-├─────────────────────────────────────────┤
-│ 🌍 Tout public                          │
-│    Visible par tout le monde            │
-└─────────────────────────────────────────┘
+
+### Zone de réponse
+
+```text
+┌─────────────────────────────────────────────┐
+│ [Écrire une réponse...               ] 📷  │
+│                                             │
+│ [img1] ×  (preview si photo sélectionnée)   │
+├─────────────────────────────────────────────┤
+│         [📤 Envoyer]                        │
+└─────────────────────────────────────────────┘
 ```
 
-### 5. Mettre à jour l'edge function `create-forum-topic`
+### Affichage d'un post avec photo
 
-Accepter les 3 valeurs de visibility :
-- `private` : ne pas stocker de religion
-- `public` : stocker la religion de l'utilisateur
-- `global` : ne pas stocker de religion (accessible à tous)
-
-### 6. Mettre à jour les RLS policies
-
-```sql
--- Politique mise à jour pour forum_topics SELECT
-DROP POLICY IF EXISTS "Users can view topics based on visibility" ON forum_topics;
-
-CREATE POLICY "Users can view topics based on visibility" 
-ON forum_topics FOR SELECT
-USING (
-  CASE
-    -- Topics privés : auteur ou ami
-    WHEN visibility = 'private' THEN 
-      (auth.uid() = author_id) OR is_friend_of(auth.uid(), author_id)
-    -- Topics globaux : tout le monde peut voir
-    WHEN visibility = 'global' THEN true
-    -- Topics publics (communauté) : même religion ou auteur
-    WHEN visibility = 'public' THEN 
-      (auth.uid() = author_id) OR 
-      (religion IS NOT NULL AND religion = get_user_religion(auth.uid()))
-    ELSE false
-  END
-);
+```text
+┌─────────────────────────────────────────────┐
+│ 👤 Username • il y a 2h                     │
+├─────────────────────────────────────────────┤
+│ Voici ma photo de la cathédrale...          │
+│                                             │
+│ ┌───────┐ ┌───────┐                         │
+│ │ 📷    │ │ 📷    │  ← Cliquable            │
+│ │ mini  │ │ mini  │                         │
+│ └───────┘ └───────┘                         │
+└─────────────────────────────────────────────┘
 ```
 
 ---
@@ -117,32 +130,30 @@ USING (
 
 | Fichier | Modification |
 |---------|--------------|
-| `src/components/ForumTab.tsx` | Ajouter filtrage par religion, option "global" |
-| `supabase/functions/create-forum-topic/index.ts` | Accepter visibility "global" |
-| Migration SQL | Mettre à jour la RLS policy |
+| **Migration SQL** | Créer bucket `forum-photos`, ajouter colonnes `image_urls` |
+| **`src/lib/secureUpload.ts`** | Ajouter bucket 'forum-photos' au type |
+| **`supabase/functions/upload-file/index.ts`** | Ajouter config pour 'forum-photos' |
+| **`supabase/functions/create-forum-topic/index.ts`** | Accepter et stocker `imageUrls` |
+| **`supabase/functions/create-forum-post/index.ts`** | Accepter et stocker `imageUrls` |
+| **`src/components/ForumTab.tsx`** | Upload photos + affichage + lightbox |
 
 ---
 
-## Résumé des changements
+## Sécurité
 
-```text
-AVANT                           APRÈS
-─────                           ─────
-[Privé] [Public]                [Privé] [Communauté] [Tout public]
-                                
-Filtrage: visibility only       Filtrage: visibility + religion
-                                
-Topics visibles: tous           Topics visibles: 
-                                - Privé → amis
-                                - Public → même religion
-                                - Global → tout le monde
-```
+- **Upload validé côté serveur** via `upload-file` edge function (taille, type, signature)
+- **Quota utilisateur** respecté (stockage limité par user)
+- **Bucket privé** : les URLs sont signées (expiration 1h)
+- **Validation HTML** : les URLs sont des paths internes, pas d'injection possible
 
 ---
 
-## Impact
+## Limites
 
-- **Sécurité** : Les utilisateurs ne verront que les topics appropriés à leur religion
-- **Flexibilité** : Possibilité de créer des topics visibles par tous
-- **Rétrocompatibilité** : Les anciens topics `public` sans religion seront traités comme `global`
+| Élément | Limite |
+|---------|--------|
+| Photos par topic | 3 max |
+| Photos par post | 3 max |
+| Taille par photo | 5 MB |
+| Types acceptés | JPEG, PNG, WebP |
 
