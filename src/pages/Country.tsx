@@ -1,5 +1,6 @@
 import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAudioGuide } from '@/hooks/useAudioGuide';
+import ImmersiveAudioPlayer from '@/components/ImmersiveAudioPlayer';
 import { useTranslation } from 'react-i18next';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
@@ -681,8 +682,17 @@ const Country = () => {
                       À savoir
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-3">
+                  <CardContent className="space-y-4">
                     <p className="leading-relaxed">{selectedPlace.description}</p>
+                    
+                    {/* Immersive Audio Guide */}
+                    <ImmersiveAudioPlayer
+                      text={selectedPlace.description}
+                      placeId={selectedPlace.id}
+                      placeName={selectedPlace.name}
+                      placeType={selectedPlace.type}
+                      religion={selectedPlace.religion}
+                    />
                     
                     <div className="pt-3 border-t space-y-2">
                       <p className="text-sm text-muted-foreground">
