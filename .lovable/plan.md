@@ -1,67 +1,49 @@
 
+# Plan : Actions rapides sur les popups du globe
 
-## Plan: Fix React useState null Error
+## ✅ IMPLÉMENTÉ
 
-### Problem Analysis
-The error `Cannot read properties of null (reading 'useState')` is caused by **duplicate React instances** in the Vite bundle. This happens when:
-- Libraries like `@react-three/fiber`, `@react-three/drei`, and `three.js` bundle their own copy of React
-- The Vite dependency cache still contains the old (conflicting) versions
+Les popups du globe 3D ont été enrichies avec des boutons d'action rapide pour améliorer l'expérience utilisateur.
 
-The fix added to `vite.config.ts` (dedupe) is correct but **the Vite cache needs to be cleared** for it to take effect.
+---
 
-### Technical Solution
+## Fonctionnalités ajoutées
 
-**1. Enhanced Vite Configuration**
-Update `vite.config.ts` with:
-- Force prebuild React packages with `optimizeDeps.include`
-- Extend dedupe to cover three.js ecosystem
-- Add force flag to rebuild dependencies
+### 1. Popup des lieux standards (places-circles)
+- **+ Itinéraire** : Ajoute le lieu à l'itinéraire avec toast de confirmation
+- **🍽️ Restaurants** : Navigue vers la page pays, onglet restaurants
+- **🏨 Hôtels** : Navigue vers la page détail, section services
+- **🚌 Transports** : Navigue vers la page détail, section services
 
-```text
-+------------------------------------------+
-|           vite.config.ts                 |
-+------------------------------------------+
-| optimizeDeps: {                          |
-|   include: [                             |
-|     "react",                             |
-|     "react-dom",                         |
-|     "react/jsx-runtime",                 |
-|     "@react-three/fiber",                |
-|     "@react-three/drei",                 |
-|     "three"                              |
-|   ],                                     |
-|   force: true  // Force rebuild cache    |
-| },                                       |
-| resolve: {                               |
-|   dedupe: [                              |
-|     "react",                             |
-|     "react-dom",                         |
-|     "react/jsx-runtime",                 |
-|     "three",                             |
-|     "@react-three/fiber",                |
-|     "@react-three/drei"                  |
-|   ]                                      |
-| }                                        |
-+------------------------------------------+
-```
+### 2. Popup des lieux dans l'itinéraire (trip-places-circles)
+- **✕ Retirer** : Retire le lieu de l'itinéraire avec toast de confirmation
+- **🍽️ Restaurants** : Navigue vers la page pays, onglet restaurants
+- **🏨 Hôtels** : Navigue vers la page détail, section services
+- **🚌 Transports** : Navigue vers la page détail, section services
 
-**2. Why This Works**
-- `optimizeDeps.include`: Forces Vite to prebundle these dependencies together, ensuring they share a single React instance
-- `optimizeDeps.force`: Clears the cached dependencies on next build
-- `dedupe`: Ensures all imports resolve to the same module instance
+---
 
-### Files to Modify
+## Implémentation technique
 
-| File | Change |
-|------|--------|
-| `vite.config.ts` | Add `optimizeDeps` block with `include` and `force` settings |
+### CustomEvents utilisés
+- `addToTripFromGlobe` : Ajouter à l'itinéraire
+- `removeFromTripFromGlobe` : Retirer de l'itinéraire  
+- `openServicesFromGlobe` : Ouvrir les services (restaurant/hotel/transport)
+- `navigateToPlace` : Naviguer vers la page détail (existant)
 
-### Expected Outcome
-After applying this fix:
-- The app will load without the `useState is null` error
-- All 3D/AR components using `@react-three/*` will work correctly
-- The Vite dev server will rebuild its dependency cache
+### Fichiers modifiés
+- `src/components/Globe3D.tsx` : Boutons HTML dans les popups + event listeners
 
-### Note
-The `force: true` option can be removed after confirming the fix works, as it slightly slows down cold starts.
+---
 
+## Flux utilisateur amélioré
+
+1. L'utilisateur clique sur un lieu depuis le globe
+2. Une popup s'affiche avec :
+   - Image + infos du lieu
+   - Barre d'actions rapides en bas
+3. L'utilisateur peut :
+   - Cliquer sur l'image → Page détail complète
+   - Cliquer sur [+] → Ajoute à l'itinéraire (toast confirmation)
+   - Cliquer sur [🍽️] → Page pays, onglet restaurants
+   - Cliquer sur [🏨/🚌] → Page détail, scroll vers services
