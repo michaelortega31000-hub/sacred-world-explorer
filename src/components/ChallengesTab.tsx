@@ -111,17 +111,6 @@ const ChallengesTab = () => {
     return daysLeft;
   };
 
-  const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
-    const R = 6371; // Rayon de la Terre en km
-    const dLat = (lat2 - lat1) * Math.PI / 180;
-    const dLon = (lon2 - lon1) * Math.PI / 180;
-    const a = 
-      Math.sin(dLat/2) * Math.sin(dLat/2) +
-      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-      Math.sin(dLon/2) * Math.sin(dLon/2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-    return R * c;
-  };
 
   const getContinent = (country: string): string => {
     const continentMap: { [key: string]: string } = {
@@ -385,31 +374,6 @@ const ChallengesTab = () => {
     },
   ];
 
-  const nearbyPlaces = useMemo(() => {
-    if (!userLocation?.latitude || !userLocation?.longitude) {
-      return [];
-    }
-
-    const placesWithDistance = placesData
-      .map(place => ({
-        ...place,
-        distance: calculateDistance(
-          userLocation.latitude,
-          userLocation.longitude,
-          place.coordinates[1],
-          place.coordinates[0]
-        )
-      }))
-      .filter(place => place.distance <= 50)
-      .sort((a, b) => a.distance - b.distance)
-      .slice(0, 10)
-      .map(place => ({
-        ...place,
-        distance: Math.round(place.distance * 10) / 10
-      }));
-
-    return placesWithDistance;
-  }, [userLocation]);
 
   return (
     <div className="space-y-6 pb-32">
@@ -472,7 +436,7 @@ const ChallengesTab = () => {
       </Card>
 
       <Tabs defaultValue="daily" className="w-full">
-        <TabsList className="w-full grid grid-cols-5 sm:inline-flex sm:justify-start">
+        <TabsList className="w-full grid grid-cols-4 sm:inline-flex sm:justify-start">
           <TabsTrigger value="daily" className="flex-shrink-0 gap-2">
             <Clock className="w-4 h-4" />
             <span className="hidden sm:inline">Journalière</span>
@@ -488,10 +452,6 @@ const ChallengesTab = () => {
           <TabsTrigger value="culture" className="flex-shrink-0 gap-2">
             <Building2 className="w-4 h-4" />
             <span className="hidden sm:inline">Culture</span>
-          </TabsTrigger>
-          <TabsTrigger value="nearby" className="flex-shrink-0 gap-2">
-            <MapPin className="w-4 h-4" />
-            <span className="hidden sm:inline">À proximité</span>
           </TabsTrigger>
         </TabsList>
 
@@ -794,65 +754,6 @@ const ChallengesTab = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="nearby" className="space-y-4">
-          <Card className="border-accent/20 bg-gradient-to-br from-accent/5 to-transparent">
-            <CardHeader>
-              <CardTitle>Lieux à proximité</CardTitle>
-              <CardDescription>
-                Découvrez les lieux sacrés dans un rayon de 50 km
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          {!userProgress.geolocationEnabled ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <MapPin className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  Activez la géolocalisation dans les réglages pour découvrir les lieux près de vous
-                </p>
-              </CardContent>
-            </Card>
-          ) : nearbyPlaces.length === 0 ? (
-            <Card>
-              <CardContent className="pt-6 text-center">
-                <Compass className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-muted-foreground">
-                  Aucun lieu sacré trouvé dans un rayon de 50 km
-                </p>
-              </CardContent>
-            </Card>
-          ) : (
-            nearbyPlaces.map((place) => (
-              <Card key={place.id}>
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="space-y-1">
-                      <CardTitle className="text-lg">{place.name}</CardTitle>
-                      <CardDescription>{place.country}</CardDescription>
-                    </div>
-                    <Badge variant="secondary">{place.distance} km</Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Trophy className="w-4 h-4 text-primary" />
-                      <span className="font-semibold">+{place.points} points</span>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => flyToLocation(place.coordinates[1], place.coordinates[0], 12)}
-                    >
-                      Voir sur la carte
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))
-          )}
-        </TabsContent>
       </Tabs>
     </div>
   );

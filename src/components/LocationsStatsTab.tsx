@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { usePlaces } from '@/hooks/usePlaces';
+import { getContinent } from '@/data/placesData';
 import { MapPin, Globe2, Building2, Trophy, Flag, Users, ChevronRight, ArrowLeft, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -12,6 +13,17 @@ import RankingTab from './RankingTab';
 import CountryRankingTab from './CountryRankingTab';
 import FriendsRankingTab from './FriendsRankingTab';
 
+// Translation mapping for continent names (English to French)
+const continentTranslations: Record<string, string> = {
+  'Africa': 'Afrique',
+  'Asia': 'Asie',
+  'Europe': 'Europe',
+  'North America': 'Amérique du Nord',
+  'South America': 'Amérique du Sud',
+  'Oceania': 'Océanie',
+  'Other': 'Autre',
+};
+
 const LocationsStatsTab = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -20,90 +32,10 @@ const LocationsStatsTab = () => {
   const [selectedContinent, setSelectedContinent] = useState<string | null>(null);
   const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
 
-  // Mapping des pays aux continents
-  const countryToContinentMap: Record<string, string> = {
-    // Europe
-    'France': 'Europe',
-    'Italy': 'Europe',
-    'Spain': 'Europe',
-    'United Kingdom': 'Europe',
-    'Germany': 'Europe',
-    'Greece': 'Europe',
-    'Russia': 'Europe',
-    'Poland': 'Europe',
-    'Portugal': 'Europe',
-    'Turkey': 'Europe',
-    'Austria': 'Europe',
-    'Hungary': 'Europe',
-    'Czech Republic': 'Europe',
-    'Belgium': 'Europe',
-    'Netherlands': 'Europe',
-    'Switzerland': 'Europe',
-    'Denmark': 'Europe',
-    'Sweden': 'Europe',
-    'Norway': 'Europe',
-    'Finland': 'Europe',
-    'Ireland': 'Europe',
-    'Croatia': 'Europe',
-    'Serbia': 'Europe',
-    'Romania': 'Europe',
-    'Bulgaria': 'Europe',
-    'Lithuania': 'Europe',
-    'Latvia': 'Europe',
-    'Estonia': 'Europe',
-    'Slovakia': 'Europe',
-    'Slovenia': 'Europe',
-    'Albania': 'Europe',
-    'Luxembourg': 'Europe',
-    'Malta': 'Europe',
-    'Cyprus': 'Europe',
-    'Iceland': 'Europe',
-    
-    // Asia
-    'China': 'Asie',
-    'Japan': 'Asie',
-    'India': 'Asie',
-    'Thailand': 'Asie',
-    'Cambodia': 'Asie',
-    'Myanmar': 'Asie',
-    'Nepal': 'Asie',
-    'Tibet': 'Asie',
-    'Indonesia': 'Asie',
-    'Sri Lanka': 'Asie',
-    'Iran': 'Asie',
-    'Philippines': 'Asie',
-    
-    // Middle East & North Africa
-    'Israel': 'Moyen-Orient',
-    'Palestine': 'Moyen-Orient',
-    'Saudi Arabia': 'Moyen-Orient',
-    'Jordan': 'Moyen-Orient',
-    'UAE': 'Moyen-Orient',
-    'Egypt': 'Afrique',
-    'Morocco': 'Afrique',
-    'Algeria': 'Afrique',
-    'Tunisia': 'Afrique',
-    'Ethiopia': 'Afrique',
-    'South Africa': 'Afrique',
-    
-    // Americas
-    'United States': 'Amérique du Nord',
-    'Canada': 'Amérique du Nord',
-    'Mexico': 'Amérique du Nord',
-    'Brazil': 'Amérique du Sud',
-    'Peru': 'Amérique du Sud',
-    'Argentina': 'Amérique du Sud',
-    'Colombia': 'Amérique du Sud',
-    'Chile': 'Amérique du Sud',
-    
-    // Oceania
-    'Australia': 'Océanie',
-    'New Zealand': 'Océanie',
-  };
-
-  // Statistiques par continent
+  // Statistiques par continent (utilise le mapping centralisé de placesData.ts)
   const continentStats = allPlaces.reduce((acc, place) => {
-    const continent = countryToContinentMap[place.country] || 'Autre';
+    const continentEN = getContinent(place.country);
+    const continent = continentTranslations[continentEN] || continentEN;
     if (!acc[continent]) {
       acc[continent] = { count: 0, countries: new Set<string>() };
     }
@@ -114,7 +46,7 @@ const LocationsStatsTab = () => {
 
   // Statistiques par pays (filtrées par continent si sélectionné)
   const countryStats = allPlaces
-    .filter(place => !selectedContinent || (countryToContinentMap[place.country] || 'Autre') === selectedContinent)
+    .filter(place => !selectedContinent || (continentTranslations[getContinent(place.country)] || getContinent(place.country)) === selectedContinent)
     .reduce((acc, place) => {
       if (!acc[place.country]) {
         acc[place.country] = { count: 0, cities: new Set<string>() };
