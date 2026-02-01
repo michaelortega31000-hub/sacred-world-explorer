@@ -1,97 +1,115 @@
 
 
-# Plan : Enrichir et améliorer la galerie d'avatars
+# Plan : Correction du filtrage des topics par religion + option "Tout public"
 
-## Résumé des demandes
+## Problème identifié
 
-| Action | Détail |
-|--------|--------|
-| **Spirituels** | Ajouter croix latine ✝️, Main de Fatma (Hamsa) 🪬, Étoile de David ✡️, Croissant ☪️ |
-| **Nature** | Ajouter plus de fleurs, arbres, feuilles 🌿🌺🌻 |
-| **Moderne** | Ajouter boussole 🧭, fusée 🚀, diamant 💎 |
-| **Statues/Musées** | Nouvelle catégorie avec statues 🗿, colonnes 🏛️, amphore 🏺 |
-| **Abstraits** | **Supprimer** cette catégorie |
+Actuellement, quand un utilisateur choisit "Islam" :
+- Il voit encore les topics "Christianity" dans l'onglet "Par religion"
+- Le frontend filtre uniquement par `visibility` (private/public), pas par `religion`
+- Les RLS policies existent mais ne suffisent pas car la requête retourne quand même les données
 
----
+### Données actuelles en base
 
-## Nouveaux avatars à ajouter
+| Topic | Religion | Visibility |
+|-------|----------|------------|
+| messe | christianity | public |
+| pelerinage | null | public |
 
-### Catégorie "Spirituels" (4 nouveaux)
-
-| Emoji | Nom | Code OpenMoji | URL |
-|-------|-----|---------------|-----|
-| ✝️ | Croix Latine | 271D | `https://openmoji.org/data/color/svg/271D.svg` |
-| 🪬 | Main de Fatma | 1FAAC | `https://openmoji.org/data/color/svg/1FAAC.svg` |
-| ✡️ | Étoile de David | 2721 | `https://openmoji.org/data/color/svg/2721.svg` |
-| ☪️ | Croissant | 262A | `https://openmoji.org/data/color/svg/262A.svg` |
-
-### Catégorie "Nature" (4 nouveaux)
-
-| Emoji | Nom | Code OpenMoji | URL |
-|-------|-----|---------------|-----|
-| 🌿 | Feuille | 1F33F | `https://openmoji.org/data/color/svg/1F33F.svg` |
-| 🌺 | Hibiscus | 1F33A | `https://openmoji.org/data/color/svg/1F33A.svg` |
-| 🌻 | Tournesol | 1F33B | `https://openmoji.org/data/color/svg/1F33B.svg` |
-| 🌴 | Palmier | 1F334 | `https://openmoji.org/data/color/svg/1F334.svg` |
-
-### Catégorie "Moderne" (3 nouveaux)
-
-| Emoji | Nom | Code OpenMoji | URL |
-|-------|-----|---------------|-----|
-| 🧭 | Boussole | 1F9ED | `https://openmoji.org/data/color/svg/1F9ED.svg` |
-| 🚀 | Fusée | 1F680 | `https://openmoji.org/data/color/svg/1F680.svg` |
-| 💎 | Diamant | 1F48E | `https://openmoji.org/data/color/svg/1F48E.svg` |
-
-### Nouvelle catégorie "Musées" (4 avatars)
-
-| Emoji | Nom | Code OpenMoji | URL |
-|-------|-----|---------------|-----|
-| 🗿 | Moaï | 1F5FF | `https://openmoji.org/data/color/svg/1F5FF.svg` |
-| 🏛️ | Temple Grec | 1F3DB | `https://openmoji.org/data/color/svg/1F3DB.svg` |
-| 🏺 | Amphore | 1F3FA | `https://openmoji.org/data/color/svg/1F3FA.svg` |
-| 🎭 | Masques | 1F3AD | `https://openmoji.org/data/color/svg/1F3AD.svg` |
+L'utilisateur avec `selected_religion: islam` voit les deux topics alors qu'il ne devrait voir que ceux de sa religion.
 
 ---
 
-## Avatars à supprimer
+## Solution proposée
 
-| ID | Nom | Catégorie |
-|----|-----|-----------|
-| `5b260771-f86a-4f15-a673-3fff262fc66a` | Cyclone | abstract |
-| `efd78e90-b6e5-468b-b4e7-fe1f2d3a6aba` | Étincelle | abstract |
+### 1. Modifier les options de visibilité (3 choix au lieu de 2)
 
----
+| Option | Comportement |
+|--------|--------------|
+| **Privé (Amis)** | Visible uniquement par les amis |
+| **Communauté** | Visible uniquement par les utilisateurs de la même religion |
+| **Tout public** | Visible par tout le monde |
 
-## Mise à jour du code
+### 2. Modifier la structure de données
 
-Le fichier `src/pages/AvatarsGallery.tsx` et `src/components/profile/DefaultAvatarSelector.tsx` contiennent les labels de catégories. Il faudra ajouter :
+Ajouter une nouvelle valeur `visibility: 'global'` pour les topics accessibles à tous :
 
 ```typescript
-const categoryLabels: Record<string, string> = {
-  spiritual: 'Spirituels',
-  nature: 'Nature',
-  modern: 'Modernes',
-  museum: 'Musées',  // ← Nouvelle catégorie
-  // abstract: supprimé
-  legendary: 'Légendaires',
-  epic: 'Épiques',
-  rare: 'Rares',
-  achievement: 'Accomplissements'
+visibility: 'private' | 'public' | 'global'
+```
+
+- `private` = amis seulement
+- `public` = même religion (comportement actuel)
+- `global` = tout le monde
+
+### 3. Mettre à jour le frontend (`ForumTab.tsx`)
+
+Modifier `getFilteredAndSortedTopics()` pour filtrer correctement :
+
+```typescript
+const getFilteredAndSortedTopics = () => {
+  let filtered = topics;
+  
+  if (forumTab === 'friends') {
+    // Onglet "Mes amis" : uniquement les topics privés
+    filtered = topics.filter(t => t.visibility === 'private');
+  } else {
+    // Onglet "Par religion" : topics de ma religion OU globaux
+    const userReligion = userProgress.selectedReligion;
+    filtered = topics.filter(t => 
+      t.visibility === 'global' || 
+      (t.visibility === 'public' && t.religion === userReligion)
+    );
+  }
+  // ... reste du code (search, sort)
 };
 ```
 
----
+### 4. Mettre à jour l'UI de création de topic
 
-## Résumé final
+```
+┌─────────────────────────────────────────┐
+│ 🔒 Privé (Amis)                         │
+│    Visible uniquement par vos amis      │
+├─────────────────────────────────────────┤
+│ 👥 Communauté (Islam)                   │
+│    Visible par les utilisateurs Islam   │
+├─────────────────────────────────────────┤
+│ 🌍 Tout public                          │
+│    Visible par tout le monde            │
+└─────────────────────────────────────────┘
+```
 
-| Catégorie | Avant | Après |
-|-----------|-------|-------|
-| Spirituels | 3 | **7** (+4) |
-| Nature | 2 | **6** (+4) |
-| Moderne | 2 | **5** (+3) |
-| Musées | 0 | **4** (nouveau) |
-| Abstraits | 2 | **0** (supprimé) |
-| **Total accessible** | **9** | **22** |
+### 5. Mettre à jour l'edge function `create-forum-topic`
+
+Accepter les 3 valeurs de visibility :
+- `private` : ne pas stocker de religion
+- `public` : stocker la religion de l'utilisateur
+- `global` : ne pas stocker de religion (accessible à tous)
+
+### 6. Mettre à jour les RLS policies
+
+```sql
+-- Politique mise à jour pour forum_topics SELECT
+DROP POLICY IF EXISTS "Users can view topics based on visibility" ON forum_topics;
+
+CREATE POLICY "Users can view topics based on visibility" 
+ON forum_topics FOR SELECT
+USING (
+  CASE
+    -- Topics privés : auteur ou ami
+    WHEN visibility = 'private' THEN 
+      (auth.uid() = author_id) OR is_friend_of(auth.uid(), author_id)
+    -- Topics globaux : tout le monde peut voir
+    WHEN visibility = 'global' THEN true
+    -- Topics publics (communauté) : même religion ou auteur
+    WHEN visibility = 'public' THEN 
+      (auth.uid() = author_id) OR 
+      (religion IS NOT NULL AND religion = get_user_religion(auth.uid()))
+    ELSE false
+  END
+);
+```
 
 ---
 
@@ -99,7 +117,32 @@ const categoryLabels: Record<string, string> = {
 
 | Fichier | Modification |
 |---------|--------------|
-| Migration SQL | INSERT nouveaux avatars, DELETE abstraits |
-| `src/pages/AvatarsGallery.tsx` | Ajouter label "museum", supprimer "abstract" |
-| `src/components/profile/DefaultAvatarSelector.tsx` | Idem |
+| `src/components/ForumTab.tsx` | Ajouter filtrage par religion, option "global" |
+| `supabase/functions/create-forum-topic/index.ts` | Accepter visibility "global" |
+| Migration SQL | Mettre à jour la RLS policy |
+
+---
+
+## Résumé des changements
+
+```text
+AVANT                           APRÈS
+─────                           ─────
+[Privé] [Public]                [Privé] [Communauté] [Tout public]
+                                
+Filtrage: visibility only       Filtrage: visibility + religion
+                                
+Topics visibles: tous           Topics visibles: 
+                                - Privé → amis
+                                - Public → même religion
+                                - Global → tout le monde
+```
+
+---
+
+## Impact
+
+- **Sécurité** : Les utilisateurs ne verront que les topics appropriés à leur religion
+- **Flexibilité** : Possibilité de créer des topics visibles par tous
+- **Rétrocompatibilité** : Les anciens topics `public` sans religion seront traités comme `global`
 
