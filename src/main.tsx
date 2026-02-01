@@ -4,17 +4,26 @@ import { BrowserRouter } from "react-router-dom";
 import App from "./App.tsx";
 import "./index.css";
 
-// Register Service Worker for Push Notifications
+// Unregister ALL service workers first to prevent stale cache issues
+// This is critical - SW can serve old React bundles causing "Invalid hook call"
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker
-      .register("/sw.js")
-      .then((registration) => {
-        console.log("[SW] Service Worker registered:", registration);
-      })
-      .catch((error) => {
-        console.error("[SW] Service Worker registration failed:", error);
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    for (const registration of registrations) {
+      registration.unregister().then((success) => {
+        if (success) {
+          console.log("[SW] Unregistered stale service worker");
+        }
       });
+    }
+  });
+}
+
+// Clear caches that might contain stale bundles
+if ("caches" in window) {
+  caches.keys().then((names) => {
+    names.forEach((name) => {
+      caches.delete(name);
+    });
   });
 }
 
