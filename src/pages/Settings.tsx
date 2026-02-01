@@ -20,6 +20,7 @@ import EventReminderSettings from '@/components/EventReminderSettings';
 import { logger } from '@/lib/logger';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
+import GlobeSettingsCard from '@/components/settings/GlobeSettingsCard';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -358,6 +359,9 @@ const Settings = () => {
               </div>
             </div>
           </Card>
+
+          {/* Globe Customization */}
+          <GlobeSettingsCard />
 
           {/* Mode sombre */}
           <Card className="p-6 bg-card border-border">
