@@ -21,12 +21,13 @@ interface UseAudioGuideReturn {
   download: (placeName: string) => void;
 }
 
+// Cache for audio blobs by placeId
+const audioCache = new Map<string, Blob>();
+
 export const useAudioGuide = (): UseAudioGuideReturn => {
   const { toast } = useToast();
-  const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null);
-  const progressIntervalRef = useRef<number | null>(null);
-  const startTimeRef = useRef<number>(0);
-  const estimatedDurationRef = useRef<number>(0);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const audioBlobRef = useRef<Blob | null>(null);
 
   const [state, setState] = useState<AudioGuideState>({
     isLoading: false,
@@ -41,68 +42,19 @@ export const useAudioGuide = (): UseAudioGuideReturn => {
   // Cleanup on unmount
   useEffect(() => {
     return () => {
-      if (progressIntervalRef.current) {
-        clearInterval(progressIntervalRef.current);
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
       }
-      window.speechSynthesis.cancel();
     };
-  }, []);
-
-  // Load voices when available
-  useEffect(() => {
-    const loadVoices = () => {
-      window.speechSynthesis.getVoices();
-    };
-    
-    loadVoices();
-    window.speechSynthesis.addEventListener('voiceschanged', loadVoices);
-    
-    return () => {
-      window.speechSynthesis.removeEventListener('voiceschanged', loadVoices);
-    };
-  }, []);
-
-  const startProgressTracking = useCallback((estimatedDuration: number) => {
-    startTimeRef.current = Date.now();
-    estimatedDurationRef.current = estimatedDuration;
-
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-    }
-
-    progressIntervalRef.current = window.setInterval(() => {
-      const elapsed = (Date.now() - startTimeRef.current) / 1000;
-      const progress = Math.min((elapsed / estimatedDuration) * 100, 99);
-      
-      setState(prev => ({
-        ...prev,
-        currentTime: elapsed,
-        progress,
-      }));
-    }, 100);
-  }, []);
-
-  const stopProgressTracking = useCallback(() => {
-    if (progressIntervalRef.current) {
-      clearInterval(progressIntervalRef.current);
-      progressIntervalRef.current = null;
-    }
   }, []);
 
   const play = useCallback(async (text: string, placeId: string) => {
-    // Check browser support
-    if (!('speechSynthesis' in window)) {
-      toast({
-        title: 'Non supporté',
-        description: 'Votre navigateur ne supporte pas la synthèse vocale',
-        variant: 'destructive',
-      });
-      return;
+    // Stop any current playback
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.src = '';
     }
-
-    // Cancel any ongoing speech
-    window.speechSynthesis.cancel();
-    stopProgressTracking();
 
     setState(prev => ({
       ...prev,
@@ -114,120 +66,172 @@ export const useAudioGuide = (): UseAudioGuideReturn => {
       currentTime: 0,
     }));
 
-    // Create utterance
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'fr-FR';
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    utterance.volume = 1;
+    try {
+      let audioBlob: Blob;
 
-    // Try to find a French voice
-    const voices = window.speechSynthesis.getVoices();
-    const frenchVoice = voices.find(v => 
-      v.lang === 'fr-FR' || v.lang.startsWith('fr')
-    );
-    if (frenchVoice) {
-      utterance.voice = frenchVoice;
-    }
+      // Check cache first
+      if (audioCache.has(placeId)) {
+        audioBlob = audioCache.get(placeId)!;
+      } else {
+        // Call ElevenLabs edge function with Laura's voice
+        const response = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/elevenlabs-tts`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({
+              text,
+              voiceId: 'FGY2WhTYpPnrIDTdsKH5', // Laura - French voice
+              placeId,
+            }),
+          }
+        );
 
-    // Estimate duration (roughly 150 words per minute for French)
-    const wordCount = text.split(/\s+/).length;
-    const estimatedDuration = (wordCount / 150) * 60; // in seconds
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Erreur ${response.status}`);
+        }
 
-    utterance.onstart = () => {
+        audioBlob = await response.blob();
+        
+        // Cache the audio
+        audioCache.set(placeId, audioBlob);
+      }
+
+      audioBlobRef.current = audioBlob;
+
+      // Create audio element and play
+      const audioUrl = URL.createObjectURL(audioBlob);
+      const audio = new Audio(audioUrl);
+      audioRef.current = audio;
+
+      audio.onloadedmetadata = () => {
+        setState(prev => ({
+          ...prev,
+          duration: audio.duration,
+        }));
+      };
+
+      audio.ontimeupdate = () => {
+        const progress = audio.duration > 0 
+          ? (audio.currentTime / audio.duration) * 100 
+          : 0;
+        setState(prev => ({
+          ...prev,
+          currentTime: audio.currentTime,
+          progress,
+        }));
+      };
+
+      audio.onended = () => {
+        setState(prev => ({
+          ...prev,
+          isPlaying: false,
+          isPaused: false,
+          progress: 100,
+        }));
+      };
+
+      audio.onerror = () => {
+        setState(prev => ({
+          ...prev,
+          isLoading: false,
+          isPlaying: false,
+          error: 'Erreur de lecture audio',
+        }));
+        toast({
+          title: 'Erreur audio',
+          description: 'Impossible de lire l\'audio',
+          variant: 'destructive',
+        });
+      };
+
+      await audio.play();
+      
       setState(prev => ({
         ...prev,
         isLoading: false,
         isPlaying: true,
-        duration: estimatedDuration,
       }));
-      startProgressTracking(estimatedDuration);
-    };
 
-    utterance.onend = () => {
-      stopProgressTracking();
-      setState(prev => ({
-        ...prev,
-        isPlaying: false,
-        isPaused: false,
-        progress: 100,
-        currentTime: estimatedDuration,
-      }));
-    };
-
-    utterance.onerror = (event) => {
-      stopProgressTracking();
-      console.error('Speech synthesis error:', event);
+    } catch (error) {
+      console.error('Audio guide error:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
+      
       setState(prev => ({
         ...prev,
         isLoading: false,
         isPlaying: false,
-        error: 'Erreur de lecture',
+        error: errorMessage,
       }));
-      
-      if (event.error !== 'canceled') {
-        toast({
-          title: 'Erreur audio',
-          description: 'Impossible de lire le texte',
-          variant: 'destructive',
-        });
-      }
-    };
 
-    utterance.onpause = () => {
-      stopProgressTracking();
-      setState(prev => ({ ...prev, isPlaying: false, isPaused: true }));
-    };
-
-    utterance.onresume = () => {
-      startProgressTracking(estimatedDurationRef.current - state.currentTime);
-      setState(prev => ({ ...prev, isPlaying: true, isPaused: false }));
-    };
-
-    utteranceRef.current = utterance;
-    window.speechSynthesis.speak(utterance);
-  }, [toast, stopProgressTracking, startProgressTracking, state.currentTime]);
+      toast({
+        title: 'Erreur audioguide',
+        description: errorMessage,
+        variant: 'destructive',
+      });
+    }
+  }, [toast]);
 
   const pause = useCallback(() => {
-    if (window.speechSynthesis.speaking && !window.speechSynthesis.paused) {
-      window.speechSynthesis.pause();
-      stopProgressTracking();
+    if (audioRef.current && !audioRef.current.paused) {
+      audioRef.current.pause();
       setState(prev => ({ ...prev, isPlaying: false, isPaused: true }));
     }
-  }, [stopProgressTracking]);
+  }, []);
 
   const resume = useCallback(() => {
-    if (window.speechSynthesis.paused) {
-      window.speechSynthesis.resume();
+    if (audioRef.current && audioRef.current.paused) {
+      audioRef.current.play();
       setState(prev => ({ ...prev, isPlaying: true, isPaused: false }));
     }
   }, []);
 
   const stop = useCallback(() => {
-    window.speechSynthesis.cancel();
-    stopProgressTracking();
-    setState(prev => ({
-      ...prev,
-      isPlaying: false,
-      isPaused: false,
-      progress: 0,
-      currentTime: 0,
-    }));
-  }, [stopProgressTracking]);
+    if (audioRef.current) {
+      audioRef.current.pause();
+      audioRef.current.currentTime = 0;
+      setState(prev => ({
+        ...prev,
+        isPlaying: false,
+        isPaused: false,
+        progress: 0,
+        currentTime: 0,
+      }));
+    }
+  }, []);
 
-  // Seek is not supported with Web Speech API
   const seek = useCallback((time: number) => {
-    toast({
-      title: 'Non disponible',
-      description: 'La navigation dans l\'audio n\'est pas supportée avec la voix navigateur',
-    });
-  }, [toast]);
+    if (audioRef.current && isFinite(time)) {
+      audioRef.current.currentTime = Math.max(0, Math.min(time, audioRef.current.duration || 0));
+    }
+  }, []);
 
-  // Download is not supported with Web Speech API
   const download = useCallback((placeName: string) => {
+    if (!audioBlobRef.current) {
+      toast({
+        title: 'Téléchargement impossible',
+        description: 'Lancez d\'abord la lecture pour générer l\'audio',
+      });
+      return;
+    }
+
+    const url = URL.createObjectURL(audioBlobRef.current);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `audioguide-${placeName.replace(/[^a-z0-9]/gi, '-').toLowerCase()}.mp3`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+
     toast({
-      title: 'Non disponible',
-      description: 'Le téléchargement n\'est pas supporté avec la voix navigateur',
+      title: 'Téléchargement démarré',
+      description: 'L\'audioguide est en cours de téléchargement',
     });
   }, [toast]);
 
