@@ -4,14 +4,15 @@ import App from "./App.tsx";
 import "./index.css";
 
 // Register Service Worker for Push Notifications
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(registration => {
-        console.log('[SW] Service Worker registered:', registration);
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("[SW] Service Worker registered:", registration);
       })
-      .catch(error => {
-        console.error('[SW] Service Worker registration failed:', error);
+      .catch((error) => {
+        console.error("[SW] Service Worker registration failed:", error);
       });
   });
 }
@@ -19,5 +20,13 @@ if ('serviceWorker' in navigator) {
 createRoot(document.getElementById("root")!).render(
   <BrowserRouter>
     <App />
-  </BrowserRouter>
+  </BrowserRouter>,
+);
+// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+// const queryClient = new QueryClient();
+
+root.render(
+  // <QueryClientProvider client={queryClient}>
+  <App />,
+  // </QueryClientProvider>
 );
