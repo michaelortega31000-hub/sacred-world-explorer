@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { MessageCircle, Send, Loader2, Sparkles, HelpCircle } from "lucide-react";
+import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import {
   Sheet,
   SheetContent,
@@ -13,7 +15,8 @@ import {
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-
+import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 // Parse quick replies from message content
 const parseQuickReplies = (content: string): { text: string; suggestions: Array<{ label: string; message: string }> } => {
   const regex = /<lov-actions>([\s\S]*?)<\/lov-actions>/;
@@ -141,16 +144,60 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<Mode>("help");
   const [isLoading, setIsLoading] = useState(false);
+  const [autoSpeak, setAutoSpeak] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
   const location = useLocation();
   const { placeId } = useParams<{ placeId?: string }>();
 
+  // Voice hooks
+  const { 
+    isListening, 
+    transcript, 
+    isSupported: speechRecognitionSupported, 
+    startListening, 
+    stopListening,
+    resetTranscript 
+  } = useSpeechRecognition();
+  
+  const { 
+    isSpeaking, 
+    isSupported: speechSynthesisSupported, 
+    speak, 
+    stop: stopSpeaking 
+  } = useSpeechSynthesis();
+
   const initialSuggestions = useMemo(
     () => getInitialSuggestions(location.pathname, mode),
     [location.pathname, mode]
   );
+
+  // Update input when transcript changes
+  useEffect(() => {
+    if (transcript) {
+      setInput(transcript);
+    }
+  }, [transcript]);
+
+  // Auto-send when listening stops and we have a transcript
+  useEffect(() => {
+    if (!isListening && transcript.trim()) {
+      // Small delay to ensure the transcript is complete
+      const timer = setTimeout(() => {
+        const userMessage: Message = {
+          id: crypto.randomUUID(),
+          role: "user",
+          content: transcript.trim(),
+        };
+        setMessages((prev) => [...prev, userMessage]);
+        handleSendWithMessage(transcript.trim());
+        resetTranscript();
+        setInput("");
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isListening, transcript]);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
@@ -187,6 +234,12 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
       };
 
       setMessages((prev) => [...prev, assistantMessage]);
+
+      // Auto-speak the response if enabled
+      if (autoSpeak && speechSynthesisSupported) {
+        const { text } = parseQuickReplies(data.response);
+        speak(text);
+      }
     } catch (error) {
       console.error("Assistant error:", error);
       toast({
@@ -220,6 +273,18 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
     }
   };
 
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      // Stop any ongoing speech before listening
+      if (isSpeaking) {
+        stopSpeaking();
+      }
+      startListening();
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md flex flex-col h-full p-0">
@@ -245,6 +310,42 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
               Histoire
             </ToggleGroupItem>
           </ToggleGroup>
+
+          {/* Voice options */}
+          {(speechRecognitionSupported || speechSynthesisSupported) && (
+            <div className="flex items-center gap-4 mt-3 pt-3 border-t">
+              {speechSynthesisSupported && (
+                <div className="flex items-center gap-2">
+                  <Switch
+                    id="auto-speak"
+                    checked={autoSpeak}
+                    onCheckedChange={setAutoSpeak}
+                  />
+                  <Label htmlFor="auto-speak" className="text-xs cursor-pointer">
+                    {isSpeaking ? (
+                      <span className="flex items-center gap-1">
+                        <Volume2 className="h-3 w-3 animate-pulse" /> Lecture...
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1">
+                        <Volume2 className="h-3 w-3" /> Réponse vocale
+                      </span>
+                    )}
+                  </Label>
+                  {isSpeaking && (
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={stopSpeaking}
+                    >
+                      <VolumeX className="h-3 w-3" />
+                    </Button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </SheetHeader>
 
         {/* Messages Area */}
@@ -347,12 +448,42 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
 
         {/* Input Area */}
         <div className="p-4 border-t bg-background">
+          {/* Listening indicator */}
+          {isListening && (
+            <div className="flex items-center justify-center gap-2 mb-3 text-primary">
+              <div className="flex gap-1">
+                <span className="w-1 h-3 bg-primary rounded-full animate-pulse" />
+                <span className="w-1 h-4 bg-primary rounded-full animate-pulse delay-75" />
+                <span className="w-1 h-2 bg-primary rounded-full animate-pulse delay-150" />
+              </div>
+              <span className="text-sm font-medium">Je vous écoute...</span>
+            </div>
+          )}
+          
           <div className="flex gap-2">
+            {/* Microphone button */}
+            {speechRecognitionSupported && (
+              <Button
+                variant={isListening ? "default" : "outline"}
+                size="icon"
+                onClick={toggleListening}
+                disabled={isLoading}
+                className={`shrink-0 ${isListening ? 'bg-red-500 hover:bg-red-600' : ''}`}
+                title={isListening ? "Arrêter l'écoute" : "Parler à l'assistant"}
+              >
+                {isListening ? (
+                  <MicOff className="h-4 w-4" />
+                ) : (
+                  <Mic className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+            
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={mode === "help" ? "Comment puis-je vous aider ?" : "Quel lieu vous intéresse ?"}
+              placeholder={isListening ? "Parlez maintenant..." : (mode === "help" ? "Comment puis-je vous aider ?" : "Quel lieu vous intéresse ?")}
               className="min-h-[44px] max-h-32 resize-none"
               rows={1}
             />
