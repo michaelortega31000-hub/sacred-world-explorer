@@ -9,6 +9,11 @@ export const usePushNotifications = () => {
   const [isSupported, setIsSupported] = useState(false);
   const [isSubscribed, setIsSubscribed] = useState(false);
   const [registration, setRegistration] = useState<ServiceWorkerRegistration | null>(null);
+
+  // Helper to access pushManager with proper typing
+  const getPushManager = (reg: ServiceWorkerRegistration) => {
+    return (reg as unknown as { pushManager: { getSubscription: () => Promise<PushSubscription | null>; subscribe: (options: PushSubscriptionOptionsInit) => Promise<PushSubscription> } }).pushManager;
+  };
   const { toast } = useToast();
 
   useEffect(() => {
@@ -28,7 +33,7 @@ export const usePushNotifications = () => {
       setRegistration(reg);
 
       // Check if already subscribed
-      const subscription = await reg.pushManager.getSubscription();
+      const subscription = await getPushManager(reg).getSubscription();
       setIsSubscribed(!!subscription);
     } catch (error) {
       console.error('[Push] Service Worker registration failed:', error);
@@ -73,7 +78,7 @@ export const usePushNotifications = () => {
       }
 
       // Subscribe to push notifications
-      const subscription = await registration.pushManager.subscribe({
+      const subscription = await getPushManager(registration).subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       });
@@ -126,7 +131,7 @@ export const usePushNotifications = () => {
     if (!registration) return false;
 
     try {
-      const subscription = await registration.pushManager.getSubscription();
+      const subscription = await getPushManager(registration).getSubscription();
       if (subscription) {
         await subscription.unsubscribe();
 
@@ -162,7 +167,7 @@ export const usePushNotifications = () => {
 
   const checkSubscription = async () => {
     if (!registration) return false;
-    const subscription = await registration.pushManager.getSubscription();
+    const subscription = await getPushManager(registration).getSubscription();
     const subscribed = !!subscription;
     setIsSubscribed(subscribed);
     return subscribed;
