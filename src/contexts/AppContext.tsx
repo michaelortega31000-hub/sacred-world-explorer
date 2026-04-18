@@ -61,6 +61,7 @@ export interface UserProgress {
   longestStreak: number;
   globeSettings: GlobeSettings;
   denomination: Denomination | null;
+  countryOfOrigin: string | null;
 }
 
 interface AppContextType {
@@ -92,6 +93,7 @@ interface AppContextType {
   awardQuestBadge: (questId: string, questName: string, questDescription: string, questIcon: string) => Promise<boolean>;
   updateGlobeSettings: (settings: Partial<GlobeSettings>) => void;
   setDenomination: (denomination: Denomination) => Promise<void>;
+  setCountryOfOrigin: (code: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -111,6 +113,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         geolocationEnabled: parsed.geolocationEnabled ?? false,
         globeSettings: parsed.globeSettings ?? defaultGlobeSettings,
         denomination: parsed.denomination ?? null,
+        countryOfOrigin: parsed.countryOfOrigin ?? null,
       };
     }
     return {
@@ -131,6 +134,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       longestStreak: 0,
       globeSettings: defaultGlobeSettings,
       denomination: null,
+      countryOfOrigin: null,
     };
   });
 
@@ -191,7 +195,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           lastQuestDate: data.last_quest_date || '',
           longestStreak: data.longest_streak || 0,
           globeSettings: localProgress?.globeSettings ?? defaultGlobeSettings,
-          denomination: ((data as any).denomination ?? localProgress?.denomination ?? null) as Denomination | null
+          denomination: ((data as any).denomination ?? localProgress?.denomination ?? null) as Denomination | null,
+          countryOfOrigin: ((data as any).country_of_origin ?? localProgress?.countryOfOrigin ?? null) as string | null
         };
 
         // Merge localStorage data if it exists - particularly for religion and trip data
@@ -609,6 +614,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const setCountryOfOrigin = async (code: string) => {
+    setUserProgress(prev => ({ ...prev, countryOfOrigin: code }));
+    if (session?.user) {
+      try {
+        await supabase
+          .from('user_progress')
+          .update({ country_of_origin: code } as any)
+          .eq('user_id', session.user.id);
+      } catch (e) {
+        logger.error('Error saving country_of_origin:', e);
+      }
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       userProgress,
@@ -638,7 +657,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       getStreakBonus,
       awardQuestBadge,
       updateGlobeSettings,
-      setDenomination
+      setDenomination,
+      setCountryOfOrigin
     }}>
       {children}
     </AppContext.Provider>

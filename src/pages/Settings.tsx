@@ -10,8 +10,10 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw, Download, WifiOff, Cross } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw, Download, WifiOff, Cross, MapPin } from 'lucide-react';
 import type { Denomination } from '@/contexts/AppContext';
+import CountrySelect from '@/components/CountrySelect';
+import { getCountryByCode } from '@/data/countries';
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next';
@@ -27,7 +29,7 @@ const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
-  const { userProgress, updateLanguage, setDenomination } = useApp();
+  const { userProgress, updateLanguage, setDenomination, setCountryOfOrigin } = useApp();
 
   const handleDenominationChange = async (value: Denomination) => {
     try {
@@ -46,6 +48,23 @@ const Settings = () => {
         variant: 'destructive',
         title: 'Erreur',
         description: 'Impossible de mettre à jour votre profil.',
+      });
+    }
+  };
+
+  const handleCountryChange = async (code: string) => {
+    try {
+      await setCountryOfOrigin(code);
+      const c = getCountryByCode(code);
+      toast({
+        title: 'Pays mis à jour',
+        description: c ? `${c.flag} ${c.name}` : code,
+      });
+    } catch (e) {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: "Impossible de mettre à jour votre pays.",
       });
     }
   };
@@ -343,6 +362,28 @@ const Settings = () => {
                     {userProgress.denomination === 'curieux' && '« Architecture, histoire, art et beauté du patrimoine sacré. »'}
                   </p>
                 )}
+              </div>
+            </div>
+          </Card>
+
+          {/* Pays d'origine */}
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <MapPin className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <Label className="text-lg font-semibold text-foreground mb-1 block">
+                  Pays d'origine
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Détermine votre pays dans le classement mondial des pèlerins.
+                </p>
+                <CountrySelect
+                  value={userProgress.countryOfOrigin}
+                  onChange={handleCountryChange}
+                  placeholder="Choisir votre pays"
+                />
               </div>
             </div>
           </Card>
