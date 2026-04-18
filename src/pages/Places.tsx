@@ -83,9 +83,11 @@ const matchesType = (placeType: string | undefined, filter: string) => {
 
 const Places = () => {
   const { userProgress } = useApp();
-  const { places, isLoading } = usePlaces({
-    selectedReligion: userProgress.selectedReligion,
-  });
+  const { data: allPlaces = [], isLoading } = usePlaces();
+  // Phase 1 forces christianity — but we double-filter just in case the DB returns mixed data
+  const places = allPlaces.filter(
+    (p) => !p.religion || p.religion === 'christianity' || p.religion === userProgress.selectedReligion,
+  );
   const [search, setSearch] = useState('');
   const [region, setRegion] = useState(REGIONS[0]);
   const [type, setType] = useState(TYPES[0]);
