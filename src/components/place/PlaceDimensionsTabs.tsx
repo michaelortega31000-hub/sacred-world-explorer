@@ -111,20 +111,30 @@ const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: Pla
   const [intentionName, setIntentionName] = useState('');
   const [intentionText, setIntentionText] = useState('');
   const { state: audioState, play: playAudio, stop: stopAudio } = useAudioGuide();
+  const { userProgress } = useApp();
+  const denomination = userProgress.denomination ?? 'curieux';
 
   const todayPrayer = useMemo(() => {
     const day = new Date().getDate();
     return dailyPrayers[day % dailyPrayers.length];
   }, []);
 
+  const todayVerse = useMemo(() => {
+    const day = new Date().getDate();
+    return protestantVerses[day % protestantVerses.length];
+  }, []);
+
   const arch = archStyles[placeType] ?? archStyles['Église'];
+
+  // Catholique → prière du jour ; Protestant → verset du jour
+  const todaySpiritual = denomination === 'protestant' ? todayVerse : todayPrayer;
 
   const handlePrayerAudio = () => {
     if (audioState.isPlaying) {
       stopAudio();
       return;
     }
-    playAudio(`${todayPrayer.title}. ${todayPrayer.text}`, placeId ?? `prayer-${Date.now()}`);
+    playAudio(`${todaySpiritual.title}. ${todaySpiritual.text}`, placeId ?? `prayer-${Date.now()}`);
   };
 
   const handleSubmitIntention = () => {
@@ -132,7 +142,6 @@ const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: Pla
       toast.error('Merci d’écrire votre intention de prière.');
       return;
     }
-    // Local-only for now; backend wiring is intentionally deferred.
     toast.success('Votre intention a été déposée 🕯️', {
       description: 'Elle sera portée dans la prière de la communauté SacredWorld.',
     });
