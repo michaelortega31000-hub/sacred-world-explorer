@@ -1,72 +1,66 @@
 
 
-## Phase 4 — Denomination Choice, Strict Christian Filters & Social Segmentation
+User shared a comprehensive User Stories v1 document for Phase 1 Pilot France. This is reference/strategy documentation, not a direct implementation request. They've already approved Phases 1-4 which cover most of these epics:
 
-Final polish phase. Adds a denomination identity layer, locks the Map filter strictly to Christianisme, and segments Forum around Catholique vs Protestant while keeping a shared public space.
+- ✅ Epic 1 (Onboarding) — done in Phase 4
+- ✅ Epic 2 (Discovery) — done in Phase 1+2 (Christianity-only filter, spiritual/cultural tabs)
+- ✅ Epic 3 (Gamification) — done in Phase 3 (christianBadges.ts + Journal share)
+- ⚠️ Epic 4 (Enriched content) — partially done; needs Protestant variant + denomination-aware tabs
+- ✅ Epic 5 (Forum segmentation) — done in Phase 4
+- ✅ Epic 6 (Map France-first + offline) — done in Phase 3
 
-### 1. Splash final fix (`src/pages/Splash.tsx`)
-- Sweep any remaining English copy → enforce: *"Découvrez, vivez et collectionnez le patrimoine sacré chrétien"* + subtitle *"Pour les chrétiens et les curieux de patrimoine"*.
-- CTA "Commencer l'exploration" → `/onboarding/denomination` if no denomination saved, else `/home`.
+Two real gaps vs the document:
+1. **Profile change in Settings** (Epic 1, story 3) — not yet built
+2. **Denomination-aware Place Detail content** (Epic 4) — currently single Catholic-leaning content; Protestant users should see Bible/Reformation framing, Curious see history-first
+3. **Seed the 20 pilot places** with associated badges + spiritual/cultural sample content
 
-### 2. New onboarding screen — `src/pages/OnboardingDenomination.tsx` (route `/onboarding/denomination`)
-- Title: *"Quel est votre profil ?"*
-- 3 elegant choice cards (icon + label + exact description, copy is final, do not paraphrase):
-  - **Catholique** — *« Tradition, sacrements, pèlerinages et vie paroissiale. »*
-  - **Protestant** — *« Bible, foi personnelle, temples et héritage de la Réforme. »*
-  - **Curieux du patrimoine chrétien** — *« Architecture, histoire, art et beauté du patrimoine sacré. »*
-- Visual: deep blue + golden accents, glowing `ChristianIcon`. Mobile-first single column, fits 754×596.
-- Optional "Plus tard" link → defaults to `curieux`.
-- On select → `setDenomination(d)` (writes to AppContext + DB + localStorage fallback) → navigate `/home`.
+Best approach: present this as a Phase 5 plan addressing the 3 real gaps. Keep it tight.
 
-### 3. Persistence — denomination
+## Phase 5 — Close the Phase 1 Pilot France gaps
 
-**DB migration**
-- Add nullable column `denomination text` on `user_progress`. App-side validation only (`catholique` | `protestant` | `curieux`), no CHECK constraint per project rules.
-- New SQL function `public.get_user_denomination(_user_id uuid)` SECURITY DEFINER, search_path = public — mirrors `get_user_religion`.
-- Additive RLS SELECT policy on `forum_topics`: allow rows where `religion IN ('catholique','protestant')` AND `religion = get_user_denomination(auth.uid())`. Existing policies untouched (defense in depth — UI hiding alone is not enough).
+Building on Phases 1-4. Three surgical additions to fully match the User Stories v1 spec.
 
-**`src/contexts/AppContext.tsx`**
-- Add `denomination: 'catholique' | 'protestant' | 'curieux' | null` + `setDenomination(d)`.
-- Load on session bootstrap; localStorage fallback (per memory `app-state-persistence-logic`).
+### 1. Change denomination from Settings (Epic 1.3)
+- `src/pages/Settings.tsx`: add a "Mon profil chrétien" card with the 3 choices (Catholique / Protestant / Curieux), pre-selected to current value, calling `setDenomination()` from `AppContext`. Toast confirmation, no page reload.
 
-**Routing guard (`src/App.tsx`)**
-- Add `/onboarding/denomination` → `OnboardingDenomination`.
-- After auth: if `denomination === null` → redirect once to `/onboarding/denomination`.
+### 2. Denomination-aware Place Detail (Epic 4)
+`src/components/place/PlaceDimensionsTabs.tsx`:
+- Read `denomination` from `useApp()`.
+- **Catholique** (current default) — keep mass times, daily prayer, intention form, audio guide.
+- **Protestant** — replace mass times with "Cultes & temples", swap daily prayer for a daily Bible verse (small `protestantVerses` array), keep intention form (label "Sujet de prière"), keep audio guide.
+- **Curieux** — collapse the Spirituelle tab into a short "Lieu de recueillement" block (no mass times / no intention form), and make the **Culturelle** tab the default active tab.
+- Cultural tab: unchanged for all profiles (history wins for Curious by default-tab switch).
 
-### 4. Strict Christian Map filter
-- In `Explore.tsx` and any visible Tradition selector, render only **Christianisme** (selected, locked). Hide Islam / Judaïsme / Bouddhisme / Hindouisme / etc. chips.
-- DB data untouched (UI-only filter, per Phase 1 rule).
+### 3. Seed the 20 pilot France places + badges (content)
+- **`src/data/christianBadges.ts`**: extend the catalog with the badges from the document mapped to place IDs:
+  - `mont-saint-michel` → *Pèlerin du Mont*
+  - `notre-dame-paris`, `chartres`, `reims`, `amiens`, `strasbourg`, `rouen`, `toulouse-saint-etienne` → *Cathédrale gothique débloquée*
+  - `lourdes` → *Pèlerin de Lourdes*
+  - `sacre-coeur` → *Gardien du Sacré-Cœur*
+  - `mont-sainte-odile` → *Gardien des reliques d'Alsace*
+  - `saint-martin-ainay`, `fontenay`, `senanque`, `cluny` → *Abbaye / Monastère cistercien*
+  - `saint-sernin`, `vezelay` → *Pèlerin de Saint-Jacques*
+  - `lisieux` → *Petite Thérèse*
+  - `bois-chenu` → *Jeanne d'Arc*
+  - `nice-saint-nicolas` → *Saint Nicolas*
+  - Fallback to "DÉBLOQUÉ" stays in place for any unmapped place.
+- **DB seed (insert tool)**: upsert the 20 places into `public.places` with `religion='christianity'`, `place_category='religious_site'`, `country='France'`, proper `type`, `coordinates`, and a short `description`. Verified by admin (`verification_status='verified'`).
+- No spiritual/cultural per-place text stored in DB — `PlaceDimensionsTabs` already generates appropriate content from `placeType` + `denomination`. Keeps DB lean.
 
-### 5. Social segmentation — Forum
+### Files touched (~3) + 1 data seed
 
-`ForumTab.tsx` sub-tab strip:
-- **Public** — always visible. Topics with `visibility = 'global'`.
-- **Forum Catholique** — visible **only when** `denomination === 'catholique'`. Filters `religion = 'catholique'` AND `visibility = 'public'`.
-- **Forum Protestant** — visible **only when** `denomination === 'protestant'`. Filters `religion = 'protestant'` AND `visibility = 'public'`.
-- **Curieux** see only **Public** — no denomination tabs rendered.
-- New topic from a denomination tab auto-sets `religion` + `visibility = 'public'`.
+**Edited:**
+- `src/pages/Settings.tsx` (denomination switcher card)
+- `src/components/place/PlaceDimensionsTabs.tsx` (denomination-aware rendering)
+- `src/data/christianBadges.ts` (extend catalog with 20 pilot mappings)
 
-`MessagesTab.tsx` and `FriendsTab.tsx`: untouched, open to all.
-
-### 6. Small UX & badge fixes
-- `HeroCarousel.tsx`: fix any title/subtitle overlap (add gradient overlay + `line-clamp` if needed) at 754×596.
-- QA: `getBadgeForPlace` Christian-themed names render on `PlaceCard` / `BadgeUnlock`, fallback to `"DÉBLOQUÉ"` when no match.
-- Header sweep: only `ChristianIcon` + `Logo` on user-facing surfaces.
-
-### Files touched (~9)
-
-**New (1):** `src/pages/OnboardingDenomination.tsx`
-
-**Edited (~7):** `Splash.tsx`, `App.tsx`, `AppContext.tsx`, `Explore.tsx` (filter lock), `ForumTab.tsx`, `HeroCarousel.tsx` (overlap fix), `Header.tsx` (icon sweep if needed).
-
-**DB migration (1):** add `denomination` column · create `get_user_denomination()` · additive RLS SELECT policy on `forum_topics`.
+**Data seed (insert tool):** 20 rows into `public.places`.
 
 ### Untouched
-Stripe · Offline · `client.ts` / `types.ts` · edge function secrets · Messages · Friends · existing forum policies.
+Schema · RLS · Stripe · Offline · edge functions · existing onboarding flow · Forum segmentation.
 
-### Risks & mitigations
-- **Existing users without denomination** → nullable column + one-time guard redirect. No data loss.
-- **Forum visibility regression** → new RLS policy is additive, existing `public/private/global` behavior preserved.
-- **Skip onboarding** → defaults to `curieux`, ensures Public forum access.
-- **Mobile 754×596** → 3 stacked cards (~120px each) + header fits without scroll.
+### Risks
+- **Place ID collisions**: use `ON CONFLICT (id) DO UPDATE` on the seed to be idempotent.
+- **Protestant content authenticity**: Bible verses kept short and from public-domain Louis Segond translation; clearly marked "indicatif".
+- **Curious default-tab switch**: only flips initial tab; user can still open Spirituelle.
 
