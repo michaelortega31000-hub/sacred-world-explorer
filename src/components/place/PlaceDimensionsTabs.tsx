@@ -164,11 +164,30 @@ const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: Pla
                 <Cross className="w-4 h-4 text-primary" />
                 Prière du jour
               </h3>
-              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 space-y-2">
                 <p className="text-sm font-semibold mb-1">{todayPrayer.title}</p>
                 <p className="text-sm text-muted-foreground italic leading-relaxed">
                   « {todayPrayer.text} »
                 </p>
+                <Button
+                  onClick={handlePrayerAudio}
+                  variant="outline"
+                  size="sm"
+                  className="w-full gap-2 mt-2"
+                  disabled={audioState.isLoading}
+                >
+                  {audioState.isPlaying ? (
+                    <>
+                      <Square className="w-4 h-4" />
+                      Arrêter l'audio
+                    </>
+                  ) : (
+                    <>
+                      <Headphones className="w-4 h-4" />
+                      Audio guide prière
+                    </>
+                  )}
+                </Button>
               </div>
             </section>
 
