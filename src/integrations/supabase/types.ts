@@ -1400,6 +1400,7 @@ export type Database = {
       user_progress: {
         Row: {
           badges: string[]
+          country_of_origin: string | null
           created_at: string
           current_streak: number
           denomination: string | null
@@ -1421,6 +1422,7 @@ export type Database = {
         }
         Insert: {
           badges?: string[]
+          country_of_origin?: string | null
           created_at?: string
           current_streak?: number
           denomination?: string | null
@@ -1442,6 +1444,7 @@ export type Database = {
         }
         Update: {
           badges?: string[]
+          country_of_origin?: string | null
           created_at?: string
           current_streak?: number
           denomination?: string | null
@@ -1812,6 +1815,14 @@ export type Database = {
       check_and_ban_user: { Args: { p_user_id: string }; Returns: undefined }
       check_leaderboard_positions: { Args: never; Returns: undefined }
       cleanup_old_location_history: { Args: never; Returns: undefined }
+      get_country_leaderboard: {
+        Args: never
+        Returns: {
+          country_code: string
+          total_points: number
+          user_count: number
+        }[]
+      }
       get_security_logs_by_day: {
         Args: { days?: number }
         Returns: {
