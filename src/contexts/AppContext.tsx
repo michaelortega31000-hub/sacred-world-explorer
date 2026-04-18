@@ -109,7 +109,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       };
     }
     return {
-      selectedReligion: null,
+      // Catholic + Curious pivot: christianity is the default & only active tradition
+      selectedReligion: 'christianity',
       language: 'fr',
       totalPoints: 0,
         visitedPlaces: [],
@@ -168,8 +169,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
       if (data) {
         const dbProgress: UserProgress = {
-          // Préserver la religion locale si la valeur en base est null
-          selectedReligion: (data.selected_religion as Religion | null) || localProgress?.selectedReligion || null,
+          // Catholic + Curious pivot: always christianity, regardless of stored value
+          selectedReligion: 'christianity',
           language: data.language,
           totalPoints: data.total_points,
           visitedPlaces: data.visited_places,

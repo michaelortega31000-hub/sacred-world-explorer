@@ -6,7 +6,7 @@ import logo from '@/assets/sacred-world-logo-header.png';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
 import VoiceCommand from '@/components/VoiceCommand';
-import ReligionIcon from '@/components/ReligionIcon';
+import ChristianIcon from '@/components/ChristianIcon';
 import GeolocationToggle from '@/components/GeolocationToggle';
 import { PlaceCategoryFilterValue } from '@/components/PlaceCategoryFilter';
 
@@ -55,15 +55,13 @@ const Header = ({
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Gauche : Religion + Badges + Filtre */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-{/* 1. Indicateur de religion */}
-              {userProgress.selectedReligion && (
-                <div
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20 overflow-hidden"
-                  title={userProgress.selectedReligion}
-                >
-                  <ReligionIcon religion={userProgress.selectedReligion} size="lg" className="scale-125" />
-                </div>
-              )}
+{/* 1. Identité chrétienne (croix dorée) */}
+              <div
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20 overflow-hidden"
+                title="Patrimoine chrétien"
+              >
+                <ChristianIcon size="lg" className="scale-125" />
+              </div>
               
               {/* 2. Badges obtenus */}
               <div className="flex items-center gap-1 sm:gap-1.5 px-1.5 sm:px-2.5 py-0.5 sm:py-1 bg-primary/10 rounded-full">
