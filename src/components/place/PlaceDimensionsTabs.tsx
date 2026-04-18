@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioGuide } from '@/hooks/useAudioGuide';
+import { useApp } from '@/contexts/AppContext';
 
 interface PlaceDimensionsTabsProps {
   placeId?: string;
@@ -41,6 +42,30 @@ const dailyPrayers = [
   {
     title: 'Prière du soir',
     text: 'Seigneur, au terme de cette journée, je te confie ce qui a été vécu, et je dépose entre tes mains ce qui sera demain.',
+  },
+];
+
+// Versets bibliques (Louis Segond, domaine public) — affichés pour le profil Protestant
+const protestantVerses = [
+  {
+    title: 'Psaume 23, 1',
+    text: "L'Éternel est mon berger : je ne manquerai de rien.",
+  },
+  {
+    title: 'Jean 3, 16',
+    text: "Car Dieu a tant aimé le monde qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu'il ait la vie éternelle.",
+  },
+  {
+    title: 'Romains 8, 28',
+    text: "Nous savons, du reste, que toutes choses concourent au bien de ceux qui aiment Dieu.",
+  },
+  {
+    title: 'Philippiens 4, 13',
+    text: "Je puis tout par celui qui me fortifie.",
+  },
+  {
+    title: 'Ésaïe 40, 31',
+    text: "Ceux qui se confient en l'Éternel renouvellent leur force.",
   },
 ];
 
@@ -86,20 +111,30 @@ const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: Pla
   const [intentionName, setIntentionName] = useState('');
   const [intentionText, setIntentionText] = useState('');
   const { state: audioState, play: playAudio, stop: stopAudio } = useAudioGuide();
+  const { userProgress } = useApp();
+  const denomination = userProgress.denomination ?? 'curieux';
 
   const todayPrayer = useMemo(() => {
     const day = new Date().getDate();
     return dailyPrayers[day % dailyPrayers.length];
   }, []);
 
+  const todayVerse = useMemo(() => {
+    const day = new Date().getDate();
+    return protestantVerses[day % protestantVerses.length];
+  }, []);
+
   const arch = archStyles[placeType] ?? archStyles['Église'];
+
+  // Catholique → prière du jour ; Protestant → verset du jour
+  const todaySpiritual = denomination === 'protestant' ? todayVerse : todayPrayer;
 
   const handlePrayerAudio = () => {
     if (audioState.isPlaying) {
       stopAudio();
       return;
     }
-    playAudio(`${todayPrayer.title}. ${todayPrayer.text}`, placeId ?? `prayer-${Date.now()}`);
+    playAudio(`${todaySpiritual.title}. ${todaySpiritual.text}`, placeId ?? `prayer-${Date.now()}`);
   };
 
   const handleSubmitIntention = () => {
@@ -107,7 +142,6 @@ const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: Pla
       toast.error('Merci d’écrire votre intention de prière.');
       return;
     }
-    // Local-only for now; backend wiring is intentionally deferred.
     toast.success('Votre intention a été déposée 🕯️', {
       description: 'Elle sera portée dans la prière de la communauté SacredWorld.',
     });
@@ -118,7 +152,7 @@ const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: Pla
   return (
     <Card>
       <CardContent className="p-3 sm:p-5">
-        <Tabs defaultValue="spirituelle" className="w-full">
+        <Tabs defaultValue={denomination === 'curieux' ? 'culturelle' : 'spirituelle'} className="w-full">
           <TabsList className="grid grid-cols-2 w-full">
             <TabsTrigger value="spirituelle" className="gap-1.5 text-xs sm:text-sm">
               <Sparkles className="w-4 h-4" />
@@ -132,105 +166,155 @@ const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: Pla
 
           {/* === DIMENSION SPIRITUELLE === */}
           <TabsContent value="spirituelle" className="space-y-4 pt-4">
-            {/* Horaires des messes */}
-            <section>
-              <h3 className="font-semibold flex items-center gap-2 mb-2">
-                <Clock className="w-4 h-4 text-primary" />
-                Horaires des messes
-              </h3>
-              <div className="rounded-lg border border-border/60 divide-y text-sm">
-                <div className="flex justify-between px-3 py-2">
-                  <span className="text-muted-foreground">Lundi → Vendredi</span>
-                  <span className="font-medium">8h00 · 18h30</span>
+            {denomination === 'curieux' ? (
+              // Curieux : bloc minimal, sans messes ni intention
+              <section>
+                <h3 className="font-semibold flex items-center gap-2 mb-2">
+                  <Cross className="w-4 h-4 text-primary" />
+                  Lieu de recueillement
+                </h3>
+                <div className="rounded-lg bg-primary/5 border border-primary/20 p-3">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    Ce lieu reste avant tout un espace de silence et de respect, ouvert à toutes et à tous.
+                    Que vous soyez croyant ou simplement curieux, prenez le temps d'observer, d'écouter, et
+                    de ressentir l'atmosphère unique qui s'en dégage.
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-3 italic">
+                    Pour découvrir l'histoire et l'architecture, consultez l'onglet « Culturelle ».
+                  </p>
                 </div>
-                <div className="flex justify-between px-3 py-2">
-                  <span className="text-muted-foreground">Samedi</span>
-                  <span className="font-medium">9h00 · 18h00</span>
-                </div>
-                <div className="flex justify-between px-3 py-2">
-                  <span className="text-muted-foreground">Dimanche</span>
-                  <span className="font-medium">9h00 · 11h00 · 18h00</span>
-                </div>
-              </div>
-              <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
-                <Info className="w-3 h-3" />
-                Horaires indicatifs — à confirmer auprès du sanctuaire ou de la paroisse.
-              </p>
-            </section>
+              </section>
+            ) : (
+              <>
+                {/* Horaires : Messes (Catholique) ou Cultes & temples (Protestant) */}
+                <section>
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <Clock className="w-4 h-4 text-primary" />
+                    {denomination === 'protestant' ? 'Cultes & temples' : 'Horaires des messes'}
+                  </h3>
+                  <div className="rounded-lg border border-border/60 divide-y text-sm">
+                    {denomination === 'protestant' ? (
+                      <>
+                        <div className="flex justify-between px-3 py-2">
+                          <span className="text-muted-foreground">Dimanche</span>
+                          <span className="font-medium">10h30 (culte principal)</span>
+                        </div>
+                        <div className="flex justify-between px-3 py-2">
+                          <span className="text-muted-foreground">Mercredi</span>
+                          <span className="font-medium">19h00 (étude biblique)</span>
+                        </div>
+                        <div className="flex justify-between px-3 py-2">
+                          <span className="text-muted-foreground">Vendredi</span>
+                          <span className="font-medium">20h00 (prière)</span>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="flex justify-between px-3 py-2">
+                          <span className="text-muted-foreground">Lundi → Vendredi</span>
+                          <span className="font-medium">8h00 · 18h30</span>
+                        </div>
+                        <div className="flex justify-between px-3 py-2">
+                          <span className="text-muted-foreground">Samedi</span>
+                          <span className="font-medium">9h00 · 18h00</span>
+                        </div>
+                        <div className="flex justify-between px-3 py-2">
+                          <span className="text-muted-foreground">Dimanche</span>
+                          <span className="font-medium">9h00 · 11h00 · 18h00</span>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-2 flex items-center gap-1">
+                    <Info className="w-3 h-3" />
+                    Horaires indicatifs — à confirmer auprès du lieu.
+                  </p>
+                </section>
 
-            {/* Prière du jour */}
-            <section>
-              <h3 className="font-semibold flex items-center gap-2 mb-2">
-                <Cross className="w-4 h-4 text-primary" />
-                Prière du jour
-              </h3>
-              <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 space-y-2">
-                <p className="text-sm font-semibold mb-1">{todayPrayer.title}</p>
-                <p className="text-sm text-muted-foreground italic leading-relaxed">
-                  « {todayPrayer.text} »
-                </p>
-                <Button
-                  onClick={handlePrayerAudio}
-                  variant="outline"
-                  size="sm"
-                  className="w-full gap-2 mt-2"
-                  disabled={audioState.isLoading}
-                >
-                  {audioState.isPlaying ? (
-                    <>
-                      <Square className="w-4 h-4" />
-                      Arrêter l'audio
-                    </>
-                  ) : (
-                    <>
-                      <Headphones className="w-4 h-4" />
-                      Audio guide prière
-                    </>
-                  )}
-                </Button>
-              </div>
-            </section>
+                {/* Prière du jour (Catholique) / Verset du jour (Protestant) */}
+                <section>
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    {denomination === 'protestant' ? (
+                      <BookOpen className="w-4 h-4 text-primary" />
+                    ) : (
+                      <Cross className="w-4 h-4 text-primary" />
+                    )}
+                    {denomination === 'protestant' ? 'Verset du jour' : 'Prière du jour'}
+                  </h3>
+                  <div className="rounded-lg bg-primary/5 border border-primary/20 p-3 space-y-2">
+                    <p className="text-sm font-semibold mb-1">{todaySpiritual.title}</p>
+                    <p className="text-sm text-muted-foreground italic leading-relaxed">
+                      « {todaySpiritual.text} »
+                    </p>
+                    {denomination === 'protestant' && (
+                      <p className="text-[10px] text-muted-foreground">
+                        Traduction Louis Segond (domaine public) — indicatif.
+                      </p>
+                    )}
+                    <Button
+                      onClick={handlePrayerAudio}
+                      variant="outline"
+                      size="sm"
+                      className="w-full gap-2 mt-2"
+                      disabled={audioState.isLoading}
+                    >
+                      {audioState.isPlaying ? (
+                        <>
+                          <Square className="w-4 h-4" />
+                          Arrêter l'audio
+                        </>
+                      ) : (
+                        <>
+                          <Headphones className="w-4 h-4" />
+                          {denomination === 'protestant' ? 'Écouter le verset' : 'Audio guide prière'}
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </section>
 
-            {/* Intention de prière */}
-            <section>
-              <h3 className="font-semibold flex items-center gap-2 mb-2">
-                <HeartHandshake className="w-4 h-4 text-primary" />
-                Déposer une intention de prière
-              </h3>
-              <div className="space-y-2">
-                <div>
-                  <Label htmlFor="intention-name" className="text-xs">
-                    Votre prénom (optionnel)
-                  </Label>
-                  <Input
-                    id="intention-name"
-                    placeholder="Ex. Marie"
-                    value={intentionName}
-                    onChange={(e) => setIntentionName(e.target.value)}
-                    className="mt-1"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="intention-text" className="text-xs">
-                    Votre intention
-                  </Label>
-                  <Textarea
-                    id="intention-text"
-                    placeholder="Pour qui ou pour quoi souhaitez-vous prier ?"
-                    value={intentionText}
-                    onChange={(e) => setIntentionText(e.target.value)}
-                    className="mt-1 min-h-[90px]"
-                    maxLength={500}
-                  />
-                </div>
-                <Button onClick={handleSubmitIntention} className="w-full">
-                  🕯️ Déposer mon intention
-                </Button>
-                <p className="text-[11px] text-muted-foreground text-center">
-                  Votre intention reste confidentielle.
-                </p>
-              </div>
-            </section>
+                {/* Intention / Sujet de prière */}
+                <section>
+                  <h3 className="font-semibold flex items-center gap-2 mb-2">
+                    <HeartHandshake className="w-4 h-4 text-primary" />
+                    {denomination === 'protestant' ? 'Déposer un sujet de prière' : 'Déposer une intention de prière'}
+                  </h3>
+                  <div className="space-y-2">
+                    <div>
+                      <Label htmlFor="intention-name" className="text-xs">
+                        Votre prénom (optionnel)
+                      </Label>
+                      <Input
+                        id="intention-name"
+                        placeholder="Ex. Marie"
+                        value={intentionName}
+                        onChange={(e) => setIntentionName(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="intention-text" className="text-xs">
+                        {denomination === 'protestant' ? 'Votre sujet de prière' : 'Votre intention'}
+                      </Label>
+                      <Textarea
+                        id="intention-text"
+                        placeholder="Pour qui ou pour quoi souhaitez-vous prier ?"
+                        value={intentionText}
+                        onChange={(e) => setIntentionText(e.target.value)}
+                        className="mt-1 min-h-[90px]"
+                        maxLength={500}
+                      />
+                    </div>
+                    <Button onClick={handleSubmitIntention} className="w-full">
+                      🕯️ {denomination === 'protestant' ? 'Confier ce sujet' : 'Déposer mon intention'}
+                    </Button>
+                    <p className="text-[11px] text-muted-foreground text-center">
+                      Votre demande reste confidentielle.
+                    </p>
+                  </div>
+                </section>
+              </>
+            )}
           </TabsContent>
 
           {/* === DIMENSION CULTURELLE === */}

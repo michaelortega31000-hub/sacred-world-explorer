@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw, Download, WifiOff } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw, Download, WifiOff, Cross } from 'lucide-react';
+import type { Denomination } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +27,28 @@ const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
-  const { userProgress, updateLanguage } = useApp();
+  const { userProgress, updateLanguage, setDenomination } = useApp();
+
+  const handleDenominationChange = async (value: Denomination) => {
+    try {
+      await setDenomination(value);
+      const labels: Record<Denomination, string> = {
+        catholique: 'Catholique',
+        protestant: 'Protestant',
+        curieux: 'Curieux du patrimoine chrétien',
+      };
+      toast({
+        title: 'Profil mis à jour',
+        description: `Votre profil chrétien : ${labels[value]}`,
+      });
+    } catch (e) {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour votre profil.',
+      });
+    }
+  };
   const { isAdmin } = useIsAdmin();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [notifications, setNotifications] = useState(true);
@@ -288,7 +310,42 @@ const Settings = () => {
             </div>
           </Card>
 
-          {/* Nom d'utilisateur */}
+          {/* Mon profil chrétien */}
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Cross className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <Label className="text-lg font-semibold text-foreground mb-1 block">
+                  Mon profil chrétien
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Adapte le contenu spirituel des lieux et l'accès aux forums dédiés.
+                </p>
+                <Select
+                  value={userProgress.denomination ?? ''}
+                  onValueChange={(v) => handleDenominationChange(v as Denomination)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choisir un profil" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="catholique">✝️ Catholique</SelectItem>
+                    <SelectItem value="protestant">📖 Protestant</SelectItem>
+                    <SelectItem value="curieux">🏛️ Curieux du patrimoine chrétien</SelectItem>
+                  </SelectContent>
+                </Select>
+                {userProgress.denomination && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">
+                    {userProgress.denomination === 'catholique' && '« Tradition, sacrements, pèlerinages et vie paroissiale. »'}
+                    {userProgress.denomination === 'protestant' && '« Bible, foi personnelle, temples et héritage de la Réforme. »'}
+                    {userProgress.denomination === 'curieux' && '« Architecture, histoire, art et beauté du patrimoine sacré. »'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
           <Card className="p-6 bg-card border-border">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-primary/10 rounded-full">
