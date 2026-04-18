@@ -14,7 +14,6 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
-import { useSpeechSynthesis } from "@/hooks/useSpeechSynthesis";
 // Parse quick replies from message content
 const parseQuickReplies = (content: string): { text: string; suggestions: Array<{ label: string; message: string }> } => {
   const regex = /<lov-actions>([\s\S]*?)<\/lov-actions>/;
@@ -142,7 +141,6 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
   const [input, setInput] = useState("");
   const [mode, setMode] = useState<Mode>("help");
   const [isLoading, setIsLoading] = useState(false);
-  const [autoSpeak, setAutoSpeak] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   
@@ -158,13 +156,8 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
     stopListening,
     resetTranscript 
   } = useSpeechRecognition();
-  
-  const { 
-    isSpeaking, 
-    isSupported: speechSynthesisSupported, 
-    speak, 
-    stop: stopSpeaking 
-  } = useSpeechSynthesis();
+
+
 
   const initialSuggestions = useMemo(
     () => getInitialSuggestions(location.pathname, mode),
@@ -233,11 +226,6 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
 
       setMessages((prev) => [...prev, assistantMessage]);
 
-      // Auto-speak the response if enabled
-      if (autoSpeak && speechSynthesisSupported) {
-        const { text } = parseQuickReplies(data.response);
-        speak(text);
-      }
     } catch (error) {
       console.error("Assistant error:", error);
       toast({
@@ -275,10 +263,6 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
     if (isListening) {
       stopListening();
     } else {
-      // Stop any ongoing speech before listening
-      if (isSpeaking) {
-        stopSpeaking();
-      }
       startListening();
     }
   };
@@ -388,9 +372,6 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
                 ? parseQuickReplies(message.content)
                 : { text: message.content, suggestions: [] };
               
-              // Hide assistant text when autoSpeak is enabled (show only audio indicator)
-              const hideAssistantText = message.role === "assistant" && autoSpeak;
-              
               return (
                 <div key={message.id}>
                   <div
@@ -403,14 +384,7 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
                           : "bg-muted"
                       }`}
                     >
-                      {hideAssistantText ? (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Volume2 className={`h-4 w-4 ${isLastAssistant && isSpeaking ? 'animate-pulse text-primary' : ''}`} />
-                          <span>{isLastAssistant && isSpeaking ? "Lecture en cours..." : "Réponse vocale"}</span>
-                        </div>
-                      ) : (
-                        <p className="text-sm whitespace-pre-wrap">{text}</p>
-                      )}
+                      <p className="text-sm whitespace-pre-wrap">{text}</p>
                     </div>
                   </div>
                   
