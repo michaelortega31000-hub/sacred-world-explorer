@@ -157,6 +157,17 @@ const Splash = () => {
   const handleStartExploration = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isLoggedIn) {
+      // Check denomination from localStorage (already loaded by AppContext)
+      try {
+        const stored = localStorage.getItem('sacredworld_progress');
+        const denomination = stored ? JSON.parse(stored)?.denomination : null;
+        if (!denomination) {
+          navigate('/onboarding/denomination');
+          return;
+        }
+      } catch {
+        // ignore parse errors and fall through
+      }
       navigate('/home');
     } else {
       navigate('/auth');

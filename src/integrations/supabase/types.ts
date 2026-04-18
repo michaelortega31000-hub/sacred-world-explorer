@@ -1402,6 +1402,7 @@ export type Database = {
           badges: string[]
           created_at: string
           current_streak: number
+          denomination: string | null
           geolocation_enabled: boolean
           id: string
           language: string
@@ -1422,6 +1423,7 @@ export type Database = {
           badges?: string[]
           created_at?: string
           current_streak?: number
+          denomination?: string | null
           geolocation_enabled?: boolean
           id?: string
           language?: string
@@ -1442,6 +1444,7 @@ export type Database = {
           badges?: string[]
           created_at?: string
           current_streak?: number
+          denomination?: string | null
           geolocation_enabled?: boolean
           id?: string
           language?: string
@@ -1823,6 +1826,7 @@ export type Database = {
         Args: { p_user_id: string }
         Returns: number
       }
+      get_user_denomination: { Args: { _user_id: string }; Returns: string }
       get_user_payment_info: {
         Args: { _user_id: string }
         Returns: {

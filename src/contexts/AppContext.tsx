@@ -15,6 +15,8 @@ import { GlobeSettings, defaultGlobeSettings } from '@/types/globeSettings';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
+export type Denomination = 'catholique' | 'protestant' | 'curieux';
+
 export type PlaceCategory = 'religious_site' | 'museum' | 'other';
 
 export interface Place {
@@ -58,6 +60,7 @@ export interface UserProgress {
   lastQuestDate: string;
   longestStreak: number;
   globeSettings: GlobeSettings;
+  denomination: Denomination | null;
 }
 
 interface AppContextType {
@@ -88,6 +91,7 @@ interface AppContextType {
   getStreakBonus: () => number;
   awardQuestBadge: (questId: string, questName: string, questDescription: string, questIcon: string) => Promise<boolean>;
   updateGlobeSettings: (settings: Partial<GlobeSettings>) => void;
+  setDenomination: (denomination: Denomination) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -105,7 +109,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       return {
         ...parsed,
         geolocationEnabled: parsed.geolocationEnabled ?? false,
-        globeSettings: parsed.globeSettings ?? defaultGlobeSettings
+        globeSettings: parsed.globeSettings ?? defaultGlobeSettings,
+        denomination: parsed.denomination ?? null,
       };
     }
     return {
@@ -124,7 +129,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       currentStreak: 0,
       lastQuestDate: '',
       longestStreak: 0,
-      globeSettings: defaultGlobeSettings
+      globeSettings: defaultGlobeSettings,
+      denomination: null,
     };
   });
 
@@ -184,7 +190,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           currentStreak: data.current_streak || 0,
           lastQuestDate: data.last_quest_date || '',
           longestStreak: data.longest_streak || 0,
-          globeSettings: localProgress?.globeSettings ?? defaultGlobeSettings
+          globeSettings: localProgress?.globeSettings ?? defaultGlobeSettings,
+          denomination: ((data as any).denomination ?? localProgress?.denomination ?? null) as Denomination | null
         };
 
         // Merge localStorage data if it exists - particularly for religion and trip data
@@ -588,6 +595,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }));
   };
 
+  const setDenomination = async (denomination: Denomination) => {
+    setUserProgress(prev => ({ ...prev, denomination }));
+    if (session?.user) {
+      try {
+        await supabase
+          .from('user_progress')
+          .update({ denomination } as any)
+          .eq('user_id', session.user.id);
+      } catch (e) {
+        logger.error('Error saving denomination:', e);
+      }
+    }
+  };
+
   return (
     <AppContext.Provider value={{
       userProgress,
@@ -616,7 +637,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       updateStreak,
       getStreakBonus,
       awardQuestBadge,
-      updateGlobeSettings
+      updateGlobeSettings,
+      setDenomination
     }}>
       {children}
     </AppContext.Provider>

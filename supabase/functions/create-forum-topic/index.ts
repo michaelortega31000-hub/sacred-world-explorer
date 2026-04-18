@@ -11,6 +11,7 @@ interface CreateTopicRequest {
   description: string;
   visibility: 'private' | 'public' | 'global';
   imageUrls?: string[];
+  religionOverride?: 'catholique' | 'protestant';
 }
 
 // Validation regex - no HTML tags allowed
@@ -49,7 +50,7 @@ serve(async (req) => {
 
     // Parse request body
     const body: CreateTopicRequest = await req.json();
-    const { title, description, visibility = 'public', imageUrls } = body;
+    const { title, description, visibility = 'public', imageUrls, religionOverride } = body;
 
     // Validate visibility
     if (visibility !== 'private' && visibility !== 'public' && visibility !== 'global') {
@@ -59,22 +60,41 @@ serve(async (req) => {
       );
     }
 
-    // Get user's selected religion for public (community) topics only
+    // Determine religion to attach to the topic.
+    // If religionOverride is provided (denomination forum), enforce it server-side
+    // by verifying the user's stored denomination matches.
     let userReligion: string | null = null;
     if (visibility === 'public') {
-      const { data: progressData } = await supabaseClient
-        .from('user_progress')
-        .select('selected_religion')
-        .eq('user_id', user.id)
-        .single();
-      
-      userReligion = progressData?.selected_religion || null;
-      
-      if (!userReligion) {
-        return new Response(
-          JSON.stringify({ error: 'Veuillez d\'abord sélectionner une religion dans votre profil pour créer un topic communauté' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-        );
+      if (religionOverride === 'catholique' || religionOverride === 'protestant') {
+        const { data: progressData } = await supabaseClient
+          .from('user_progress')
+          .select('denomination')
+          .eq('user_id', user.id)
+          .single();
+
+        const userDenom = (progressData as any)?.denomination || null;
+        if (userDenom !== religionOverride) {
+          return new Response(
+            JSON.stringify({ error: 'Vous n\'avez pas accès à ce forum' }),
+            { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        userReligion = religionOverride;
+      } else {
+        const { data: progressData } = await supabaseClient
+          .from('user_progress')
+          .select('selected_religion')
+          .eq('user_id', user.id)
+          .single();
+
+        userReligion = progressData?.selected_religion || null;
+
+        if (!userReligion) {
+          return new Response(
+            JSON.stringify({ error: 'Veuillez d\'abord sélectionner une religion dans votre profil pour créer un topic communauté' }),
+            { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
       }
     }
     // For 'global' visibility, religion is not stored (accessible to everyone)

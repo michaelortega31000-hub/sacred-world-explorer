@@ -206,13 +206,9 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen]);
 
+  // Phase 4: strict Christian filter — only Christianisme is shown
   const religions: { id: Religion; name: string }[] = [
     { id: 'christianity', name: 'Christianisme' },
-    { id: 'islam', name: 'Islam' },
-    { id: 'judaism', name: 'Judaïsme' },
-    { id: 'buddhism', name: 'Bouddhisme' },
-    { id: 'hinduism', name: 'Hindouisme' },
-    { id: 'traditional', name: 'Traditions' },
   ];
 
 
