@@ -47,11 +47,11 @@ export const HeroCarousel = ({ className = '' }: HeroCarouselProps) => {
               (e.currentTarget as HTMLImageElement).src = '/images/place-placeholder.jpg';
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          <div className="absolute bottom-4 left-4 right-4 text-white">
-            <p className="text-xs uppercase tracking-widest opacity-80">Patrimoine sacré</p>
-            <h3 className="text-2xl sm:text-3xl font-bold drop-shadow-lg">{slide.name}</h3>
-            <p className="text-sm opacity-90">{slide.city}</p>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent" />
+          <div className="absolute bottom-8 left-4 right-4 text-white">
+            <p className="text-[10px] sm:text-xs uppercase tracking-widest opacity-80 mb-1">Patrimoine sacré</p>
+            <h3 className="text-xl sm:text-2xl md:text-3xl font-bold drop-shadow-lg line-clamp-2 leading-tight">{slide.name}</h3>
+            <p className="text-xs sm:text-sm opacity-90 mt-0.5 line-clamp-1">{slide.city}</p>
           </div>
         </div>
       ))}
