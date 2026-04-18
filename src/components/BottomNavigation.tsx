@@ -1,5 +1,5 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Globe, Route, BookHeart, Trophy } from 'lucide-react';
+import { User, Globe, Route, BookHeart, Settings } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ const BottomNavigation = () => {
     { icon: Globe, label: 'Globe', path: '/explore', highlight: false },
     { icon: Route, label: 'Planifier', path: '/planner', highlight: true },
     { icon: BookHeart, label: 'Journal', path: '/journal', highlight: false },
-    { icon: Trophy, label: 'Classement', path: '/profile?tab=ranking', highlight: false },
+    { icon: Settings, label: 'Réglages', path: '/settings', highlight: false },
   ];
 
   const isActive = (path: string) => {
