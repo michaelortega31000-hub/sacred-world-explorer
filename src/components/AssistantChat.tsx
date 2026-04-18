@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useMemo } from "react";
 import { useLocation, useParams } from "react-router-dom";
-import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Mic, MicOff, Volume2, VolumeX } from "lucide-react";
+import { MessageCircle, Send, Loader2, Sparkles, HelpCircle, Mic, MicOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
