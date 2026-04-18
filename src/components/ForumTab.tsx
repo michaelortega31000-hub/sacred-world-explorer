@@ -1121,7 +1121,7 @@ const ForumTab = () => {
                     <Button 
                       onClick={createTopic} 
                       className="w-full"
-                      disabled={(newTopicVisibility === 'public' && !userProgress.selectedReligion) || isSubmitting || uploadingPhotos}
+                      disabled={(newTopicVisibility === 'public' && forumTab === 'public' && !userProgress.selectedReligion) || isSubmitting || uploadingPhotos}
                     >
                       {isSubmitting || uploadingPhotos ? (
                         <>
