@@ -3,6 +3,8 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getBadgeForPlace } from '@/data/christianBadges';
+import type { Place, PlaceCategory, Religion } from '@/contexts/AppContext';
 
 interface PlaceCardProps {
   id: string;
@@ -14,6 +16,10 @@ interface PlaceCardProps {
   unlocked?: boolean;
   distance?: number; // in meters
   proximityIntensity?: number; // 0-100
+  /** Optional extra fields used by the badge condition matcher. */
+  type?: string;
+  placeCategory?: PlaceCategory;
+  tags?: string[];
 }
 
 const PlaceCard = ({
@@ -25,9 +31,30 @@ const PlaceCard = ({
   imageUrl,
   unlocked = false,
   distance,
-  proximityIntensity = 0
+  proximityIntensity = 0,
+  type,
+  placeCategory,
+  tags
 }: PlaceCardProps) => {
   const navigate = useNavigate();
+
+  // Phase 3 — Christian badge lookup with fallback to generic "DÉBLOQUÉ".
+  const matchedBadge = unlocked
+    ? getBadgeForPlace({
+        id,
+        name,
+        city,
+        country,
+        religion: religion as Religion,
+        type: type ?? '',
+        placeCategory,
+        tags,
+        description: '',
+        points: 0,
+        coordinates: [0, 0],
+      } as Place)
+    : null;
+  const unlockedLabel = matchedBadge ? `${matchedBadge.icon} ${matchedBadge.label.toUpperCase()}` : '✓ DÉBLOQUÉ';
 
   const formatDistance = (meters: number) => {
     if (meters < 1000) {
@@ -71,7 +98,7 @@ const PlaceCard = ({
             variant={unlocked ? 'default' : 'outline'}
             className={unlocked ? 'bg-amber-500 text-white border-amber-400' : 'bg-background/80'}
           >
-            {unlocked ? '✓ DÉBLOQUÉ' : 'À DÉCOUVRIR'}
+            {unlocked ? unlockedLabel : 'À DÉCOUVRIR'}
           </Badge>
         </div>
       </div>
