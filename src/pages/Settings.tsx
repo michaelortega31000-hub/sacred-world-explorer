@@ -10,7 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useApp } from '@/contexts/AppContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw, Download, WifiOff } from 'lucide-react';
+import { ArrowLeft, Globe, Palette, Bell, Moon, Sun, Volume2, Smartphone, User, Shield, BarChart3, BookOpen, RotateCcw, Download, WifiOff, Cross } from 'lucide-react';
+import type { Denomination } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next';
@@ -26,7 +27,28 @@ const Settings = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { i18n } = useTranslation();
-  const { userProgress, updateLanguage } = useApp();
+  const { userProgress, updateLanguage, setDenomination } = useApp();
+
+  const handleDenominationChange = async (value: Denomination) => {
+    try {
+      await setDenomination(value);
+      const labels: Record<Denomination, string> = {
+        catholique: 'Catholique',
+        protestant: 'Protestant',
+        curieux: 'Curieux du patrimoine chrétien',
+      };
+      toast({
+        title: 'Profil mis à jour',
+        description: `Votre profil chrétien : ${labels[value]}`,
+      });
+    } catch (e) {
+      toast({
+        variant: 'destructive',
+        title: 'Erreur',
+        description: 'Impossible de mettre à jour votre profil.',
+      });
+    }
+  };
   const { isAdmin } = useIsAdmin();
   const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [notifications, setNotifications] = useState(true);
