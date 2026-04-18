@@ -1,68 +1,86 @@
 
 
-## Plan: Pivot SacredWorld to "Catholic + Curious" identity
+## Phase 2 — Navigation, Place Detail & French Christian Focus
 
-This is a major pivot. I'll reshape the app's identity, content focus and visuals around Christian (mainly Catholic) heritage while preserving all working infrastructure (gamification, offline mode, Stripe, auth, DB).
+Building on Phase 1 (Christian identity locked in). This phase reshapes navigation around the Catholic + Curious flow, redesigns Place Detail with rich spiritual/cultural tabs, and pre-filters the map for France.
 
-The app has 200+ files and a live backend, so I'll work in **safe incremental phases** — not a full rewrite — to avoid breaking what already works.
+### 1. New Bottom Navigation (`src/components/BottomNavigation.tsx`)
 
-### Phase 1 — Identity & branding
+Replace current 4-tab bar with the 5-tab pilgrim flow:
 
-**Onboarding & Welcome (`src/pages/Welcome.tsx`, `src/pages/Splash.tsx`)**
-- Replace the 4-religion carousel with a 3-screen Christian onboarding:
-  - S1: *Bienvenue sur SacredWorld – Votre compagnon du patrimoine chrétien*
-  - S2: *Pour les chrétiens et les curieux de patrimoine sacré*
-  - S3: *Collectionnez les lieux sacrés comme un véritable pèlerin*
-- Tagline: *"Découvrez, vivez et collectionnez le patrimoine sacré chrétien"*
+| Tab | Icon | Route |
+|---|---|---|
+| Accueil | `Home` | `/home` (new) |
+| Carte | `Map` | `/explore` |
+| Lieux | `Church` | `/places` (new) |
+| Ma Collection | `BookHeart` | `/journal` |
+| Profil | `User` | `/profile` |
+
+Keep compact style (per memory `bottom-navigation-compact-style`), 5 columns instead of 4.
+
+### 2. New `src/pages/Home.tsx` (Accueil)
+
 - Hero carousel: Notre-Dame, Lourdes, Mont-Saint-Michel, Sacré-Cœur, Vatican, Chartres.
+- Tagline + subtitle visible on screen.
+- Sections: "À découvrir cette semaine", "Cathédrales emblématiques", "Sur les chemins de pèlerinage", quick CTA → `/explore`, `/places`, `/journal`.
+- Uses `ChristianIcon` + SacredWorld logo only.
 
-**Single Christian icon system**
-- New `src/components/ChristianIcon.tsx` (elegant golden cross, no kitsch).
-- Replace `ReligionIcon` usages in header, filters, badges with the cross / SacredWorld logo.
+### 3. New `src/pages/Places.tsx` (Lieux)
 
-**Force Christianity app-wide**
-- Default `selectedReligion = 'christianity'` in `AppContext`, hide religion selector.
-- Filter places, calendar, quiz, saints to Christian-only via existing helpers.
-- Hide multi-faith UI (continent legends, religion picker, non-Christian filters in CalendarLegend / ChallengesTab).
+- List view sourced from existing `usePlaces` + `placesData` (already filtered Christian via Phase 1).
+- Search bar + filters: **Région** (Île-de-France, Occitanie, Normandie, PACA, Bretagne…) and **Type** (Cathédrale · Basilique · Sanctuaire · Abbaye · Chemin de pèlerinage).
+- Reuses existing `PlaceCard` (already shows "DÉBLOQUÉ" badge).
+- France-first default sort.
 
-### Phase 2 — Navigation & content
+### 4. Redesigned Place Detail (`src/pages/PlaceDetail.tsx`)
 
-**Bottom nav (`src/components/BottomNavigation.tsx`)**
-- New: **Accueil · Carte · Lieux · Ma Collection · Profil**
-- Carte = existing `/explore` (Mapbox), pre-filtered to French Catholic sites with clusters.
-- Lieux = list view. Ma Collection = `/journal` reskinned around "DÉBLOQUÉ" pilgrim badges.
+Keep hero image + existing services/POI map. Replace current tabs with two clear ones, **each pre-filled with sample content** so the experience feels complete from day one:
 
-**Place detail (`src/pages/PlaceDetail.tsx`)** — two new tabs:
-- *Dimension spirituelle*: messes, prières, intentions, pèlerinages.
-- *Dimension culturelle*: histoire, architecture, anecdotes.
-- Keep existing services (resto/hôtels/transports) and POI map.
+**Tab 1 — Dimension spirituelle**
+- **Horaires des messes**: sample weekly grid (e.g. *Lun-Ven 8h & 18h30 · Sam 9h & 18h · Dim 9h, 11h, 18h*) with a small note "Horaires indicatifs – à confirmer auprès du sanctuaire".
+- **Prières du jour**: rotating short prayer card (Notre Père, Je vous salue Marie, prière du soir) tied to the day.
+- **Formulaire d'intention de prière**: textarea + name field + "Déposer mon intention" button (local-only for now, UI-ready for future backend wiring).
+- **Audio guide prière** button reusing existing `useAudioGuide`.
 
-### Phase 3 — Gamification reskin
+**Tab 2 — Dimension culturelle**
+- **Style architectural**: badge + 2-3 line description (Gothique, Roman, Baroque, Byzantin…).
+- **Faits historiques**: 3-4 bullet timeline highlights (date de construction, événements marquants, classement UNESCO si applicable).
+- **Anecdotes pour les curieux**: 2-3 fun-fact cards with light icons (le saviez-vous ? détails insolites, légendes locales).
 
-- Rename badges: *Pèlerin de Lourdes*, *Amateur de cathédrales gothiques*, *Marcheur de Saint-Jacques*, *Gardien des reliques*…
-- Keep "DÉBLOQUÉ" mechanic, points and sharing intact.
+Keep "DÉBLOQUÉ" badge system. Add prominent **"Ajouter à ma collection"** CTA wired to existing collection logic in `AppContext`.
 
-### Phase 4 — Cleanup (later)
+### 5. Map France-First (`src/components/Globe3D.tsx` / `src/pages/Explore.tsx`)
 
-- Remove unused multi-faith assets (crescent, star-david, lotus, om, spirit) once nothing references them.
-- Archive `ReligionAnimation`, multi-faith parts of `CountriesByContinent`.
+- Initial fly-to France (lng ~2.5, lat ~46.5, zoom ~5) when no user geolocation.
+- Marker filter respects forced `christianity` (Phase 1).
+- Clustering already present via Mapbox.
+- Hide non-Christian filter chips in Explore tab nav.
 
-### What I will NOT touch
+### 6. Routing (`src/App.tsx`)
 
-- Supabase schema, auth, RLS, Stripe, offline mode, logger, edge function secrets.
-- `src/integrations/supabase/client.ts` and `types.ts`.
+- Add `/home` → `Home`, `/places` → `Places`.
+- Splash CTA points to `/home` instead of `/explore`.
 
-### Two questions before I start
+### 7. Style consistency
 
-1. **How aggressive this first round?**
-   - **A.** Phase 1 only (safest, ~6 files: identity + onboarding + force Christian filter — instant new identity, zero risk on routing)
-   - **B.** Phase 1 + 2 (~15 files: adds new bottom nav + place detail tabs)
-   - **C.** Phase 1 + 2 + 3 (~25 files: full pivot in one shot, highest impact, more risk)
+- Keep deep blue / golden / turquoise palette (no token changes).
+- Single icon system: `ChristianIcon` + `Logo` only on user-facing surfaces.
+- Tagline + subtitle on Splash, Home, Welcome.
 
-2. **What about non-Christian data already in the DB?**
-   - **A.** Hide from UI, keep in DB (recommended, reversible, no migration)
-   - **B.** Hide + mark as archived in DB (cleaner, requires migration)
-   - **C.** Delete entirely (destructive, I'd advise against)
+### Files touched (~14)
 
-Tell me your picks (e.g. "1A, 2A") and I'll execute.
+**New (3):** `src/pages/Home.tsx`, `src/pages/Places.tsx`, `src/components/home/HeroCarousel.tsx`
+
+**Edited (~11):** `BottomNavigation.tsx`, `App.tsx`, `Splash.tsx`, `PlaceDetail.tsx` (with the spiritual/cultural sample content), `Explore.tsx`, `Globe3D.tsx`, `Header.tsx`, `Journal.tsx` (headline → "Ma Collection"), `LocationsTab.tsx` (region/type filters), `PlaceCard.tsx` ("Ajouter à ma collection" CTA), `index.css` if needed.
+
+### Untouched
+
+Supabase schema · RLS · Stripe · Offline (`sw.js`, IndexedDB) · `client.ts` / `types.ts` · edge function secrets · logger.
+
+### Risks & mitigations
+
+- **Routing regression**: keep legacy redirects, add `/home` and `/places` on top.
+- **DB content leakage**: Phase 1 forces `christianity`; helpers reuse — no migration.
+- **Mobile UX (680×595)**: 5-tab bottom nav stays under 80px (icon `w-4`, label `text-[8px]`).
+- **Sample spiritual content**: clearly marked "indicatif" to avoid users mistaking it for verified parish data.
 
