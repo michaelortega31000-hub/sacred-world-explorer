@@ -1,19 +1,22 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Map, Church, BookHeart, User } from 'lucide-react';
+import { User, Globe, Route, BookHeart, Trophy } from 'lucide-react';
 
 const BottomNavigation = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
   const navItems = [
-    { icon: Home, label: 'Accueil', path: '/home' },
-    { icon: Map, label: 'Carte', path: '/explore' },
-    { icon: Church, label: 'Lieux', path: '/places' },
-    { icon: BookHeart, label: 'Collection', path: '/journal' },
-    { icon: User, label: 'Profil', path: '/profile' },
+    { icon: User, label: 'Profil', path: '/profile', highlight: false },
+    { icon: Globe, label: 'Globe', path: '/explore', highlight: false },
+    { icon: Route, label: 'Planifier', path: '/planner', highlight: true },
+    { icon: BookHeart, label: 'Journal', path: '/journal', highlight: false },
+    { icon: Trophy, label: 'Classement', path: '/profile?tab=ranking', highlight: false },
   ];
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => {
+    const cleanPath = path.split('?')[0];
+    return location.pathname === cleanPath;
+  };
 
   return (
     <nav
@@ -30,21 +33,42 @@ const BottomNavigation = () => {
           {navItems.map((item) => {
             const Icon = item.icon;
             const active = isActive(item.path);
+            const isGolden = item.highlight;
+            const activeColor = isGolden ? '#F4C542' : 'hsl(var(--primary))';
+            const glowColor = isGolden
+              ? 'rgba(244, 197, 66, 0.7)'
+              : 'rgba(52, 224, 161, 0.6)';
+
             return (
               <button
                 key={item.path}
                 onClick={() => navigate(item.path)}
                 className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-md transition-all duration-300 ${
-                  active ? 'text-primary' : 'text-muted-foreground hover:text-foreground'
+                  active
+                    ? ''
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
                 style={
                   active
-                    ? { filter: 'drop-shadow(0 0 8px rgba(52, 224, 161, 0.6))' }
-                    : {}
+                    ? {
+                        color: activeColor,
+                        filter: `drop-shadow(0 0 ${isGolden ? '10px' : '8px'} ${glowColor})`,
+                      }
+                    : isGolden
+                      ? { filter: 'drop-shadow(0 0 6px rgba(244, 197, 66, 0.35))' }
+                      : {}
                 }
               >
-                <Icon className="w-4 h-4" />
-                <span className="text-[8px] font-medium">{item.label}</span>
+                <Icon
+                  className="w-4 h-4"
+                  style={isGolden && !active ? { color: '#F4C542' } : undefined}
+                />
+                <span
+                  className="text-[8px] font-medium"
+                  style={isGolden && !active ? { color: '#F4C542' } : undefined}
+                >
+                  {item.label}
+                </span>
               </button>
             );
           })}

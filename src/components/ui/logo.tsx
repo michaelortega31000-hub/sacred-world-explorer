@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 import logoGlow from "@/assets/logo-glow.png";
-import logoMain from "@/assets/sacredworld-logo-new.png";
+import logoMain from "@/assets/logo-v4.png";
 
 const logoVariants = cva(
   "transition-all duration-300 object-contain",

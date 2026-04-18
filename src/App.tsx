@@ -33,6 +33,7 @@ import Reminders from "./pages/Reminders";
 import SecurityTest from "./pages/SecurityTest";
 import OfflineManager from "./pages/OfflineManager";
 import OnboardingDenomination from "./pages/OnboardingDenomination";
+import Planner from "./pages/Planner";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,7 @@ const AppContent = () => {
           <Route path="/security-test" element={<SecurityTest />} />
           <Route path="/offline" element={<OfflineManager />} />
           <Route path="/onboarding/denomination" element={<OnboardingDenomination />} />
+          <Route path="/planner" element={<Planner />} />
 
           {/* Legacy paths redirects */}
           <Route path="/world" element={<Navigate to="/explore" replace />} />
