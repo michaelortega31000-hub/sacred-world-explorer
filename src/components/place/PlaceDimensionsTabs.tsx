@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useAudioGuide } from '@/hooks/useAudioGuide';
+import { useApp } from '@/contexts/AppContext';
 
 interface PlaceDimensionsTabsProps {
   placeId?: string;
@@ -41,6 +42,30 @@ const dailyPrayers = [
   {
     title: 'Prière du soir',
     text: 'Seigneur, au terme de cette journée, je te confie ce qui a été vécu, et je dépose entre tes mains ce qui sera demain.',
+  },
+];
+
+// Versets bibliques (Louis Segond, domaine public) — affichés pour le profil Protestant
+const protestantVerses = [
+  {
+    title: 'Psaume 23, 1',
+    text: "L'Éternel est mon berger : je ne manquerai de rien.",
+  },
+  {
+    title: 'Jean 3, 16',
+    text: "Car Dieu a tant aimé le monde qu'il a donné son Fils unique, afin que quiconque croit en lui ne périsse point, mais qu'il ait la vie éternelle.",
+  },
+  {
+    title: 'Romains 8, 28',
+    text: "Nous savons, du reste, que toutes choses concourent au bien de ceux qui aiment Dieu.",
+  },
+  {
+    title: 'Philippiens 4, 13',
+    text: "Je puis tout par celui qui me fortifie.",
+  },
+  {
+    title: 'Ésaïe 40, 31',
+    text: "Ceux qui se confient en l'Éternel renouvellent leur force.",
   },
 ];
 
