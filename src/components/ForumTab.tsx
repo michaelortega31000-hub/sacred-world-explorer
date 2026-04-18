@@ -113,7 +113,7 @@ const ForumTab = () => {
   const { session, userProgress } = useApp();
   const { checkRateLimit } = useRateLimit();
   const [topics, setTopics] = useState<Topic[]>([]);
-  const [forumTab, setForumTab] = useState<'friends' | 'public'>('public');
+  const [forumTab, setForumTab] = useState<'public' | 'catholique' | 'protestant'>('public');
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [posts, setPosts] = useState<Post[]>([]);
   const [newTopicTitle, setNewTopicTitle] = useState('');
@@ -474,12 +474,18 @@ const ForumTab = () => {
         }
       }
 
+      // Determine religion override based on the active denomination sub-tab
+      const religionOverride =
+        forumTab === 'catholique' ? 'catholique' :
+        forumTab === 'protestant' ? 'protestant' : undefined;
+
       // Call server-side edge function with rate limiting enforcement
       const { data, error } = await supabase.functions.invoke('create-forum-topic', {
         body: {
           title: validation.data.title,
           description: validation.data.description,
-          visibility: newTopicVisibility,
+          visibility: religionOverride ? 'public' : newTopicVisibility,
+          religionOverride,
           imageUrls: uploadedImageUrls.length > 0 ? uploadedImageUrls : undefined,
         },
       });
@@ -587,17 +593,16 @@ const ForumTab = () => {
   // Helper function to filter and sort topics
   const getFilteredAndSortedTopics = () => {
     let filtered: Topic[];
-    
-    if (forumTab === 'friends') {
-      // Onglet "Mes amis" : uniquement les topics privés
-      filtered = topics.filter(t => t.visibility === 'private');
+
+    if (forumTab === 'catholique') {
+      // Forum Catholique : seuls les topics religion = catholique en visibility = public
+      filtered = topics.filter(t => t.visibility === 'public' && t.religion === 'catholique');
+    } else if (forumTab === 'protestant') {
+      // Forum Protestant : seuls les topics religion = protestant en visibility = public
+      filtered = topics.filter(t => t.visibility === 'public' && t.religion === 'protestant');
     } else {
-      // Onglet "Par religion" : topics globaux OU topics de ma religion
-      const userReligion = userProgress.selectedReligion;
-      filtered = topics.filter(t => 
-        t.visibility === 'global' || 
-        (t.visibility === 'public' && t.religion === userReligion)
-      );
+      // Public : visible à tous (global) + topics chrétiens généraux ouverts
+      filtered = topics.filter(t => t.visibility === 'global');
     }
     
     // Apply search filter
@@ -1132,17 +1137,8 @@ const ForumTab = () => {
               </Dialog>
             </div>
 
-            {/* Forum sub-tabs: Friends / By Religion */}
-            <div className="flex gap-2 border-b border-border pb-2">
-              <Button
-                variant={forumTab === 'friends' ? 'default' : 'ghost'}
-                size="sm"
-                onClick={() => setForumTab('friends')}
-                className="gap-2"
-              >
-                <Users className="w-4 h-4" />
-                Mes amis
-              </Button>
+            {/* Forum sub-tabs: Public / Catholique / Protestant — denomination-gated */}
+            <div className="flex flex-wrap gap-2 border-b border-border pb-2">
               <Button
                 variant={forumTab === 'public' ? 'default' : 'ghost'}
                 size="sm"
@@ -1150,13 +1146,30 @@ const ForumTab = () => {
                 className="gap-2"
               >
                 <Globe className="w-4 h-4" />
-                Par religion
-                {userProgress.selectedReligion && (
-                  <Badge variant="secondary" className="ml-1 text-xs">
-                    {userProgress.selectedReligion}
-                  </Badge>
-                )}
+                Public
               </Button>
+              {userProgress.denomination === 'catholique' && (
+                <Button
+                  variant={forumTab === 'catholique' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setForumTab('catholique')}
+                  className="gap-2"
+                >
+                  <Lock className="w-4 h-4" />
+                  Forum Catholique
+                </Button>
+              )}
+              {userProgress.denomination === 'protestant' && (
+                <Button
+                  variant={forumTab === 'protestant' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setForumTab('protestant')}
+                  className="gap-2"
+                >
+                  <Lock className="w-4 h-4" />
+                  Forum Protestant
+                </Button>
+              )}
             </div>
 
             {/* Search and Sort Controls */}
@@ -1209,21 +1222,25 @@ const ForumTab = () => {
                         Aucun résultat pour "{searchQuery}"
                       </p>
                     </>
-                  ) : forumTab === 'friends' ? (
+                  ) : forumTab === 'catholique' ? (
                     <>
-                      <Users className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <Lock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground">
-                        Aucun topic privé pour le moment. Créez une discussion visible par vos amis !
+                        Aucun topic dans le Forum Catholique pour le moment. Soyez le premier à en créer un !
+                      </p>
+                    </>
+                  ) : forumTab === 'protestant' ? (
+                    <>
+                      <Lock className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
+                      <p className="text-muted-foreground">
+                        Aucun topic dans le Forum Protestant pour le moment. Soyez le premier à en créer un !
                       </p>
                     </>
                   ) : (
                     <>
                       <Globe className="w-12 h-12 mx-auto mb-4 text-muted-foreground" />
                       <p className="text-muted-foreground">
-                        {userProgress.selectedReligion 
-                          ? `Aucun topic pour ${userProgress.selectedReligion}. Soyez le premier à créer une discussion !`
-                          : 'Sélectionnez une religion dans votre profil pour voir les topics de votre communauté.'
-                        }
+                        Aucun topic public pour le moment. Lancez la première discussion ouverte à tous !
                       </p>
                     </>
                   )}
