@@ -511,8 +511,8 @@ const Globe3D = ({
         projection: {
           name: 'globe'
         },
-        center: [15, 30],
-        zoom: 1.8,
+        center: [2.5, 46.5], // France-first pilot (Phase 2)
+        zoom: 5,
         pitch: 0,
         bearing: 0
       });

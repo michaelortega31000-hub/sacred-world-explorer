@@ -54,13 +54,13 @@ const Welcome = () => {
 
   const handleNext = () => {
     if (isLast) {
-      navigate('/explore');
+      navigate('/home');
     } else {
       setStep(step + 1);
     }
   };
 
-  const handleSkip = () => navigate('/explore');
+  const handleSkip = () => navigate('/home');
 
   return (
     <div className="min-h-screen flex flex-col bg-background relative">

@@ -10,6 +10,8 @@ import AssistantChat from "./components/AssistantChat";
 import Splash from "./pages/Splash";
 import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
+import Home from "./pages/Home";
+import Places from "./pages/Places";
 import Explore from "./pages/Explore";
 import Traditions from "./pages/Traditions";
 import Calendar from "./pages/Calendar";
@@ -76,6 +78,8 @@ const AppContent = () => {
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
           <Route path="/auth" element={<Auth />} />
+          <Route path="/home" element={<Home />} />
+          <Route path="/places" element={<Places />} />
           <Route path="/explore" element={<Explore />} />
           <Route path="/traditions" element={<Traditions />} />
           <Route path="/calendar" element={<Calendar />} />

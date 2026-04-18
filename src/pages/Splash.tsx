@@ -157,7 +157,7 @@ const Splash = () => {
   const handleStartExploration = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (isLoggedIn) {
-      navigate('/welcome');
+      navigate('/home');
     } else {
       navigate('/auth');
     }

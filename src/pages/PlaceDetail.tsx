@@ -60,13 +60,14 @@ import { ARFilters, type FilterType } from '@/components/ar/ARFilters';
 import { captureARScene, saveARCapture, shareARCapture } from '@/utils/arCapture';
 import { hapticFeedback } from '@/hooks/useARGestures';
 import { useAudioGuide } from '@/hooks/useAudioGuide';
+import PlaceDimensionsTabs from '@/components/place/PlaceDimensionsTabs';
 
 const PlaceDetail = () => {
   const { placeId } = useParams<{ placeId: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { toast } = useToast();
-  const { visitPlace, isPlaceVisited, savePOI, removePOI, getPOIsForPlace } = useApp();
+  const { visitPlace, isPlaceVisited, savePOI, removePOI, getPOIsForPlace, addToTrip, removeFromTrip, isInTrip } = useApp();
   const audioGuide = useAudioGuide();
   const [isCheckinModalOpen, setIsCheckinModalOpen] = useState(false);
   const [isRewardModalOpen, setIsRewardModalOpen] = useState(false);
@@ -837,26 +838,67 @@ const PlaceDetail = () => {
             </Card>
           </div>
 
-          {/* À savoir */}
+          {/* Add to collection CTA */}
+          <Button
+            onClick={() => {
+              if (isInTrip(placeId!)) {
+                removeFromTrip(placeId!);
+                toast({
+                  title: 'Retiré de votre collection',
+                  description: `${place.name} a été retiré.`,
+                });
+              } else {
+                addToTrip(placeId!);
+                toast({
+                  title: 'Ajouté à votre collection',
+                  description: `${place.name} fait désormais partie de votre parcours de pèlerin.`,
+                });
+              }
+            }}
+            size="lg"
+            className="w-full gap-2 text-base py-6"
+            variant={isInTrip(placeId!) ? 'outline' : 'default'}
+            style={
+              !isInTrip(placeId!)
+                ? {
+                    background:
+                      'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                    color: 'black',
+                  }
+                : undefined
+            }
+          >
+            {isInTrip(placeId!) ? (
+              <>
+                <CheckCircle2 className="w-5 h-5" />
+                Dans ma collection
+              </>
+            ) : (
+              <>
+                <Plus className="w-5 h-5" />
+                Ajouter à ma collection
+              </>
+            )}
+          </Button>
+
+          {/* Dimensions spirituelle & culturelle */}
+          <PlaceDimensionsTabs
+            placeName={place.name}
+            placeType={place.type}
+            description={place.description}
+          />
+
+          {/* Étiquette du lieu */}
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Info className="w-5 h-5" />
-                À savoir
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <p className="leading-relaxed">{place.description}</p>
-              
-              <div className="pt-3 border-t space-y-2">
-                <p className="text-sm text-muted-foreground">
-                  <strong>Étiquette :</strong> Respectez les usages du lieu (tenue appropriée, silence, vérifiez les autorisations pour les photos)
-                </p>
-                <p className="text-sm text-muted-foreground flex items-center gap-2">
-                  <Clock className="w-4 h-4" />
-                  <span>Temps moyen de visite : 1h30</span>
-                </p>
-              </div>
+            <CardContent className="pt-6 space-y-2">
+              <p className="text-sm text-muted-foreground">
+                <strong>Étiquette :</strong> Respectez les usages du lieu (tenue
+                appropriée, silence, vérifiez les autorisations pour les photos).
+              </p>
+              <p className="text-sm text-muted-foreground flex items-center gap-2">
+                <Clock className="w-4 h-4" />
+                <span>Temps moyen de visite : 1h30</span>
+              </p>
             </CardContent>
           </Card>
 

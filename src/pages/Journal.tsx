@@ -26,10 +26,10 @@ const Journal = () => {
           <div className="space-y-6">
             <div className="space-y-2 animate-fade-in">
               <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Mon Espace Social
+                Ma Collection
               </h1>
               <p className="text-lg text-muted-foreground">
-                Souvenirs, amis, messages et discussions
+                Vos lieux sacrés débloqués, souvenirs et partages
               </p>
             </div>
 
