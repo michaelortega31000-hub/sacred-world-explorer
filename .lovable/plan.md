@@ -1,66 +1,46 @@
 
 
-User shared a comprehensive User Stories v1 document for Phase 1 Pilot France. This is reference/strategy documentation, not a direct implementation request. They've already approved Phases 1-4 which cover most of these epics:
+## Phase 6 — Cinematic /planner page + Logo 4 + Bottom nav update
 
-- ✅ Epic 1 (Onboarding) — done in Phase 4
-- ✅ Epic 2 (Discovery) — done in Phase 1+2 (Christianity-only filter, spiritual/cultural tabs)
-- ✅ Epic 3 (Gamification) — done in Phase 3 (christianBadges.ts + Journal share)
-- ⚠️ Epic 4 (Enriched content) — partially done; needs Protestant variant + denomination-aware tabs
-- ✅ Epic 5 (Forum segmentation) — done in Phase 4
-- ✅ Epic 6 (Map France-first + offline) — done in Phase 3
+### 1. Logo 4 asset
+- Save uploaded image to `src/assets/logo-v4.png`.
+- Update `src/components/ui/logo.tsx`: replace `logoMain` import with `logo-v4.png` so every `<Logo variant="main" />` usage picks it up automatically.
+- Verify Splash uses `variant="main"` — if not, switch it.
 
-Two real gaps vs the document:
-1. **Profile change in Settings** (Epic 1, story 3) — not yet built
-2. **Denomination-aware Place Detail content** (Epic 4) — currently single Catholic-leaning content; Protestant users should see Bible/Reformation framing, Curious see history-first
-3. **Seed the 20 pilot places** with associated badges + spiritual/cultural sample content
+### 2. New standalone page `/planner` — `src/pages/Planner.tsx`
+Cinematic immersive layout, mobile-first (iPhone 15/16 ~390×844, validated against 802×745 viewport):
 
-Best approach: present this as a Phase 5 plan addressing the 3 real gaps. Keep it tight.
+- **Background layer**: reuse existing `ItineraryGlobe3D` (R3F night globe with golden arcs already in project) at full screen, dimmed.
+- **Hero photo overlay**: semi-transparent Mont-Saint-Michel image (use existing asset from `placesData` or `getImagesByCountry('France')`), `mix-blend-overlay` + radial gradient mask so globe stays visible.
+- **Header**: new Logo 4 (small, glowing) + back button. Title "Planifier un trajet" in large white font with golden gradient, subtitle "Vers un lieu sacré" with soft golden glow (`drop-shadow`).
+- **4 action buttons** (glassmorphic dark cards with golden border, discreet `ChristianIcon` cross):
+  1. *Définir un départ* (MapPin icon)
+  2. *Ajouter une destination* (Plus icon)
+  3. *Tracer le parcours* (Route icon)
+  4. *Enregistrer le trajet* — bright golden glowing CTA, larger, primary action
+- **Local state only** (no DB writes this phase): `departure`, `destinations[]`, `routeDrawn`. "Enregistrer" shows toast confirmation. Existing `TripPlannerTab` untouched.
+- **Palette**: deep blue `#0E1B3F` → `#142B4F`, golden `#E0A84C` glows, turquoise accents kept minimal.
 
-## Phase 5 — Close the Phase 1 Pilot France gaps
+### 3. Routing
+- `src/App.tsx`: add `<Route path="/planner" element={<Planner />} />`.
 
-Building on Phases 1-4. Three surgical additions to fully match the User Stories v1 spec.
+### 4. Bottom navigation update — `src/components/BottomNavigation.tsx`
+Replace current 5 tabs (Accueil / Carte / Lieux / Collection / Profil) with: **Profil / Globe / Planifier / Journal / Classement**.
+- Profil → `/profile` (User)
+- Globe → `/explore` (Globe icon)
+- **Planifier** → `/planner` (Route icon) — golden glow when active (stronger `drop-shadow` + golden text vs default turquoise)
+- Journal → `/journal` (BookHeart)
+- Classement → `/profile?tab=ranking` or new fallback to `/profile` (Trophy icon) — using profile ranking tab since no standalone ranking page exists.
 
-### 1. Change denomination from Settings (Epic 1.3)
-- `src/pages/Settings.tsx`: add a "Mon profil chrétien" card with the 3 choices (Catholique / Protestant / Curieux), pre-selected to current value, calling `setDenomination()` from `AppContext`. Toast confirmation, no page reload.
-
-### 2. Denomination-aware Place Detail (Epic 4)
-`src/components/place/PlaceDimensionsTabs.tsx`:
-- Read `denomination` from `useApp()`.
-- **Catholique** (current default) — keep mass times, daily prayer, intention form, audio guide.
-- **Protestant** — replace mass times with "Cultes & temples", swap daily prayer for a daily Bible verse (small `protestantVerses` array), keep intention form (label "Sujet de prière"), keep audio guide.
-- **Curieux** — collapse the Spirituelle tab into a short "Lieu de recueillement" block (no mass times / no intention form), and make the **Culturelle** tab the default active tab.
-- Cultural tab: unchanged for all profiles (history wins for Curious by default-tab switch).
-
-### 3. Seed the 20 pilot France places + badges (content)
-- **`src/data/christianBadges.ts`**: extend the catalog with the badges from the document mapped to place IDs:
-  - `mont-saint-michel` → *Pèlerin du Mont*
-  - `notre-dame-paris`, `chartres`, `reims`, `amiens`, `strasbourg`, `rouen`, `toulouse-saint-etienne` → *Cathédrale gothique débloquée*
-  - `lourdes` → *Pèlerin de Lourdes*
-  - `sacre-coeur` → *Gardien du Sacré-Cœur*
-  - `mont-sainte-odile` → *Gardien des reliques d'Alsace*
-  - `saint-martin-ainay`, `fontenay`, `senanque`, `cluny` → *Abbaye / Monastère cistercien*
-  - `saint-sernin`, `vezelay` → *Pèlerin de Saint-Jacques*
-  - `lisieux` → *Petite Thérèse*
-  - `bois-chenu` → *Jeanne d'Arc*
-  - `nice-saint-nicolas` → *Saint Nicolas*
-  - Fallback to "DÉBLOQUÉ" stays in place for any unmapped place.
-- **DB seed (insert tool)**: upsert the 20 places into `public.places` with `religion='christianity'`, `place_category='religious_site'`, `country='France'`, proper `type`, `coordinates`, and a short `description`. Verified by admin (`verification_status='verified'`).
-- No spiritual/cultural per-place text stored in DB — `PlaceDimensionsTabs` already generates appropriate content from `placeType` + `denomination`. Keeps DB lean.
-
-### Files touched (~3) + 1 data seed
-
-**Edited:**
-- `src/pages/Settings.tsx` (denomination switcher card)
-- `src/components/place/PlaceDimensionsTabs.tsx` (denomination-aware rendering)
-- `src/data/christianBadges.ts` (extend catalog with 20 pilot mappings)
-
-**Data seed (insert tool):** 20 rows into `public.places`.
+### Files touched (~4)
+**New**: `src/assets/logo-v4.png`, `src/pages/Planner.tsx`
+**Edited**: `src/components/ui/logo.tsx`, `src/App.tsx`, `src/components/BottomNavigation.tsx`
 
 ### Untouched
-Schema · RLS · Stripe · Offline · edge functions · existing onboarding flow · Forum segmentation.
+`TripPlannerTab.tsx` · DB schema · RLS · all other pages · existing globe components.
 
 ### Risks
-- **Place ID collisions**: use `ON CONFLICT (id) DO UPDATE` on the seed to be idempotent.
-- **Protestant content authenticity**: Bible verses kept short and from public-domain Louis Segond translation; clearly marked "indicatif".
-- **Curious default-tab switch**: only flips initial tab; user can still open Spirituelle.
+- **Classement route**: no dedicated page exists → routes to `/profile` (ranking tab already there). Flag to user if they want a standalone `/ranking` page later.
+- **Hero image weight**: use existing French asset, no new download.
+- **Globe perf on mobile**: `ItineraryGlobe3D` already used in TripPlanner, proven OK.
 
