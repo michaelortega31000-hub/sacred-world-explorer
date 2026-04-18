@@ -16,10 +16,14 @@ import {
   ScrollText,
   Lightbulb,
   Info,
+  Headphones,
+  Square,
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { useAudioGuide } from '@/hooks/useAudioGuide';
 
 interface PlaceDimensionsTabsProps {
+  placeId?: string;
   placeName: string;
   placeType: string;
   description: string;
@@ -44,33 +48,44 @@ const archStyles: Record<string, { style: string; description: string }> = {
   Cathédrale: {
     style: 'Gothique',
     description:
-      'Voûtes sur croisée d’ogives, arcs-boutants, vitraux monumentaux et flèches élancées vers le ciel — l’art gothique cherche la lumière et la verticalité.',
+      "Voûtes sur croisée d'ogives, arcs-boutants, vitraux monumentaux et flèches élancées vers le ciel — l'art gothique cherche la lumière et la verticalité, transformant la pierre en dentelle.",
   },
   Basilique: {
     style: 'Roman / Néo-byzantin',
     description:
-      'Volumes massifs, arcs en plein cintre et coupoles : les basiliques associent solidité romane et richesse décorative byzantine.',
+      "Volumes massifs, arcs en plein cintre et coupoles dorées : les basiliques associent solidité romane et richesse décorative byzantine, souvent rehaussées de mosaïques.",
   },
   Sanctuaire: {
     style: 'Néo-gothique / Contemporain',
     description:
-      'Souvent érigés autour d’un lieu d’apparition ou de relique, les sanctuaires mêlent architectures du XIXᵉ et aménagements modernes.',
+      "Souvent érigés autour d'un lieu d'apparition ou d'une relique, les sanctuaires mêlent architectures du XIXᵉ siècle et aménagements modernes pour accueillir des foules de pèlerins.",
   },
   Abbaye: {
     style: 'Roman & Gothique',
     description:
-      'Cloître, salle capitulaire, église abbatiale : l’architecture monastique structure prière, travail et vie communautaire.',
+      "Cloître, salle capitulaire, église abbatiale et scriptorium : l'architecture monastique structure prière, travail et vie communautaire selon la règle bénédictine ou cistercienne.",
   },
   Église: {
     style: 'Roman / Gothique / Baroque',
     description:
-      'Selon l’époque, l’église paroissiale combine sobriété romane, élégance gothique ou exubérance baroque.',
+      "Selon l'époque, l'église paroissiale combine sobriété romane, élégance gothique ou exubérance baroque, reflet du goût et de la dévotion de chaque siècle.",
+  },
+  Chapelle: {
+    style: 'Roman / Baroque / Contemporain',
+    description:
+      "Édifice plus modeste, la chapelle privilégie l'intimité du recueillement. Souvent dédiée à un saint, elle marque un lieu de mémoire ou un vœu particulier.",
+  },
+  Monastère: {
+    style: 'Roman / Byzantin',
+    description:
+      "Ensemble fortifié et autonome, le monastère articule espaces de vie, de prière et de production. Les monastères orthodoxes reprennent la tradition byzantine, riche en icônes.",
   },
 };
 
-const PlaceDimensionsTabs = ({ placeName, placeType, description }: PlaceDimensionsTabsProps) => {
+const PlaceDimensionsTabs = ({ placeId, placeName, placeType, description }: PlaceDimensionsTabsProps) => {
   const [intentionName, setIntentionName] = useState('');
   const [intentionText, setIntentionText] = useState('');
+  const { state: audioState, play: playAudio, stop: stopAudio } = useAudioGuide();
 
   const todayPrayer = useMemo(() => {
     const day = new Date().getDate();
@@ -78,6 +93,14 @@ const PlaceDimensionsTabs = ({ placeName, placeType, description }: PlaceDimensi
   }, []);
 
   const arch = archStyles[placeType] ?? archStyles['Église'];
+
+  const handlePrayerAudio = () => {
+    if (audioState.isPlaying) {
+      stopAudio();
+      return;
+    }
+    playAudio(`${todayPrayer.title}. ${todayPrayer.text}`, placeId ?? `prayer-${Date.now()}`);
+  };
 
   const handleSubmitIntention = () => {
     if (!intentionText.trim()) {
