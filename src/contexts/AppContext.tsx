@@ -15,6 +15,8 @@ import { GlobeSettings, defaultGlobeSettings } from '@/types/globeSettings';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
+export type Denomination = 'catholique' | 'protestant' | 'curieux';
+
 export type PlaceCategory = 'religious_site' | 'museum' | 'other';
 
 export interface Place {
@@ -58,6 +60,7 @@ export interface UserProgress {
   lastQuestDate: string;
   longestStreak: number;
   globeSettings: GlobeSettings;
+  denomination: Denomination | null;
 }
 
 interface AppContextType {
@@ -88,6 +91,7 @@ interface AppContextType {
   getStreakBonus: () => number;
   awardQuestBadge: (questId: string, questName: string, questDescription: string, questIcon: string) => Promise<boolean>;
   updateGlobeSettings: (settings: Partial<GlobeSettings>) => void;
+  setDenomination: (denomination: Denomination) => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
