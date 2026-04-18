@@ -310,7 +310,42 @@ const Settings = () => {
             </div>
           </Card>
 
-          {/* Nom d'utilisateur */}
+          {/* Mon profil chrétien */}
+          <Card className="p-6 bg-card border-border">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-primary/10 rounded-full">
+                <Cross className="w-6 h-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <Label className="text-lg font-semibold text-foreground mb-1 block">
+                  Mon profil chrétien
+                </Label>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Adapte le contenu spirituel des lieux et l'accès aux forums dédiés.
+                </p>
+                <Select
+                  value={userProgress.denomination ?? ''}
+                  onValueChange={(v) => handleDenominationChange(v as Denomination)}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Choisir un profil" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="catholique">✝️ Catholique</SelectItem>
+                    <SelectItem value="protestant">📖 Protestant</SelectItem>
+                    <SelectItem value="curieux">🏛️ Curieux du patrimoine chrétien</SelectItem>
+                  </SelectContent>
+                </Select>
+                {userProgress.denomination && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">
+                    {userProgress.denomination === 'catholique' && '« Tradition, sacrements, pèlerinages et vie paroissiale. »'}
+                    {userProgress.denomination === 'protestant' && '« Bible, foi personnelle, temples et héritage de la Réforme. »'}
+                    {userProgress.denomination === 'curieux' && '« Architecture, histoire, art et beauté du patrimoine sacré. »'}
+                  </p>
+                )}
+              </div>
+            </div>
+          </Card>
           <Card className="p-6 bg-card border-border">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-primary/10 rounded-full">
