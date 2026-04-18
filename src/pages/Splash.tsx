@@ -301,7 +301,17 @@ const Splash = () => {
         <div className="flex-1 flex items-center justify-center w-full max-w-2xl">
           {/* This space contains the logo and text from the image */}
         </div>
-        
+
+        {/* Tagline overlay (Phase 3) — visible above the CTA */}
+        <div className="w-full max-w-xl mb-4 px-4 text-center pointer-events-none">
+          <p className="text-base sm:text-lg font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] leading-snug">
+            Découvrez, vivez et collectionnez le patrimoine sacré chrétien
+          </p>
+          <p className="text-xs sm:text-sm text-white/85 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] mt-1">
+            Pour les chrétiens et les curieux de patrimoine
+          </p>
+        </div>
+
         {/* Button zone 1 - "Commencer l'exploration" ou "Continuer" */}
         <div className="w-full max-w-md mb-3">
           <button

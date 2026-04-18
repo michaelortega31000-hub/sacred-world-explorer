@@ -104,7 +104,7 @@ const BadgeUnlock = ({
 
           {/* Badge info */}
           <div className="text-center space-y-2">
-            <h3 className="text-xl font-semibold">{badgeType}</h3>
+            <h3 className="text-xl font-semibold">{badgeType || '✓ DÉBLOQUÉ'}</h3>
             {placeName && (
               <p className="text-sm text-muted-foreground">
                 Obtenu à {placeName}

@@ -8,12 +8,12 @@ interface HeroSlide {
 }
 
 const slides: HeroSlide[] = [
+  { name: 'Mont-Saint-Michel', city: 'Normandie', image: '/src/assets/places/mont-saint-michel.jpg' },
   { name: 'Notre-Dame de Paris', city: 'Paris', image: '/src/assets/places/notre-dame.jpg' },
   { name: 'Sanctuaire de Lourdes', city: 'Lourdes', image: '/src/assets/places/lourdes.jpg' },
-  { name: 'Mont Saint-Michel', city: 'Normandie', image: '/src/assets/places/mont-saint-michel.jpg' },
   { name: 'Sacré-Cœur', city: 'Paris', image: '/src/assets/places/sacre-coeur.jpg' },
-  { name: 'Cité du Vatican', city: 'Rome', image: '/src/assets/places/vatican.jpg' },
   { name: 'Cathédrale de Chartres', city: 'Chartres', image: '/src/assets/places/chartres.jpg' },
+  { name: 'Cité du Vatican', city: 'Rome', image: '/src/assets/places/vatican.jpg' },
 ];
 
 interface HeroCarouselProps {
