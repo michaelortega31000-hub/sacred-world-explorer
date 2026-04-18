@@ -292,42 +292,6 @@ const AssistantChat = ({ isOpen, onOpenChange }: AssistantChatProps) => {
               Histoire
             </ToggleGroupItem>
           </ToggleGroup>
-
-          {/* Voice options */}
-          {(speechRecognitionSupported || speechSynthesisSupported) && (
-            <div className="flex items-center gap-4 mt-3 pt-3 border-t">
-              {speechSynthesisSupported && (
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id="auto-speak"
-                    checked={autoSpeak}
-                    onCheckedChange={setAutoSpeak}
-                  />
-                  <Label htmlFor="auto-speak" className="text-xs cursor-pointer">
-                    {isSpeaking ? (
-                      <span className="flex items-center gap-1">
-                        <Volume2 className="h-3 w-3 animate-pulse" /> Lecture...
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1">
-                        <Volume2 className="h-3 w-3" /> Réponse vocale
-                      </span>
-                    )}
-                  </Label>
-                  {isSpeaking && (
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={stopSpeaking}
-                    >
-                      <VolumeX className="h-3 w-3" />
-                    </Button>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
         </SheetHeader>
 
         {/* Messages Area */}
