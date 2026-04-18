@@ -30,6 +30,14 @@ const includesTag = (place: Place, tag: string) =>
   Array.isArray(place.tags) && place.tags.some((t) => t.toLowerCase() === tag.toLowerCase());
 
 export const christianBadges: ChristianBadge[] = [
+  // === Pilot France — 20 lieux ===
+  {
+    id: 'pelerin-du-mont',
+    label: 'Pèlerin du Mont',
+    description: 'Vous avez gravi le Mont-Saint-Michel.',
+    icon: '⛰️',
+    condition: (p) => p.id === 'mont-saint-michel' || /mont-saint-michel/i.test(p.id),
+  },
   {
     id: 'pelerin-lourdes',
     label: 'Pèlerin de Lourdes',
@@ -38,18 +46,75 @@ export const christianBadges: ChristianBadge[] = [
     condition: (p) => p.id === 'lourdes' || /lourdes/i.test(p.id),
   },
   {
-    id: 'mont-sacre',
-    label: 'Mont sacré',
-    description: 'Vous avez gravi le Mont-Saint-Michel.',
-    icon: '⛰️',
-    condition: (p) => p.id === 'mont-saint-michel' || /mont-saint-michel/i.test(p.id),
-  },
-  {
-    id: 'coeur-paris',
-    label: 'Cœur de Paris',
-    description: 'Vous avez découvert la basilique du Sacré-Cœur.',
+    id: 'gardien-sacre-coeur',
+    label: 'Gardien du Sacré-Cœur',
+    description: 'Vous avez découvert la basilique du Sacré-Cœur de Montmartre.',
     icon: '❤️',
     condition: (p) => p.id === 'sacre-coeur' || /sacre-coeur/i.test(p.id),
+  },
+  {
+    id: 'gardien-reliques-alsace',
+    label: "Gardien des reliques d'Alsace",
+    description: 'Vous avez prié au Mont-Sainte-Odile.',
+    icon: '✨',
+    condition: (p) => /mont-sainte-odile|sainte-odile/i.test(p.id),
+  },
+  {
+    id: 'petite-therese',
+    label: 'Petite Thérèse',
+    description: 'Vous avez visité le sanctuaire de Lisieux.',
+    icon: '🌹',
+    condition: (p) => /lisieux/i.test(p.id),
+  },
+  {
+    id: 'jeanne-darc',
+    label: "Jeanne d'Arc",
+    description: 'Vous avez visité un haut-lieu lié à Jeanne d’Arc.',
+    icon: '⚔️',
+    condition: (p) => /bois-chenu|domremy|jeanne/i.test(p.id),
+  },
+  {
+    id: 'saint-nicolas',
+    label: 'Saint Nicolas',
+    description: 'Vous avez visité la basilique Saint-Nicolas de Nice.',
+    icon: '⛪',
+    condition: (p) => /saint-nicolas/i.test(p.id),
+  },
+  {
+    id: 'monastere-cistercien',
+    label: 'Monastère cistercien',
+    description: 'Vous avez visité une grande abbaye française.',
+    icon: '🏛️',
+    condition: (p) =>
+      ['saint-martin-ainay', 'fontenay', 'senanque', 'cluny'].includes(p.id) ||
+      includesTag(p, 'cistercien') ||
+      includesTag(p, 'benedictin'),
+  },
+  {
+    id: 'cathedrale-gothique',
+    label: 'Cathédrale gothique débloquée',
+    description: 'Une cathédrale gothique majeure rejoint votre collection.',
+    icon: '🏰',
+    condition: (p) =>
+      [
+        'notre-dame-paris',
+        'chartres',
+        'reims',
+        'amiens',
+        'strasbourg',
+        'rouen',
+        'toulouse-saint-etienne',
+      ].includes(p.id) || includesTag(p, 'gothique'),
+  },
+  {
+    id: 'pelerin-saint-jacques',
+    label: 'Pèlerin de Saint-Jacques',
+    description: 'Une étape sur les chemins de Compostelle.',
+    icon: '🥾',
+    condition: (p) =>
+      ['saint-sernin', 'vezelay'].includes(p.id) ||
+      includesTag(p, 'compostelle') ||
+      /compostelle|santiago/i.test(p.id),
   },
   {
     id: 'pelerin-vatican',
@@ -62,26 +127,10 @@ export const christianBadges: ChristianBadge[] = [
       (typeof p.country === 'string' && p.country.toLowerCase().includes('vatican')),
   },
   {
-    id: 'cathedrale-gothique',
-    label: 'Cathédrale gothique débloquée',
-    description: 'Une cathédrale gothique majeure rejoint votre collection.',
-    icon: '🏰',
-    condition: (p) =>
-      ['notre-dame-paris', 'chartres', 'reims', 'amiens', 'strasbourg', 'rouen'].includes(p.id) ||
-      includesTag(p, 'gothique'),
-  },
-  {
-    id: 'marcheur-compostelle',
-    label: 'Marcheur de Saint-Jacques',
-    description: 'Une étape sur les chemins de Compostelle.',
-    icon: '🥾',
-    condition: (p) => includesTag(p, 'compostelle') || /compostelle|santiago/i.test(p.id),
-  },
-  {
     id: 'gardien-reliques',
     label: 'Gardien des reliques',
     description: 'Vous avez visité une basilique abritant des reliques sacrées.',
-    icon: '✨',
+    icon: '🕊️',
     condition: (p) =>
       p.type?.toLowerCase() === 'basilica' ||
       p.type?.toLowerCase() === 'basilique' ||
