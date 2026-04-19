@@ -211,11 +211,7 @@ const LocationsTab = () => {
     reorderTrip(newRoute.map(p => p.id));
 
     // Recalculate segments with new order
-    const newModes = newRoute.length > 1
-      ? Array.from({ length: newRoute.length - 1 }, (_, i) => segmentModes[i] ?? transportMode)
-      : [];
-    setSegmentModes(newModes);
-    calculateRouteSegments(newRoute, newModes);
+    calculateRouteSegments(newRoute);
   };
   const handleDragEnd = () => {
     setDraggedIndex(null);
