@@ -923,6 +923,10 @@ const LocationsTab = () => {
       religious,
       museums,
       total: allPlaces.length
+    };
+  }, [allPlaces]);
+  const isPlaceVisited = (placeId: string) => {
+    return userProgress.visitedPlaces.includes(placeId);
   };
 
   // Available first-letters for the A–Z rail (uppercase, accent-stripped)
@@ -990,10 +994,6 @@ const LocationsTab = () => {
         </CardContent>
       </Card>
     );
-  };
-  }, [allPlaces]);
-  const isPlaceVisited = (placeId: string) => {
-    return userProgress.visitedPlaces.includes(placeId);
   };
   return <div className="container mx-auto p-6 space-y-6 pb-24">
       <div className="text-center mb-8">
