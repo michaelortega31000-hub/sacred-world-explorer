@@ -1263,29 +1263,6 @@ const LocationsTab = () => {
                                      </div>
                                       {index < displayRoute.length - 1 && segment && (
                                         <div className="ml-14 space-y-2">
-                                          <div className="flex items-center gap-2 flex-wrap bg-muted/40 rounded-lg p-2">
-                                            <span className="text-xs text-muted-foreground mr-1">Mode :</span>
-                                            {ALL_MODES.map((m) => {
-                                              const Icon = transportIcon(m);
-                                              const active = (segmentModes[index] ?? transportMode) === m;
-                                              const isLoading = loadingSegmentIdx === index && active;
-                                              return (
-                                                <Button
-                                                  key={m}
-                                                  type="button"
-                                                  variant={active ? 'default' : 'outline'}
-                                                  size="icon"
-                                                  className="h-7 w-7"
-                                                  title={transportLabel(m)}
-                                                  aria-label={transportLabel(m)}
-                                                  disabled={loadingSegmentIdx !== null}
-                                                  onClick={() => recalcSegment(index, m)}
-                                                >
-                                                  {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5" />}
-                                                </Button>
-                                              );
-                                            })}
-                                          </div>
                                           <div className="flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
                                             <div className="flex items-center gap-2">
                                               <ArrowRight className="w-4 h-4 text-secondary" />
