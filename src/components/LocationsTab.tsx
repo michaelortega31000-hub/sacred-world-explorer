@@ -768,7 +768,12 @@ const LocationsTab = () => {
     }
     
     if (showOptimizedRoute && displayRoute.length >= 2) {
-      calculateRouteSegments(displayRoute, transportMode);
+      const modes = Array.from({ length: displayRoute.length - 1 }, (_, i) => segmentModes[i] ?? transportMode);
+      // Keep segmentModes length in sync with displayRoute
+      if (modes.length !== segmentModes.length) {
+        setSegmentModes(modes);
+      }
+      calculateRouteSegments(displayRoute, modes);
       
       // Debounce POI search to avoid excessive calls
       poiSearchTimeoutRef.current = setTimeout(() => {
