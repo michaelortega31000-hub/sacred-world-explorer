@@ -60,11 +60,30 @@ const CITY_ALIASES: Record<string, string> = {
  * Used when a DB entry has no image_url so we never fall back to fuzzy guessing.
  */
 const IMAGE_OVERRIDES: Record<string, string> = {
-  // France
-  'chartres|chartres': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Chartres_-_Cathedrale.jpg/1024px-Chartres_-_Cathedrale.jpg',
-  'bois chenu|domremy la pucelle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Domremy_basilique.JPG/1024px-Domremy_basilique.JPG',
-  'lisieux|lisieux': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Basilique_Sainte-Th%C3%A9r%C3%A8se_de_Lisieux_-_2.jpg/1024px-Basilique_Sainte-Th%C3%A9r%C3%A8se_de_Lisieux_-_2.jpg',
-  'senanque|gordes': 'https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Abbaye_de_S%C3%A9nanque_-_panoramio.jpg/1024px-Abbaye_de_S%C3%A9nanque_-_panoramio.jpg',
+  // France — all 20 missing-image entries from the DB, verified via Wikimedia Commons
+  'notre dame amiens|amiens': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/Fa%C3%A7ade_Ouest_Cath%C3%A9drale_Notre_Dame_-_Amiens_%28FR80%29_-_2021-05-30_-_14.jpg/1280px-Fa%C3%A7ade_Ouest_Cath%C3%A9drale_Notre_Dame_-_Amiens_%28FR80%29_-_2021-05-30_-_14.jpg',
+  'notre dame chartres|chartres': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Cath%C3%A9drale_Notre_Dame_-_Chartres_%28FR28%29_-_2021-03-14_-_4.jpg/1280px-Cath%C3%A9drale_Notre_Dame_-_Chartres_%28FR28%29_-_2021-03-14_-_4.jpg',
+  'chartres|chartres': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Cath%C3%A9drale_Notre_Dame_-_Chartres_%28FR28%29_-_2021-03-14_-_4.jpg/1280px-Cath%C3%A9drale_Notre_Dame_-_Chartres_%28FR28%29_-_2021-03-14_-_4.jpg',
+  'cluny|cluny': 'https://upload.wikimedia.org/wikipedia/commons/thumb/6/68/Cluny_-_B%C3%A2timents_abbatiaux_-_08.jpg/1280px-Cluny_-_B%C3%A2timents_abbatiaux_-_08.jpg',
+  'bois chenu|domremy-la-pucelle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Basilique_du_Bois_Ch%C3%AAnu.JPG/1280px-Basilique_du_Bois_Ch%C3%AAnu.JPG',
+  'bois chenu|domremy la pucelle': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Basilique_du_Bois_Ch%C3%AAnu.JPG/1280px-Basilique_du_Bois_Ch%C3%AAnu.JPG',
+  'notre dame senanque|gordes': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Abbaye-senanque-gordes-iso.jpg/1280px-Abbaye-senanque-gordes-iso.jpg',
+  'senanque|gordes': 'https://upload.wikimedia.org/wikipedia/commons/thumb/f/ff/Abbaye-senanque-gordes-iso.jpg/1280px-Abbaye-senanque-gordes-iso.jpg',
+  'mont michel|le mont-saint-michel': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/78/Mont-Saint-Michel_vu_du_ciel.jpg/1280px-Mont-Saint-Michel_vu_du_ciel.jpg',
+  'lisieux|lisieux': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/45/Basilique_Sainte-Th%C3%A9r%C3%A8se_de_Lisieux-2876.jpg/1280px-Basilique_Sainte-Th%C3%A9r%C3%A8se_de_Lisieux-2876.jpg',
+  'notre dame lourdes|lourdes': 'https://upload.wikimedia.org/wikipedia/commons/thumb/b/b6/Basilica_of_the_Immaculate_Conception_and_surroundings_of_the_grotto.jpg/1280px-Basilica_of_the_Immaculate_Conception_and_surroundings_of_the_grotto.jpg',
+  'martin ainay|lyon': 'https://upload.wikimedia.org/wikipedia/commons/thumb/5/51/Basilique.Saint.Martin.d.Ainay.JPG/1280px-Basilique.Saint.Martin.d.Ainay.JPG',
+  'fontenay|marmagne': 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9f/Abbaye_de_Fontenay_panorama.jpg/1280px-Abbaye_de_Fontenay_panorama.jpg',
+  'nicolas nice|nice': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Cath%C3%A9drale_orthodoxe_russe_Saint-Nicolas_de_Nice.jpg/1280px-Cath%C3%A9drale_orthodoxe_russe_Saint-Nicolas_de_Nice.jpg',
+  'mont odile|ottrott': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Ottrott_Mont_Sainte-Odile.JPG/1280px-Ottrott_Mont_Sainte-Odile.JPG',
+  'sacre montmartre|paris': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Sacr%C3%A9_Coeur_Fa%C3%A7ade_1.jpg/1280px-Sacr%C3%A9_Coeur_Fa%C3%A7ade_1.jpg',
+  'notre dame paris|paris': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/af/Notre-Dame_de_Paris_2013-07-24.jpg/1280px-Notre-Dame_de_Paris_2013-07-24.jpg',
+  'notre dame reims|reims': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/70/Exterior_view_of_the_west_facade_of_Notre-Dame_Cathedral_in_Reims.jpg/1280px-Exterior_view_of_the_west_facade_of_Notre-Dame_Cathedral_in_Reims.jpg',
+  'notre dame rouen|rouen': 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Rouen_Cathedral_as_seen_from_Gros_Horloge_140215_4.jpg/1280px-Rouen_Cathedral_as_seen_from_Gros_Horloge_140215_4.jpg',
+  'notre dame strasbourg|strasbourg': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7e/Strasbourg_Cathedral_Exterior_-_Diliff.jpg/1280px-Strasbourg_Cathedral_Exterior_-_Diliff.jpg',
+  'etienne toulouse|toulouse': 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/de/Fa%C3%A7ade_de_la_cath%C3%A9drale_Saint-%C3%89tienne_de_Toulouse.jpg/1280px-Fa%C3%A7ade_de_la_cath%C3%A9drale_Saint-%C3%89tienne_de_Toulouse.jpg',
+  'sernin toulouse|toulouse': 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7f/Basilique_Saint-Sernin_de_Toulouse_-_exposition_ouest-1-.jpg/1280px-Basilique_Saint-Sernin_de_Toulouse_-_exposition_ouest-1-.jpg',
+  'marie madeleine vezelay|vezelay': 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/aa/V%C3%A9zelay_-_Basilique_Sainte-Marie-Madeleine_-_Ext%C3%A9rieur_-_10.jpg/1280px-V%C3%A9zelay_-_Basilique_Sainte-Marie-Madeleine_-_Ext%C3%A9rieur_-_10.jpg',
   // Italy
   'antoine padoue|padoue': '/src/assets/places/padua-basilica.jpg',
   'santa casa|loreto': 'https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Loreto_Basilica_della_Santa_Casa.jpg/1024px-Loreto_Basilica_della_Santa_Casa.jpg',
@@ -150,7 +169,20 @@ const mergePlaces = (dbPlaces: DBPlace[], localPlaces: Place[]): Place[] => {
     uniqueDb.push(normalizeDbPlace(dbPlace, key));
   }
 
-  return [...localPlaces, ...uniqueDb];
+  // Apply IMAGE_OVERRIDES to ANY entry (local or DB) whose imageUrl is missing
+  // or points to the placeholder. This catches both gaps in the local dataset
+  // and DB rows where image_url is NULL.
+  const isPlaceholder = (url: string | undefined): boolean =>
+    !url || url === '/placeholder.svg' || url === '/images/place-placeholder.jpg';
+
+  const merged = [...localPlaces, ...uniqueDb].map(p => {
+    if (!isPlaceholder(p.imageUrl)) return p;
+    const key = canonicalKey(p.name, p.city, p.country);
+    const override = IMAGE_OVERRIDES[key];
+    return override ? { ...p, imageUrl: override } : p;
+  });
+
+  return merged;
 };
 
 /**
