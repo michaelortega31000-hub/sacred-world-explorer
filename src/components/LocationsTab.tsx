@@ -1157,28 +1157,29 @@ const LocationsTab = () => {
                           </Select>
                         </div>
                         <div className="flex-1">
-                          <label className="text-sm font-medium mb-2 block">Mode de transport</label>
+                          <label className="text-sm font-medium mb-1 block">Mode de transport</label>
+                          <p className="text-xs text-muted-foreground mb-2">Appliquer à tous les trajets</p>
                           <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-3 gap-2">
-                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('plane')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('plane')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'plane' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plane className="w-4 h-4 mr-1" />} Avion
                               </Button>
-                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('train')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('train')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'train' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <TrainFront className="w-4 h-4 mr-1" />} Train
                               </Button>
-                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('bus')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('bus')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'bus' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bus className="w-4 h-4 mr-1" />} Bus
                               </Button>
-                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('driving')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('driving')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'driving' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Car className="w-4 h-4 mr-1" />} Voiture
                               </Button>
-                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('metro')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('metro')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'metro' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Train className="w-4 h-4 mr-1" />} Métro
                               </Button>
-                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('cycling')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('cycling')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'cycling' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bike className="w-4 h-4 mr-1" />} Vélo
                               </Button>
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')} disabled={loadingRouteInfo} className="col-span-3">
+                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('walking')} disabled={loadingRouteInfo} className="col-span-3">
                                 {loadingRouteInfo && transportMode === 'walking' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Footprints className="w-4 h-4 mr-1" />} Marche
                               </Button>
                             </div>
