@@ -47,7 +47,7 @@ const Explore = () => {
         {/* Contenu qui remplit l'espace disponible */}
         <div 
           className={`flex-1 overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
-          style={{ height: isFullscreen ? '100dvh' : 'calc(100dvh - 130px)' }}
+          style={{ height: isFullscreen ? '100dvh' : 'calc(100dvh - 36px)' }}
         >
           <TabsContent value="map" className="h-full m-0 p-0">
             <div className="h-full w-full relative">
