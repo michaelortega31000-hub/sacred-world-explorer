@@ -1138,8 +1138,8 @@ const LocationsTab = () => {
                       const isDragging = draggedIndex === index;
                       return <div key={place.id} draggable onDragStart={() => handleDragStart(index)} onDragOver={handleDragOver} onDrop={() => handleDrop(index)} onDragEnd={handleDragEnd} className={cn("transition-all duration-200", isDragging && "opacity-50 scale-95")}>
                                   {isNewCity && <div className="flex items-center gap-2 mb-3 mt-2">
-                                      <Navigation className="w-4 h-4 text-secondary" />
-                                      <span className="font-bold text-secondary">
+                                      <Navigation className="w-4 h-4 text-primary" />
+                                      <span className="font-bold text-primary">
                                         {place.city}, {place.country}
                                       </span>
                                     </div>}
@@ -1278,7 +1278,7 @@ const LocationsTab = () => {
                                   <div className="flex items-center gap-2">
                                     <Checkbox id="filter-lodging" checked={selectedPOITypes.has('lodging')} onCheckedChange={() => togglePOIType('lodging')} />
                                     <Label htmlFor="filter-lodging" className="text-sm font-normal cursor-pointer flex items-center gap-1">
-                                      <Hotel className="w-4 h-4 text-secondary" />
+                                      <Hotel className="w-4 h-4 text-amber-500" />
                                       Hébergements
                                     </Label>
                                   </div>
@@ -1335,7 +1335,7 @@ const LocationsTab = () => {
                                         
                                         {/* Hébergements */}
                                         {placePOIs.filter(p => p.type === 'lodging').length > 0 && <div>
-                                            <div className="flex items-center gap-2 text-sm font-medium mb-2 text-secondary">
+                                            <div className="flex items-center gap-2 text-sm font-medium mb-2 text-amber-500">
                                               <Hotel className="w-4 h-4" />
                                               Hébergements
                                             </div>
