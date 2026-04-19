@@ -217,7 +217,10 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
                     Aucun lieu disponible pour ce pays pour l'instant.
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div
+                    className="space-y-3 overflow-y-auto pr-2 planner-scroll"
+                    style={{ maxHeight: 'calc(85vh - 220px)' }}
+                  >
                     {placesForCountry.map((p) => (
                       <button
                         key={p.id}
