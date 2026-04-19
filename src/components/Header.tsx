@@ -57,7 +57,7 @@ const Header = ({
             <div className="flex items-center gap-1.5 sm:gap-3">
 {/* 1. Identité chrétienne (croix dorée) - agrandie & glow doré doux */}
               <div
-                className="flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-white/10 backdrop-blur-sm border border-primary/40 overflow-hidden"
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm border border-primary/40 overflow-hidden"
                 title="Patrimoine chrétien"
                 style={{
                   boxShadow:
