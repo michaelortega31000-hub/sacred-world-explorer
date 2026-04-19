@@ -3,8 +3,8 @@ import { cn } from "@/lib/utils";
 import logoGlow from "@/assets/logo-glow.png";
 import logoMain from "@/assets/logo-v4.png";
 
-const logoVariants = cva(
-  "transition-all duration-300 object-contain",
+const containerVariants = cva(
+  "relative inline-block rounded-full overflow-hidden transition-all duration-300",
   {
     variants: {
       size: {
@@ -14,7 +14,7 @@ const logoVariants = cva(
       },
       effect: {
         static: "",
-        glow: "drop-shadow-[0_0_20px_rgba(244,197,66,0.75)] drop-shadow-[0_0_40px_rgba(244,197,66,0.75)] scale-[1.45]",
+        glow: "drop-shadow-[0_0_20px_rgba(244,197,66,0.75)] drop-shadow-[0_0_40px_rgba(244,197,66,0.75)]",
         pulse: "animate-pulse",
       },
     },
@@ -25,54 +25,35 @@ const logoVariants = cva(
   }
 );
 
-export interface LogoProps extends VariantProps<typeof logoVariants> {
+export interface LogoProps extends VariantProps<typeof containerVariants> {
   className?: string;
   onClick?: () => void;
   variant?: "main" | "icon";
 }
 
-export const Logo = ({ 
-  size, 
-  effect, 
-  className, 
+export const Logo = ({
+  size,
+  effect,
+  className,
   onClick,
-  variant = "icon"
+  variant = "icon",
 }: LogoProps) => {
   const logoSrc = variant === "main" ? logoMain : logoGlow;
-  
+
   return (
-    <div className={cn("relative inline-block", className)}>
+    <div
+      className={cn(
+        containerVariants({ size, effect }),
+        onClick && "cursor-pointer hover:scale-105",
+        className
+      )}
+      onClick={onClick}
+    >
       <img
         src={logoSrc}
         alt="Sacred World Logo"
-        className={cn(
-          logoVariants({ size, effect }),
-          onClick && "cursor-pointer hover:scale-110"
-        )}
-        onClick={onClick}
+        className="w-full h-full object-contain object-center scale-[1.45]"
       />
-      {effect === "glow" && (
-        <>
-          <img
-            src={logoGlow}
-            alt=""
-            className={cn(
-              logoVariants({ size }),
-              "absolute inset-0 opacity-60 blur-md scale-110"
-            )}
-            aria-hidden="true"
-          />
-          <img
-            src={logoGlow}
-            alt=""
-            className={cn(
-              logoVariants({ size }),
-              "absolute inset-0 opacity-40 blur-xl scale-125"
-            )}
-            aria-hidden="true"
-          />
-        </>
-      )}
     </div>
   );
 };
