@@ -1358,7 +1358,7 @@ const LocationsTab = () => {
                               })()}
                                       </span>
                                     </div>
-                                    {(transportMode === 'train' || transportMode === 'bus' || transportMode === 'metro') && (() => {
+                                    {(() => {
                                       const totalTransfers = routeSegments.reduce((sum, seg) => sum + (seg.transfers ?? 0), 0);
                                       if (totalTransfers <= 0) return null;
                                       return (
