@@ -828,7 +828,83 @@ const Globe3D = ({
         }
       });
 
-      // Add invisible country fill layer for click detection (UNDER all other layers)
+      // === Saved Planner trip (independent layer driven by localStorage) ===
+      map.current.addSource('saved-trip-route', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      map.current.addSource('saved-trip-points', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: [] }
+      });
+      // Outer glow
+      map.current.addLayer({
+        id: 'saved-trip-glow-outer',
+        type: 'line',
+        source: 'saved-trip-route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': 'hsl(38, 92%, 60%)',
+          'line-width': 14,
+          'line-blur': 10,
+          'line-opacity': 0.35
+        }
+      });
+      // Inner glow
+      map.current.addLayer({
+        id: 'saved-trip-glow-inner',
+        type: 'line',
+        source: 'saved-trip-route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': 'hsl(43, 96%, 65%)',
+          'line-width': 7,
+          'line-blur': 4,
+          'line-opacity': 0.6
+        }
+      });
+      // Main bright line
+      map.current.addLayer({
+        id: 'saved-trip-main',
+        type: 'line',
+        source: 'saved-trip-route',
+        layout: { 'line-join': 'round', 'line-cap': 'round' },
+        paint: {
+          'line-color': 'hsl(48, 100%, 75%)',
+          'line-width': 2.5,
+          'line-opacity': 1
+        }
+      });
+      // Saved trip waypoint dots
+      map.current.addLayer({
+        id: 'saved-trip-points-glow',
+        type: 'circle',
+        source: 'saved-trip-points',
+        paint: {
+          'circle-radius': 10,
+          'circle-color': 'hsl(43, 96%, 65%)',
+          'circle-opacity': 0.35,
+          'circle-blur': 0.8
+        }
+      });
+      map.current.addLayer({
+        id: 'saved-trip-points-core',
+        type: 'circle',
+        source: 'saved-trip-points',
+        paint: {
+          'circle-radius': 5,
+          'circle-color': [
+            'case',
+            ['to-boolean', ['get', 'isStart']], 'hsl(142, 76%, 50%)',
+            'hsl(48, 100%, 70%)'
+          ],
+          'circle-stroke-color': '#FFFFFF',
+          'circle-stroke-width': 1.5,
+          'circle-opacity': 1
+        }
+      });
+
+
       map.current.addLayer({
         id: 'country-fills',
         type: 'fill',
@@ -1227,6 +1303,77 @@ const Globe3D = ({
       updateTripPlaces();
     }
   }, [filters, showMonuments, userProgress.visitedPlaces, tripPlaces, categoryFilter]);
+
+  // === Saved Planner trip: hydrate from localStorage and listen for updates ===
+  useEffect(() => {
+    const renderSavedTrip = () => {
+      if (!map.current || !isMapReadyRef.current) return;
+      const routeSource = map.current.getSource('saved-trip-route') as mapboxgl.GeoJSONSource | undefined;
+      const pointsSource = map.current.getSource('saved-trip-points') as mapboxgl.GeoJSONSource | undefined;
+      if (!routeSource || !pointsSource) return;
+
+      let coords: [number, number][] = [];
+      let points: Array<{ lng: number; lat: number; name: string; isStart: boolean }> = [];
+      try {
+        const raw = localStorage.getItem('sacred-saved-trip');
+        if (raw) {
+          const parsed = JSON.parse(raw);
+          const all = [parsed?.departure, ...(parsed?.destinations || [])].filter(Boolean);
+          all.forEach((p: any, idx: number) => {
+            if (typeof p?.lng === 'number' && typeof p?.lat === 'number') {
+              coords.push([p.lng, p.lat]);
+              points.push({ lng: p.lng, lat: p.lat, name: p.name || '', isStart: idx === 0 });
+            }
+          });
+        }
+      } catch {
+        // ignore
+      }
+
+      routeSource.setData(
+        coords.length > 1
+          ? {
+              type: 'Feature',
+              geometry: { type: 'LineString', coordinates: coords },
+              properties: {}
+            } as any
+          : { type: 'FeatureCollection', features: [] }
+      );
+      pointsSource.setData({
+        type: 'FeatureCollection',
+        features: points.map((p) => ({
+          type: 'Feature',
+          geometry: { type: 'Point', coordinates: [p.lng, p.lat] },
+          properties: { name: p.name, isStart: p.isStart }
+        }))
+      } as any);
+    };
+
+    // Initial render (poll briefly for map readiness)
+    let attempts = 0;
+    const interval = setInterval(() => {
+      attempts++;
+      if (isMapReadyRef.current) {
+        renderSavedTrip();
+        clearInterval(interval);
+      } else if (attempts > 40) {
+        clearInterval(interval);
+      }
+    }, 150);
+
+    const onUpdate = () => renderSavedTrip();
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === 'sacred-saved-trip') renderSavedTrip();
+    };
+    window.addEventListener('sacred-saved-trip-updated', onUpdate);
+    window.addEventListener('storage', onStorage);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('sacred-saved-trip-updated', onUpdate);
+      window.removeEventListener('storage', onStorage);
+    };
+  }, []);
+
 
   // Update location trail with activity-based colors
   useEffect(() => {
