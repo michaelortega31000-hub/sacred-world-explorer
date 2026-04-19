@@ -70,11 +70,9 @@ const restaurantSchema = z.object({
     .or(z.literal('')),
 });
 
-type RestaurantType = 'halal' | 'kosher' | 'vegetarian' | 'vegan' | 'neutral';
+type RestaurantType = 'vegetarian' | 'vegan' | 'neutral';
 
 const restaurantTypes = [
-  { value: 'halal', label: 'Halal', emoji: '☪️' },
-  { value: 'kosher', label: 'Cachère', emoji: '✡️' },
   { value: 'vegetarian', label: 'Végétarien', emoji: '🥗' },
   { value: 'vegan', label: 'Vegan', emoji: '🌱' },
   { value: 'neutral', label: 'Neutre', emoji: '🍴' },

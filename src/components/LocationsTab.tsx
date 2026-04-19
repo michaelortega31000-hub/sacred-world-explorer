@@ -745,8 +745,6 @@ const LocationsTab = () => {
   }, [filteredRestaurants]);
   const getTypeColor = (type: string) => {
     const colors: Record<string, string> = {
-      halal: 'bg-green-500/20 text-green-700 border-green-500/30',
-      kosher: 'bg-blue-500/20 text-blue-700 border-blue-500/30',
       vegetarian: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30',
       vegan: 'bg-lime-500/20 text-lime-700 border-lime-500/30',
       neutral: 'bg-slate-500/20 text-slate-700 border-slate-500/30'

@@ -13,7 +13,7 @@ import { useApp } from '@/contexts/AppContext';
 import { useToast } from '@/hooks/use-toast';
 import { calculateDistanceInKm } from '@/lib/geoUtils';
 
-type RestaurantType = 'all' | 'halal' | 'kosher' | 'vegetarian' | 'vegan' | 'neutral';
+type RestaurantType = 'all' | 'vegetarian' | 'vegan' | 'neutral';
 
 interface RestaurantCoordinates {
   lat: number;
@@ -282,29 +282,30 @@ const RestaurantsTab = ({
     fetchRestaurants();
   }, [selectedContinent, selectedCountry, selectedCity, isProximityMode, placeCoordinates]);
 
-  const filteredRestaurants = selectedType === 'all' 
-    ? restaurants 
-    : restaurants.filter(r => r.type.includes(selectedType));
+  // Hide halal/kosher restaurants — app is Christian-focused
+  const visibleRestaurants = restaurants.filter(
+    r => !r.type.includes('halal' as RestaurantType) && !r.type.includes('kosher' as RestaurantType)
+  );
+
+  const filteredRestaurants = selectedType === 'all'
+    ? visibleRestaurants
+    : visibleRestaurants.filter(r => r.type.includes(selectedType));
 
   const filterButtons: { type: RestaurantType; label: string; emoji: string }[] = [
     { type: 'all', label: 'Tous', emoji: '🍽️' },
-    { type: 'halal', label: 'Halal', emoji: '☪️' },
-    { type: 'kosher', label: 'Cachère', emoji: '✡️' },
     { type: 'vegetarian', label: 'Végétarien', emoji: '🥗' },
     { type: 'vegan', label: 'Vegan', emoji: '🌱' },
     { type: 'neutral', label: 'Neutre', emoji: '🍴' },
   ];
 
-  const getTypeColor = (type: RestaurantType) => {
-    const colors = {
-      halal: 'bg-green-500/20 text-green-700 border-green-500/30',
-      kosher: 'bg-blue-500/20 text-blue-700 border-blue-500/30',
+  const getTypeColor = (type: RestaurantType | string) => {
+    const colors: Record<string, string> = {
       vegetarian: 'bg-emerald-500/20 text-emerald-700 border-emerald-500/30',
       vegan: 'bg-lime-500/20 text-lime-700 border-lime-500/30',
       neutral: 'bg-slate-500/20 text-slate-700 border-slate-500/30',
       all: 'bg-primary/20 text-primary border-primary/30',
     };
-    return colors[type];
+    return colors[type] || colors.neutral;
   };
 
   const handleSaveRestaurant = (restaurantId: string, restaurantName: string) => {
