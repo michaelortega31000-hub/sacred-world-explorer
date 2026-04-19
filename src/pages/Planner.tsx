@@ -173,12 +173,14 @@ const Planner = () => {
       }}
     >
       {/* 3D Globe background */}
-      <div className="absolute inset-0 opacity-70">
+      <div className={`absolute inset-0 transition-opacity duration-700 ${tripSaved ? 'opacity-95' : 'opacity-80'}`}>
         <ItineraryGlobe3D
           places={globePlaces}
           autoRotateSpeed={0.4}
           latLngToVector3={latLngToVector3}
           createArcPoints={createArcPoints}
+          enhanced
+          tripSaved={tripSaved}
         />
       </div>
 
