@@ -55,12 +55,16 @@ const Header = ({
           <div className="flex items-center justify-between gap-2 sm:gap-4">
             {/* Gauche : Religion + Badges + Filtre */}
             <div className="flex items-center gap-1.5 sm:gap-3">
-{/* 1. Identité chrétienne (croix dorée) */}
+{/* 1. Identité chrétienne (croix dorée) - agrandie & glow doré doux */}
               <div
-                className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm shadow-md border border-white/20 overflow-hidden"
+                className="flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-white/10 backdrop-blur-sm border border-primary/40 overflow-hidden"
                 title="Patrimoine chrétien"
+                style={{
+                  boxShadow:
+                    '0 0 18px rgba(244,197,66,0.55), 0 0 36px rgba(244,197,66,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                }}
               >
-                <ChristianIcon size="lg" className="scale-125" />
+                <ChristianIcon size="lg" className="scale-[1.9]" />
               </div>
               
               {/* 2. Badges obtenus */}

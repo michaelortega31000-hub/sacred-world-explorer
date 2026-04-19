@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { usePlaces } from '@/hooks/usePlaces';
-import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone } from 'lucide-react';
+import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone, Sparkles, ArrowUp, ArrowDown, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getImageUrl } from '@/lib/imageHelper';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { calculateDistanceInKm } from '@/lib/geoUtils';
+import { toast } from 'sonner';
 
 import ItineraryGlobe from './ItineraryGlobe';
 
@@ -31,8 +33,9 @@ interface SavedRestaurant {
 const TripPlannerTab = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { userProgress, removeFromTrip, clearTrip, unsaveRestaurant, updatePlannedRoute } = useApp();
+  const { userProgress, removeFromTrip, clearTrip, unsaveRestaurant, updatePlannedRoute, reorderTrip } = useApp();
   const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
+  const [proposedOrder, setProposedOrder] = useState<string[] | null>(null);
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -49,7 +52,9 @@ const TripPlannerTab = () => {
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
   
   const { data: allPlaces = [] } = usePlaces();
-  const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
+  const tripPlaces = (userProgress.tripPlaces || [])
+    .map(id => allPlaces.find(p => p.id === id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
   
   // Mapping des données pour ItineraryGlobe (coordonnées: [lng, lat])
   const itineraryGlobePlaces = useMemo(() => {
@@ -214,6 +219,93 @@ const TripPlannerTab = () => {
     };
     return colors[type] || 'bg-slate-500/20 text-slate-700 border-slate-500/30';
   };
+
+  // === Geographic Nearest-Neighbor optimization (Haversine, real geography) ===
+  // Example: Bordeaux → Barcelona → Athens (≈ 1900 km) instead of
+  //          Bordeaux → Athens → Barcelona (≈ 4500 km).
+  const geoOptimizedIds = useMemo<string[]>(() => {
+    if (tripPlaces.length < 3) return tripPlaces.map(p => p.id);
+    const remaining = [...tripPlaces];
+    const ordered: typeof tripPlaces = [];
+    // Anchor: keep the first place (the user's chosen departure / current first stop)
+    let current = remaining.shift()!;
+    ordered.push(current);
+    while (remaining.length > 0) {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const cand = remaining[i];
+        const d = calculateDistanceInKm(
+          current.coordinates[1], current.coordinates[0],
+          cand.coordinates[1], cand.coordinates[0],
+        );
+        if (d < bestDist) { bestDist = d; bestIdx = i; }
+      }
+      current = remaining.splice(bestIdx, 1)[0];
+      ordered.push(current);
+    }
+    return ordered.map(p => p.id);
+  }, [tripPlaces]);
+
+  const isAlreadyOptimal = useMemo(() => {
+    const current = tripPlaces.map(p => p.id).join('|');
+    return current === geoOptimizedIds.join('|');
+  }, [tripPlaces, geoOptimizedIds]);
+
+  const handleProposeOptimization = () => {
+    if (tripPlaces.length < 3) {
+      toast.info('Ajoutez au moins 3 étapes pour optimiser');
+      return;
+    }
+    if (isAlreadyOptimal) {
+      toast.success('Votre itinéraire est déjà optimal ✨');
+      return;
+    }
+    setProposedOrder(geoOptimizedIds);
+  };
+
+  const acceptProposedOrder = () => {
+    if (!proposedOrder) return;
+    reorderTrip(proposedOrder);
+    // Also update the persisted saved trip so the globe arcs follow the new order
+    try {
+      const raw = localStorage.getItem('sacred-saved-trip');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const all = [parsed?.departure, ...(parsed?.destinations || [])].filter(Boolean);
+        const byId = new Map(all.map((p: any) => [p.placeId, p]));
+        const reordered = proposedOrder.map(id => byId.get(id)).filter(Boolean);
+        if (reordered.length >= 2) {
+          localStorage.setItem('sacred-saved-trip', JSON.stringify({
+            departure: reordered[0],
+            destinations: reordered.slice(1),
+            savedAt: new Date().toISOString(),
+          }));
+          window.dispatchEvent(new CustomEvent('sacred-saved-trip-updated'));
+        }
+      }
+    } catch { /* ignore */ }
+    setProposedOrder(null);
+    toast.success('Itinéraire optimisé appliqué');
+  };
+
+  const cancelProposedOrder = () => setProposedOrder(null);
+
+  const moveStop = (idx: number, dir: -1 | 1) => {
+    const ids = tripPlaces.map(p => p.id);
+    const target = idx + dir;
+    if (target < 0 || target >= ids.length) return;
+    [ids[idx], ids[target]] = [ids[target], ids[idx]];
+    reorderTrip(ids);
+  };
+
+  // Resolve proposed order to full place objects for preview
+  const proposedPlaces = useMemo(() => {
+    if (!proposedOrder) return [];
+    return proposedOrder
+      .map(id => tripPlaces.find(p => p.id === id))
+      .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  }, [proposedOrder, tripPlaces]);
 
   return (
     <div className="relative h-full overflow-y-auto">
@@ -396,6 +488,116 @@ const TripPlannerTab = () => {
                   </CardContent>
                 </Card>
               </div>
+
+              {/* === Optimiser mon itinéraire (real geography) === */}
+              {tripPlaces.length >= 2 && (
+                <Card className="border-primary/40 bg-gradient-to-br from-primary/10 via-secondary/5 to-transparent">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-3 flex-wrap">
+                      <div>
+                        <CardTitle className="flex items-center gap-2">
+                          <Sparkles className="w-5 h-5 text-primary" />
+                          Optimiser mon itinéraire
+                        </CardTitle>
+                        <CardDescription>
+                          Réorganise vos étapes selon la géographie réelle pour minimiser les distances.
+                        </CardDescription>
+                      </div>
+                      {!proposedOrder && (
+                        <Button
+                          onClick={handleProposeOptimization}
+                          className="gap-2"
+                          disabled={tripPlaces.length < 3}
+                        >
+                          <Sparkles className="w-4 h-4" />
+                          Optimiser mon itinéraire
+                        </Button>
+                      )}
+                    </div>
+                  </CardHeader>
+
+                  {proposedOrder && proposedPlaces.length > 0 && (
+                    <CardContent className="space-y-4">
+                      <div className="rounded-lg border border-primary/30 bg-background/60 p-3">
+                        <div className="text-sm font-semibold text-primary mb-2 flex items-center gap-2">
+                          <Route className="w-4 h-4" /> Ordre proposé
+                        </div>
+                        <ol className="space-y-1.5">
+                          {proposedPlaces.map((p, i) => (
+                            <li key={p.id} className="flex items-center gap-2 text-sm">
+                              <span className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary text-primary-foreground text-xs font-bold">
+                                {i + 1}
+                              </span>
+                              <span className="font-medium">{p.name}</span>
+                              <span className="text-muted-foreground text-xs">
+                                — {p.city}, {p.country}
+                              </span>
+                              {i < proposedPlaces.length - 1 && (
+                                <ArrowRight className="w-3 h-3 text-muted-foreground ml-auto" />
+                              )}
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                      <div className="flex gap-2 justify-end flex-wrap">
+                        <Button variant="outline" onClick={cancelProposedOrder} className="gap-2">
+                          <X className="w-4 h-4" /> Annuler
+                        </Button>
+                        <Button onClick={acceptProposedOrder} className="gap-2">
+                          <Check className="w-4 h-4" /> Accepter
+                        </Button>
+                      </div>
+                    </CardContent>
+                  )}
+
+                  {/* Manual reorder list — always available, even after accepting */}
+                  {!proposedOrder && tripPlaces.length >= 2 && (
+                    <CardContent>
+                      <div className="text-xs text-muted-foreground mb-2">
+                        Ordre actuel — utilisez les flèches pour réorganiser manuellement :
+                      </div>
+                      <ol className="space-y-1.5">
+                        {tripPlaces.map((p, i) => (
+                          <li
+                            key={p.id}
+                            className="flex items-center gap-2 text-sm rounded-md bg-muted/40 px-2 py-1.5"
+                          >
+                            <span className="flex-shrink-0 inline-flex items-center justify-center w-6 h-6 rounded-full bg-primary/20 text-primary text-xs font-bold">
+                              {i + 1}
+                            </span>
+                            <span className="font-medium truncate">{p.name}</span>
+                            <span className="text-muted-foreground text-xs truncate hidden sm:inline">
+                              — {p.city}
+                            </span>
+                            <div className="ml-auto flex items-center gap-1">
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7"
+                                onClick={() => moveStop(i, -1)}
+                                disabled={i === 0}
+                                aria-label="Monter"
+                              >
+                                <ArrowUp className="w-3.5 h-3.5" />
+                              </Button>
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                className="h-7 w-7"
+                                onClick={() => moveStop(i, 1)}
+                                disabled={i === tripPlaces.length - 1}
+                                aria-label="Descendre"
+                              >
+                                <ArrowDown className="w-3.5 h-3.5" />
+                              </Button>
+                            </div>
+                          </li>
+                        ))}
+                      </ol>
+                    </CardContent>
+                  )}
+                </Card>
+              )}
 
               {/* Places by country */}
               <div className="space-y-6">
