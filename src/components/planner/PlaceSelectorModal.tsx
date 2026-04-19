@@ -60,7 +60,7 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
     setSearch('');
   }, [open, initialCountry]);
 
-  const allCountries = useMemo(() => getAllCountries(), []);
+  const allCountries = useMemo(() => [...getAllCountries()].sort((a, b) => a.localeCompare(b, 'fr')), []);
 
   const countriesForContinent = useMemo(() => {
     if (!continent) return [];
@@ -72,7 +72,9 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
 
   const placesForCountry: Place[] = useMemo(() => {
     if (!country) return [];
-    return getPlacesByCountry(country);
+    return [...getPlacesByCountry(country)].sort((a, b) =>
+      a.name.localeCompare(b.name, 'fr')
+    );
   }, [country]);
 
   const goBack = () => {
@@ -215,7 +217,10 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
                     Aucun lieu disponible pour ce pays pour l'instant.
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div
+                    className="space-y-3 overflow-y-auto pr-2 planner-scroll"
+                    style={{ maxHeight: 'calc(85vh - 220px)' }}
+                  >
                     {placesForCountry.map((p) => (
                       <button
                         key={p.id}
