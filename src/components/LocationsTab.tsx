@@ -127,9 +127,29 @@ const LocationsTab = () => {
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   type TransportMode = 'plane' | 'train' | 'bus' | 'metro' | 'driving' | 'cycling' | 'walking';
   const [transportMode, setTransportMode] = useState<TransportMode>('driving');
+  const [segmentModes, setSegmentModes] = useState<TransportMode[]>([]);
+  const [loadingSegmentIdx, setLoadingSegmentIdx] = useState<number | null>(null);
   const transportLabel = (m: TransportMode) =>
     m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' : m === 'metro' ? 'Métro' :
     m === 'driving' ? 'Voiture' : m === 'cycling' ? 'Vélo' : 'Marche';
+  const transportIcon = (m: TransportMode) => {
+    switch (m) {
+      case 'plane': return Plane;
+      case 'train': return TrainFront;
+      case 'bus': return Bus;
+      case 'metro': return Train;
+      case 'driving': return Car;
+      case 'cycling': return Bike;
+      case 'walking': return Footprints;
+    }
+  };
+  const ALL_MODES: TransportMode[] = ['plane', 'train', 'bus', 'driving', 'metro', 'cycling', 'walking'];
+
+  // "Set all" semantic when global mode changes from top grid
+  const handleGlobalModeChange = (mode: TransportMode) => {
+    setTransportMode(mode);
+    setSegmentModes(prev => prev.map(() => mode));
+  };
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [optimizedRouteState, setOptimizedRouteState] = useState<typeof plannedPlaces>([]);
