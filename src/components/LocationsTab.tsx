@@ -96,6 +96,47 @@ interface POI {
   placeId: string; // ID of the associated place
   distanceFromPlace?: number; // distance in km from the sacred place
 }
+
+// Vertical golden A–Z jump rail
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const AlphaJumpRail = ({
+  availableLetters,
+  containerRef,
+}: {
+  availableLetters: Set<string>;
+  containerRef: React.RefObject<HTMLDivElement>;
+}) => {
+  const jumpToLetter = (letter: string) => {
+    const root = containerRef.current;
+    if (!root) return;
+    const target = root.querySelector(`[data-letter="${letter}"]`) as HTMLElement | null;
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  return (
+    <div className="absolute right-1 top-2 bottom-2 w-6 flex flex-col items-center justify-center gap-[1px] z-10 pointer-events-none">
+      {ALPHABET.map((l) => {
+        const active = availableLetters.has(l);
+        return (
+          <button
+            key={l}
+            type="button"
+            disabled={!active}
+            onClick={() => jumpToLetter(l)}
+            className={cn(
+              'text-[10px] font-semibold leading-none transition-all pointer-events-auto',
+              active
+                ? 'text-[#F4C542] hover:text-white hover:scale-150 cursor-pointer'
+                : 'text-[#F4C542]/30 cursor-default'
+            )}
+          >
+            {l}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 const LocationsTab = () => {
   const navigate = useNavigate();
   const {
@@ -427,15 +468,31 @@ const LocationsTab = () => {
     }
   };
 
-  const continents = useMemo(() => getAllContinents(), []);
+  // Live, locale-aware sorted lists derived from allPlaces (includes DB-loaded places)
+  const continents = useMemo(() => {
+    const set = new Set<string>();
+    allPlaces.forEach(p => {
+      const c = getContinent(p.country);
+      if (c) set.add(c);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [allPlaces]);
   const countries = useMemo(() => {
     if (selectedContinent === 'all') return [];
-    return getCountriesByContinent(selectedContinent);
-  }, [selectedContinent]);
+    const set = new Set<string>();
+    allPlaces.forEach(p => {
+      if (getContinent(p.country) === selectedContinent) set.add(p.country);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [selectedContinent, allPlaces]);
   const cities = useMemo(() => {
     if (selectedCountry === 'all') return [];
-    return getCitiesByCountry(selectedCountry);
-  }, [selectedCountry]);
+    const set = new Set<string>();
+    allPlaces.forEach(p => {
+      if (p.country === selectedCountry && p.city) set.add(p.city);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [selectedCountry, allPlaces]);
 
   // Reset dependent filters when parent filter changes
   const handleContinentChange = (continent: string) => {
@@ -871,18 +928,92 @@ const LocationsTab = () => {
   const isPlaceVisited = (placeId: string) => {
     return userProgress.visitedPlaces.includes(placeId);
   };
+
+  // Available first-letters for the A–Z rail (uppercase, accent-stripped)
+  const availableLetters = useMemo(() => {
+    const set = new Set<string>();
+    filteredPlaces.forEach(p => {
+      const ch = (p.name || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0]?.toUpperCase();
+      if (ch && /[A-Z]/.test(ch)) set.add(ch);
+    });
+    return set;
+  }, [filteredPlaces]);
+  const allListRef = useRef<HTMLDivElement>(null);
+  const plannedListRef = useRef<HTMLDivElement>(null);
+
+  const renderPlaceCard = (place: typeof allPlaces[number]) => {
+    const inTrip = userProgress.tripPlaces?.includes(place.id) ?? false;
+    const letter = (place.name || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0]?.toUpperCase() ?? '';
+    return (
+      <Card
+        key={place.id}
+        data-letter={letter}
+        onClick={() => navigate(`/place/${place.id}`)}
+        className={cn(
+          'group relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03]',
+          inTrip
+            ? 'border-2 border-[#F4C542]/60 shadow-[0_0_24px_rgba(244,197,66,0.25)] hover:shadow-[0_12px_40px_rgba(244,197,66,0.35)]'
+            : 'border border-[#34E0A1]/15 hover:shadow-[0_12px_40px_rgba(244,197,66,0.18)]'
+        )}
+        style={{
+          background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
+        }}
+      >
+        <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
+          <img
+            src={getImageUrl(place.imageUrl)}
+            alt={place.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
+          />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0E1B3F]/90 to-transparent pointer-events-none" />
+          {isPlaceVisited(place.id) && (
+            <Badge
+              className="absolute top-2 right-2 bg-primary text-primary-foreground"
+              style={{ boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)' }}
+            >
+              Visité
+            </Badge>
+          )}
+        </div>
+        <CardHeader>
+          <CardTitle className="font-serif text-[#F4C542] line-clamp-1">
+            {place.name}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
+              {place.city}, {t(`countries.${place.country}`, { defaultValue: place.country })}
+            </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {place.description}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  };
   return <div className="container mx-auto p-6 space-y-6 pb-24">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-serif font-bold mb-2" style={{
-        color: '#34E0A1'
-      }}>
+        <h1
+          className="text-4xl md:text-5xl font-serif font-bold mb-3"
+          style={{
+            background: 'linear-gradient(135deg,#FFFFFF 0%,#F4C542 60%,#E0A84C 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 2px 12px rgba(244,197,66,0.3))',
+          }}
+        >
           Lieux Sacrés du Monde
         </h1>
-        <p className="text-muted-foreground text-lg">
-          Découvrez {isLoadingPlaces ? '...' : categoryCounts.total} lieux à travers le monde
-          <span className="text-sm ml-2">
-            ({categoryCounts.religious} lieux sacrés · {categoryCounts.museums} musées)
-          </span>
+        <p className="text-[#F4C542]/85 text-lg italic">
+          ✦ Découvrez {isLoadingPlaces ? '...' : categoryCounts.total} lieux à travers le monde ✦
+        </p>
+        <p className="text-muted-foreground text-sm mt-1">
+          {categoryCounts.religious} lieux sacrés · {categoryCounts.museums} musées
         </p>
       </div>
 
@@ -892,11 +1023,11 @@ const LocationsTab = () => {
       {/* Tabs for All vs Planned */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="all" className="gap-2">
+          <TabsTrigger value="all" className="gap-2 data-[state=active]:bg-[#F4C542]/15 data-[state=active]:text-[#F4C542]">
             <MapPin className="w-4 h-4" />
             Tous les lieux
           </TabsTrigger>
-          <TabsTrigger value="planned" className="gap-2">
+          <TabsTrigger value="planned" className="gap-2 data-[state=active]:bg-[#F4C542]/15 data-[state=active]:text-[#F4C542]">
             <Calendar className="w-4 h-4" />
             Mon itinéraire ({plannedPlaces.length})
           </TabsTrigger>
@@ -999,41 +1130,14 @@ const LocationsTab = () => {
                   Essayez de modifier vos critères de recherche
                 </p>
               </CardContent>
-            </Card> : <ScrollArea className="h-[600px]">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
-                {filteredPlaces.map(place => <Card key={place.id} className="overflow-hidden cursor-pointer transition-all hover:scale-105" style={{
-                background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
-                border: '1px solid rgba(52, 224, 161, 0.2)'
-              }} onClick={() => navigate(`/place/${place.id}`)}>
-                    <div className="relative h-48 overflow-hidden">
-                      <img src={getImageUrl(place.imageUrl)} alt={place.name} className="w-full h-full object-cover" loading="lazy" />
-                      {isPlaceVisited(place.id) && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground" style={{
-                    boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)'
-                  }}>
-                          Visité
-                        </Badge>}
-                    </div>
-                    <CardHeader>
-                      <CardTitle className="text-foreground line-clamp-1">
-                        {place.name}
-                      </CardTitle>
-                      <CardDescription className="text-muted-foreground">
-                        <div className="flex items-center gap-1">
-                          <MapPin className="w-4 h-4" />
-                          {place.city}, {t(`countries.${place.country}`, {
-                        defaultValue: place.country
-                      })}
-                        </div>
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-sm text-muted-foreground line-clamp-2">
-                        {place.description}
-                      </p>
-                    </CardContent>
-                  </Card>)}
-              </div>
-            </ScrollArea>}
+            </Card> : <div className="relative">
+              <ScrollArea className="h-[600px]" ref={allListRef as any}>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-10">
+                  {filteredPlaces.map(place => renderPlaceCard(place))}
+                </div>
+              </ScrollArea>
+              <AlphaJumpRail availableLetters={availableLetters} containerRef={allListRef} />
+            </div>}
             </>}
         </TabsContent>
 
@@ -1073,52 +1177,30 @@ const LocationsTab = () => {
                       Essayez de modifier votre recherche
                     </p>
                   </CardContent>
-                </Card> : <ScrollArea className="h-[400px]">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
-                    {filteredPlaces.map(place => <Card key={place.id} className="overflow-hidden cursor-pointer transition-all hover:scale-105" style={{
-                background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
-                border: '1px solid rgba(52, 224, 161, 0.2)'
-              }} onClick={() => navigate(`/place/${place.id}`)}>
-                        <div className="relative h-48 overflow-hidden">
-                          <img src={getImageUrl(place.imageUrl)} alt={place.name} className="w-full h-full object-cover" loading="lazy" />
-                          {isPlaceVisited(place.id) && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground" style={{
-                    boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)'
-                  }}>
-                              Visité
-                            </Badge>}
-                        </div>
-                        <CardHeader>
-                          <CardTitle className="text-foreground line-clamp-1">
-                            {place.name}
-                          </CardTitle>
-                          <CardDescription className="text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              {place.city}, {t(`countries.${place.country}`, {
-                        defaultValue: place.country
-                      })}
-                            </div>
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {place.description}
-                          </p>
-                        </CardContent>
-                      </Card>)}
-                  </div>
-                </ScrollArea>}
+                </Card> : <div className="relative">
+                  <ScrollArea className="h-[400px]" ref={plannedListRef as any}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-10">
+                      {filteredPlaces.map(place => renderPlaceCard(place))}
+                    </div>
+                  </ScrollArea>
+                  <AlphaJumpRail availableLetters={availableLetters} containerRef={plannedListRef} />
+                </div>}
 
 
               {/* Route Optimizer Section */}
               {plannedPlaces.length >= 2 && <>
-                  <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
+                  <Card
+                    className="border-2 border-[#F4C542]/40 backdrop-blur-md shadow-[0_8px_40px_rgba(244,197,66,0.15)]"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(244,197,66,0.08) 0%, rgba(20,43,79,0.6) 50%, rgba(14,27,63,0.85) 100%)',
+                    }}
+                  >
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Route className="w-5 h-5 text-primary" />
+                      <CardTitle className="flex items-center gap-2 text-[#F4C542]" style={{ filter: 'drop-shadow(0 0 8px rgba(244,197,66,0.4))' }}>
+                        <Route className="w-6 h-6 text-[#F4C542]" />
                         Optimiser mon itinéraire
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-muted-foreground">
                         Calculez le parcours optimal entre vos lieux sélectionnés
                       </CardDescription>
                     </CardHeader>
@@ -1162,7 +1244,7 @@ const LocationsTab = () => {
                               })}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              Modes sélectionnés : <span className="font-medium text-foreground">{selectedLabel()}</span>
+                              Modes sélectionnés : <span className="font-semibold text-[#F4C542]">{selectedLabel()}</span>
                             </p>
                           </div>
                         </div>
@@ -1172,12 +1254,17 @@ const LocationsTab = () => {
 
                   {/* Optimized Route Display */}
                   {showOptimizedRoute && startingCity && displayRoute.length > 0 && <>
-                       <Card className="border-primary/30">
+                       <Card
+                        className="border-2 border-[#F4C542]/40 backdrop-blur-md shadow-[0_8px_40px_rgba(244,197,66,0.15)]"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(244,197,66,0.06) 0%, rgba(20,43,79,0.6) 50%, rgba(14,27,63,0.85) 100%)',
+                        }}
+                       >
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div>
-                              <CardTitle className="flex items-center gap-2 text-primary">
-                                <Route className="w-5 h-5" />
+                              <CardTitle className="flex items-center gap-2 text-[#F4C542]" style={{ filter: 'drop-shadow(0 0 8px rgba(244,197,66,0.4))' }}>
+                                <Route className="w-6 h-6" />
                                 Itinéraire optimisé ({displayRoute.length} étapes)
                               </CardTitle>
                               <CardDescription>
