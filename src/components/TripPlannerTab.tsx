@@ -5,12 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { usePlaces } from '@/hooks/usePlaces';
-import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone } from 'lucide-react';
+import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone, Sparkles, ArrowUp, ArrowDown, Check, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getImageUrl } from '@/lib/imageHelper';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { calculateDistanceInKm } from '@/lib/geoUtils';
+import { toast } from 'sonner';
 
 import ItineraryGlobe from './ItineraryGlobe';
 
@@ -31,8 +33,9 @@ interface SavedRestaurant {
 const TripPlannerTab = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { userProgress, removeFromTrip, clearTrip, unsaveRestaurant, updatePlannedRoute } = useApp();
+  const { userProgress, removeFromTrip, clearTrip, unsaveRestaurant, updatePlannedRoute, reorderTrip } = useApp();
   const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
+  const [proposedOrder, setProposedOrder] = useState<string[] | null>(null);
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -49,7 +52,9 @@ const TripPlannerTab = () => {
   const resolveImageUrl = (url?: string) => (url ? getImageUrl(url) : undefined);
   
   const { data: allPlaces = [] } = usePlaces();
-  const tripPlaces = allPlaces.filter(place => userProgress.tripPlaces?.includes(place.id) ?? false);
+  const tripPlaces = (userProgress.tripPlaces || [])
+    .map(id => allPlaces.find(p => p.id === id))
+    .filter((p): p is NonNullable<typeof p> => Boolean(p));
   
   // Mapping des données pour ItineraryGlobe (coordonnées: [lng, lat])
   const itineraryGlobePlaces = useMemo(() => {
