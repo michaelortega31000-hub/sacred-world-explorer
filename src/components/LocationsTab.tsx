@@ -127,9 +127,29 @@ const LocationsTab = () => {
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   type TransportMode = 'plane' | 'train' | 'bus' | 'metro' | 'driving' | 'cycling' | 'walking';
   const [transportMode, setTransportMode] = useState<TransportMode>('driving');
+  const [segmentModes, setSegmentModes] = useState<TransportMode[]>([]);
+  const [loadingSegmentIdx, setLoadingSegmentIdx] = useState<number | null>(null);
   const transportLabel = (m: TransportMode) =>
     m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' : m === 'metro' ? 'Métro' :
     m === 'driving' ? 'Voiture' : m === 'cycling' ? 'Vélo' : 'Marche';
+  const transportIcon = (m: TransportMode) => {
+    switch (m) {
+      case 'plane': return Plane;
+      case 'train': return TrainFront;
+      case 'bus': return Bus;
+      case 'metro': return Train;
+      case 'driving': return Car;
+      case 'cycling': return Bike;
+      case 'walking': return Footprints;
+    }
+  };
+  const ALL_MODES: TransportMode[] = ['plane', 'train', 'bus', 'driving', 'metro', 'cycling', 'walking'];
+
+  // "Set all" semantic when global mode changes from top grid
+  const handleGlobalModeChange = (mode: TransportMode) => {
+    setTransportMode(mode);
+    setSegmentModes(prev => prev.map(() => mode));
+  };
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [optimizedRouteState, setOptimizedRouteState] = useState<typeof plannedPlaces>([]);
@@ -183,7 +203,11 @@ const LocationsTab = () => {
     reorderTrip(newRoute.map(p => p.id));
 
     // Recalculate segments with new order
-    calculateRouteSegments(newRoute, transportMode);
+    const newModes = newRoute.length > 1
+      ? Array.from({ length: newRoute.length - 1 }, (_, i) => segmentModes[i] ?? transportMode)
+      : [];
+    setSegmentModes(newModes);
+    calculateRouteSegments(newRoute, newModes);
   };
   const handleDragEnd = () => {
     setDraggedIndex(null);
@@ -231,8 +255,21 @@ const LocationsTab = () => {
     pdf.setTextColor(0, 0, 0);
     pdf.text(`Ville de départ: ${startingCity}`, 20, yPosition);
     yPosition += 7;
-    pdf.text(`Mode de transport: ${transportLabel(transportMode)}`, 20, yPosition);
-    yPosition += 7;
+    const allSame = segmentModes.length > 0 && segmentModes.every(m => m === segmentModes[0]);
+    if (segmentModes.length === 0 || allSame) {
+      pdf.text(`Mode de transport: ${transportLabel(segmentModes[0] ?? transportMode)}`, 20, yPosition);
+      yPosition += 7;
+    } else {
+      pdf.text('Mode de transport: mixte', 20, yPosition);
+      yPosition += 6;
+      pdf.setFontSize(10);
+      segmentModes.forEach((m, i) => {
+        pdf.text(`  • Étape ${i + 1} → ${i + 2} : ${transportLabel(m)}`, 25, yPosition);
+        yPosition += 5;
+      });
+      pdf.setFontSize(12);
+      yPosition += 2;
+    }
     pdf.text(`Nombre d'étapes: ${optimizedRoute.length}`, 20, yPosition);
     yPosition += 10;
 
@@ -335,80 +372,58 @@ const LocationsTab = () => {
     pdf.save(`itineraire-sacre-${startingCity?.split(',')[0] || 'voyage'}.pdf`);
   };
 
-  // Calculate route segments with distance and duration
-  const calculateRouteSegments = async (places: typeof plannedPlaces, mode: TransportMode) => {
+  // Compute a single segment between two places for a given mode.
+  // Returns the segment data; throws on hard errors.
+  const computeSingleSegment = async (
+    start: typeof plannedPlaces[number],
+    end: typeof plannedPlaces[number],
+    mode: TransportMode
+  ): Promise<RouteSegment> => {
+    if (mode === 'plane' || mode === 'train' || mode === 'bus' || mode === 'metro') {
+      const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : mode === 'metro' ? 40 : 70;
+      const transitous = await fetchTransitousRoute(
+        [start.coordinates[0], start.coordinates[1]],
+        [end.coordinates[0], end.coordinates[1]],
+        mode
+      );
+      if (transitous) {
+        return { distance: transitous.distanceKm, duration: transitous.durationMin, transfers: transitous.transfers };
+      }
+      const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
+      return { distance, duration: (distance / speedKmh) * 60 };
+    }
+
+    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token') || 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
+    try {
+      const coordinates = `${start.coordinates[0]},${start.coordinates[1]};${end.coordinates[0]},${end.coordinates[1]}`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.routes && data.routes[0]) {
+        return { distance: data.routes[0].distance / 1000, duration: data.routes[0].duration / 60 };
+      }
+    } catch (err) {
+      logger.warn('Mapbox segment fetch failed', err);
+    }
+    // Haversine fallback
+    const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
+    const fallbackSpeed = mode === 'walking' ? 5 : mode === 'cycling' ? 18 : 80;
+    return { distance, duration: (distance / fallbackSpeed) * 60 };
+  };
+
+  // Calculate route segments with distance and duration (per-segment modes)
+  const calculateRouteSegments = async (places: typeof plannedPlaces, modes: TransportMode[]) => {
     if (places.length < 2) {
       setRouteSegments([]);
       return;
     }
-
-    // Transit modes — try Transitous (real multi-modal routing), fallback to Haversine
-    if (mode === 'plane' || mode === 'train' || mode === 'bus' || mode === 'metro') {
-      setLoadingRouteInfo(true);
-      try {
-        const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : mode === 'metro' ? 40 : 70;
-        const segments: RouteSegment[] = [];
-        for (let i = 0; i < places.length - 1; i++) {
-          const start = places[i];
-          const end = places[i + 1];
-          const transitous = await fetchTransitousRoute(
-            [start.coordinates[0], start.coordinates[1]],
-            [end.coordinates[0], end.coordinates[1]],
-            mode
-          );
-          if (transitous) {
-            segments.push({
-              distance: transitous.distanceKm,
-              duration: transitous.durationMin,
-              transfers: transitous.transfers,
-            });
-          } else {
-            const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
-            segments.push({ distance, duration: (distance / speedKmh) * 60 });
-          }
-        }
-        setRouteSegments(segments);
-      } finally {
-        setLoadingRouteInfo(false);
-      }
-      return;
-    }
-
-    const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token') || 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
-    if (!mapboxToken) {
-      console.warn('Mapbox token not configured');
-      return;
-    }
     setLoadingRouteInfo(true);
-    const segments: RouteSegment[] = [];
     try {
+      const segments: RouteSegment[] = [];
       for (let i = 0; i < places.length - 1; i++) {
-        const start = places[i];
-        const end = places[i + 1];
-        const coordinates = `${start.coordinates[0]},${start.coordinates[1]};${end.coordinates[0]},${end.coordinates[1]}`;
-        const url = `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
-        const response = await fetch(url);
-        const data = await response.json();
-        if (data.routes && data.routes[0]) {
-          const route = data.routes[0];
-          segments.push({
-            distance: route.distance / 1000,
-            // Convert meters to kilometers
-            duration: route.duration / 60 // Convert seconds to minutes
-          });
-        } else {
-          // Fallback: calculate straight-line distance
-          const R = 6371; // Earth's radius in km
-          const dLat = (end.coordinates[1] - start.coordinates[1]) * Math.PI / 180;
-          const dLon = (end.coordinates[0] - start.coordinates[0]) * Math.PI / 180;
-          const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(start.coordinates[1] * Math.PI / 180) * Math.cos(end.coordinates[1] * Math.PI / 180) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          const distance = R * c;
-          segments.push({
-            distance,
-            duration: distance / 80 * 60 // Rough estimate: 80 km/h average
-          });
-        }
+        const mode = modes[i] ?? transportMode;
+        const seg = await computeSingleSegment(places[i], places[i + 1], mode);
+        segments.push(seg);
       }
       setRouteSegments(segments);
     } catch (error) {
@@ -416,6 +431,27 @@ const LocationsTab = () => {
       setRouteSegments([]);
     } finally {
       setLoadingRouteInfo(false);
+    }
+  };
+
+  // Recompute a single segment after the user changes its mode
+  const recalcSegment = async (index: number, newMode: TransportMode) => {
+    setSegmentModes(prev => {
+      const next = [...prev];
+      next[index] = newMode;
+      return next;
+    });
+    if (!displayRoute || index >= displayRoute.length - 1) return;
+    setLoadingSegmentIdx(index);
+    try {
+      const seg = await computeSingleSegment(displayRoute[index], displayRoute[index + 1], newMode);
+      setRouteSegments(prev => {
+        const next = [...prev];
+        next[index] = seg;
+        return next;
+      });
+    } finally {
+      setLoadingSegmentIdx(null);
     }
   };
   const continents = useMemo(() => getAllContinents(), []);
@@ -745,7 +781,12 @@ const LocationsTab = () => {
     }
     
     if (showOptimizedRoute && displayRoute.length >= 2) {
-      calculateRouteSegments(displayRoute, transportMode);
+      const modes = Array.from({ length: displayRoute.length - 1 }, (_, i) => segmentModes[i] ?? transportMode);
+      // Keep segmentModes length in sync with displayRoute
+      if (modes.length !== segmentModes.length) {
+        setSegmentModes(modes);
+      }
+      calculateRouteSegments(displayRoute, modes);
       
       // Debounce POI search to avoid excessive calls
       poiSearchTimeoutRef.current = setTimeout(() => {
@@ -1129,28 +1170,29 @@ const LocationsTab = () => {
                           </Select>
                         </div>
                         <div className="flex-1">
-                          <label className="text-sm font-medium mb-2 block">Mode de transport</label>
+                          <label className="text-sm font-medium mb-1 block">Mode de transport</label>
+                          <p className="text-xs text-muted-foreground mb-2">Appliquer à tous les trajets</p>
                           <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-3 gap-2">
-                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('plane')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('plane')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'plane' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plane className="w-4 h-4 mr-1" />} Avion
                               </Button>
-                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('train')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('train')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'train' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <TrainFront className="w-4 h-4 mr-1" />} Train
                               </Button>
-                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('bus')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('bus')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'bus' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bus className="w-4 h-4 mr-1" />} Bus
                               </Button>
-                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('driving')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('driving')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'driving' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Car className="w-4 h-4 mr-1" />} Voiture
                               </Button>
-                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('metro')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('metro')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'metro' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Train className="w-4 h-4 mr-1" />} Métro
                               </Button>
-                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('cycling')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('cycling')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'cycling' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bike className="w-4 h-4 mr-1" />} Vélo
                               </Button>
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')} disabled={loadingRouteInfo} className="col-span-3">
+                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('walking')} disabled={loadingRouteInfo} className="col-span-3">
                                 {loadingRouteInfo && transportMode === 'walking' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Footprints className="w-4 h-4 mr-1" />} Marche
                               </Button>
                             </div>
@@ -1251,29 +1293,56 @@ const LocationsTab = () => {
                                            </div>}
                                        </div>
                                      </div>
-                                     {index < displayRoute.length - 1 && segment && <div className="ml-14 flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
-                                         <div className="flex items-center gap-2">
-                                           <ArrowRight className="w-4 h-4 text-secondary" />
-                                           <span className="font-medium">
-                                             {segment.distance.toFixed(1)} km
-                                           </span>
-                                         </div>
-                                         <div className="w-px h-4 bg-border" />
-                                          <div className="flex items-center gap-2">
-                                           <Calendar className="w-4 h-4 text-secondary" />
-                                          <span className="font-medium">
-                                            {segment.duration < 60 ? `${Math.round(segment.duration)} min` : `${Math.floor(segment.duration / 60)}h ${Math.round(segment.duration % 60)}min`}
-                                          </span>
-                                        </div>
-                                        {segment.transfers !== undefined && segment.transfers > 0 && (
-                                          <>
+                                      {index < displayRoute.length - 1 && segment && (
+                                        <div className="ml-14 space-y-2">
+                                          <div className="flex items-center gap-2 flex-wrap bg-muted/40 rounded-lg p-2">
+                                            <span className="text-xs text-muted-foreground mr-1">Mode :</span>
+                                            {ALL_MODES.map((m) => {
+                                              const Icon = transportIcon(m);
+                                              const active = (segmentModes[index] ?? transportMode) === m;
+                                              const isLoading = loadingSegmentIdx === index && active;
+                                              return (
+                                                <Button
+                                                  key={m}
+                                                  type="button"
+                                                  variant={active ? 'default' : 'outline'}
+                                                  size="icon"
+                                                  className="h-7 w-7"
+                                                  title={transportLabel(m)}
+                                                  aria-label={transportLabel(m)}
+                                                  disabled={loadingSegmentIdx !== null}
+                                                  onClick={() => recalcSegment(index, m)}
+                                                >
+                                                  {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5" />}
+                                                </Button>
+                                              );
+                                            })}
+                                          </div>
+                                          <div className="flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
+                                            <div className="flex items-center gap-2">
+                                              <ArrowRight className="w-4 h-4 text-secondary" />
+                                              <span className="font-medium">
+                                                {segment.distance.toFixed(1)} km
+                                              </span>
+                                            </div>
                                             <div className="w-px h-4 bg-border" />
-                                            <span className="font-medium text-secondary">
-                                              {segment.transfers} correspondance{segment.transfers > 1 ? 's' : ''}
-                                            </span>
-                                          </>
-                                        )}
-                                      </div>}
+                                            <div className="flex items-center gap-2">
+                                              <Calendar className="w-4 h-4 text-secondary" />
+                                              <span className="font-medium">
+                                                {segment.duration < 60 ? `${Math.round(segment.duration)} min` : `${Math.floor(segment.duration / 60)}h ${Math.round(segment.duration % 60)}min`}
+                                              </span>
+                                            </div>
+                                            {segment.transfers !== undefined && segment.transfers > 0 && (
+                                              <>
+                                                <div className="w-px h-4 bg-border" />
+                                                <span className="font-medium text-secondary">
+                                                  {segment.transfers} correspondance{segment.transfers > 1 ? 's' : ''}
+                                                </span>
+                                              </>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
                                     {index < optimizedRoute.length - 1 && loadingRouteInfo && !segment && <div className="ml-14 text-sm text-muted-foreground animate-pulse">
                                         Calcul en cours...
                                       </div>}
@@ -1302,7 +1371,7 @@ const LocationsTab = () => {
                               })()}
                                       </span>
                                     </div>
-                                    {(transportMode === 'train' || transportMode === 'bus' || transportMode === 'metro') && (() => {
+                                    {(() => {
                                       const totalTransfers = routeSegments.reduce((sum, seg) => sum + (seg.transfers ?? 0), 0);
                                       if (totalTransfers <= 0) return null;
                                       return (
