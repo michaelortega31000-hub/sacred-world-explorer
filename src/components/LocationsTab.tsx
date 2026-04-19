@@ -1177,41 +1177,14 @@ const LocationsTab = () => {
                       Essayez de modifier votre recherche
                     </p>
                   </CardContent>
-                </Card> : <ScrollArea className="h-[400px]">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-4">
-                    {filteredPlaces.map(place => <Card key={place.id} className="overflow-hidden cursor-pointer transition-all hover:scale-105" style={{
-                background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
-                border: '1px solid rgba(52, 224, 161, 0.2)'
-              }} onClick={() => navigate(`/place/${place.id}`)}>
-                        <div className="relative h-48 overflow-hidden">
-                          <img src={getImageUrl(place.imageUrl)} alt={place.name} className="w-full h-full object-cover" loading="lazy" />
-                          {isPlaceVisited(place.id) && <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground" style={{
-                    boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)'
-                  }}>
-                              Visité
-                            </Badge>}
-                        </div>
-                        <CardHeader>
-                          <CardTitle className="text-foreground line-clamp-1">
-                            {place.name}
-                          </CardTitle>
-                          <CardDescription className="text-muted-foreground">
-                            <div className="flex items-center gap-1">
-                              <MapPin className="w-4 h-4" />
-                              {place.city}, {t(`countries.${place.country}`, {
-                        defaultValue: place.country
-                      })}
-                            </div>
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <p className="text-sm text-muted-foreground line-clamp-2">
-                            {place.description}
-                          </p>
-                        </CardContent>
-                      </Card>)}
-                  </div>
-                </ScrollArea>}
+                </Card> : <div className="relative">
+                  <ScrollArea className="h-[400px]" ref={plannedListRef as any}>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pr-10">
+                      {filteredPlaces.map(place => renderPlaceCard(place))}
+                    </div>
+                  </ScrollArea>
+                  <AlphaJumpRail availableLetters={availableLetters} containerRef={plannedListRef} />
+                </div>}
 
 
               {/* Route Optimizer Section */}
