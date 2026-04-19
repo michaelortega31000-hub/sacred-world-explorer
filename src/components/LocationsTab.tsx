@@ -22,6 +22,48 @@ import jsPDF from 'jspdf';
 import { getCitySearchTerms, citiesMatch } from '@/lib/cityNormalization';
 import { calculateDistanceInKm } from '@/lib/geoUtils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { logger } from '@/lib/logger';
+
+// ---- Transitous MOTIS 2 routing (free, no key) ----
+async function fetchTransitousRoute(
+  from: [number, number], // [lng, lat]
+  to: [number, number],
+  mode: 'plane' | 'train' | 'bus'
+): Promise<{ distanceKm: number; durationMin: number; transfers: number } | null> {
+  try {
+    const modeMap: Record<typeof mode, string> = {
+      plane: 'AIRPLANE,WALK',
+      train: 'RAIL,WALK',
+      bus: 'BUS,WALK',
+    };
+    const params = new URLSearchParams({
+      fromPlace: `${from[1]},${from[0]}`,
+      toPlace: `${to[1]},${to[0]}`,
+      time: new Date().toISOString(),
+      arriveBy: 'false',
+      mode: modeMap[mode],
+    });
+    const url = `https://api.transitous.org/api/v1/plan?${params.toString()}`;
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch(url, { signal: ctrl.signal, headers: { Accept: 'application/json' } });
+    clearTimeout(timer);
+    if (!res.ok) return null;
+    const data = await res.json();
+    const itin = data?.itineraries?.[0] ?? data?.plan?.itineraries?.[0];
+    if (!itin) return null;
+    const legs: any[] = itin.legs || [];
+    const distanceM = legs.reduce((sum, l) => sum + (Number(l.distance) || 0), 0);
+    const durationSec = Number(itin.duration) || legs.reduce((s, l) => s + (Number(l.duration) || 0), 0);
+    if (!distanceM || !durationSec) return null;
+    const transitLegs = legs.filter((l) => (l.mode || '').toUpperCase() !== 'WALK');
+    const transfers = Math.max(0, transitLegs.length - 1);
+    return { distanceKm: distanceM / 1000, durationMin: durationSec / 60, transfers };
+  } catch (err) {
+    logger.warn('Transitous route fetch failed', err);
+    return null;
+  }
+}
 interface SavedRestaurant {
   id: string;
   name: string;
@@ -38,6 +80,7 @@ interface SavedRestaurant {
 interface RouteSegment {
   distance: number; // in kilometers
   duration: number; // in minutes
+  transfers?: number; // number of transit transfers (train/bus)
 }
 interface POI {
   id: string;
@@ -298,7 +341,7 @@ const LocationsTab = () => {
       return;
     }
 
-    // Straight-line modes (Mapbox Directions doesn't support these)
+    // Transit modes — try Transitous (real multi-modal routing), fallback to Haversine
     if (mode === 'plane' || mode === 'train' || mode === 'bus') {
       setLoadingRouteInfo(true);
       try {
@@ -307,8 +350,21 @@ const LocationsTab = () => {
         for (let i = 0; i < places.length - 1; i++) {
           const start = places[i];
           const end = places[i + 1];
-          const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
-          segments.push({ distance, duration: (distance / speedKmh) * 60 });
+          const transitous = await fetchTransitousRoute(
+            [start.coordinates[0], start.coordinates[1]],
+            [end.coordinates[0], end.coordinates[1]],
+            mode
+          );
+          if (transitous) {
+            segments.push({
+              distance: transitous.distanceKm,
+              duration: transitous.durationMin,
+              transfers: transitous.transfers,
+            });
+          } else {
+            const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
+            segments.push({ distance, duration: (distance / speedKmh) * 60 });
+          }
         }
         setRouteSegments(segments);
       } finally {
@@ -1203,12 +1259,20 @@ const LocationsTab = () => {
                                            </span>
                                          </div>
                                          <div className="w-px h-4 bg-border" />
-                                         <div className="flex items-center gap-2">
+                                          <div className="flex items-center gap-2">
                                            <Calendar className="w-4 h-4 text-secondary" />
                                           <span className="font-medium">
                                             {segment.duration < 60 ? `${Math.round(segment.duration)} min` : `${Math.floor(segment.duration / 60)}h ${Math.round(segment.duration % 60)}min`}
                                           </span>
                                         </div>
+                                        {segment.transfers !== undefined && segment.transfers > 0 && (
+                                          <>
+                                            <div className="w-px h-4 bg-border" />
+                                            <span className="font-medium text-secondary">
+                                              {segment.transfers} correspondance{segment.transfers > 1 ? 's' : ''}
+                                            </span>
+                                          </>
+                                        )}
                                       </div>}
                                     {index < optimizedRoute.length - 1 && loadingRouteInfo && !segment && <div className="ml-14 text-sm text-muted-foreground animate-pulse">
                                         Calcul en cours...
