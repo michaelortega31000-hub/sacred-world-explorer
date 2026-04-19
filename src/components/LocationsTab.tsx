@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train, Plane, TrainFront, Bus, Footprints } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train, Plane, TrainFront, Bus, Footprints, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { usePlaces } from '@/hooks/usePlaces';
