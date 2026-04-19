@@ -1,40 +1,83 @@
 
+## Phase 23 — Remove alias duplicates and fix wrong/reused place images
 
-## Phase 22 — Fix real duplicates + missing images (DB merge issue)
+### What the screenshots prove
+The remaining problems are real:
+- There are still duplicates on country pages, but they are not always exact string duplicates. Some are alias duplicates such as:
+  - same monument with different names
+  - same monument with different city spellings (`Padoue` vs `Padua`)
+- Some cards still show blank placeholders because those places are coming from merged backend data, not just the local dataset.
+- Some images are incorrect because the current logic reuses a generic/fuzzy match or a bad manual URL for the wrong monument.
 
-### Root cause
-Screenshots show duplicates (Notre-Dame d'Amiens ×2) and grey placeholders (Toulouse cathédrale, basilique). After investigation:
+### Root cause in code
+From the current code:
+- `src/hooks/usePlaces.ts` deduplicates only with a raw `name|city|country` composite key.
+- That misses semantic duplicates like:
+  - `Cathédrale de Chartres` vs `Cathédrale Notre-Dame de Chartres`
+  - identical places with translated city names
+- `tryMatchLocalImage()` can attach a “close enough” asset instead of the exact monument.
+- `Country.tsx` displays merged places from `usePlacesByCountry()`, so fixing only `placesData.ts` is not enough.
 
-- `mockPlaces` (260 entries) is clean — **0 duplicates** when keyed by `name|city|country`.
-- The duplicates come from **Supabase DB places** merged in `usePlaces.ts`. `mergePlaces()` only deduplicates by **ID**, so a DB entry named "Cathédrale Notre-Dame d'Amiens" coexists with local `fra-11` of the same name.
-- The grey-square cards are **DB entries with `image_url = null`** that are not finding a local match (`tryMatchLocalImage` returns the placeholder).
-- Additionally, **26 local entries** in `placesData.ts` point to `/src/assets/places/*.jpg` files that don't exist (e.g. `dubrovnik-cathedral.jpg`, `st-paul-london.jpg`). None affect France but they do affect other countries.
+### Implementation plan
 
-### Plan (2 files, no DB migration needed)
+**1. Strengthen deduplication in `src/hooks/usePlaces.ts`**
+- Add a stricter canonical key builder that normalizes:
+  - accents
+  - punctuation
+  - city aliases (`Padua` → `Padoue`, etc.)
+  - monument prefixes/synonyms for known cathedral/basilica naming variants
+- Deduplicate DB vs local using this canonical key, with local entries still taking priority.
+- Also deduplicate DB entries against each other using the same canonical key.
 
-**1. `src/hooks/usePlaces.ts` — composite-key deduplication**
-- In `mergePlaces`, build a Set keyed by `${name}|${city}|${country}` (lowercased, accent-stripped, trimmed) instead of (or in addition to) IDs.
-- **Local takes priority** over DB when names collide — local entries are curated with proper descriptions/images, DB entries are often raw imports without images.
-- Reverse current order: filter DB places to drop those whose composite key matches a local entry, then `[...uniqueDb, ...localPlaces]`.
-- Improve `tryMatchLocalImage`: also try variants (with/without "cathedrale-", "basilique-", city suffix) so DB names map to existing assets when possible.
+**2. Add a small alias map for known problem monuments**
+- In `usePlaces.ts`, add a targeted alias map for the monuments already visible in screenshots / likely problem set:
+  - Chartres cathedral variants
+  - Padua/Padoue basilica variants
+  - similar known France/Italy duplicates if found in the same pattern
+- Keep this explicit and small, not a risky global rewrite.
 
-**2. `src/data/placesData.ts` — fix the 26 broken image paths**
-- Replace `/src/assets/places/<missing>.jpg` with `/images/place-placeholder.jpg` for entries where the asset file doesn't exist.
-- Affected entries (verified by filesystem check): hrv-1/2/3, dnk-2/3, deu-4/5/6, irl-1/2/3/4, ita-15/16/17, srb-1/2, esp-12, che-1/2/3/4, uk-5/6/7/8.
-- This way the resilient `<img onError>` fallback (per `image-resilience-logic` memory) renders the elegant placeholder instead of a broken image — and we can later replace with real Wikimedia URLs.
+**3. Stop fuzzy image guessing for problem entries**
+- Replace the current “best effort” fuzzy local-image matching with safer logic:
+  - prefer exact DB URL if valid
+  - else prefer explicit per-place override map
+  - else exact local asset match only
+  - else placeholder
+- This avoids assigning the same wrong image to multiple different monuments.
 
-### Out of scope
-- DB-side cleanup of duplicate place rows (would require a migration to delete by name match — flag as a follow-up if user wants the DB clean too).
-- Authoring real images for the 26 missing local assets (large task; placeholder is acceptable per existing image-resilience pattern).
-- UI/filter/transport changes.
+**4. Add explicit image overrides for currently broken/wrong places**
+- In `src/hooks/usePlaces.ts` or `src/data/placesData.ts` add a verified image override map keyed by canonical monument key.
+- Priority:
+  - France
+  - Italy
+  - Spain
+- Specifically fix the screenshot cases first:
+  - Chartres
+  - Lisieux
+  - Domrémy-la-Pucelle / Basilique du Bois-Chenu
+  - Gordes / Sénanque if that is the affected card
+  - Loreto
+  - Padua/Padoue
+- Each override should point to the correct monument image, not a reused generic one.
+
+**5. Keep UI unchanged**
+- No layout changes to `LocationsTab.tsx`, country page structure, sorting, counters, A–Z rail, Planner, Globe, or transport modes.
+- Only data/merge/image resolution behavior changes.
+
+### Files to update
+- `src/hooks/usePlaces.ts` — canonical deduplication, alias handling, safer image resolution, verified image overrides
+- `src/data/placesData.ts` — only if a local entry still has a wrong image or an obvious alias duplicate that should be cleaned at source
 
 ### Verification
-1. `/country/France` → Amiens shows **only one** "Cathédrale Notre-Dame d'Amiens" card.
-2. Toulouse cards (Cathédrale Saint-Étienne, Basilique Saint-Sernin) show their local images, not grey squares.
-3. Console no longer spams "Image not found" for the 26 fixed entries.
-4. Total count remains 260 (or slightly higher if DB has unique entries not in local).
-5. Other countries: no regression on cards that already had working images.
+1. `/country/France`
+   - only one Chartres card
+   - no blank card for Lisieux / Domrémy / Gordes problem entries
+2. `/country/Italy`
+   - only one Saint-Antoine de Padoue card
+   - Loreto and Padua show the correct monument images
+3. No obvious reused hero image across unrelated places
+4. Existing sorting remains country → city → place
+5. No UI regression on country page cards or modal images
 
-### Risk
-- If a DB entry is genuinely a different place but happens to share name+city+country with a local one (unlikely for sacred monuments), it gets dropped. Acceptable trade-off — sacred sites with identical names in the same city are real-world impossible.
-
+### Risk control
+- Use a narrow alias/override list instead of aggressive fuzzy deduplication.
+- Keep local data as the source of truth when local and backend rows refer to the same monument.
