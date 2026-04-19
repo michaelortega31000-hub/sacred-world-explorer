@@ -48,7 +48,7 @@ const Header = ({
   };
 
   return (
-    <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
+    <div className={`relative ${isTextOnlyPage ? 'py-1 px-3' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
         {isTextOnlyPage ? (
           // Header compact pour les pages Globe/Planifier/Journal/Classements
@@ -57,7 +57,7 @@ const Header = ({
             <div className="flex items-center gap-1.5 sm:gap-3">
 {/* 1. Identité chrétienne (croix dorée) - agrandie & glow doré doux */}
               <div
-                className="flex items-center justify-center w-20 h-20 sm:w-20 sm:h-20 rounded-full bg-white/10 backdrop-blur-sm border border-primary/40 overflow-hidden"
+                className="flex items-center justify-center w-14 h-14 rounded-full bg-white/10 backdrop-blur-sm border border-primary/40 overflow-hidden"
                 title="Patrimoine chrétien"
                 style={{
                   boxShadow:
@@ -83,7 +83,7 @@ const Header = ({
             
             {/* Centre : Logo */}
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src={logo} alt="SacredWorld Logo" className="h-24 w-24 sm:h-28 sm:w-28 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
+              <img src={logo} alt="SacredWorld Logo" className="h-16 w-16 sm:h-20 sm:w-20 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
             </div>
             
             {/* Droite : Micro + Mail + Assistant + Retour */}
@@ -94,8 +94,8 @@ const Header = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="relative">
-                      <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
-                        <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Button variant="ghost" size="icon" onClick={handleMessagesClick} className="w-11 h-11 rounded-full text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
+                        <Mail className="w-5 h-5" />
                       </Button>
                       {unreadCount > 0 && (
                         <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
@@ -113,12 +113,12 @@ const Header = ({
               {onAssistantClick && (
                 <div
                   onClick={onAssistantClick}
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/20 backdrop-blur-sm shadow-md border border-primary/40 overflow-hidden cursor-pointer hover:bg-primary/30 transition-colors"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/20 backdrop-blur-sm shadow-md border border-primary/40 overflow-hidden cursor-pointer hover:bg-primary/30 transition-colors"
                   title="Assistant Sacred World"
                   role="button"
                   aria-label="Assistant"
                 >
-                  <MessageCircle className="w-6 h-6 text-primary" />
+                  <MessageCircle className="w-5 h-5 text-primary" />
                 </div>
               )}
 
