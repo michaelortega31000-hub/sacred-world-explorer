@@ -48,7 +48,7 @@ const Header = ({
   };
 
   return (
-    <div className={`relative ${isTextOnlyPage ? 'py-2 px-4' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
+    <div className={`relative ${isTextOnlyPage ? 'py-1 px-3' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
       <div className="max-w-7xl mx-auto">
         {isTextOnlyPage ? (
           // Header compact pour les pages Globe/Planifier/Journal/Classements
