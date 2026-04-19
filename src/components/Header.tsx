@@ -94,8 +94,8 @@ const Header = ({
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <div className="relative">
-                      <Button variant="ghost" size="sm" onClick={handleMessagesClick} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
-                        <Mail className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Button variant="ghost" size="icon" onClick={handleMessagesClick} className="w-11 h-11 rounded-full text-foreground hover:bg-primary/10" aria-label="Messages" title="Messages">
+                        <Mail className="w-5 h-5" />
                       </Button>
                       {unreadCount > 0 && (
                         <div className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
@@ -113,12 +113,12 @@ const Header = ({
               {onAssistantClick && (
                 <div
                   onClick={onAssistantClick}
-                  className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/20 backdrop-blur-sm shadow-md border border-primary/40 overflow-hidden cursor-pointer hover:bg-primary/30 transition-colors"
+                  className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/20 backdrop-blur-sm shadow-md border border-primary/40 overflow-hidden cursor-pointer hover:bg-primary/30 transition-colors"
                   title="Assistant Sacred World"
                   role="button"
                   aria-label="Assistant"
                 >
-                  <MessageCircle className="w-6 h-6 text-primary" />
+                  <MessageCircle className="w-5 h-5 text-primary" />
                 </div>
               )}
 
