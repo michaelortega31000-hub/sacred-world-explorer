@@ -1716,20 +1716,6 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/padua-basilica.jpg"
   },
   {
-    "id": "ita-15",
-    "name": "Basilique Saint-Antoine de Padoue",
-    "country": "Italy",
-    "city": "Padua",
-    "type": "Basilique",
-    "description": "Basilique (1232-1310) abritant reliques Saint Antoine Padoue, langue miraculeusement préservée. Architecture romano-gothique-byzantine 8 dômes. Fresques, bronzes Donatello. Pèlerinage majeur 6,5 millions visiteurs. Elle incarne ordre franciscain, dévotion antonienne et patrimoine Padoue.",
-    "points": 70,
-    "coordinates": [
-      11.8812,
-      45.4015
-    ],
-    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Padova_Basilica_di_SantAntonio.jpg/1024px-Padova_Basilica_di_SantAntonio.jpg"
-  },
-  {
     "id": "ita-9",
     "name": "Ensemble Cathédral de Pise",
     "country": "Italy",
