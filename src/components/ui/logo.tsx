@@ -58,7 +58,7 @@ export const Logo = ({
             alt=""
             className={cn(
               logoVariants({ size }),
-              "absolute inset-0 opacity-75 blur-md animate-pulse scale-110"
+              "absolute inset-0 opacity-60 blur-md scale-110"
             )}
             aria-hidden="true"
           />
@@ -67,10 +67,9 @@ export const Logo = ({
             alt=""
             className={cn(
               logoVariants({ size }),
-              "absolute inset-0 opacity-55 blur-xl animate-pulse scale-125"
+              "absolute inset-0 opacity-40 blur-xl scale-125"
             )}
             aria-hidden="true"
-            style={{ animationDelay: "0.5s" }}
           />
         </>
       )}
