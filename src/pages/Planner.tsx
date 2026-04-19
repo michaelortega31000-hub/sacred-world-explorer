@@ -259,7 +259,9 @@ const Planner = () => {
           >
             <ArrowLeft className="h-5 w-5 text-[#F4C542]" />
           </button>
-          <Logo variant="main" size="small" effect="glow" />
+          <div className="inline-block scale-[1.18] origin-center">
+            <Logo variant="main" size="small" effect="glow" />
+          </div>
           <div className="w-10" aria-hidden />
         </header>
 

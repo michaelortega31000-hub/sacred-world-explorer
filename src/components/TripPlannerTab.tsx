@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { usePlaces } from '@/hooks/usePlaces';
-import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone, Sparkles, ArrowUp, ArrowDown, Check, X } from 'lucide-react';
+import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone, Sparkles, ArrowUp, ArrowDown, Check, X, Plane, TrainFront, Bus, Car, Bike, Footprints } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getImageUrl } from '@/lib/imageHelper';
@@ -36,6 +36,7 @@ const TripPlannerTab = () => {
   const { userProgress, removeFromTrip, clearTrip, unsaveRestaurant, updatePlannedRoute, reorderTrip } = useApp();
   const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
   const [proposedOrder, setProposedOrder] = useState<string[] | null>(null);
+  const [transportMode, setTransportMode] = useState<'plane' | 'train' | 'bus' | 'car' | 'bike' | 'walk'>('car');
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
