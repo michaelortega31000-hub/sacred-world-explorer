@@ -514,7 +514,8 @@ const Globe3D = ({
         center: [2.5, 46.5], // France-first pilot (Phase 2/3)
         zoom: 5.5,
         pitch: 0,
-        bearing: 0
+        bearing: 0,
+        attributionControl: false
       });
     } catch (error) {
       logger.error('❌ Map initialization error:', error);
