@@ -1144,17 +1144,16 @@ const LocationsTab = () => {
                               <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('driving')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'driving' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Car className="w-4 h-4 mr-1" />} Voiture
                               </Button>
+                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('metro')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'metro' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Train className="w-4 h-4 mr-1" />} Métro
+                              </Button>
                               <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('cycling')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'cycling' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bike className="w-4 h-4 mr-1" />} Vélo
                               </Button>
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')} disabled={loadingRouteInfo} className="col-span-3">
                                 {loadingRouteInfo && transportMode === 'walking' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Footprints className="w-4 h-4 mr-1" />} Marche
                               </Button>
                             </div>
-                            {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="w-full gap-2">
-                                <Navigation className="w-4 h-4" />
-                                {showOptimizedRoute ? 'Masquer l\'itinéraire' : 'Afficher l\'itinéraire'}
-                              </Button>}
                           </div>
                         </div>
                       </div>
