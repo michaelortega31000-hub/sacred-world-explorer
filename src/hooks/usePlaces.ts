@@ -106,15 +106,34 @@ const normalizeDbPlace = (dbPlace: DBPlace): Place => {
  * - DB entries take priority (dedup by ID)
  * - Only verified DB entries are included
  */
+const compositeKey = (name: string, city: string, country: string): string =>
+  `${name}|${city}|${country}`
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/\p{Diacritic}/gu, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+
 const mergePlaces = (dbPlaces: DBPlace[], localPlaces: Place[]): Place[] => {
-  const dbIds = new Set(dbPlaces.map(p => p.id));
-  const normalizedDb = dbPlaces.map(normalizeDbPlace);
-  
-  // Filter local places that don't exist in DB
-  const uniqueLocal = localPlaces.filter(p => !dbIds.has(p.id));
-  
-  // DB places first, then unique local places
-  return [...normalizedDb, ...uniqueLocal];
+  // Local entries are curated (proper descriptions + images) → take priority.
+  const localKeys = new Set(localPlaces.map(p => compositeKey(p.name, p.city, p.country)));
+  const localIds = new Set(localPlaces.map(p => p.id));
+
+  // Drop DB entries that duplicate a local entry (by ID or name+city+country)
+  const uniqueDb = dbPlaces
+    .filter(p => !localIds.has(p.id) && !localKeys.has(compositeKey(p.name, p.city, p.country)))
+    .map(normalizeDbPlace);
+
+  // Also dedupe DB entries among themselves
+  const seen = new Set<string>();
+  const dedupedDb = uniqueDb.filter(p => {
+    const k = compositeKey(p.name, p.city, p.country);
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
+
+  return [...localPlaces, ...dedupedDb];
 };
 
 /**
