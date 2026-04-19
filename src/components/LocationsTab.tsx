@@ -889,16 +889,23 @@ const LocationsTab = () => {
   };
   return <div className="container mx-auto p-6 space-y-6 pb-24">
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-serif font-bold mb-2" style={{
-        color: '#34E0A1'
-      }}>
+        <h1
+          className="text-4xl md:text-5xl font-serif font-bold mb-3"
+          style={{
+            background: 'linear-gradient(135deg,#FFFFFF 0%,#F4C542 60%,#E0A84C 100%)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent',
+            backgroundClip: 'text',
+            filter: 'drop-shadow(0 2px 12px rgba(244,197,66,0.3))',
+          }}
+        >
           Lieux Sacrés du Monde
         </h1>
-        <p className="text-muted-foreground text-lg">
-          Découvrez {isLoadingPlaces ? '...' : categoryCounts.total} lieux à travers le monde
-          <span className="text-sm ml-2">
-            ({categoryCounts.religious} lieux sacrés · {categoryCounts.museums} musées)
-          </span>
+        <p className="text-[#F4C542]/85 text-lg italic">
+          ✦ Découvrez {isLoadingPlaces ? '...' : categoryCounts.total} lieux à travers le monde ✦
+        </p>
+        <p className="text-muted-foreground text-sm mt-1">
+          {categoryCounts.religious} lieux sacrés · {categoryCounts.museums} musées
         </p>
       </div>
 
@@ -908,11 +915,11 @@ const LocationsTab = () => {
       {/* Tabs for All vs Planned */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="all" className="gap-2">
+          <TabsTrigger value="all" className="gap-2 data-[state=active]:bg-[#F4C542]/15 data-[state=active]:text-[#F4C542]">
             <MapPin className="w-4 h-4" />
             Tous les lieux
           </TabsTrigger>
-          <TabsTrigger value="planned" className="gap-2">
+          <TabsTrigger value="planned" className="gap-2 data-[state=active]:bg-[#F4C542]/15 data-[state=active]:text-[#F4C542]">
             <Calendar className="w-4 h-4" />
             Mon itinéraire ({plannedPlaces.length})
           </TabsTrigger>
