@@ -1189,13 +1189,18 @@ const LocationsTab = () => {
 
               {/* Route Optimizer Section */}
               {plannedPlaces.length >= 2 && <>
-                  <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/20">
+                  <Card
+                    className="border-2 border-[#F4C542]/40 backdrop-blur-md shadow-[0_8px_40px_rgba(244,197,66,0.15)]"
+                    style={{
+                      background: 'linear-gradient(135deg, rgba(244,197,66,0.08) 0%, rgba(20,43,79,0.6) 50%, rgba(14,27,63,0.85) 100%)',
+                    }}
+                  >
                     <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Route className="w-5 h-5 text-primary" />
+                      <CardTitle className="flex items-center gap-2 text-[#F4C542]" style={{ filter: 'drop-shadow(0 0 8px rgba(244,197,66,0.4))' }}>
+                        <Route className="w-6 h-6 text-[#F4C542]" />
                         Optimiser mon itinéraire
                       </CardTitle>
-                      <CardDescription>
+                      <CardDescription className="text-muted-foreground">
                         Calculez le parcours optimal entre vos lieux sélectionnés
                       </CardDescription>
                     </CardHeader>
