@@ -1,44 +1,22 @@
 
 
-## Phase 12 — Micro-fixes: Globe header cross, Planner logo, Transport modes
+## Phase 13 — Final micro-fixes: Compact header + transport grid
 
-### 1. Globe tab header — enlarge cross only
-`src/components/Header.tsx`: the round container is `w-20 h-20` (keep as-is). Currently `<ChristianIcon size="lg" className="scale-[1.9]" />` — bump scale to `scale-[2.85]` (+50%). Container size, header padding, and globe area untouched.
+### 1. Globe tab header — compact layout
+`src/components/Header.tsx`:
+- Reduce header padding: `py-2 px-4` → `py-1 px-3` (cuts ~30% height)
+- Shrink left circular icon container: `w-20 h-20` → `w-14 h-14` while keeping `scale-[2.85]` on the cross inside
+- Standardize right-side bubble sizes: Mail button `p-1.5`, Assistant `w-12 h-12`, VoiceCommand (check its internal sizing) — align all to ~44-48px visual footprint
 
-### 2. Planner central logo — +15-20%
-`src/pages/Planner.tsx` uses `<Logo size="large" effect="glow" />`. Two safe options:
-- Bump `large` variant in `src/components/ui/logo.tsx` from `w-96 h-96` → `w-[28rem] h-[28rem]` (+~17%), OR
-- Add a wrapper `scale-[1.18]` only in Planner.
+### 2. Transport modes verification
+`src/components/TripPlannerTab.tsx`:
+- Already implements 6 modes (Plane, TrainFront, Bus, Car, Bike, Footprints) in 3x2 grid
+- Already auto-recalculates Distance + Duration on mode change via `useMemo`
+- No changes needed — functionality is present
 
-Going with the **wrapper scale** approach to avoid affecting other consumers of `size="large"`. Wrap the Planner `<Logo>` in a `<div className="scale-[1.18]">`.
-
-### 3. Optimiser mon itinéraire — full transport modes + realistic ETA
-`src/components/TripPlannerTab.tsx` already has a 2x2 transport grid (per memory `itinerary-controls-layout`). Expand to 6 modes in a 3x2 grid:
-
-| Mode | Icon | Avg speed (km/h) |
-|---|---|---|
-| Avion | Plane | 750 |
-| Train | TrainFront | 200 |
-| Bus | Bus | 70 |
-| Voiture | Car | 90 |
-| Vélo | Bike | 18 |
-| Marche | Footprints | 5 |
-
-- Track selected mode in local state (default: Voiture).
-- Total distance = sum of Haversine between consecutive stops (already computed).
-- ETA = `distanceKm / speed` → format `Xh YYmin` (or `YYmin` if <1h, or `Xj YYh` if >24h for walking).
-- Display under the transport grid: **Distance: X km · Durée: Y**.
-- Recalculate on every mode change or stop reorder via `useMemo`.
-
-### Files touched (3)
-- `src/components/Header.tsx` — bump `ChristianIcon` scale to `2.85`
-- `src/pages/Planner.tsx` — wrap central `<Logo>` with `scale-[1.18]`
-- `src/components/TripPlannerTab.tsx` — 6 transport modes, selected state, distance + ETA recompute
+### Files touched (1)
+- `src/components/Header.tsx` — padding, container sizing, right-side icon uniformity
 
 ### Untouched
-Logo component sizes · Globe3D · Planner save logic · localStorage trip key · BottomNavigation · DB.
-
-### Risks
-- `Footprints` icon exists in lucide-react (confirmed). If `TrainFront` unavailable, fall back to `Train`.
-- Wrapper scale on Logo can bleed beyond parent — use `inline-block` wrapper so it doesn't disrupt flex layout.
+TripPlannerTab (already complete) · Planner logo (user said don't change) · Globe3D · BottomNavigation.
 
