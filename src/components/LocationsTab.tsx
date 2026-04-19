@@ -427,15 +427,31 @@ const LocationsTab = () => {
     }
   };
 
-  const continents = useMemo(() => getAllContinents(), []);
+  // Live, locale-aware sorted lists derived from allPlaces (includes DB-loaded places)
+  const continents = useMemo(() => {
+    const set = new Set<string>();
+    allPlaces.forEach(p => {
+      const c = getContinent(p.country);
+      if (c) set.add(c);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [allPlaces]);
   const countries = useMemo(() => {
     if (selectedContinent === 'all') return [];
-    return getCountriesByContinent(selectedContinent);
-  }, [selectedContinent]);
+    const set = new Set<string>();
+    allPlaces.forEach(p => {
+      if (getContinent(p.country) === selectedContinent) set.add(p.country);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [selectedContinent, allPlaces]);
   const cities = useMemo(() => {
     if (selectedCountry === 'all') return [];
-    return getCitiesByCountry(selectedCountry);
-  }, [selectedCountry]);
+    const set = new Set<string>();
+    allPlaces.forEach(p => {
+      if (p.country === selectedCountry && p.city) set.add(p.city);
+    });
+    return Array.from(set).sort((a, b) => a.localeCompare(b, 'fr'));
+  }, [selectedCountry, allPlaces]);
 
   // Reset dependent filters when parent filter changes
   const handleContinentChange = (continent: string) => {
