@@ -554,6 +554,51 @@ const TripPlannerTab = () => {
                     </div>
                   </CardHeader>
 
+                  {/* Transport modes + ETA */}
+                  {tripPlaces.length >= 2 && (
+                    <CardContent className="pt-0">
+                      <div className="text-xs font-medium text-muted-foreground mb-2">
+                        Mode de transport
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {TRANSPORT_MODES.map(({ id, label, Icon }) => {
+                          const active = transportMode === id;
+                          return (
+                            <button
+                              key={id}
+                              type="button"
+                              onClick={() => setTransportMode(id)}
+                              className={cn(
+                                'flex flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-xs font-medium transition-all',
+                                active
+                                  ? 'border-primary bg-primary/15 text-primary shadow-sm'
+                                  : 'border-border bg-background/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                              )}
+                              aria-pressed={active}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                        <span>
+                          <span className="text-muted-foreground">Distance : </span>
+                          <span className="font-semibold text-foreground">
+                            {totalDistanceKm < 10
+                              ? totalDistanceKm.toFixed(1)
+                              : Math.round(totalDistanceKm).toLocaleString('fr-FR')} km
+                          </span>
+                        </span>
+                        <span>
+                          <span className="text-muted-foreground">Durée ({selectedMode.label.toLowerCase()}) : </span>
+                          <span className="font-semibold text-primary">{formatDuration(estimatedHours)}</span>
+                        </span>
+                      </div>
+                    </CardContent>
+                  )}
+
                   {proposedOrder && proposedPlaces.length > 0 && (
                     <CardContent className="space-y-4">
                       <div className="rounded-lg border border-primary/30 bg-background/60 p-3">
