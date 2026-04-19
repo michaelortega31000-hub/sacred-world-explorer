@@ -8,9 +8,9 @@ const logoVariants = cva(
   {
     variants: {
       size: {
-        small: "w-16 h-16",
-        medium: "w-28 h-28",
-        large: "w-48 h-48",
+        small: "w-32 h-32",
+        medium: "w-56 h-56",
+        large: "w-96 h-96",
       },
       effect: {
         static: "",
