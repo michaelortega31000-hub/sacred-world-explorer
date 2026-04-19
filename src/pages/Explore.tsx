@@ -82,26 +82,26 @@ const Explore = () => {
 
         {/* TabsList FIXE au-dessus de BottomNavigation - hidden in fullscreen mode */}
         {!isFullscreen && (
-          <TabsList className="fixed bottom-[36px] left-2 right-2 z-40 grid grid-cols-5 h-auto bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-1.5 rounded-lg">
-            <TabsTrigger value="ar" className="flex flex-col items-center gap-1 py-2.5">
-              <Camera className="w-6 h-6" />
-              <span className="text-[15px]">AR</span>
+          <TabsList className="fixed bottom-[36px] left-2 right-2 z-40 grid grid-cols-5 h-auto bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-1 rounded-lg">
+            <TabsTrigger value="ar" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
+              <Camera className="w-4 h-4" />
+              <span className="text-[11px] leading-none">AR</span>
             </TabsTrigger>
-            <TabsTrigger value="nearby" className="flex flex-col items-center gap-1 py-2.5">
-              <Compass className="w-6 h-6" />
-              <span className="text-[15px]">Proche</span>
+            <TabsTrigger value="nearby" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
+              <Compass className="w-4 h-4" />
+              <span className="text-[11px] leading-none">Proche</span>
             </TabsTrigger>
-            <TabsTrigger value="locations" className="flex flex-col items-center gap-1 py-2.5">
-              <MapPin className="w-6 h-6" />
-              <span className="text-[15px]">Lieux</span>
+            <TabsTrigger value="locations" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
+              <MapPin className="w-4 h-4" />
+              <span className="text-[11px] leading-none">Lieux</span>
             </TabsTrigger>
-            <TabsTrigger value="challenges" className="flex flex-col items-center gap-1 py-2.5">
-              <Target className="w-6 h-6" />
-              <span className="text-[15px]">Défis</span>
+            <TabsTrigger value="challenges" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
+              <Target className="w-4 h-4" />
+              <span className="text-[11px] leading-none">Défis</span>
             </TabsTrigger>
-            <TabsTrigger value="rankings" className="flex flex-col items-center gap-1 py-2.5">
-              <Trophy className="w-6 h-6" />
-              <span className="text-[15px]">Rang</span>
+            <TabsTrigger value="rankings" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
+              <Trophy className="w-4 h-4" />
+              <span className="text-[11px] leading-none">Rang</span>
             </TabsTrigger>
           </TabsList>
         )}
