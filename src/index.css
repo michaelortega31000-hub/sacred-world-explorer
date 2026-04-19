@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Hide Mapbox attribution and logo on Explore globe */
+.mapboxgl-ctrl-attrib,
+.mapboxgl-ctrl-bottom-right,
+.mapboxgl-ctrl-bottom-left .mapboxgl-ctrl-logo {
+  display: none !important;
+}
+
 /* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
 All colors MUST be HSL.
 */

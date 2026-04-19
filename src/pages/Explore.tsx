@@ -82,7 +82,7 @@ const Explore = () => {
 
         {/* TabsList FIXE au-dessus de BottomNavigation - hidden in fullscreen mode */}
         {!isFullscreen && (
-          <TabsList className="fixed bottom-[36px] left-2 right-2 z-40 grid grid-cols-5 h-auto bg-background/95 backdrop-blur-md shadow-2xl border-2 border-primary/40 p-1 rounded-lg">
+          <TabsList className="fixed bottom-[36px] left-0 right-0 z-40 grid grid-cols-5 h-auto bg-background/95 backdrop-blur-md shadow-2xl border-t-2 border-primary/40 p-1 rounded-none">
             <TabsTrigger value="ar" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
               <Camera className="w-4 h-4" />
               <span className="text-[11px] leading-none">AR</span>
