@@ -300,15 +300,20 @@ const LocationsTab = () => {
 
     // Straight-line modes (Mapbox Directions doesn't support these)
     if (mode === 'plane' || mode === 'train' || mode === 'bus') {
-      const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : 70;
-      const segments: RouteSegment[] = [];
-      for (let i = 0; i < places.length - 1; i++) {
-        const start = places[i];
-        const end = places[i + 1];
-        const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
-        segments.push({ distance, duration: (distance / speedKmh) * 60 });
+      setLoadingRouteInfo(true);
+      try {
+        const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : 70;
+        const segments: RouteSegment[] = [];
+        for (let i = 0; i < places.length - 1; i++) {
+          const start = places[i];
+          const end = places[i + 1];
+          const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
+          segments.push({ distance, duration: (distance / speedKmh) * 60 });
+        }
+        setRouteSegments(segments);
+      } finally {
+        setLoadingRouteInfo(false);
       }
-      setRouteSegments(segments);
       return;
     }
 
