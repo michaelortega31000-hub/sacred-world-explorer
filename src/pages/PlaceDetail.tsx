@@ -519,6 +519,8 @@ const PlaceDetail = () => {
           .from('restaurants')
           .select('id, name, address, city, coordinates, cuisine, type')
           .eq('verified', true)
+          .not('type', 'cs', '{halal}')
+          .not('type', 'cs', '{kosher}')
           .or(cityVariants.map(c => `city.ilike.%${c}%`).join(','));
 
         if (!error && dbRestaurants && dbRestaurants.length > 0) {
