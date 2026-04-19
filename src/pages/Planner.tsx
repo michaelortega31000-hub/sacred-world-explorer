@@ -8,6 +8,7 @@ import BottomNavigation from '@/components/BottomNavigation';
 import { Logo } from '@/components/ui/logo';
 import { getImagesByCountry } from '@/lib/religionImageHelper';
 import PlaceSelectorModal, { type SelectedPlace } from '@/components/planner/PlaceSelectorModal';
+import { useApp } from '@/contexts/AppContext';
 
 // Convert lat/lng to 3D vector on the unit sphere
 const latLngToVector3 = (lat: number, lng: number, radius = 1) => {
@@ -106,6 +107,7 @@ type SelectionMode = 'departure' | 'destination' | null;
 
 const Planner = () => {
   const navigate = useNavigate();
+  const { reorderTrip } = useApp();
   const [departure, setDeparture] = useState<SelectedPlace | null>(null);
   const [destinations, setDestinations] = useState<SelectedPlace[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
@@ -184,6 +186,9 @@ const Planner = () => {
       );
       // Notify other tabs/components in the same window
       window.dispatchEvent(new CustomEvent('sacred-saved-trip-updated'));
+      // Sync trip place IDs into userProgress so "Mon itinéraire" picks them up
+      const ids = [departure!.placeId, ...destinations.map((d) => d.placeId)].filter(Boolean);
+      if (ids.length) reorderTrip(ids);
     } catch {
       // ignore quota errors
     }
