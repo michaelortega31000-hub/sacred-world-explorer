@@ -31,6 +31,18 @@ const SACRED_POINTS: { lat: number; lng: number }[] = [
   { lat: 35.0394, lng: 135.7292 },  // Kyoto
   { lat: 43.0959, lng: -0.0455 },   // Lourdes
   { lat: 48.6361, lng: -1.5115 },   // Mont-Saint-Michel
+  { lat: 25.0961, lng: 85.3131 },   // Bodh Gaya
+  { lat: 27.7172, lng: 85.3240 },   // Kathmandu
+  { lat: 29.9550, lng: 78.0670 },   // Haridwar
+  { lat: -13.1631, lng: -72.5450 }, // Machu Picchu
+  { lat: -22.9519, lng: -43.2105 }, // Christ the Redeemer
+  { lat: -8.5069, lng: 115.2625 },  // Bali (Besakih)
+  { lat: -25.3444, lng: 131.0369 }, // Uluru
+  { lat: -1.9706, lng: 30.1044 },   // Kibeho (Rwanda)
+  { lat: -33.9249, lng: 18.4241 },  // Cape Town
+  { lat: 19.4326, lng: -99.1332 },  // Mexico City (Guadalupe)
+  { lat: 39.9163, lng: 32.8633 },   // Ankara/Turkey shrine area
+  { lat: 37.9755, lng: 23.7348 },   // Acropolis Athens
 ];
 
 // Rotating globe mesh
