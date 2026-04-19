@@ -363,31 +363,35 @@ const LocationsTab = () => {
     pdf.save(`itineraire-sacre-${startingCity?.split(',')[0] || 'voyage'}.pdf`);
   };
 
-  // Compute a single segment between two places for a given mode.
-  // Returns the segment data; throws on hard errors.
+  // Compute a single segment between two places using the active selectedModes set.
+  // - If any transit mode is selected, use Transitous with the union of allowed transit modes.
+  // - Otherwise, use Mapbox with the first locomotion mode.
   const computeSingleSegment = async (
     start: typeof plannedPlaces[number],
     end: typeof plannedPlaces[number],
-    mode: TransportMode
+    modes: TransportMode[]
   ): Promise<RouteSegment> => {
-    if (mode === 'plane' || mode === 'train' || mode === 'bus' || mode === 'metro') {
-      const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : mode === 'metro' ? 40 : 70;
+    const transitSelected = modes.filter((m) => TRANSIT_MODES.includes(m)) as Array<'plane' | 'train' | 'bus' | 'metro'>;
+    if (transitSelected.length > 0) {
       const transitous = await fetchTransitousRoute(
         [start.coordinates[0], start.coordinates[1]],
         [end.coordinates[0], end.coordinates[1]],
-        mode
+        transitSelected
       );
       if (transitous) {
         return { distance: transitous.distanceKm, duration: transitous.durationMin, transfers: transitous.transfers };
       }
+      const fastest = transitSelected.includes('plane') ? 'plane' : transitSelected.includes('train') ? 'train' : transitSelected.includes('bus') ? 'bus' : 'metro';
+      const speedKmh = fastest === 'plane' ? 750 : fastest === 'train' ? 200 : fastest === 'metro' ? 40 : 70;
       const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
       return { distance, duration: (distance / speedKmh) * 60 };
     }
 
+    const locomotion = (modes.find((m) => m === 'driving' || m === 'cycling' || m === 'walking') || 'driving') as 'driving' | 'cycling' | 'walking';
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token') || 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
     try {
       const coordinates = `${start.coordinates[0]},${start.coordinates[1]};${end.coordinates[0]},${end.coordinates[1]}`;
-      const url = `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/${locomotion}/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
       const response = await fetch(url);
       const data = await response.json();
       if (data.routes && data.routes[0]) {
@@ -396,14 +400,13 @@ const LocationsTab = () => {
     } catch (err) {
       logger.warn('Mapbox segment fetch failed', err);
     }
-    // Haversine fallback
     const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
-    const fallbackSpeed = mode === 'walking' ? 5 : mode === 'cycling' ? 18 : 80;
+    const fallbackSpeed = locomotion === 'walking' ? 5 : locomotion === 'cycling' ? 18 : 80;
     return { distance, duration: (distance / fallbackSpeed) * 60 };
   };
 
-  // Calculate route segments with distance and duration (per-segment modes)
-  const calculateRouteSegments = async (places: typeof plannedPlaces, modes: TransportMode[]) => {
+  // Calculate route segments using the global selectedModes set (same modes for every leg).
+  const calculateRouteSegments = async (places: typeof plannedPlaces) => {
     if (places.length < 2) {
       setRouteSegments([]);
       return;
@@ -412,8 +415,7 @@ const LocationsTab = () => {
     try {
       const segments: RouteSegment[] = [];
       for (let i = 0; i < places.length - 1; i++) {
-        const mode = modes[i] ?? transportMode;
-        const seg = await computeSingleSegment(places[i], places[i + 1], mode);
+        const seg = await computeSingleSegment(places[i], places[i + 1], selectedModes);
         segments.push(seg);
       }
       setRouteSegments(segments);
