@@ -129,9 +129,7 @@ const LocationsTab = () => {
   const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'transport'>>(new Set(['restaurant', 'lodging', 'transport']));
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   type TransportMode = 'plane' | 'train' | 'bus' | 'metro' | 'driving' | 'cycling' | 'walking';
-  const [transportMode, setTransportMode] = useState<TransportMode>('driving');
-  const [segmentModes, setSegmentModes] = useState<TransportMode[]>([]);
-  const [loadingSegmentIdx, setLoadingSegmentIdx] = useState<number | null>(null);
+  const [selectedModes, setSelectedModes] = useState<TransportMode[]>(['driving']);
   const transportLabel = (m: TransportMode) =>
     m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' : m === 'metro' ? 'Métro' :
     m === 'driving' ? 'Voiture' : m === 'cycling' ? 'Vélo' : 'Marche';
@@ -147,12 +145,19 @@ const LocationsTab = () => {
     }
   };
   const ALL_MODES: TransportMode[] = ['plane', 'train', 'bus', 'driving', 'metro', 'cycling', 'walking'];
+  const TRANSIT_MODES: TransportMode[] = ['plane', 'train', 'bus', 'metro'];
 
-  // "Set all" semantic when global mode changes from top grid
-  const handleGlobalModeChange = (mode: TransportMode) => {
-    setTransportMode(mode);
-    setSegmentModes(prev => prev.map(() => mode));
+  // Toggle a mode in/out of selection. Guard: never empty.
+  const toggleMode = (mode: TransportMode) => {
+    setSelectedModes((prev) => {
+      if (prev.includes(mode)) {
+        if (prev.length === 1) return prev; // keep at least one
+        return prev.filter((m) => m !== mode);
+      }
+      return [...prev, mode];
+    });
   };
+  const selectedLabel = () => selectedModes.map(transportLabel).join(' + ');
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [optimizedRouteState, setOptimizedRouteState] = useState<typeof plannedPlaces>([]);
