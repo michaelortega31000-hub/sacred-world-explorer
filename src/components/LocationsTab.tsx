@@ -912,7 +912,13 @@ const LocationsTab = () => {
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(p => p.name.toLowerCase().includes(query) || p.city?.toLowerCase().includes(query) || p.country.toLowerCase().includes(query));
     }
-    return filtered.sort((a, b) => a.name.localeCompare(b.name));
+    return filtered.sort((a, b) => {
+      const byCountry = (a.country || '').localeCompare(b.country || '', 'fr', { sensitivity: 'base' });
+      if (byCountry !== 0) return byCountry;
+      const byCity = (a.city || '').localeCompare(b.city || '', 'fr', { sensitivity: 'base' });
+      if (byCity !== 0) return byCity;
+      return (a.name || '').localeCompare(b.name || '', 'fr', { sensitivity: 'base' });
+    });
   }, [selectedContinent, selectedCountry, selectedCity, searchQuery, activeTab, plannedPlaces, allPlaces, placeCategory]);
 
   // Category counts
