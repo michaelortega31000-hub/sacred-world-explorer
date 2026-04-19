@@ -28,21 +28,24 @@ import { logger } from '@/lib/logger';
 async function fetchTransitousRoute(
   from: [number, number], // [lng, lat]
   to: [number, number],
-  mode: 'plane' | 'train' | 'bus' | 'metro'
+  transitModes: Array<'plane' | 'train' | 'bus' | 'metro'>
 ): Promise<{ distanceKm: number; durationMin: number; transfers: number } | null> {
   try {
-    const modeMap: Record<typeof mode, string> = {
-      plane: 'AIRPLANE,WALK',
-      train: 'RAIL,WALK',
-      bus: 'BUS,WALK',
-      metro: 'SUBWAY,WALK',
+    const tokenMap: Record<'plane' | 'train' | 'bus' | 'metro', string> = {
+      plane: 'AIRPLANE',
+      train: 'RAIL',
+      bus: 'BUS',
+      metro: 'SUBWAY',
     };
+    const tokens = Array.from(new Set(transitModes.map((m) => tokenMap[m])));
+    if (tokens.length === 0) return null;
+    const modeStr = [...tokens, 'WALK'].join(',');
     const params = new URLSearchParams({
       fromPlace: `${from[1]},${from[0]}`,
       toPlace: `${to[1]},${to[0]}`,
       time: new Date().toISOString(),
       arriveBy: 'false',
-      mode: modeMap[mode],
+      mode: modeStr,
     });
     const url = `https://api.transitous.org/api/v1/plan?${params.toString()}`;
     const ctrl = new AbortController();
