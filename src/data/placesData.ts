@@ -438,7 +438,7 @@ export const mockPlaces: Place[] = [
       18.1108,
       42.6414
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/Dubrovnik_Cathedral_2009.jpg/1024px-Dubrovnik_Cathedral_2009.jpg"
   },
   {
     "id": "hrv-2",
@@ -452,7 +452,7 @@ export const mockPlaces: Place[] = [
       15.8956,
       43.735
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/82/Sibenik_Cathedral_exterior.jpg/1024px-Sibenik_Cathedral_exterior.jpg"
   },
   {
     "id": "hrv-1",
@@ -466,7 +466,7 @@ export const mockPlaces: Place[] = [
       15.9795,
       45.8144
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/30/Zagreb_Cathedral_2018.jpg/1024px-Zagreb_Cathedral_2018.jpg"
   },
   {
     "id": "cyp-1",
@@ -536,7 +536,7 @@ export const mockPlaces: Place[] = [
       10.2105,
       56.1575
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/47/Aarhus_Cathedral_-_west_view.jpg/1024px-Aarhus_Cathedral_-_west_view.jpg"
   },
   {
     "id": "dnk-2",
@@ -550,7 +550,7 @@ export const mockPlaces: Place[] = [
       12.586,
       55.6846
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2e/Marmorkirken_Copenhagen.jpg/1024px-Marmorkirken_Copenhagen.jpg"
   },
   {
     "id": "dnk-1",
@@ -1237,7 +1237,7 @@ export const mockPlaces: Place[] = [
       13.3355,
       52.505
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4f/Kaiser-Wilhelm-Ged%C3%A4chtnis-Kirche_Berlin_2013.jpg/1024px-Kaiser-Wilhelm-Ged%C3%A4chtnis-Kirche_Berlin_2013.jpg"
   },
   {
     "id": "ger-1",
@@ -1279,7 +1279,7 @@ export const mockPlaces: Place[] = [
       9.4127,
       51.7769
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Schloss_Corvey_Westwerk.jpg/1024px-Schloss_Corvey_Westwerk.jpg"
   },
   {
     "id": "deu-4",
@@ -1293,7 +1293,7 @@ export const mockPlaces: Place[] = [
       9.9925,
       48.3986
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/56/Ulm_Cathedral_Tower_view.jpg/1024px-Ulm_Cathedral_Tower_view.jpg"
   },
   {
     "id": "gre-1",
@@ -1517,7 +1517,7 @@ export const mockPlaces: Place[] = [
       -7.9879,
       53.3267
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Clonmacnoise_-_panoramio.jpg/1024px-Clonmacnoise_-_panoramio.jpg"
   },
   {
     "id": "irl-3",
@@ -1531,7 +1531,7 @@ export const mockPlaces: Place[] = [
       -9.8908,
       53.5604
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/61/Kylemore_Abbey_2014.jpg/1024px-Kylemore_Abbey_2014.jpg"
   },
   {
     "id": "irl-2",
@@ -1545,7 +1545,7 @@ export const mockPlaces: Place[] = [
       -6.2713,
       53.3432
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4d/Christ_Church_Cathedral%2C_Dublin.jpg/1024px-Christ_Church_Cathedral%2C_Dublin.jpg"
   },
   {
     "id": "irl-1",
@@ -1559,7 +1559,7 @@ export const mockPlaces: Place[] = [
       -6.2714,
       53.3394
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/d/d4/St_Patricks_Cathedral_Dublin_Interior_2012_09_26.jpg/1024px-St_Patricks_Cathedral_Dublin_Interior_2012_09_26.jpg"
   },
   {
     "id": "isr-4",
@@ -1671,7 +1671,7 @@ export const mockPlaces: Place[] = [
       13.6099,
       43.4406
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/49/Loreto_Basilica_della_Santa_Casa.jpg/1024px-Loreto_Basilica_della_Santa_Casa.jpg"
   },
   {
     "id": "ita-2",
@@ -1727,7 +1727,7 @@ export const mockPlaces: Place[] = [
       11.8812,
       45.4015
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6f/Padova_Basilica_di_SantAntonio.jpg/1024px-Padova_Basilica_di_SantAntonio.jpg"
   },
   {
     "id": "ita-9",
@@ -1755,7 +1755,7 @@ export const mockPlaces: Place[] = [
       12.2035,
       44.4184
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Basilica_di_San_Francesco_%28Ravenna%29.jpg/1024px-Basilica_di_San_Francesco_%28Ravenna%29.jpg"
   },
   {
     "id": "ita-10",
@@ -2595,7 +2595,7 @@ export const mockPlaces: Place[] = [
       20.4689,
       44.7982
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Saint_Sava_Temple.jpg/1024px-Saint_Sava_Temple.jpg"
   },
   {
     "id": "srb-2",
@@ -2609,7 +2609,7 @@ export const mockPlaces: Place[] = [
       20.535,
       43.4894
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Studenica_monastery.jpg/1024px-Studenica_monastery.jpg"
   },
   {
     "id": "svk-1",
@@ -2847,7 +2847,7 @@ export const mockPlaces: Place[] = [
       -4.1476,
       40.5892
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3b/Real_Sitio_de_San_Lorenzo_de_El_Escorial.jpg/1024px-Real_Sitio_de_San_Lorenzo_de_El_Escorial.jpg"
   },
   {
     "id": "esp-4",
@@ -2917,7 +2917,7 @@ export const mockPlaces: Place[] = [
       7.4513,
       46.9472
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Bern_Cathedral.jpg/1024px-Bern_Cathedral.jpg"
   },
   {
     "id": "che-4",
@@ -2931,7 +2931,7 @@ export const mockPlaces: Place[] = [
       8.7462,
       47.1279
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/95/Kloster_Einsiedeln_2015.jpg/1024px-Kloster_Einsiedeln_2015.jpg"
   },
   {
     "id": "che-1",
@@ -2945,7 +2945,7 @@ export const mockPlaces: Place[] = [
       6.6356,
       46.5225
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9c/Cath%C3%A9drale_de_Lausanne_-_panorama.jpg/1024px-Cath%C3%A9drale_de_Lausanne_-_panorama.jpg"
   },
   {
     "id": "che-2",
@@ -2959,7 +2959,7 @@ export const mockPlaces: Place[] = [
       9.3767,
       47.4239
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/f/f5/Stiftsbezirk_St._Gallen_-_Kathedrale_und_Bibliothek.jpg/1024px-Stiftsbezirk_St._Gallen_-_Kathedrale_und_Bibliothek.jpg"
   },
   {
     "id": "tha-7",
@@ -3351,7 +3351,7 @@ export const mockPlaces: Place[] = [
       -1.576,
       54.7733
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0e/Durham_Cathedral._Interior_view._Diliff.jpg/1024px-Durham_Cathedral._Interior_view._Diliff.jpg"
   },
   {
     "id": "uk-7",
@@ -3365,7 +3365,7 @@ export const mockPlaces: Place[] = [
       -2.7184,
       51.1473
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/40/Glastonbury_Abbey_ruins.jpg/1024px-Glastonbury_Abbey_ruins.jpg"
   },
   {
     "id": "uk-8",
@@ -3379,7 +3379,7 @@ export const mockPlaces: Place[] = [
       -0.5366,
       53.2347
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c2/Lincoln_Cathedral_viewed_from_Lincoln_Castle.jpg/1024px-Lincoln_Cathedral_viewed_from_Lincoln_Castle.jpg"
   },
   {
     "id": "uk-5",
@@ -3393,7 +3393,7 @@ export const mockPlaces: Place[] = [
       -0.0983,
       51.5138
     ],
-    "imageUrl": "/images/place-placeholder.jpg"
+    "imageUrl": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1c/St_Pauls_aerial_%28cropped%29.jpg/1024px-St_Pauls_aerial_%28cropped%29.jpg"
   },
   {
     "id": "uk-2",
