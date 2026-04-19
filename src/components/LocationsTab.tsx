@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train, Plane, TrainFront, Bus, Footprints } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -81,7 +81,11 @@ const LocationsTab = () => {
   const [loadingPOIs, setLoadingPOIs] = useState(false);
   const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'transport'>>(new Set(['restaurant', 'lodging', 'transport']));
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
-  const [transportMode, setTransportMode] = useState<'driving' | 'cycling' | 'walking'>('driving');
+  type TransportMode = 'plane' | 'train' | 'bus' | 'driving' | 'cycling' | 'walking';
+  const [transportMode, setTransportMode] = useState<TransportMode>('driving');
+  const transportLabel = (m: TransportMode) =>
+    m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' :
+    m === 'driving' ? 'Voiture' : m === 'cycling' ? 'Vélo' : 'Marche';
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [optimizedRouteState, setOptimizedRouteState] = useState<typeof plannedPlaces>([]);
@@ -183,7 +187,7 @@ const LocationsTab = () => {
     pdf.setTextColor(0, 0, 0);
     pdf.text(`Ville de départ: ${startingCity}`, 20, yPosition);
     yPosition += 7;
-    pdf.text(`Mode de transport: ${transportMode === 'driving' ? 'Voiture' : transportMode === 'cycling' ? 'Vélo' : 'Marche'}`, 20, yPosition);
+    pdf.text(`Mode de transport: ${transportLabel(transportMode)}`, 20, yPosition);
     yPosition += 7;
     pdf.text(`Nombre d'étapes: ${optimizedRoute.length}`, 20, yPosition);
     yPosition += 10;
@@ -288,11 +292,26 @@ const LocationsTab = () => {
   };
 
   // Calculate route segments with distance and duration
-  const calculateRouteSegments = async (places: typeof plannedPlaces, mode: 'driving' | 'cycling' | 'walking') => {
+  const calculateRouteSegments = async (places: typeof plannedPlaces, mode: TransportMode) => {
     if (places.length < 2) {
       setRouteSegments([]);
       return;
     }
+
+    // Straight-line modes (Mapbox Directions doesn't support these)
+    if (mode === 'plane' || mode === 'train' || mode === 'bus') {
+      const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : 70;
+      const segments: RouteSegment[] = [];
+      for (let i = 0; i < places.length - 1; i++) {
+        const start = places[i];
+        const end = places[i + 1];
+        const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
+        segments.push({ distance, duration: (distance / speedKmh) * 60 });
+      }
+      setRouteSegments(segments);
+      return;
+    }
+
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token') || 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
     if (!mapboxToken) {
       console.warn('Mapbox token not configured');
@@ -1046,26 +1065,30 @@ const LocationsTab = () => {
                         <div className="flex-1">
                           <label className="text-sm font-medium mb-2 block">Mode de transport</label>
                           <div className="flex flex-col gap-2">
-                            <div className="flex gap-2">
-                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('driving')}>
-                                <Car className="w-4 h-4 mr-2" />
-                                Voiture
+                            <div className="grid grid-cols-3 gap-2">
+                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('plane')}>
+                                <Plane className="w-4 h-4 mr-1" /> Avion
                               </Button>
-                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('cycling')}>
-                                <Bike className="w-4 h-4 mr-2" />
-                                Vélo
+                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('train')}>
+                                <TrainFront className="w-4 h-4 mr-1" /> Train
+                              </Button>
+                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('bus')}>
+                                <Bus className="w-4 h-4 mr-1" /> Bus
+                              </Button>
+                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('driving')}>
+                                <Car className="w-4 h-4 mr-1" /> Voiture
+                              </Button>
+                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('cycling')}>
+                                <Bike className="w-4 h-4 mr-1" /> Vélo
+                              </Button>
+                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')}>
+                                <Footprints className="w-4 h-4 mr-1" /> Marche
                               </Button>
                             </div>
-                            <div className="flex gap-2">
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" className="flex-1" onClick={() => setTransportMode('walking')}>
-                                <PersonStanding className="w-4 h-4 mr-2" />
-                                Marche
-                              </Button>
-                              {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="flex-1 gap-2">
-                                  <Navigation className="w-4 h-4" />
-                                  {showOptimizedRoute ? 'Masquer' : 'Itinéraire'}
-                                </Button>}
-                            </div>
+                            {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="w-full gap-2">
+                                <Navigation className="w-4 h-4" />
+                                {showOptimizedRoute ? 'Masquer l\'itinéraire' : 'Afficher l\'itinéraire'}
+                              </Button>}
                           </div>
                         </div>
                       </div>
