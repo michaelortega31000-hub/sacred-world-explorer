@@ -308,6 +308,43 @@ const TripPlannerTab = () => {
       .filter((p): p is NonNullable<typeof p> => Boolean(p));
   }, [proposedOrder, tripPlaces]);
 
+  // === Transport modes + ETA ===
+  const TRANSPORT_MODES = [
+    { id: 'plane' as const, label: 'Avion', Icon: Plane, speed: 750 },
+    { id: 'train' as const, label: 'Train', Icon: TrainFront, speed: 200 },
+    { id: 'bus' as const, label: 'Bus', Icon: Bus, speed: 70 },
+    { id: 'car' as const, label: 'Voiture', Icon: Car, speed: 90 },
+    { id: 'bike' as const, label: 'Vélo', Icon: Bike, speed: 18 },
+    { id: 'walk' as const, label: 'Marche', Icon: Footprints, speed: 5 },
+  ];
+
+  const totalDistanceKm = useMemo(() => {
+    if (tripPlaces.length < 2) return 0;
+    let sum = 0;
+    for (let i = 0; i < tripPlaces.length - 1; i++) {
+      const a = tripPlaces[i];
+      const b = tripPlaces[i + 1];
+      sum += calculateDistanceInKm(a.coordinates[1], a.coordinates[0], b.coordinates[1], b.coordinates[0]);
+    }
+    return sum;
+  }, [tripPlaces]);
+
+  const formatDuration = (hours: number) => {
+    if (!isFinite(hours) || hours <= 0) return '—';
+    if (hours < 1) return `${Math.round(hours * 60)} min`;
+    if (hours >= 24) {
+      const d = Math.floor(hours / 24);
+      const h = Math.round(hours - d * 24);
+      return `${d}j ${h}h`;
+    }
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    return m > 0 ? `${h}h ${String(m).padStart(2, '0')}min` : `${h}h`;
+  };
+
+  const selectedMode = TRANSPORT_MODES.find(m => m.id === transportMode)!;
+  const estimatedHours = totalDistanceKm / selectedMode.speed;
+
   return (
     <div className="relative h-full overflow-y-auto">
       {/* Globe 3D en arrière-plan - fixed position */}
