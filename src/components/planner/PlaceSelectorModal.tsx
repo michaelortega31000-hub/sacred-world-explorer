@@ -60,7 +60,7 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
     setSearch('');
   }, [open, initialCountry]);
 
-  const allCountries = useMemo(() => getAllCountries(), []);
+  const allCountries = useMemo(() => [...getAllCountries()].sort((a, b) => a.localeCompare(b, 'fr')), []);
 
   const countriesForContinent = useMemo(() => {
     if (!continent) return [];
@@ -72,7 +72,9 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
 
   const placesForCountry: Place[] = useMemo(() => {
     if (!country) return [];
-    return getPlacesByCountry(country);
+    return [...getPlacesByCountry(country)].sort((a, b) =>
+      a.name.localeCompare(b.name, 'fr')
+    );
   }, [country]);
 
   const goBack = () => {
