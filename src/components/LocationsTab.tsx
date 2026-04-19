@@ -4,7 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train, Plane, TrainFront, Bus, Footprints } from 'lucide-react';
+import { MapPin, Search, Calendar, Globe2, Route, Navigation, ArrowRight, Utensils, Star, Phone, ExternalLink, Hotel, Filter, Plus, X, Info, Car, Bike, PersonStanding, Download, RotateCcw, Building2, Church, Train, Plane, TrainFront, Bus, Footprints, Loader2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getAllContinents, getCountriesByContinent, getCitiesByCountry, getContinent } from '@/data/placesData';
 import { usePlaces } from '@/hooks/usePlaces';
@@ -300,15 +300,20 @@ const LocationsTab = () => {
 
     // Straight-line modes (Mapbox Directions doesn't support these)
     if (mode === 'plane' || mode === 'train' || mode === 'bus') {
-      const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : 70;
-      const segments: RouteSegment[] = [];
-      for (let i = 0; i < places.length - 1; i++) {
-        const start = places[i];
-        const end = places[i + 1];
-        const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
-        segments.push({ distance, duration: (distance / speedKmh) * 60 });
+      setLoadingRouteInfo(true);
+      try {
+        const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : 70;
+        const segments: RouteSegment[] = [];
+        for (let i = 0; i < places.length - 1; i++) {
+          const start = places[i];
+          const end = places[i + 1];
+          const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
+          segments.push({ distance, duration: (distance / speedKmh) * 60 });
+        }
+        setRouteSegments(segments);
+      } finally {
+        setLoadingRouteInfo(false);
       }
-      setRouteSegments(segments);
       return;
     }
 
@@ -1070,23 +1075,23 @@ const LocationsTab = () => {
                           <label className="text-sm font-medium mb-2 block">Mode de transport</label>
                           <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-3 gap-2">
-                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('plane')}>
-                                <Plane className="w-4 h-4 mr-1" /> Avion
+                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('plane')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'plane' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plane className="w-4 h-4 mr-1" />} Avion
                               </Button>
-                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('train')}>
-                                <TrainFront className="w-4 h-4 mr-1" /> Train
+                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('train')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'train' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <TrainFront className="w-4 h-4 mr-1" />} Train
                               </Button>
-                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('bus')}>
-                                <Bus className="w-4 h-4 mr-1" /> Bus
+                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('bus')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'bus' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bus className="w-4 h-4 mr-1" />} Bus
                               </Button>
-                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('driving')}>
-                                <Car className="w-4 h-4 mr-1" /> Voiture
+                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('driving')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'driving' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Car className="w-4 h-4 mr-1" />} Voiture
                               </Button>
-                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('cycling')}>
-                                <Bike className="w-4 h-4 mr-1" /> Vélo
+                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('cycling')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'cycling' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bike className="w-4 h-4 mr-1" />} Vélo
                               </Button>
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')}>
-                                <Footprints className="w-4 h-4 mr-1" /> Marche
+                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'walking' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Footprints className="w-4 h-4 mr-1" />} Marche
                               </Button>
                             </div>
                             {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="w-full gap-2">
