@@ -261,12 +261,6 @@ const LocationsTab = () => {
     yPosition += 7;
     pdf.text(`Modes autorisés: ${selectedLabel()}`, 20, yPosition);
     yPosition += 7;
-        pdf.text(`  • Étape ${i + 1} → ${i + 2} : ${transportLabel(m)}`, 25, yPosition);
-        yPosition += 5;
-      });
-      pdf.setFontSize(12);
-      yPosition += 2;
-    }
     pdf.text(`Nombre d'étapes: ${optimizedRoute.length}`, 20, yPosition);
     yPosition += 10;
 
