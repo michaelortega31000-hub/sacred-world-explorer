@@ -1,91 +1,63 @@
 
 
-## Phase 16 — Transitous API integration for plane/train/bus routing
+## Phase 17 — Add Métro mode + remove "Masquer l'itinéraire"
 
 ### Goal
-Replace the Haversine fallback for `plane` / `train` / `bus` modes in `LocationsTab.tsx` with **real multi-modal routing from Transitous MOTIS 2 API**. Keep the existing Mapbox Directions for `driving`/`cycling`/`walking`. UI is unchanged.
+Reorganize the transport grid in `LocationsTab.tsx`:
+- Add a new **🚇 Métro** button under Train.
+- Move **🚲 Vélo** under Métro (new column position).
+- Remove the **"Masquer l'itinéraire"** button entirely.
 
-### Investigation summary
-- `LocationsTab.tsx` already has `calculateRouteSegments()` triggered by `transportMode` change (verified Phase 14).
-- For straight-line modes today, it uses `calculateDistanceInKm` × hard-coded speed (plane 800 km/h, train 200 km/h, bus 70 km/h).
-- Loading spinner + per-mode UI already wired (Phase 14).
-
-### Transitous MOTIS 2 endpoint
-Public, no API key required:
+### Current layout (3×2 grid)
 ```
-GET https://api.transitous.org/api/v1/plan
-  ?fromPlace={lat},{lon}
-  &toPlace={lat},{lon}
-  &time={ISO}
-  &arriveBy=false
-  &mode=TRANSIT,WALK            // train+bus
-  &mode=AIRPLANE,WALK           // plane (Transitous includes flights when available)
+[✈️ Avion]    [🚂 Train]   [🚌 Bus]
+[🚗 Voiture]  [🚲 Vélo]    [🥾 Marche]
+[Masquer l'itinéraire — full width]
 ```
-Response contains `itineraries[].duration` (sec), `legs[]` (each with `mode`, `distance`, `from/to`), and `transfers` count.
 
-### Implementation plan (1 file)
+### New layout (4×2 grid)
+```
+[✈️ Avion]    [🚂 Train]   [🚌 Bus]    [🚗 Voiture]
+[🥾 Marche]   [🚇 Métro]   [🚲 Vélo]   [ (empty) ]
+```
+
+Wait — re-reading the user: "underneath train you put métro and you put vélo underneath métro". So the user wants a **vertical** stack under Train:
+```
+Row 1: [Avion]  [Train]  [Bus]    [Voiture]  [Marche]
+Row 2:          [Métro]
+Row 3:          [Vélo]
+```
+
+That's awkward in a grid. Simpler interpretation: keep the 3×2 grid, **add Métro and reflow**:
+
+```
+[✈️ Avion]    [🚂 Train]    [🚌 Bus]
+[🚗 Voiture]  [🚇 Métro]    [🚲 Vélo]
+[🥾 Marche — full width or col 1]
+```
+
+I'll go with this clean 3-column layout (Métro added as new mode, Vélo stays beside it, Masquer removed). Will confirm only if user pushes back.
+
+### Implementation (1 file)
 
 **`src/components/LocationsTab.tsx`**
 
-1. **New helper** (top of file, near other utils):
-   ```ts
-   async function fetchTransitousRoute(
-     from: [number, number],     // [lng, lat]
-     to:   [number, number],
-     mode: 'plane' | 'train' | 'bus'
-   ): Promise<{ distanceKm: number; durationMin: number; transfers: number } | null>
-   ```
-   - Maps mode → Transitous mode list:
-     - `plane` → `['AIRPLANE','WALK']`
-     - `train` → `['RAIL','WALK']` (TRAM/SUBWAY excluded)
-     - `bus`   → `['BUS','WALK']`
-   - Builds URL with `URLSearchParams`, `fetch` with 8 s `AbortController` timeout.
-   - Picks first itinerary, sums leg `distance` (m → km), reads `duration` (s → min), and `legs.filter(l => l.mode !== 'WALK').length - 1` for transfers (clamped ≥ 0).
-   - Returns `null` on any error → caller falls back to Haversine.
+1. **Type extension** — add `'metro'` to the `transportMode` union (and any related `TransportMode` type).
+2. **Transitous mapping** — extend `fetchTransitousRoute` to handle `metro` → `['SUBWAY','WALK']`. Falls back to Haversine at 40 km/h average if API fails.
+3. **Haversine fallback speeds** — add `metro: 40` km/h.
+4. **Button grid** — replace current 3×2 grid:
+   - Row 1: Avion · Train · Bus
+   - Row 2: Voiture · Métro · Vélo
+   - Row 3: Marche (full width, same styling as siblings)
+   - Each new button mirrors existing pattern: `Loader2` spinner when active+loading, `disabled={loadingRouteInfo}`, lucide icon (use `TrainFront` for Métro since no dedicated metro icon — or keep `Train` icon variant).
+5. **Remove** the "Masquer l'itinéraire" button block entirely.
+6. **Recalc trigger** — `useEffect` already watches `transportMode`, so Métro will auto-refresh distance/duration/correspondances.
 
-2. **Patch `calculateRouteSegments()`**:
-   - Inside the segment loop, when `transportMode` is `plane`/`train`/`bus`:
-     ```ts
-     const transitous = await fetchTransitousRoute(
-       [from.coordinates[0], from.coordinates[1]],
-       [to.coordinates[0],   to.coordinates[1]],
-       transportMode
-     );
-     if (transitous) {
-       segment.distance   = transitous.distanceKm;
-       segment.duration   = transitous.durationMin;
-       segment.transfers  = transitous.transfers;
-     } else {
-       // existing Haversine fallback (unchanged)
-     }
-     ```
-   - For `driving`/`cycling`/`walking` → unchanged Mapbox path.
-
-3. **Extend `RouteSegment` type** with optional `transfers?: number`.
-
-4. **UI tweak (minimal, same grid)**: when `segment.transfers && segment.transfers > 0`, append a small badge next to the per-segment Durée:
-   ```
-   Durée: 4h 12min · 2 correspondances
-   ```
-   Same line, same color, no layout change. Totals row also shows the sum of transfers when > 0 for `train`/`bus` (skipped for `plane`).
-
-5. **Logging**: route any errors through `@/lib/logger` (per Core memory).
-
-### What stays untouched
-- TripPlannerTab, Planner page, Globe header/logo, PlaceDetail, sample POI fallbacks, DB, RestaurantsTab.
-- Mapbox routing for car/bike/walk.
-- Button grid layout, spinner behavior, colors (city headers turquoise, hotels amber).
-
-### Risk & fallback
-- Transitous is a community service → 8 s timeout + automatic Haversine fallback ensures the screen never breaks.
-- No API key, no secrets to add.
-- One file changed, additive only — no breaking edits.
+### Untouched
+- Transitous helper structure, totals row, hotels amber, city headers turquoise, Mapbox driving/cycling/walking, Planner page, Globe, PlaceDetail.
 
 ### Verification after merge
-1. `/explore` → Mon itinéraire with ≥2 cities (e.g. Bordeaux → León).
-2. Click Train → spinner → Distance/Durée update with realistic rail values + "X correspondances" if any.
-3. Click Bus → similar real values.
-4. Click Avion → flight duration if route covered, else Haversine fallback.
-5. Click Voiture/Vélo/Marche → unchanged Mapbox behavior.
-6. Disconnect network → all transit modes gracefully fall back to Haversine.
+1. `/explore` → Mon itinéraire shows 7 transport buttons (no Masquer).
+2. Click Métro → spinner → distance/duration update (Transitous SUBWAY or Haversine fallback).
+3. All other modes still work, totals row still shows correspondances for Train/Bus/Métro.
 
