@@ -545,8 +545,10 @@ const LocationsTab = () => {
           // Build OR query for all search terms
           let query = supabase
             .from('restaurants')
-            .select('id, name, address, city, coordinates')
-            .eq('verified', true);
+            .select('id, name, address, city, coordinates, type')
+            .eq('verified', true)
+            .not('type', 'cs', '{halal}')
+            .not('type', 'cs', '{kosher}');
           
           // Use primary city term for search (Supabase doesn't support OR easily in ilike)
           if (searchTerms.length > 0) {
@@ -723,7 +725,11 @@ const LocationsTab = () => {
         error
       } = await supabase.from('restaurants').select('*').in('id', userProgress.savedRestaurants);
       if (!error && data) {
-        setSavedRestaurants(data as SavedRestaurant[]);
+        // Defensive: hide halal/kosher even if previously saved
+        const filtered = (data as SavedRestaurant[]).filter(
+          (r: any) => !r.type?.includes('halal') && !r.type?.includes('kosher')
+        );
+        setSavedRestaurants(filtered);
       }
     };
     fetchRestaurants();
