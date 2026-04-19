@@ -3648,3 +3648,68 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/national-shrine-dc.jpg"
   }
 ];
+
+// ============================================================
+// Geo helpers (continent / country / city) used by LocationsTab
+// ============================================================
+
+const COUNTRY_TO_CONTINENT: Record<string, string> = {
+  // Europe
+  Albania: 'Europe', Austria: 'Europe', Belgium: 'Europe', Bulgaria: 'Europe',
+  Croatia: 'Europe', Cyprus: 'Europe', 'Czech Republic': 'Europe', Denmark: 'Europe',
+  Estonia: 'Europe', Finland: 'Europe', France: 'Europe', Germany: 'Europe',
+  Greece: 'Europe', Hungary: 'Europe', Iceland: 'Europe', Ireland: 'Europe',
+  Italy: 'Europe', Latvia: 'Europe', Lithuania: 'Europe', Luxembourg: 'Europe',
+  Malta: 'Europe', Netherlands: 'Europe', Norway: 'Europe', Poland: 'Europe',
+  Portugal: 'Europe', Romania: 'Europe', Russia: 'Europe', Serbia: 'Europe',
+  Slovakia: 'Europe', Slovenia: 'Europe', Spain: 'Europe', Sweden: 'Europe',
+  Switzerland: 'Europe', Turkey: 'Europe', 'United Kingdom': 'Europe',
+  // Asia
+  Cambodia: 'Asia', China: 'Asia', India: 'Asia', Indonesia: 'Asia',
+  Iran: 'Asia', Israel: 'Asia', Japan: 'Asia', Jordan: 'Asia',
+  Myanmar: 'Asia', Nepal: 'Asia', Philippines: 'Asia', 'Saudi Arabia': 'Asia',
+  Thailand: 'Asia', Tibet: 'Asia', 'United Arab Emirates': 'Asia',
+  // Africa
+  Algeria: 'Africa', Egypt: 'Africa', Ethiopia: 'Africa', Morocco: 'Africa',
+  'South Africa': 'Africa', Tunisia: 'Africa',
+  // Americas
+  Argentina: 'South America', Brazil: 'South America', Colombia: 'South America',
+  Ecuador: 'South America', Peru: 'South America',
+  Canada: 'North America', Mexico: 'North America', 'United States': 'North America',
+  // Oceania
+  Australia: 'Oceania', 'New Zealand': 'Oceania',
+};
+
+export const getContinent = (country: string | undefined | null): string => {
+  if (!country) return 'Autres';
+  return COUNTRY_TO_CONTINENT[country] ?? 'Autres';
+};
+
+const frCmp = (a: string, b: string) =>
+  a.localeCompare(b, 'fr', { sensitivity: 'base' });
+
+export const getAllContinents = (): string[] => {
+  const set = new Set<string>();
+  for (const p of mockPlaces) set.add(getContinent(p.country));
+  return Array.from(set).sort(frCmp);
+};
+
+export const getCountriesByContinent = (continent: string): string[] => {
+  const set = new Set<string>();
+  for (const p of mockPlaces) {
+    if (!continent || continent === 'all' || getContinent(p.country) === continent) {
+      if (p.country) set.add(p.country);
+    }
+  }
+  return Array.from(set).sort(frCmp);
+};
+
+export const getCitiesByCountry = (country: string): string[] => {
+  const set = new Set<string>();
+  for (const p of mockPlaces) {
+    if (!country || country === 'all' || p.country === country) {
+      if (p.city) set.add(p.city);
+    }
+  }
+  return Array.from(set).sort(frCmp);
+};
