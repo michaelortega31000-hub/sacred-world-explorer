@@ -1,6 +1,5 @@
 import { useMemo, useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Input } from '@/components/ui/input';
 import { ChevronLeft, ChevronRight, Search, MapPin, Cross } from 'lucide-react';
 import { getPlacesByCountry, getAllCountries, getContinent } from '@/data/placesData';
@@ -145,7 +144,10 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
           </p>
         </DialogHeader>
 
-        <ScrollArea className="max-h-[calc(85vh-130px)]">
+        <div
+          className="planner-scroll overflow-y-auto"
+          style={{ maxHeight: 'calc(85vh - 130px)' }}
+        >
           <div className="p-5">
             {/* Step 1: Continent */}
             {step === 1 && (
@@ -221,10 +223,7 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
                     Aucun lieu disponible pour ce pays pour l'instant.
                   </div>
                 ) : (
-                  <div
-                    className="space-y-3 overflow-y-auto pr-2 planner-scroll"
-                    style={{ maxHeight: 'calc(85vh - 220px)' }}
-                  >
+                  <div className="space-y-3 pr-1">
                     {placesForCountry.map((p) => (
                       <button
                         key={p.id}
@@ -291,7 +290,7 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
               </div>
             )}
           </div>
-        </ScrollArea>
+        </div>
       </DialogContent>
     </Dialog>
   );
