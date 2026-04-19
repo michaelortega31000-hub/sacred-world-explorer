@@ -1244,7 +1244,7 @@ const LocationsTab = () => {
                               })}
                             </div>
                             <p className="text-xs text-muted-foreground">
-                              Modes sélectionnés : <span className="font-medium text-foreground">{selectedLabel()}</span>
+                              Modes sélectionnés : <span className="font-semibold text-[#F4C542]">{selectedLabel()}</span>
                             </p>
                           </div>
                         </div>
@@ -1254,12 +1254,17 @@ const LocationsTab = () => {
 
                   {/* Optimized Route Display */}
                   {showOptimizedRoute && startingCity && displayRoute.length > 0 && <>
-                       <Card className="border-primary/30">
+                       <Card
+                        className="border-2 border-[#F4C542]/40 backdrop-blur-md shadow-[0_8px_40px_rgba(244,197,66,0.15)]"
+                        style={{
+                          background: 'linear-gradient(135deg, rgba(244,197,66,0.06) 0%, rgba(20,43,79,0.6) 50%, rgba(14,27,63,0.85) 100%)',
+                        }}
+                       >
                         <CardHeader>
                           <div className="flex items-center justify-between">
                             <div>
-                              <CardTitle className="flex items-center gap-2 text-primary">
-                                <Route className="w-5 h-5" />
+                              <CardTitle className="flex items-center gap-2 text-[#F4C542]" style={{ filter: 'drop-shadow(0 0 8px rgba(244,197,66,0.4))' }}>
+                                <Route className="w-6 h-6" />
                                 Itinéraire optimisé ({displayRoute.length} étapes)
                               </CardTitle>
                               <CardDescription>
