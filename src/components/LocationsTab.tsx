@@ -28,21 +28,24 @@ import { logger } from '@/lib/logger';
 async function fetchTransitousRoute(
   from: [number, number], // [lng, lat]
   to: [number, number],
-  mode: 'plane' | 'train' | 'bus' | 'metro'
+  transitModes: Array<'plane' | 'train' | 'bus' | 'metro'>
 ): Promise<{ distanceKm: number; durationMin: number; transfers: number } | null> {
   try {
-    const modeMap: Record<typeof mode, string> = {
-      plane: 'AIRPLANE,WALK',
-      train: 'RAIL,WALK',
-      bus: 'BUS,WALK',
-      metro: 'SUBWAY,WALK',
+    const tokenMap: Record<'plane' | 'train' | 'bus' | 'metro', string> = {
+      plane: 'AIRPLANE',
+      train: 'RAIL',
+      bus: 'BUS',
+      metro: 'SUBWAY',
     };
+    const tokens = Array.from(new Set(transitModes.map((m) => tokenMap[m])));
+    if (tokens.length === 0) return null;
+    const modeStr = [...tokens, 'WALK'].join(',');
     const params = new URLSearchParams({
       fromPlace: `${from[1]},${from[0]}`,
       toPlace: `${to[1]},${to[0]}`,
       time: new Date().toISOString(),
       arriveBy: 'false',
-      mode: modeMap[mode],
+      mode: modeStr,
     });
     const url = `https://api.transitous.org/api/v1/plan?${params.toString()}`;
     const ctrl = new AbortController();
@@ -126,9 +129,7 @@ const LocationsTab = () => {
   const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'transport'>>(new Set(['restaurant', 'lodging', 'transport']));
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
   type TransportMode = 'plane' | 'train' | 'bus' | 'metro' | 'driving' | 'cycling' | 'walking';
-  const [transportMode, setTransportMode] = useState<TransportMode>('driving');
-  const [segmentModes, setSegmentModes] = useState<TransportMode[]>([]);
-  const [loadingSegmentIdx, setLoadingSegmentIdx] = useState<number | null>(null);
+  const [selectedModes, setSelectedModes] = useState<TransportMode[]>(['driving']);
   const transportLabel = (m: TransportMode) =>
     m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' : m === 'metro' ? 'Métro' :
     m === 'driving' ? 'Voiture' : m === 'cycling' ? 'Vélo' : 'Marche';
@@ -144,12 +145,19 @@ const LocationsTab = () => {
     }
   };
   const ALL_MODES: TransportMode[] = ['plane', 'train', 'bus', 'driving', 'metro', 'cycling', 'walking'];
+  const TRANSIT_MODES: TransportMode[] = ['plane', 'train', 'bus', 'metro'];
 
-  // "Set all" semantic when global mode changes from top grid
-  const handleGlobalModeChange = (mode: TransportMode) => {
-    setTransportMode(mode);
-    setSegmentModes(prev => prev.map(() => mode));
+  // Toggle a mode in/out of selection. Guard: never empty.
+  const toggleMode = (mode: TransportMode) => {
+    setSelectedModes((prev) => {
+      if (prev.includes(mode)) {
+        if (prev.length === 1) return prev; // keep at least one
+        return prev.filter((m) => m !== mode);
+      }
+      return [...prev, mode];
+    });
   };
+  const selectedLabel = () => selectedModes.map(transportLabel).join(' + ');
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
   const [optimizedRouteState, setOptimizedRouteState] = useState<typeof plannedPlaces>([]);
@@ -203,11 +211,7 @@ const LocationsTab = () => {
     reorderTrip(newRoute.map(p => p.id));
 
     // Recalculate segments with new order
-    const newModes = newRoute.length > 1
-      ? Array.from({ length: newRoute.length - 1 }, (_, i) => segmentModes[i] ?? transportMode)
-      : [];
-    setSegmentModes(newModes);
-    calculateRouteSegments(newRoute, newModes);
+    calculateRouteSegments(newRoute);
   };
   const handleDragEnd = () => {
     setDraggedIndex(null);
@@ -255,21 +259,8 @@ const LocationsTab = () => {
     pdf.setTextColor(0, 0, 0);
     pdf.text(`Ville de départ: ${startingCity}`, 20, yPosition);
     yPosition += 7;
-    const allSame = segmentModes.length > 0 && segmentModes.every(m => m === segmentModes[0]);
-    if (segmentModes.length === 0 || allSame) {
-      pdf.text(`Mode de transport: ${transportLabel(segmentModes[0] ?? transportMode)}`, 20, yPosition);
-      yPosition += 7;
-    } else {
-      pdf.text('Mode de transport: mixte', 20, yPosition);
-      yPosition += 6;
-      pdf.setFontSize(10);
-      segmentModes.forEach((m, i) => {
-        pdf.text(`  • Étape ${i + 1} → ${i + 2} : ${transportLabel(m)}`, 25, yPosition);
-        yPosition += 5;
-      });
-      pdf.setFontSize(12);
-      yPosition += 2;
-    }
+    pdf.text(`Modes autorisés: ${selectedLabel()}`, 20, yPosition);
+    yPosition += 7;
     pdf.text(`Nombre d'étapes: ${optimizedRoute.length}`, 20, yPosition);
     yPosition += 10;
 
@@ -372,31 +363,35 @@ const LocationsTab = () => {
     pdf.save(`itineraire-sacre-${startingCity?.split(',')[0] || 'voyage'}.pdf`);
   };
 
-  // Compute a single segment between two places for a given mode.
-  // Returns the segment data; throws on hard errors.
+  // Compute a single segment between two places using the active selectedModes set.
+  // - If any transit mode is selected, use Transitous with the union of allowed transit modes.
+  // - Otherwise, use Mapbox with the first locomotion mode.
   const computeSingleSegment = async (
     start: typeof plannedPlaces[number],
     end: typeof plannedPlaces[number],
-    mode: TransportMode
+    modes: TransportMode[]
   ): Promise<RouteSegment> => {
-    if (mode === 'plane' || mode === 'train' || mode === 'bus' || mode === 'metro') {
-      const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : mode === 'metro' ? 40 : 70;
+    const transitSelected = modes.filter((m) => TRANSIT_MODES.includes(m)) as Array<'plane' | 'train' | 'bus' | 'metro'>;
+    if (transitSelected.length > 0) {
       const transitous = await fetchTransitousRoute(
         [start.coordinates[0], start.coordinates[1]],
         [end.coordinates[0], end.coordinates[1]],
-        mode
+        transitSelected
       );
       if (transitous) {
         return { distance: transitous.distanceKm, duration: transitous.durationMin, transfers: transitous.transfers };
       }
+      const fastest = transitSelected.includes('plane') ? 'plane' : transitSelected.includes('train') ? 'train' : transitSelected.includes('bus') ? 'bus' : 'metro';
+      const speedKmh = fastest === 'plane' ? 750 : fastest === 'train' ? 200 : fastest === 'metro' ? 40 : 70;
       const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
       return { distance, duration: (distance / speedKmh) * 60 };
     }
 
+    const locomotion = (modes.find((m) => m === 'driving' || m === 'cycling' || m === 'walking') || 'driving') as 'driving' | 'cycling' | 'walking';
     const mapboxToken = import.meta.env.VITE_MAPBOX_TOKEN || import.meta.env.VITE_MAPBOX_PUBLIC_TOKEN || localStorage.getItem('mapbox_token') || 'pk.eyJ1Ijoic2FjcmVkd29sZCIsImEiOiJjbWc3eXQ1YWIwMWxlMmtzaHppZWxkMzhnIn0.Rdmr8Vf5k04a-Z-8M0Uvaw';
     try {
       const coordinates = `${start.coordinates[0]},${start.coordinates[1]};${end.coordinates[0]},${end.coordinates[1]}`;
-      const url = `https://api.mapbox.com/directions/v5/mapbox/${mode}/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
+      const url = `https://api.mapbox.com/directions/v5/mapbox/${locomotion}/${coordinates}?access_token=${mapboxToken}&geometries=geojson`;
       const response = await fetch(url);
       const data = await response.json();
       if (data.routes && data.routes[0]) {
@@ -405,14 +400,13 @@ const LocationsTab = () => {
     } catch (err) {
       logger.warn('Mapbox segment fetch failed', err);
     }
-    // Haversine fallback
     const distance = calculateDistanceInKm(start.coordinates[1], start.coordinates[0], end.coordinates[1], end.coordinates[0]);
-    const fallbackSpeed = mode === 'walking' ? 5 : mode === 'cycling' ? 18 : 80;
+    const fallbackSpeed = locomotion === 'walking' ? 5 : locomotion === 'cycling' ? 18 : 80;
     return { distance, duration: (distance / fallbackSpeed) * 60 };
   };
 
-  // Calculate route segments with distance and duration (per-segment modes)
-  const calculateRouteSegments = async (places: typeof plannedPlaces, modes: TransportMode[]) => {
+  // Calculate route segments using the global selectedModes set (same modes for every leg).
+  const calculateRouteSegments = async (places: typeof plannedPlaces) => {
     if (places.length < 2) {
       setRouteSegments([]);
       return;
@@ -421,8 +415,7 @@ const LocationsTab = () => {
     try {
       const segments: RouteSegment[] = [];
       for (let i = 0; i < places.length - 1; i++) {
-        const mode = modes[i] ?? transportMode;
-        const seg = await computeSingleSegment(places[i], places[i + 1], mode);
+        const seg = await computeSingleSegment(places[i], places[i + 1], selectedModes);
         segments.push(seg);
       }
       setRouteSegments(segments);
@@ -434,26 +427,6 @@ const LocationsTab = () => {
     }
   };
 
-  // Recompute a single segment after the user changes its mode
-  const recalcSegment = async (index: number, newMode: TransportMode) => {
-    setSegmentModes(prev => {
-      const next = [...prev];
-      next[index] = newMode;
-      return next;
-    });
-    if (!displayRoute || index >= displayRoute.length - 1) return;
-    setLoadingSegmentIdx(index);
-    try {
-      const seg = await computeSingleSegment(displayRoute[index], displayRoute[index + 1], newMode);
-      setRouteSegments(prev => {
-        const next = [...prev];
-        next[index] = seg;
-        return next;
-      });
-    } finally {
-      setLoadingSegmentIdx(null);
-    }
-  };
   const continents = useMemo(() => getAllContinents(), []);
   const countries = useMemo(() => {
     if (selectedContinent === 'all') return [];
@@ -781,12 +754,7 @@ const LocationsTab = () => {
     }
     
     if (showOptimizedRoute && displayRoute.length >= 2) {
-      const modes = Array.from({ length: displayRoute.length - 1 }, (_, i) => segmentModes[i] ?? transportMode);
-      // Keep segmentModes length in sync with displayRoute
-      if (modes.length !== segmentModes.length) {
-        setSegmentModes(modes);
-      }
-      calculateRouteSegments(displayRoute, modes);
+      calculateRouteSegments(displayRoute);
       
       // Debounce POI search to avoid excessive calls
       poiSearchTimeoutRef.current = setTimeout(() => {
@@ -809,7 +777,7 @@ const LocationsTab = () => {
         poiSearchAbortRef.current.abort();
       }
     };
-  }, [displayRoute, showOptimizedRoute, transportMode, searchPOIsAlongRoute]);
+  }, [displayRoute, showOptimizedRoute, selectedModes, searchPOIsAlongRoute]);
 
   // Get unique cities from planned places
   const tripCities = useMemo(() => {
@@ -1170,32 +1138,32 @@ const LocationsTab = () => {
                           </Select>
                         </div>
                         <div className="flex-1">
-                          <label className="text-sm font-medium mb-1 block">Mode de transport</label>
-                          <p className="text-xs text-muted-foreground mb-2">Appliquer à tous les trajets</p>
+                          <label className="text-sm font-medium mb-1 block">Modes de transport</label>
+                          <p className="text-xs text-muted-foreground mb-2">Sélectionnez un ou plusieurs modes — appliqués à tous les trajets</p>
                           <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-3 gap-2">
-                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('plane')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'plane' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plane className="w-4 h-4 mr-1" />} Avion
-                              </Button>
-                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('train')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'train' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <TrainFront className="w-4 h-4 mr-1" />} Train
-                              </Button>
-                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('bus')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'bus' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bus className="w-4 h-4 mr-1" />} Bus
-                              </Button>
-                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('driving')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'driving' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Car className="w-4 h-4 mr-1" />} Voiture
-                              </Button>
-                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('metro')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'metro' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Train className="w-4 h-4 mr-1" />} Métro
-                              </Button>
-                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('cycling')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'cycling' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bike className="w-4 h-4 mr-1" />} Vélo
-                              </Button>
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('walking')} disabled={loadingRouteInfo} className="col-span-3">
-                                {loadingRouteInfo && transportMode === 'walking' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Footprints className="w-4 h-4 mr-1" />} Marche
-                              </Button>
+                              {ALL_MODES.map((m, i) => {
+                                const Icon = transportIcon(m);
+                                const active = selectedModes.includes(m);
+                                const isLast = i === ALL_MODES.length - 1; // walking → full row
+                                return (
+                                  <Button
+                                    key={m}
+                                    type="button"
+                                    variant={active ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => toggleMode(m)}
+                                    disabled={loadingRouteInfo}
+                                    className={isLast ? 'col-span-3' : undefined}
+                                  >
+                                    {loadingRouteInfo && active ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Icon className="w-4 h-4 mr-1" />} {transportLabel(m)}
+                                  </Button>
+                                );
+                              })}
                             </div>
+                            <p className="text-xs text-muted-foreground">
+                              Modes sélectionnés : <span className="font-medium text-foreground">{selectedLabel()}</span>
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -1295,29 +1263,6 @@ const LocationsTab = () => {
                                      </div>
                                       {index < displayRoute.length - 1 && segment && (
                                         <div className="ml-14 space-y-2">
-                                          <div className="flex items-center gap-2 flex-wrap bg-muted/40 rounded-lg p-2">
-                                            <span className="text-xs text-muted-foreground mr-1">Mode :</span>
-                                            {ALL_MODES.map((m) => {
-                                              const Icon = transportIcon(m);
-                                              const active = (segmentModes[index] ?? transportMode) === m;
-                                              const isLoading = loadingSegmentIdx === index && active;
-                                              return (
-                                                <Button
-                                                  key={m}
-                                                  type="button"
-                                                  variant={active ? 'default' : 'outline'}
-                                                  size="icon"
-                                                  className="h-7 w-7"
-                                                  title={transportLabel(m)}
-                                                  aria-label={transportLabel(m)}
-                                                  disabled={loadingSegmentIdx !== null}
-                                                  onClick={() => recalcSegment(index, m)}
-                                                >
-                                                  {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Icon className="w-3.5 h-3.5" />}
-                                                </Button>
-                                              );
-                                            })}
-                                          </div>
                                           <div className="flex items-center gap-4 text-sm text-muted-foreground bg-secondary/10 rounded-lg p-3 border-l-2 border-secondary">
                                             <div className="flex items-center gap-2">
                                               <ArrowRight className="w-4 h-4 text-secondary" />
