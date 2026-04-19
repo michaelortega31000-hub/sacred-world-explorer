@@ -355,13 +355,6 @@ const LocationsTab = () => {
     pdf.save(`itineraire-sacre-${startingCity?.split(',')[0] || 'voyage'}.pdf`);
   };
 
-  // Calculate route segments with distance and duration
-  const calculateRouteSegments = async (places: typeof plannedPlaces, mode: TransportMode) => {
-    if (places.length < 2) {
-      setRouteSegments([]);
-      return;
-    }
-
   // Compute a single segment between two places for a given mode.
   // Returns the segment data; throws on hard errors.
   const computeSingleSegment = async (
