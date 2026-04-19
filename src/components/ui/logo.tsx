@@ -14,7 +14,7 @@ const logoVariants = cva(
       },
       effect: {
         static: "",
-        glow: "drop-shadow-[0_0_30px_rgba(244,197,66,0.85)] drop-shadow-[0_0_60px_rgba(244,197,66,0.85)] scale-[1.4] animate-pulse",
+        glow: "drop-shadow-[0_0_30px_rgba(244,197,66,0.9)] drop-shadow-[0_0_60px_rgba(244,197,66,0.9)] scale-[1.5] animate-pulse",
         pulse: "animate-pulse",
       },
     },

@@ -110,6 +110,7 @@ const Planner = () => {
   const [destinations, setDestinations] = useState<SelectedPlace[]>([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [mode, setMode] = useState<SelectionMode>(null);
+  const [tripSaved, setTripSaved] = useState(false);
 
   const heroImage = useMemo(() => {
     const images = getImagesByCountry('France', 1);
@@ -137,13 +138,18 @@ const Planner = () => {
       toast.success('Destination ajoutée', { description: `${place.name}, ${place.city}` });
     }
     setMode(null);
+    setTripSaved(false);
   };
 
   const removeDestination = (idx: number) => {
     setDestinations((prev) => prev.filter((_, i) => i !== idx));
+    setTripSaved(false);
   };
 
-  const clearDeparture = () => setDeparture(null);
+  const clearDeparture = () => {
+    setDeparture(null);
+    setTripSaved(false);
+  };
 
   const canSave = !!departure && destinations.length >= 1;
 
@@ -152,6 +158,7 @@ const Planner = () => {
       toast.error('Définissez un départ et au moins une destination');
       return;
     }
+    setTripSaved(true);
     toast.success('Trajet enregistré ✨', {
       description: `${departure!.city} → ${destinations.length} étape(s)`,
     });
@@ -166,12 +173,14 @@ const Planner = () => {
       }}
     >
       {/* 3D Globe background */}
-      <div className="absolute inset-0 opacity-70">
+      <div className={`absolute inset-0 transition-opacity duration-700 ${tripSaved ? 'opacity-95' : 'opacity-80'}`}>
         <ItineraryGlobe3D
           places={globePlaces}
           autoRotateSpeed={0.4}
           latLngToVector3={latLngToVector3}
           createArcPoints={createArcPoints}
+          enhanced
+          tripSaved={tripSaved}
         />
       </div>
 
@@ -221,8 +230,8 @@ const Planner = () => {
           <div className="w-10" aria-hidden />
         </header>
 
-        {/* Title block */}
-        <div className="flex flex-col items-center px-6 pt-4 text-center">
+        {/* Title block - lowered for breathing room */}
+        <div className="flex flex-col items-center px-6 pt-16 sm:pt-20 text-center">
           <h1
             className="text-3xl sm:text-4xl font-bold tracking-tight"
             style={{
