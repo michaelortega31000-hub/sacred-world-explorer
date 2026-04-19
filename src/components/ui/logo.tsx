@@ -14,7 +14,7 @@ const logoVariants = cva(
       },
       effect: {
         static: "",
-        glow: "drop-shadow-[0_0_15px_hsl(var(--primary)/0.5)] animate-pulse",
+        glow: "drop-shadow-[0_0_24px_rgba(244,197,66,0.85)] drop-shadow-[0_0_48px_rgba(244,197,66,0.55)] animate-pulse",
         pulse: "animate-pulse",
       },
     },
@@ -58,7 +58,7 @@ export const Logo = ({
             alt=""
             className={cn(
               logoVariants({ size }),
-              "absolute inset-0 opacity-60 blur-sm animate-pulse"
+              "absolute inset-0 opacity-75 blur-md animate-pulse scale-110"
             )}
             aria-hidden="true"
           />
@@ -67,7 +67,7 @@ export const Logo = ({
             alt=""
             className={cn(
               logoVariants({ size }),
-              "absolute inset-0 opacity-40 blur-md animate-pulse"
+              "absolute inset-0 opacity-55 blur-xl animate-pulse scale-125"
             )}
             aria-hidden="true"
             style={{ animationDelay: "0.5s" }}
