@@ -223,68 +223,106 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
                     Aucun lieu disponible pour ce pays pour l'instant.
                   </div>
                 ) : (
-                  <div className="space-y-3 pr-1">
-                    {placesForCountry.map((p) => (
-                      <button
-                        key={p.id}
-                        onClick={() => handlePickPlace(p)}
-                        className="w-full text-left rounded-2xl overflow-hidden transition-all hover:scale-[1.01] group"
-                        style={{
-                          background: 'linear-gradient(135deg, rgba(20,43,79,0.7) 0%, rgba(14,27,63,0.9) 100%)',
-                          border: '1px solid rgba(244,197,66,0.22)',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                        }}
-                      >
-                        <div className="relative">
-                          {p.imageUrl && (
-                            <div
-                              className="h-28 w-full bg-cover bg-center"
-                              style={{ backgroundImage: `url(${p.imageUrl})` }}
-                            />
-                          )}
-                          {/* Lieu sacré badge */}
-                          <div
-                            className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold"
+                  <div className="flex gap-2">
+                    {/* Alphabet index */}
+                    <div className="flex flex-col items-center gap-0.5 pt-1 sticky top-0 self-start">
+                      {(() => {
+                        const available = new Set(
+                          placesForCountry.map((p) => (p.name[0] || '').toUpperCase())
+                        );
+                        return 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').map((letter) => {
+                          const has = available.has(letter);
+                          return (
+                            <button
+                              key={letter}
+                              disabled={!has}
+                              onClick={() => {
+                                const el = document.getElementById(`place-letter-${letter}`);
+                                el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                              }}
+                              className={`w-5 h-4 text-[10px] font-bold rounded transition-colors ${
+                                has
+                                  ? 'text-[#F4C542] hover:bg-[#F4C542]/20 cursor-pointer'
+                                  : 'text-white/20 cursor-not-allowed'
+                              }`}
+                              aria-label={`Aller à ${letter}`}
+                            >
+                              {letter}
+                            </button>
+                          );
+                        });
+                      })()}
+                    </div>
+
+                    <div className="flex-1 space-y-3 pr-1 min-w-0">
+                      {placesForCountry.map((p, idx) => {
+                        const letter = (p.name[0] || '').toUpperCase();
+                        const prevLetter = idx > 0 ? (placesForCountry[idx - 1].name[0] || '').toUpperCase() : '';
+                        const isFirstOfLetter = letter !== prevLetter;
+                        return (
+                          <button
+                            key={p.id}
+                            id={isFirstOfLetter ? `place-letter-${letter}` : undefined}
+                            onClick={() => handlePickPlace(p)}
+                            className="w-full text-left rounded-2xl overflow-hidden transition-all hover:scale-[1.01] group"
                             style={{
-                              background: 'rgba(14,27,63,0.85)',
-                              backdropFilter: 'blur(8px)',
-                              border: '1px solid rgba(244,197,66,0.5)',
-                              color: '#F4C542',
-                              boxShadow: '0 0 12px rgba(244,197,66,0.3)',
+                              background: 'linear-gradient(135deg, rgba(20,43,79,0.7) 0%, rgba(14,27,63,0.9) 100%)',
+                              border: '1px solid rgba(244,197,66,0.22)',
+                              boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
                             }}
                           >
-                            <Cross className="h-3 w-3" strokeWidth={2.5} />
-                            <span>Lieu sacré</span>
-                          </div>
-                        </div>
-                        <div className="p-3">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-semibold text-white truncate">{p.name}</h3>
-                              <div className="flex items-center gap-1 text-xs text-[#F4C542]/80 mt-0.5">
-                                <MapPin className="h-3 w-3" />
-                                <span className="truncate">{p.city}</span>
+                            <div className="relative">
+                              {p.imageUrl && (
+                                <div
+                                  className="h-28 w-full bg-cover bg-center"
+                                  style={{ backgroundImage: `url(${p.imageUrl})` }}
+                                />
+                              )}
+                              {/* Lieu sacré badge */}
+                              <div
+                                className="absolute top-2 left-2 flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold"
+                                style={{
+                                  background: 'rgba(14,27,63,0.85)',
+                                  backdropFilter: 'blur(8px)',
+                                  border: '1px solid rgba(244,197,66,0.5)',
+                                  color: '#F4C542',
+                                  boxShadow: '0 0 12px rgba(244,197,66,0.3)',
+                                }}
+                              >
+                                <Cross className="h-3 w-3" strokeWidth={2.5} />
+                                <span>Lieu sacré</span>
                               </div>
                             </div>
-                            <span className="text-[10px] text-white/50 uppercase tracking-wider shrink-0">
-                              {p.type}
-                            </span>
-                          </div>
-                          {p.description && (
-                            <p className="text-xs text-white/65 mt-2 line-clamp-2">{p.description}</p>
-                          )}
-                          <div
-                            className="mt-3 text-center text-xs font-semibold py-1.5 rounded-lg"
-                            style={{
-                              background: 'linear-gradient(135deg, #F4C542 0%, #E0A84C 100%)',
-                              color: '#0E1B3F',
-                            }}
-                          >
-                            Choisir ce lieu
-                          </div>
-                        </div>
-                      </button>
-                    ))}
+                            <div className="p-3">
+                              <div className="flex items-start justify-between gap-2">
+                                <div className="flex-1 min-w-0">
+                                  <h3 className="text-sm font-semibold text-white truncate">{p.name}</h3>
+                                  <div className="flex items-center gap-1 text-xs text-[#F4C542]/80 mt-0.5">
+                                    <MapPin className="h-3 w-3" />
+                                    <span className="truncate">{p.city}</span>
+                                  </div>
+                                </div>
+                                <span className="text-[10px] text-white/50 uppercase tracking-wider shrink-0">
+                                  {p.type}
+                                </span>
+                              </div>
+                              {p.description && (
+                                <p className="text-xs text-white/65 mt-2 line-clamp-2">{p.description}</p>
+                              )}
+                              <div
+                                className="mt-3 text-center text-xs font-semibold py-1.5 rounded-lg"
+                                style={{
+                                  background: 'linear-gradient(135deg, #F4C542 0%, #E0A84C 100%)',
+                                  color: '#0E1B3F',
+                                }}
+                              >
+                                Choisir ce lieu
+                              </div>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 )}
               </div>
