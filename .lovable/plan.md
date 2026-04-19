@@ -1,46 +1,44 @@
 
 
-## Phase 10 — Logo cleanup + Persistent trajectory
+## Phase 12 — Micro-fixes: Globe header cross, Planner logo, Transport modes
 
-### Investigation needed
-- Check current Logo: it uses `logo-v4.png` and `logo-glow.png` images. The "blue rectangle" is likely baked into the PNG itself (transparent PNG with blue bg) OR a CSS wrapper. Need to verify.
-- Check Globe tab: identify which component renders the globe on the Globe tab and whether it shares trip state with Planner.
+### 1. Globe tab header — enlarge cross only
+`src/components/Header.tsx`: the round container is `w-20 h-20` (keep as-is). Currently `<ChristianIcon size="lg" className="scale-[1.9]" />` — bump scale to `scale-[2.85]` (+50%). Container size, header padding, and globe area untouched.
 
-### Plan
+### 2. Planner central logo — +15-20%
+`src/pages/Planner.tsx` uses `<Logo size="large" effect="glow" />`. Two safe options:
+- Bump `large` variant in `src/components/ui/logo.tsx` from `w-96 h-96` → `w-[28rem] h-[28rem]` (+~17%), OR
+- Add a wrapper `scale-[1.18]` only in Planner.
 
-**1. Logo 4 — remove blue background, enlarge cross**
+Going with the **wrapper scale** approach to avoid affecting other consumers of `size="large"`. Wrap the Planner `<Logo>` in a `<div className="scale-[1.18]">`.
 
-Since the blue rectangle is baked into the source PNG (`logo-v4.png` / `logo-glow.png`), CSS can't remove it without clipping. Two options:
+### 3. Optimiser mon itinéraire — full transport modes + realistic ETA
+`src/components/TripPlannerTab.tsx` already has a 2x2 transport grid (per memory `itinerary-controls-layout`). Expand to 6 modes in a 3x2 grid:
 
-- **Option A (preferred)**: Apply a circular `clip-path` / `rounded-full` + `overflow-hidden` mask to the `<img>` so only the round sun orb shows. Combined with `scale-[1.45]` on an inner wrapper to enlarge the cross visually inside the visible circle.
-- **Option B**: Generate a new clean SVG logo (sun orb + rays + cross, no background). More work but cleaner long-term.
+| Mode | Icon | Avg speed (km/h) |
+|---|---|---|
+| Avion | Plane | 750 |
+| Train | TrainFront | 200 |
+| Bus | Bus | 70 |
+| Voiture | Car | 90 |
+| Vélo | Bike | 18 |
+| Marche | Footprints | 5 |
 
-Going with **Option A** for speed and zero asset regeneration. Update `src/components/ui/logo.tsx`:
-- Wrap `<img>` in `rounded-full overflow-hidden` container sized to the variant.
-- Apply `scale-[1.45]` to the `<img>` so the cross fills more of the visible circle (the blue corners get clipped away by the round mask).
-- Soften glow: `drop-shadow-[0_0_20px_rgba(244,197,66,0.75)] drop-shadow-[0_0_40px_rgba(244,197,66,0.75)]` at opacity 0.75.
-- Apply across all variants (small/medium/large) and both `main` + `icon` variants.
+- Track selected mode in local state (default: Voiture).
+- Total distance = sum of Haversine between consecutive stops (already computed).
+- ETA = `distanceKm / speed` → format `Xh YYmin` (or `YYmin` if <1h, or `Xj YYh` if >24h for walking).
+- Display under the transport grid: **Distance: X km · Durée: Y**.
+- Recalculate on every mode change or stop reorder via `useMemo`.
 
-**2. Persistent trajectory across Planner ↔ Globe tab**
-
-Currently `departure` + `destinations` live in `Planner.tsx` local state → lost when navigating to `/explore` (Globe tab).
-
-Fix by persisting saved trip to `localStorage` on save, and reading it from the Globe tab's globe component:
-- In `Planner.tsx` `handleSave`: write `{ departure, destinations, savedAt }` to `localStorage` under key `sacred-saved-trip`.
-- On Planner mount: hydrate state from `localStorage` if present so the trajectory is still drawn after refresh/return.
-- Identify the Globe tab's main 3D globe (likely `Globe3D.tsx` used in `/explore`) and add a small overlay or pass the saved trip arcs to it. If `Globe3D.tsx` is Mapbox-based (not R3F), draw arcs as Mapbox `LineLayer` from the saved coords with the same golden/orange glow styling.
-
-### Files touched (~3)
-
-**Edited:**
-- `src/components/ui/logo.tsx` — circular mask + scale + softer glow
-- `src/pages/Planner.tsx` — persist saved trip to localStorage, hydrate on mount
-- `src/components/Globe3D.tsx` (or equivalent on /explore) — read saved trip from localStorage and render golden arcs
+### Files touched (3)
+- `src/components/Header.tsx` — bump `ChristianIcon` scale to `2.85`
+- `src/pages/Planner.tsx` — wrap central `<Logo>` with `scale-[1.18]`
+- `src/components/TripPlannerTab.tsx` — 6 transport modes, selected state, distance + ETA recompute
 
 ### Untouched
-PlaceSelectorModal · BottomNavigation · DB · RLS · ItineraryGlobe3D internals (already handles arcs correctly on Planner screen).
+Logo component sizes · Globe3D · Planner save logic · localStorage trip key · BottomNavigation · DB.
 
 ### Risks
-- If `logo-v4.png` has the cross off-center, the `scale-[1.45]` may shift it — will use `object-contain` + `object-center` to keep it anchored.
-- Globe tab globe may be Mapbox not Three.js → arc rendering API differs. Will inspect `Globe3D.tsx` first and adapt.
+- `Footprints` icon exists in lucide-react (confirmed). If `TrainFront` unavailable, fall back to `Train`.
+- Wrapper scale on Logo can bleed beyond parent — use `inline-block` wrapper so it doesn't disrupt flex layout.
 
