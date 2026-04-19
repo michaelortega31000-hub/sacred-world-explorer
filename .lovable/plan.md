@@ -1,55 +1,91 @@
 
 
-## Phase 15 — Hide kosher/halal everywhere + city-unique fallbacks
+## Phase 16 — Transitous API integration for plane/train/bus routing
 
-### Issue 1: Kosher restaurant still visible (e.g. "Kasher Gourmet" Bordeaux)
+### Goal
+Replace the Haversine fallback for `plane` / `train` / `bus` modes in `LocationsTab.tsx` with **real multi-modal routing from Transitous MOTIS 2 API**. Keep the existing Mapbox Directions for `driving`/`cycling`/`walking`. UI is unchanged.
 
-Current state: `RestaurantsTab.tsx` filters them, but **3 other places do not**:
+### Investigation summary
+- `LocationsTab.tsx` already has `calculateRouteSegments()` triggered by `transportMode` change (verified Phase 14).
+- For straight-line modes today, it uses `calculateDistanceInKm` × hard-coded speed (plane 800 km/h, train 200 km/h, bus 70 km/h).
+- Loading spinner + per-mode UI already wired (Phase 14).
 
-1. **`PlaceDetail.tsx` `searchNearbyPOIs`** (line 518) — queries `restaurants` table without excluding halal/kosher. The Bordeaux screenshot ("Kasher Gourmet" + tag "kosher") comes from here.
-2. **`LocationsTab.tsx` POI search** (line 545) — queries restaurants for itinerary suggestions without filtering.
-3. **`LocationsTab.tsx` saved restaurants** (line 724) — fetches user's saved list as-is (older saves may include halal/kosher).
-
-**Fix:** in all 3 queries, append a Postgres array exclusion filter:
-```ts
-.not('type', 'cs', '{halal}')   // type does NOT contain 'halal'
-.not('type', 'cs', '{kosher}')  // type does NOT contain 'kosher'
+### Transitous MOTIS 2 endpoint
+Public, no API key required:
 ```
-And for the `savedRestaurants` array in `LocationsTab`, post-filter the result to drop any with `type` containing halal/kosher (defensive, in case the user already saved one earlier).
+GET https://api.transitous.org/api/v1/plan
+  ?fromPlace={lat},{lon}
+  &toPlace={lat},{lon}
+  &time={ISO}
+  &arriveBy=false
+  &mode=TRANSIT,WALK            // train+bus
+  &mode=AIRPLANE,WALK           // plane (Transitous includes flights when available)
+```
+Response contains `itineraries[].duration` (sec), `legs[]` (each with `mode`, `distance`, `from/to`), and `transfers` count.
 
-### Issue 2: Same restaurants/hotels appear in every city (Switzerland test)
+### Implementation plan (1 file)
 
-Current state: `samplePoiData.ts` returns the same 3 generic French names ("Le Réfectoire", "Café du Cloître", "Table d'Hôte {city}") for every place. This fallback fires when the DB has 0 matches for that city (e.g. Genève has 1 row → DB hits, but the user is browsing Swiss locations where DB is sparse).
+**`src/components/LocationsTab.tsx`**
 
-**Fix:** make samples genuinely city-unique by:
+1. **New helper** (top of file, near other utils):
+   ```ts
+   async function fetchTransitousRoute(
+     from: [number, number],     // [lng, lat]
+     to:   [number, number],
+     mode: 'plane' | 'train' | 'bus'
+   ): Promise<{ distanceKm: number; durationMin: number; transfers: number } | null>
+   ```
+   - Maps mode → Transitous mode list:
+     - `plane` → `['AIRPLANE','WALK']`
+     - `train` → `['RAIL','WALK']` (TRAM/SUBWAY excluded)
+     - `bus`   → `['BUS','WALK']`
+   - Builds URL with `URLSearchParams`, `fetch` with 8 s `AbortController` timeout.
+   - Picks first itinerary, sums leg `distance` (m → km), reads `duration` (s → min), and `legs.filter(l => l.mode !== 'WALK').length - 1` for transfers (clamped ≥ 0).
+   - Returns `null` on any error → caller falls back to Haversine.
 
-1. **Country-aware naming** — pick name patterns based on `place.country`:
-   - 🇫🇷 France → "Le Cloître Saint-{X}", "Auberge {city}", "Bistrot du Parvis"
-   - 🇨🇭 Switzerland → "Auberge des Alpes {city}", "Café Helvétia {city}", "Le Tilleul {city}"
-   - 🇪🇸 Spain → "Mesón {city}", "Posada del Camino", "Taberna del Peregrino"
-   - 🇮🇹 Italy → "Trattoria {city}", "Osteria del Pellegrino", "Locanda {city}"
-   - 🇩🇪 Germany → "Gasthaus {city}", "Pilger Stube", "Klosterhof"
-   - 🇵🇹 Portugal → "Tasca {city}", "Adega do Romeiro"
-   - 🇬🇷 Greece → "Taverna {city}", "Estiatorio Agios"
-   - Default → keep current French names but always inject `{city}` and `{place.name}` so every output is visibly different.
+2. **Patch `calculateRouteSegments()`**:
+   - Inside the segment loop, when `transportMode` is `plane`/`train`/`bus`:
+     ```ts
+     const transitous = await fetchTransitousRoute(
+       [from.coordinates[0], from.coordinates[1]],
+       [to.coordinates[0],   to.coordinates[1]],
+       transportMode
+     );
+     if (transitous) {
+       segment.distance   = transitous.distanceKm;
+       segment.duration   = transitous.durationMin;
+       segment.transfers  = transitous.transfers;
+     } else {
+       // existing Haversine fallback (unchanged)
+     }
+     ```
+   - For `driving`/`cycling`/`walking` → unchanged Mapbox path.
 
-2. **Same logic for hotels & transports** — Hôtel templates per country (Hôtel/Hostal/Albergo/Pension/Pousada), train/airport names use `place.city` (e.g. "Gare de Genève" / "Bahnhof Bern" / "Estación de León").
+3. **Extend `RouteSegment` type** with optional `transfers?: number`.
 
-3. **Deterministic seed from `place.id`** — pick template variants using a hash of the place id so each place gets a stable but different combination (no two adjacent places share the exact same 3 names).
+4. **UI tweak (minimal, same grid)**: when `segment.transfers && segment.transfers > 0`, append a small badge next to the per-segment Durée:
+   ```
+   Durée: 4h 12min · 2 correspondances
+   ```
+   Same line, same color, no layout change. Totals row also shows the sum of transfers when > 0 for `train`/`bus` (skipped for `plane`).
 
-### Files touched (3)
+5. **Logging**: route any errors through `@/lib/logger` (per Core memory).
 
-- `src/lib/samplePoiData.ts` — country-aware templates + place-id seeded variant picker (full rewrite of the 3 builders).
-- `src/pages/PlaceDetail.tsx` — add `.not('type','cs','{halal}')` & `.not('type','cs','{kosher}')` to the restaurants query (line 518–522).
-- `src/components/LocationsTab.tsx` — same exclusion on the itinerary restaurant search (line 545–548), and post-filter `savedRestaurants` to drop halal/kosher (line 725–727).
+### What stays untouched
+- TripPlannerTab, Planner page, Globe header/logo, PlaceDetail, sample POI fallbacks, DB, RestaurantsTab.
+- Mapbox routing for car/bike/walk.
+- Button grid layout, spinner behavior, colors (city headers turquoise, hotels amber).
 
-### Untouched
-
-DB rows (non-destructive — kept for other apps/future) · Globe header · Planner page · Transport grid · `RestaurantsTab.tsx` (already filtered).
+### Risk & fallback
+- Transitous is a community service → 8 s timeout + automatic Haversine fallback ensures the screen never breaks.
+- No API key, no secrets to add.
+- One file changed, additive only — no breaking edits.
 
 ### Verification after merge
-
-- Bordeaux place detail → "Kasher Gourmet" disappears, only "Green Soul" remains for restaurants.
-- Genève / Berne / any Swiss place → fallback names use Swiss patterns ("Auberge des Alpes Genève") not generic French.
-- `/explore` → Mon itinéraire → Restaurants recommandés never shows halal/kosher tags.
+1. `/explore` → Mon itinéraire with ≥2 cities (e.g. Bordeaux → León).
+2. Click Train → spinner → Distance/Durée update with realistic rail values + "X correspondances" if any.
+3. Click Bus → similar real values.
+4. Click Avion → flight duration if route covered, else Haversine fallback.
+5. Click Voiture/Vélo/Marche → unchanged Mapbox behavior.
+6. Disconnect network → all transit modes gracefully fall back to Haversine.
 
