@@ -28,13 +28,14 @@ import { logger } from '@/lib/logger';
 async function fetchTransitousRoute(
   from: [number, number], // [lng, lat]
   to: [number, number],
-  mode: 'plane' | 'train' | 'bus'
+  mode: 'plane' | 'train' | 'bus' | 'metro'
 ): Promise<{ distanceKm: number; durationMin: number; transfers: number } | null> {
   try {
     const modeMap: Record<typeof mode, string> = {
       plane: 'AIRPLANE,WALK',
       train: 'RAIL,WALK',
       bus: 'BUS,WALK',
+      metro: 'SUBWAY,WALK',
     };
     const params = new URLSearchParams({
       fromPlace: `${from[1]},${from[0]}`,
@@ -124,10 +125,10 @@ const LocationsTab = () => {
   const [loadingPOIs, setLoadingPOIs] = useState(false);
   const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'transport'>>(new Set(['restaurant', 'lodging', 'transport']));
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
-  type TransportMode = 'plane' | 'train' | 'bus' | 'driving' | 'cycling' | 'walking';
+  type TransportMode = 'plane' | 'train' | 'bus' | 'metro' | 'driving' | 'cycling' | 'walking';
   const [transportMode, setTransportMode] = useState<TransportMode>('driving');
   const transportLabel = (m: TransportMode) =>
-    m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' :
+    m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' : m === 'metro' ? 'Métro' :
     m === 'driving' ? 'Voiture' : m === 'cycling' ? 'Vélo' : 'Marche';
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
@@ -342,10 +343,10 @@ const LocationsTab = () => {
     }
 
     // Transit modes — try Transitous (real multi-modal routing), fallback to Haversine
-    if (mode === 'plane' || mode === 'train' || mode === 'bus') {
+    if (mode === 'plane' || mode === 'train' || mode === 'bus' || mode === 'metro') {
       setLoadingRouteInfo(true);
       try {
-        const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : 70;
+        const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : mode === 'metro' ? 40 : 70;
         const segments: RouteSegment[] = [];
         for (let i = 0; i < places.length - 1; i++) {
           const start = places[i];
@@ -1143,17 +1144,16 @@ const LocationsTab = () => {
                               <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('driving')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'driving' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Car className="w-4 h-4 mr-1" />} Voiture
                               </Button>
+                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('metro')} disabled={loadingRouteInfo}>
+                                {loadingRouteInfo && transportMode === 'metro' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Train className="w-4 h-4 mr-1" />} Métro
+                              </Button>
                               <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('cycling')} disabled={loadingRouteInfo}>
                                 {loadingRouteInfo && transportMode === 'cycling' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bike className="w-4 h-4 mr-1" />} Vélo
                               </Button>
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')} disabled={loadingRouteInfo}>
+                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => setTransportMode('walking')} disabled={loadingRouteInfo} className="col-span-3">
                                 {loadingRouteInfo && transportMode === 'walking' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Footprints className="w-4 h-4 mr-1" />} Marche
                               </Button>
                             </div>
-                            {startingCity && <Button onClick={() => setShowOptimizedRoute(!showOptimizedRoute)} size="sm" className="w-full gap-2">
-                                <Navigation className="w-4 h-4" />
-                                {showOptimizedRoute ? 'Masquer l\'itinéraire' : 'Afficher l\'itinéraire'}
-                              </Button>}
                           </div>
                         </div>
                       </div>
@@ -1302,7 +1302,7 @@ const LocationsTab = () => {
                               })()}
                                       </span>
                                     </div>
-                                    {(transportMode === 'train' || transportMode === 'bus') && (() => {
+                                    {(transportMode === 'train' || transportMode === 'bus' || transportMode === 'metro') && (() => {
                                       const totalTransfers = routeSegments.reduce((sum, seg) => sum + (seg.transfers ?? 0), 0);
                                       if (totalTransfers <= 0) return null;
                                       return (
