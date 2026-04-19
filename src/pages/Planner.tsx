@@ -221,8 +221,8 @@ const Planner = () => {
           <div className="w-10" aria-hidden />
         </header>
 
-        {/* Title block */}
-        <div className="flex flex-col items-center px-6 pt-4 text-center">
+        {/* Title block - lowered for breathing room */}
+        <div className="flex flex-col items-center px-6 pt-16 sm:pt-20 text-center">
           <h1
             className="text-3xl sm:text-4xl font-bold tracking-tight"
             style={{
