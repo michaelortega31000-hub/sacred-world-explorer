@@ -1,20 +1,13 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
-import { ArrowLeft, MapPin, Plus, Route as RouteIcon, Save, Cross } from 'lucide-react';
+import { ArrowLeft, MapPin, Plus, Route as RouteIcon, Save, Cross, X } from 'lucide-react';
 import { toast } from 'sonner';
 import ItineraryGlobe3D from '@/components/ItineraryGlobe3D';
 import BottomNavigation from '@/components/BottomNavigation';
 import { Logo } from '@/components/ui/logo';
 import { getImagesByCountry } from '@/lib/religionImageHelper';
-
-// Sample sacred Christian places in France for the cinematic globe arc
-const SAMPLE_PLACES = [
-  { id: 'mont-saint-michel', name: 'Mont-Saint-Michel', lat: 48.636, lng: -1.511 },
-  { id: 'notre-dame', name: 'Notre-Dame de Paris', lat: 48.853, lng: 2.349 },
-  { id: 'chartres', name: 'Chartres', lat: 48.447, lng: 1.487 },
-  { id: 'lourdes', name: 'Lourdes', lat: 43.097, lng: -0.046 },
-];
+import PlaceSelectorModal, { type SelectedPlace } from '@/components/planner/PlaceSelectorModal';
 
 // Convert lat/lng to 3D vector on the unit sphere
 const latLngToVector3 = (lat: number, lng: number, radius = 1) => {
@@ -39,27 +32,39 @@ const createArcPoints = (start: THREE.Vector3, end: THREE.Vector3, segments = 50
   return points;
 };
 
+// Default empty-state markers (softly highlight France)
+const EMPTY_PLACES = [
+  { id: 'placeholder-fr', name: 'France', lat: 46.6, lng: 2.5 },
+];
+
 interface ActionButtonProps {
   icon: React.ReactNode;
   label: string;
   onClick: () => void;
   variant?: 'glass' | 'cta';
+  disabled?: boolean;
 }
 
-const ActionButton = ({ icon, label, onClick, variant = 'glass' }: ActionButtonProps) => {
+const ActionButton = ({ icon, label, onClick, variant = 'glass', disabled = false }: ActionButtonProps) => {
   if (variant === 'cta') {
     return (
       <button
         onClick={onClick}
-        className="group relative w-full overflow-hidden rounded-2xl px-6 py-4 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98]"
+        disabled={disabled}
+        className="group relative w-full overflow-hidden rounded-2xl px-6 py-4 transition-all duration-300 disabled:cursor-not-allowed disabled:opacity-50 enabled:hover:scale-[1.02] enabled:active:scale-[0.98]"
         style={{
-          background: 'linear-gradient(135deg, #F4C542 0%, #E0A84C 50%, #C9882B 100%)',
-          boxShadow:
-            '0 0 30px rgba(244, 197, 66, 0.5), 0 0 60px rgba(224, 168, 76, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
+          background: disabled
+            ? 'linear-gradient(135deg, #2a3a5c 0%, #1f2c47 100%)'
+            : 'linear-gradient(135deg, #F4C542 0%, #E0A84C 50%, #C9882B 100%)',
+          boxShadow: disabled
+            ? 'none'
+            : '0 0 30px rgba(244, 197, 66, 0.5), 0 0 60px rgba(224, 168, 76, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.4)',
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-        <div className="relative flex items-center justify-center gap-3 text-[#0E1B3F]">
+        {!disabled && (
+          <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+        )}
+        <div className={`relative flex items-center justify-center gap-3 ${disabled ? 'text-white/60' : 'text-[#0E1B3F]'}`}>
           <Cross className="w-4 h-4 opacity-70" strokeWidth={2.5} />
           {icon}
           <span className="text-base font-semibold tracking-wide">{label}</span>
@@ -73,8 +78,7 @@ const ActionButton = ({ icon, label, onClick, variant = 'glass' }: ActionButtonP
       onClick={onClick}
       className="group relative w-full overflow-hidden rounded-2xl px-5 py-3.5 text-left transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
       style={{
-        background:
-          'linear-gradient(135deg, rgba(20, 43, 79, 0.7) 0%, rgba(14, 27, 63, 0.85) 100%)',
+        background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.7) 0%, rgba(14, 27, 63, 0.85) 100%)',
         backdropFilter: 'blur(12px)',
         border: '1px solid rgba(244, 197, 66, 0.25)',
         boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(244, 197, 66, 0.1)',
@@ -98,40 +102,58 @@ const ActionButton = ({ icon, label, onClick, variant = 'glass' }: ActionButtonP
   );
 };
 
+type SelectionMode = 'departure' | 'destination' | null;
+
 const Planner = () => {
   const navigate = useNavigate();
-  const [departure, setDeparture] = useState<string | null>(null);
-  const [destinations, setDestinations] = useState<string[]>([]);
-  const [routeDrawn, setRouteDrawn] = useState(false);
+  const [departure, setDeparture] = useState<SelectedPlace | null>(null);
+  const [destinations, setDestinations] = useState<SelectedPlace[]>([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [mode, setMode] = useState<SelectionMode>(null);
 
   const heroImage = useMemo(() => {
     const images = getImagesByCountry('France', 1);
     return images[0];
   }, []);
 
-  const handleSetDeparture = () => {
-    setDeparture('Paris');
-    toast.success('Départ défini', { description: 'Paris sélectionné comme point de départ' });
+  // Live globe markers/arcs from real selection
+  const globePlaces = useMemo(() => {
+    const all = [departure, ...destinations].filter(Boolean) as SelectedPlace[];
+    if (all.length === 0) return EMPTY_PLACES;
+    return all.map((p) => ({ id: p.placeId, name: p.name, lat: p.lat, lng: p.lng }));
+  }, [departure, destinations]);
+
+  const openSelector = (m: SelectionMode) => {
+    setMode(m);
+    setModalOpen(true);
   };
 
-  const handleAddDestination = () => {
-    const next = SAMPLE_PLACES[destinations.length % SAMPLE_PLACES.length];
-    setDestinations((prev) => [...prev, next.id]);
-    toast.success('Destination ajoutée', { description: next.name });
-  };
-
-  const handleDrawRoute = () => {
-    if (destinations.length < 1) {
-      toast.error('Ajoutez au moins une destination');
-      return;
+  const handleSelect = (place: SelectedPlace) => {
+    if (mode === 'departure') {
+      setDeparture(place);
+      toast.success('Départ défini', { description: `${place.name}, ${place.city}` });
+    } else if (mode === 'destination') {
+      setDestinations((prev) => [...prev, place]);
+      toast.success('Destination ajoutée', { description: `${place.name}, ${place.city}` });
     }
-    setRouteDrawn(true);
-    toast.success('Parcours tracé', { description: 'Visualisez votre voyage sacré' });
+    setMode(null);
   };
+
+  const removeDestination = (idx: number) => {
+    setDestinations((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const clearDeparture = () => setDeparture(null);
+
+  const canSave = !!departure && destinations.length >= 1;
 
   const handleSave = () => {
+    if (!canSave) {
+      toast.error('Définissez un départ et au moins une destination');
+      return;
+    }
     toast.success('Trajet enregistré ✨', {
-      description: 'Votre pèlerinage est prêt',
+      description: `${departure!.city} → ${destinations.length} étape(s)`,
     });
   };
 
@@ -146,14 +168,14 @@ const Planner = () => {
       {/* 3D Globe background */}
       <div className="absolute inset-0 opacity-70">
         <ItineraryGlobe3D
-          places={SAMPLE_PLACES}
+          places={globePlaces}
           autoRotateSpeed={0.4}
           latLngToVector3={latLngToVector3}
           createArcPoints={createArcPoints}
         />
       </div>
 
-      {/* Hero photo overlay (Mont-Saint-Michel) */}
+      {/* Hero photo overlay */}
       {heroImage && (
         <div
           className="absolute inset-0 pointer-events-none"
@@ -200,7 +222,7 @@ const Planner = () => {
         </header>
 
         {/* Title block */}
-        <div className="flex flex-col items-center px-6 pt-6 text-center">
+        <div className="flex flex-col items-center px-6 pt-4 text-center">
           <h1
             className="text-3xl sm:text-4xl font-bold tracking-tight"
             style={{
@@ -216,21 +238,39 @@ const Planner = () => {
           </h1>
           <p
             className="mt-2 text-sm font-medium tracking-wide text-[#F4C542]/85"
-            style={{
-              filter: 'drop-shadow(0 0 8px rgba(244, 197, 66, 0.5))',
-            }}
+            style={{ filter: 'drop-shadow(0 0 8px rgba(244, 197, 66, 0.5))' }}
           >
             ✦ Vers un lieu sacré ✦
           </p>
         </div>
 
-        {/* Action buttons */}
+        {/* Action panel */}
         <div className="flex-1 flex flex-col justify-end px-5 pb-28 sm:px-8 sm:pb-32">
           <div className="mx-auto w-full max-w-md space-y-3">
+            {/* Selected chips */}
+            {(departure || destinations.length > 0) && (
+              <div className="flex flex-wrap gap-2 mb-1">
+                {departure && (
+                  <Chip
+                    label={`Départ : ${departure.city}`}
+                    onRemove={clearDeparture}
+                    accent
+                  />
+                )}
+                {destinations.map((d, i) => (
+                  <Chip
+                    key={`${d.placeId}-${i}`}
+                    label={d.city}
+                    onRemove={() => removeDestination(i)}
+                  />
+                ))}
+              </div>
+            )}
+
             <ActionButton
               icon={<MapPin className="h-4 w-4" />}
-              label={departure ? `Départ : ${departure}` : 'Définir un départ'}
-              onClick={handleSetDeparture}
+              label={departure ? `Départ : ${departure.name}` : 'Définir un départ'}
+              onClick={() => openSelector('departure')}
             />
             <ActionButton
               icon={<Plus className="h-4 w-4" />}
@@ -239,12 +279,22 @@ const Planner = () => {
                   ? `Ajouter une destination (${destinations.length})`
                   : 'Ajouter une destination'
               }
-              onClick={handleAddDestination}
+              onClick={() => openSelector('destination')}
             />
             <ActionButton
               icon={<RouteIcon className="h-4 w-4" />}
-              label={routeDrawn ? 'Parcours tracé ✓' : 'Tracer le parcours'}
-              onClick={handleDrawRoute}
+              label={
+                canSave
+                  ? `Parcours : ${destinations.length + 1} étapes`
+                  : 'Définissez un départ + une destination'
+              }
+              onClick={() => {
+                if (canSave) {
+                  toast.success('Parcours tracé', { description: 'Visualisé sur le globe' });
+                } else {
+                  toast.error('Sélectionnez au moins un départ et une destination');
+                }
+              }}
             />
             <div className="pt-2">
               <ActionButton
@@ -252,15 +302,44 @@ const Planner = () => {
                 label="Enregistrer le trajet"
                 onClick={handleSave}
                 variant="cta"
+                disabled={!canSave}
               />
             </div>
           </div>
         </div>
       </div>
 
+      <PlaceSelectorModal
+        open={modalOpen}
+        onOpenChange={setModalOpen}
+        onSelect={handleSelect}
+        title={mode === 'departure' ? 'Choisir un point de départ' : 'Ajouter une destination'}
+      />
+
       <BottomNavigation />
     </div>
   );
 };
+
+const Chip = ({ label, onRemove, accent = false }: { label: string; onRemove: () => void; accent?: boolean }) => (
+  <div
+    className="inline-flex items-center gap-1.5 rounded-full pl-3 pr-1.5 py-1 text-xs font-medium"
+    style={{
+      background: accent ? 'rgba(244,197,66,0.15)' : 'rgba(20,43,79,0.7)',
+      border: `1px solid ${accent ? 'rgba(244,197,66,0.5)' : 'rgba(244,197,66,0.25)'}`,
+      color: accent ? '#F4C542' : 'rgba(255,255,255,0.9)',
+      backdropFilter: 'blur(8px)',
+    }}
+  >
+    <span className="truncate max-w-[160px]">{label}</span>
+    <button
+      onClick={onRemove}
+      className="flex h-5 w-5 items-center justify-center rounded-full hover:bg-white/10"
+      aria-label="Retirer"
+    >
+      <X className="h-3 w-3" />
+    </button>
+  </div>
+);
 
 export default Planner;
