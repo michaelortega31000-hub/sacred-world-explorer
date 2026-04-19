@@ -72,9 +72,13 @@ const PlaceSelectorModal = ({ open, onOpenChange, onSelect, title = 'Sélectionn
 
   const placesForCountry: Place[] = useMemo(() => {
     if (!country) return [];
-    return [...getPlacesByCountry(country)].sort((a, b) =>
-      a.name.localeCompare(b.name, 'fr')
-    );
+    return [...getPlacesByCountry(country)].sort((a, b) => {
+      const countryCmp = (a.country || '').localeCompare(b.country || '', 'fr');
+      if (countryCmp !== 0) return countryCmp;
+      const cityCmp = (a.city || '').localeCompare(b.city || '', 'fr');
+      if (cityCmp !== 0) return cityCmp;
+      return a.name.localeCompare(b.name, 'fr');
+    });
   }, [country]);
 
   const goBack = () => {
