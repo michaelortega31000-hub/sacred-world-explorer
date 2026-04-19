@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import * as THREE from 'three';
 import { ArrowLeft, MapPin, Plus, Route as RouteIcon, Save, Cross, X } from 'lucide-react';
@@ -112,6 +112,20 @@ const Planner = () => {
   const [mode, setMode] = useState<SelectionMode>(null);
   const [tripSaved, setTripSaved] = useState(false);
 
+  // Hydrate from localStorage on mount
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('sacred-saved-trip');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed?.departure) setDeparture(parsed.departure);
+      if (Array.isArray(parsed?.destinations)) setDestinations(parsed.destinations);
+      if (parsed?.departure && parsed?.destinations?.length) setTripSaved(true);
+    } catch {
+      // ignore
+    }
+  }, []);
+
   const heroImage = useMemo(() => {
     const images = getImagesByCountry('France', 1);
     return images[0];
@@ -159,6 +173,20 @@ const Planner = () => {
       return;
     }
     setTripSaved(true);
+    try {
+      localStorage.setItem(
+        'sacred-saved-trip',
+        JSON.stringify({
+          departure,
+          destinations,
+          savedAt: new Date().toISOString(),
+        })
+      );
+      // Notify other tabs/components in the same window
+      window.dispatchEvent(new CustomEvent('sacred-saved-trip-updated'));
+    } catch {
+      // ignore quota errors
+    }
     toast.success('Trajet enregistré ✨', {
       description: `${departure!.city} → ${destinations.length} étape(s)`,
     });
