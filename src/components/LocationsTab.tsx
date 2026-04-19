@@ -1138,32 +1138,32 @@ const LocationsTab = () => {
                           </Select>
                         </div>
                         <div className="flex-1">
-                          <label className="text-sm font-medium mb-1 block">Mode de transport</label>
-                          <p className="text-xs text-muted-foreground mb-2">Appliquer à tous les trajets</p>
+                          <label className="text-sm font-medium mb-1 block">Modes de transport</label>
+                          <p className="text-xs text-muted-foreground mb-2">Sélectionnez un ou plusieurs modes — appliqués à tous les trajets</p>
                           <div className="flex flex-col gap-2">
                             <div className="grid grid-cols-3 gap-2">
-                              <Button variant={transportMode === 'plane' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('plane')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'plane' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Plane className="w-4 h-4 mr-1" />} Avion
-                              </Button>
-                              <Button variant={transportMode === 'train' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('train')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'train' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <TrainFront className="w-4 h-4 mr-1" />} Train
-                              </Button>
-                              <Button variant={transportMode === 'bus' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('bus')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'bus' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bus className="w-4 h-4 mr-1" />} Bus
-                              </Button>
-                              <Button variant={transportMode === 'driving' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('driving')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'driving' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Car className="w-4 h-4 mr-1" />} Voiture
-                              </Button>
-                              <Button variant={transportMode === 'metro' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('metro')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'metro' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Train className="w-4 h-4 mr-1" />} Métro
-                              </Button>
-                              <Button variant={transportMode === 'cycling' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('cycling')} disabled={loadingRouteInfo}>
-                                {loadingRouteInfo && transportMode === 'cycling' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Bike className="w-4 h-4 mr-1" />} Vélo
-                              </Button>
-                              <Button variant={transportMode === 'walking' ? 'default' : 'outline'} size="sm" onClick={() => handleGlobalModeChange('walking')} disabled={loadingRouteInfo} className="col-span-3">
-                                {loadingRouteInfo && transportMode === 'walking' ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Footprints className="w-4 h-4 mr-1" />} Marche
-                              </Button>
+                              {ALL_MODES.map((m, i) => {
+                                const Icon = transportIcon(m);
+                                const active = selectedModes.includes(m);
+                                const isLast = i === ALL_MODES.length - 1; // walking → full row
+                                return (
+                                  <Button
+                                    key={m}
+                                    type="button"
+                                    variant={active ? 'default' : 'outline'}
+                                    size="sm"
+                                    onClick={() => toggleMode(m)}
+                                    disabled={loadingRouteInfo}
+                                    className={isLast ? 'col-span-3' : undefined}
+                                  >
+                                    {loadingRouteInfo && active ? <Loader2 className="w-4 h-4 mr-1 animate-spin" /> : <Icon className="w-4 h-4 mr-1" />} {transportLabel(m)}
+                                  </Button>
+                                );
+                              })}
                             </div>
+                            <p className="text-xs text-muted-foreground">
+                              Modes sélectionnés : <span className="font-medium text-foreground">{selectedLabel()}</span>
+                            </p>
                           </div>
                         </div>
                       </div>
