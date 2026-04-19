@@ -125,10 +125,10 @@ const LocationsTab = () => {
   const [loadingPOIs, setLoadingPOIs] = useState(false);
   const [selectedPOITypes, setSelectedPOITypes] = useState<Set<'restaurant' | 'lodging' | 'transport'>>(new Set(['restaurant', 'lodging', 'transport']));
   const [expandedPlaceId, setExpandedPlaceId] = useState<string | null>(null);
-  type TransportMode = 'plane' | 'train' | 'bus' | 'driving' | 'cycling' | 'walking';
+  type TransportMode = 'plane' | 'train' | 'bus' | 'metro' | 'driving' | 'cycling' | 'walking';
   const [transportMode, setTransportMode] = useState<TransportMode>('driving');
   const transportLabel = (m: TransportMode) =>
-    m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' :
+    m === 'plane' ? 'Avion' : m === 'train' ? 'Train' : m === 'bus' ? 'Bus' : m === 'metro' ? 'Métro' :
     m === 'driving' ? 'Voiture' : m === 'cycling' ? 'Vélo' : 'Marche';
   const [captureMapFn, setCaptureMapFn] = useState<(() => string | null) | null>(null);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
