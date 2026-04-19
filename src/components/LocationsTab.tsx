@@ -777,7 +777,7 @@ const LocationsTab = () => {
         poiSearchAbortRef.current.abort();
       }
     };
-  }, [displayRoute, showOptimizedRoute, transportMode, searchPOIsAlongRoute]);
+  }, [displayRoute, showOptimizedRoute, selectedModes, searchPOIsAlongRoute]);
 
   // Get unique cities from planned places
   const tripCities = useMemo(() => {
