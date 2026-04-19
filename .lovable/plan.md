@@ -1,54 +1,46 @@
 
 
-## Phase 9 — Interactive Planner: Progressive selection + Globe tap (revised)
+## Phase 10 — Logo cleanup + Persistent trajectory
 
-Same scope as before, with added guidance text and badges in the modal.
+### Investigation needed
+- Check current Logo: it uses `logo-v4.png` and `logo-glow.png` images. The "blue rectangle" is likely baked into the PNG itself (transparent PNG with blue bg) OR a CSS wrapper. Need to verify.
+- Check Globe tab: identify which component renders the globe on the Globe tab and whether it shares trip state with Planner.
 
-### 1. Logo 4 — bigger, brighter cross
-`src/components/ui/logo.tsx`:
-- Stronger golden glow on the cross (drop-shadow 0 0 24px + 0 0 48px), opacity 0.7/0.5, slightly larger halo.
-- Applied globally → Splash + Planner header.
+### Plan
 
-### 2. New `PlaceSelectorModal` (3 steps)
-`src/components/planner/PlaceSelectorModal.tsx` — Dialog with breadcrumb `Continent › Pays › Lieu sacré`.
+**1. Logo 4 — remove blue background, enlarge cross**
 
-Each step starts with a small guiding subtitle (centered, golden/85, text-sm):
-- **Step 1 — Continent**: subtitle *"Choisissez un continent"*. 6 glassmorphic tiles (Europe, Amérique, Asie, Afrique, Océanie, Moyen-Orient).
-- **Step 2 — Pays**: subtitle *"Choisissez un pays"*. Filtered country list (flag + name) from `src/data/countries.ts` + search input.
-- **Step 3 — Lieu sacré**: subtitle *"Choisissez un lieu sacré"*. Cards from `placesData.ts` filtered by country (image, name, city, short description). **Each card shows a small golden "Lieu sacré" badge** (top-left, glassmorphic, Cross icon + label). "Choisir" CTA per card.
+Since the blue rectangle is baked into the source PNG (`logo-v4.png` / `logo-glow.png`), CSS can't remove it without clipping. Two options:
 
-"Retour" at each step. Modal returns `{ placeId, name, city, country, lat, lng }`.
+- **Option A (preferred)**: Apply a circular `clip-path` / `rounded-full` + `overflow-hidden` mask to the `<img>` so only the round sun orb shows. Combined with `scale-[1.45]` on an inner wrapper to enlarge the cross visually inside the visible circle.
+- **Option B**: Generate a new clean SVG logo (sun orb + rays + cross, no background). More work but cleaner long-term.
 
-Two entry points share the modal: `Définir un départ` and `Ajouter une destination`.
+Going with **Option A** for speed and zero asset regeneration. Update `src/components/ui/logo.tsx`:
+- Wrap `<img>` in `rounded-full overflow-hidden` container sized to the variant.
+- Apply `scale-[1.45]` to the `<img>` so the cross fills more of the visible circle (the blue corners get clipped away by the round mask).
+- Soften glow: `drop-shadow-[0_0_20px_rgba(244,197,66,0.75)] drop-shadow-[0_0_40px_rgba(244,197,66,0.75)]` at opacity 0.75.
+- Apply across all variants (small/medium/large) and both `main` + `icon` variants.
 
-### 3. Globe quick-path
-Extend `ItineraryGlobe3D` with optional `onCountryClick` + `selectionMode` props (additive, no break to TripPlanner).
-- Tap a country in selection mode → opens modal pre-jumped to Step 3 for that country.
-- Floating chip top-center: *"Touchez un pays pour ajouter une destination"* with ✕.
+**2. Persistent trajectory across Planner ↔ Globe tab**
 
-### 4. Smart "Enregistrer" button
-- Disabled (no glow) until `departure && destinations.length >= 1`.
-- Active → full golden CTA. Toast: *"Trajet enregistré ✨ — {departure.city} → {N} étape(s)"*.
+Currently `departure` + `destinations` live in `Planner.tsx` local state → lost when navigating to `/explore` (Globe tab).
 
-### 5. Polish
-- Selected places shown as golden chips above buttons (✕ to remove).
-- Globe arcs recompute live from `departure + destinations` (no more `SAMPLE_PLACES`).
-- Empty state: France highlighted softly.
+Fix by persisting saved trip to `localStorage` on save, and reading it from the Globe tab's globe component:
+- In `Planner.tsx` `handleSave`: write `{ departure, destinations, savedAt }` to `localStorage` under key `sacred-saved-trip`.
+- On Planner mount: hydrate state from `localStorage` if present so the trajectory is still drawn after refresh/return.
+- Identify the Globe tab's main 3D globe (likely `Globe3D.tsx` used in `/explore`) and add a small overlay or pass the saved trip arcs to it. If `Globe3D.tsx` is Mapbox-based (not R3F), draw arcs as Mapbox `LineLayer` from the saved coords with the same golden/orange glow styling.
 
-### Files touched (~4)
-
-**New:** `src/components/planner/PlaceSelectorModal.tsx`
+### Files touched (~3)
 
 **Edited:**
-- `src/components/ui/logo.tsx` (cross glow)
-- `src/pages/Planner.tsx` (state, modal wiring, chips, conditional CTA, globe selection mode)
-- `src/components/ItineraryGlobe3D.tsx` (optional `onCountryClick` + `selectionMode`)
+- `src/components/ui/logo.tsx` — circular mask + scale + softer glow
+- `src/pages/Planner.tsx` — persist saved trip to localStorage, hydrate on mount
+- `src/components/Globe3D.tsx` (or equivalent on /explore) — read saved trip from localStorage and render golden arcs
 
 ### Untouched
-DB · RLS · `TripPlannerTab` · BottomNavigation · Settings · onboarding.
+PlaceSelectorModal · BottomNavigation · DB · RLS · ItineraryGlobe3D internals (already handles arcs correctly on Planner screen).
 
 ### Risks
-- Shared globe component: new props optional → existing consumers unaffected.
-- Country place coverage: empty state card *"Aucun lieu disponible pour ce pays"* if none.
-- Mobile modal: `max-h-[85vh]` + internal scroll on Step 3.
+- If `logo-v4.png` has the cross off-center, the `scale-[1.45]` may shift it — will use `object-contain` + `object-center` to keep it anchored.
+- Globe tab globe may be Mapbox not Three.js → arc rendering API differs. Will inspect `Globe3D.tsx` first and adapt.
 
