@@ -64,7 +64,7 @@ const Header = ({
                     '0 0 18px rgba(244,197,66,0.55), 0 0 36px rgba(244,197,66,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
                 }}
               >
-                <ChristianIcon size="lg" className="scale-[1.9]" />
+                <ChristianIcon size="lg" className="scale-[2.85]" />
               </div>
               
               {/* 2. Badges obtenus */}

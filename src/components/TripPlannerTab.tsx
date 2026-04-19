@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { useApp } from '@/contexts/AppContext';
 import { usePlaces } from '@/hooks/usePlaces';
-import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone, Sparkles, ArrowUp, ArrowDown, Check, X } from 'lucide-react';
+import { MapPin, Trash2, Calendar, Navigation, Route, ArrowRight, Utensils, Star, Globe, Phone, Sparkles, ArrowUp, ArrowDown, Check, X, Plane, TrainFront, Bus, Car, Bike, Footprints } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { getImageUrl } from '@/lib/imageHelper';
@@ -36,6 +36,7 @@ const TripPlannerTab = () => {
   const { userProgress, removeFromTrip, clearTrip, unsaveRestaurant, updatePlannedRoute, reorderTrip } = useApp();
   const [savedRestaurants, setSavedRestaurants] = useState<SavedRestaurant[]>([]);
   const [proposedOrder, setProposedOrder] = useState<string[] | null>(null);
+  const [transportMode, setTransportMode] = useState<'plane' | 'train' | 'bus' | 'car' | 'bike' | 'walk'>('car');
   
   const startingCity = userProgress.plannedRouteStartCity;
   const showOptimizedRoute = userProgress.showPlannedRoute;
@@ -307,6 +308,43 @@ const TripPlannerTab = () => {
       .filter((p): p is NonNullable<typeof p> => Boolean(p));
   }, [proposedOrder, tripPlaces]);
 
+  // === Transport modes + ETA ===
+  const TRANSPORT_MODES = [
+    { id: 'plane' as const, label: 'Avion', Icon: Plane, speed: 750 },
+    { id: 'train' as const, label: 'Train', Icon: TrainFront, speed: 200 },
+    { id: 'bus' as const, label: 'Bus', Icon: Bus, speed: 70 },
+    { id: 'car' as const, label: 'Voiture', Icon: Car, speed: 90 },
+    { id: 'bike' as const, label: 'Vélo', Icon: Bike, speed: 18 },
+    { id: 'walk' as const, label: 'Marche', Icon: Footprints, speed: 5 },
+  ];
+
+  const totalDistanceKm = useMemo(() => {
+    if (tripPlaces.length < 2) return 0;
+    let sum = 0;
+    for (let i = 0; i < tripPlaces.length - 1; i++) {
+      const a = tripPlaces[i];
+      const b = tripPlaces[i + 1];
+      sum += calculateDistanceInKm(a.coordinates[1], a.coordinates[0], b.coordinates[1], b.coordinates[0]);
+    }
+    return sum;
+  }, [tripPlaces]);
+
+  const formatDuration = (hours: number) => {
+    if (!isFinite(hours) || hours <= 0) return '—';
+    if (hours < 1) return `${Math.round(hours * 60)} min`;
+    if (hours >= 24) {
+      const d = Math.floor(hours / 24);
+      const h = Math.round(hours - d * 24);
+      return `${d}j ${h}h`;
+    }
+    const h = Math.floor(hours);
+    const m = Math.round((hours - h) * 60);
+    return m > 0 ? `${h}h ${String(m).padStart(2, '0')}min` : `${h}h`;
+  };
+
+  const selectedMode = TRANSPORT_MODES.find(m => m.id === transportMode)!;
+  const estimatedHours = totalDistanceKm / selectedMode.speed;
+
   return (
     <div className="relative h-full overflow-y-auto">
       {/* Globe 3D en arrière-plan - fixed position */}
@@ -515,6 +553,51 @@ const TripPlannerTab = () => {
                       )}
                     </div>
                   </CardHeader>
+
+                  {/* Transport modes + ETA */}
+                  {tripPlaces.length >= 2 && (
+                    <CardContent className="pt-0">
+                      <div className="text-xs font-medium text-muted-foreground mb-2">
+                        Mode de transport
+                      </div>
+                      <div className="grid grid-cols-3 gap-2">
+                        {TRANSPORT_MODES.map(({ id, label, Icon }) => {
+                          const active = transportMode === id;
+                          return (
+                            <button
+                              key={id}
+                              type="button"
+                              onClick={() => setTransportMode(id)}
+                              className={cn(
+                                'flex flex-col items-center justify-center gap-1 rounded-lg border px-2 py-2 text-xs font-medium transition-all',
+                                active
+                                  ? 'border-primary bg-primary/15 text-primary shadow-sm'
+                                  : 'border-border bg-background/60 text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                              )}
+                              aria-pressed={active}
+                            >
+                              <Icon className="w-4 h-4" />
+                              <span>{label}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                      <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+                        <span>
+                          <span className="text-muted-foreground">Distance : </span>
+                          <span className="font-semibold text-foreground">
+                            {totalDistanceKm < 10
+                              ? totalDistanceKm.toFixed(1)
+                              : Math.round(totalDistanceKm).toLocaleString('fr-FR')} km
+                          </span>
+                        </span>
+                        <span>
+                          <span className="text-muted-foreground">Durée ({selectedMode.label.toLowerCase()}) : </span>
+                          <span className="font-semibold text-primary">{formatDuration(estimatedHours)}</span>
+                        </span>
+                      </div>
+                    </CardContent>
+                  )}
 
                   {proposedOrder && proposedPlaces.length > 0 && (
                     <CardContent className="space-y-4">
