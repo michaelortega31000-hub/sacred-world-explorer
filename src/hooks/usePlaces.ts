@@ -169,7 +169,20 @@ const mergePlaces = (dbPlaces: DBPlace[], localPlaces: Place[]): Place[] => {
     uniqueDb.push(normalizeDbPlace(dbPlace, key));
   }
 
-  return [...localPlaces, ...uniqueDb];
+  // Apply IMAGE_OVERRIDES to ANY entry (local or DB) whose imageUrl is missing
+  // or points to the placeholder. This catches both gaps in the local dataset
+  // and DB rows where image_url is NULL.
+  const isPlaceholder = (url: string | undefined): boolean =>
+    !url || url === '/placeholder.svg' || url === '/images/place-placeholder.jpg';
+
+  const merged = [...localPlaces, ...uniqueDb].map(p => {
+    if (!isPlaceholder(p.imageUrl)) return p;
+    const key = canonicalKey(p.name, p.city, p.country);
+    const override = IMAGE_OVERRIDES[key];
+    return override ? { ...p, imageUrl: override } : p;
+  });
+
+  return merged;
 };
 
 /**
