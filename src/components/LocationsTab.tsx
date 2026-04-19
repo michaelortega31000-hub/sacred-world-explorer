@@ -28,13 +28,14 @@ import { logger } from '@/lib/logger';
 async function fetchTransitousRoute(
   from: [number, number], // [lng, lat]
   to: [number, number],
-  mode: 'plane' | 'train' | 'bus'
+  mode: 'plane' | 'train' | 'bus' | 'metro'
 ): Promise<{ distanceKm: number; durationMin: number; transfers: number } | null> {
   try {
     const modeMap: Record<typeof mode, string> = {
       plane: 'AIRPLANE,WALK',
       train: 'RAIL,WALK',
       bus: 'BUS,WALK',
+      metro: 'SUBWAY,WALK',
     };
     const params = new URLSearchParams({
       fromPlace: `${from[1]},${from[0]}`,
