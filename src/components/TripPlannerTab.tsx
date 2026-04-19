@@ -220,6 +220,93 @@ const TripPlannerTab = () => {
     return colors[type] || 'bg-slate-500/20 text-slate-700 border-slate-500/30';
   };
 
+  // === Geographic Nearest-Neighbor optimization (Haversine, real geography) ===
+  // Example: Bordeaux → Barcelona → Athens (≈ 1900 km) instead of
+  //          Bordeaux → Athens → Barcelona (≈ 4500 km).
+  const geoOptimizedIds = useMemo<string[]>(() => {
+    if (tripPlaces.length < 3) return tripPlaces.map(p => p.id);
+    const remaining = [...tripPlaces];
+    const ordered: typeof tripPlaces = [];
+    // Anchor: keep the first place (the user's chosen departure / current first stop)
+    let current = remaining.shift()!;
+    ordered.push(current);
+    while (remaining.length > 0) {
+      let bestIdx = 0;
+      let bestDist = Infinity;
+      for (let i = 0; i < remaining.length; i++) {
+        const cand = remaining[i];
+        const d = calculateDistanceInKm(
+          current.coordinates[1], current.coordinates[0],
+          cand.coordinates[1], cand.coordinates[0],
+        );
+        if (d < bestDist) { bestDist = d; bestIdx = i; }
+      }
+      current = remaining.splice(bestIdx, 1)[0];
+      ordered.push(current);
+    }
+    return ordered.map(p => p.id);
+  }, [tripPlaces]);
+
+  const isAlreadyOptimal = useMemo(() => {
+    const current = tripPlaces.map(p => p.id).join('|');
+    return current === geoOptimizedIds.join('|');
+  }, [tripPlaces, geoOptimizedIds]);
+
+  const handleProposeOptimization = () => {
+    if (tripPlaces.length < 3) {
+      toast.info('Ajoutez au moins 3 étapes pour optimiser');
+      return;
+    }
+    if (isAlreadyOptimal) {
+      toast.success('Votre itinéraire est déjà optimal ✨');
+      return;
+    }
+    setProposedOrder(geoOptimizedIds);
+  };
+
+  const acceptProposedOrder = () => {
+    if (!proposedOrder) return;
+    reorderTrip(proposedOrder);
+    // Also update the persisted saved trip so the globe arcs follow the new order
+    try {
+      const raw = localStorage.getItem('sacred-saved-trip');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const all = [parsed?.departure, ...(parsed?.destinations || [])].filter(Boolean);
+        const byId = new Map(all.map((p: any) => [p.placeId, p]));
+        const reordered = proposedOrder.map(id => byId.get(id)).filter(Boolean);
+        if (reordered.length >= 2) {
+          localStorage.setItem('sacred-saved-trip', JSON.stringify({
+            departure: reordered[0],
+            destinations: reordered.slice(1),
+            savedAt: new Date().toISOString(),
+          }));
+          window.dispatchEvent(new CustomEvent('sacred-saved-trip-updated'));
+        }
+      }
+    } catch { /* ignore */ }
+    setProposedOrder(null);
+    toast.success('Itinéraire optimisé appliqué');
+  };
+
+  const cancelProposedOrder = () => setProposedOrder(null);
+
+  const moveStop = (idx: number, dir: -1 | 1) => {
+    const ids = tripPlaces.map(p => p.id);
+    const target = idx + dir;
+    if (target < 0 || target >= ids.length) return;
+    [ids[idx], ids[target]] = [ids[target], ids[idx]];
+    reorderTrip(ids);
+  };
+
+  // Resolve proposed order to full place objects for preview
+  const proposedPlaces = useMemo(() => {
+    if (!proposedOrder) return [];
+    return proposedOrder
+      .map(id => tripPlaces.find(p => p.id === id))
+      .filter((p): p is NonNullable<typeof p> => Boolean(p));
+  }, [proposedOrder, tripPlaces]);
+
   return (
     <div className="relative h-full overflow-y-auto">
       {/* Globe 3D en arrière-plan - fixed position */}
