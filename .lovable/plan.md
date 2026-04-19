@@ -1,83 +1,45 @@
 
-## Phase 23 — Remove alias duplicates and fix wrong/reused place images
 
-### What the screenshots prove
-The remaining problems are real:
-- There are still duplicates on country pages, but they are not always exact string duplicates. Some are alias duplicates such as:
-  - same monument with different names
-  - same monument with different city spellings (`Padoue` vs `Padua`)
-- Some cards still show blank placeholders because those places are coming from merged backend data, not just the local dataset.
-- Some images are incorrect because the current logic reuses a generic/fuzzy match or a bad manual URL for the wrong monument.
+## Phase 24 — Bulk image audit + apply overrides everywhere
 
-### Root cause in code
-From the current code:
-- `src/hooks/usePlaces.ts` deduplicates only with a raw `name|city|country` composite key.
-- That misses semantic duplicates like:
-  - `Cathédrale de Chartres` vs `Cathédrale Notre-Dame de Chartres`
-  - identical places with translated city names
-- `tryMatchLocalImage()` can attach a “close enough” asset instead of the exact monument.
-- `Country.tsx` displays merged places from `usePlacesByCountry()`, so fixing only `placesData.ts` is not enough.
+### Reality check
+Screenshots only showed France/Italy, but the user confirms many more places (all countries) still render the placeholder. Phase 23 only fixed ~6 monuments via `IMAGE_OVERRIDES`, and that map is only consulted for DB entries, not local ones. Local mockPlaces entries with broken/missing imageUrl never benefit.
 
-### Implementation plan
+### Plan
 
-**1. Strengthen deduplication in `src/hooks/usePlaces.ts`**
-- Add a stricter canonical key builder that normalizes:
-  - accents
-  - punctuation
-  - city aliases (`Padua` → `Padoue`, etc.)
-  - monument prefixes/synonyms for known cathedral/basilica naming variants
-- Deduplicate DB vs local using this canonical key, with local entries still taking priority.
-- Also deduplicate DB entries against each other using the same canonical key.
+**1. Audit step (script-driven, in default mode)**
+- Scan `src/data/placesData.ts` for every entry whose `imageUrl` is:
+  - missing
+  - `/images/place-placeholder.jpg`
+  - a `/src/assets/places/*.jpg` path that doesn't exist on disk
+- Also scan the live merged set: query Supabase `places` table for rows with `image_url IS NULL`.
+- Produce a single consolidated list of (id, name, city, country) needing an image.
 
-**2. Add a small alias map for known problem monuments**
-- In `usePlaces.ts`, add a targeted alias map for the monuments already visible in screenshots / likely problem set:
-  - Chartres cathedral variants
-  - Padua/Padoue basilica variants
-  - similar known France/Italy duplicates if found in the same pattern
-- Keep this explicit and small, not a risky global rewrite.
+**2. Source verified Wikimedia URLs**
+- For each entry in the audit list, fetch a verified Wikimedia Commons thumbnail URL.
+- Use the existing `fetch-wikipedia-image` edge function pattern, OR direct Wikimedia API calls in a Node script, queried by `"<name> <city>"`.
+- Reject results that don't look like the right monument (basic sanity: title contains city or monument keyword).
 
-**3. Stop fuzzy image guessing for problem entries**
-- Replace the current “best effort” fuzzy local-image matching with safer logic:
-  - prefer exact DB URL if valid
-  - else prefer explicit per-place override map
-  - else exact local asset match only
-  - else placeholder
-- This avoids assigning the same wrong image to multiple different monuments.
+**3. Write fixes in two places**
+- **`src/data/placesData.ts`**: inline-update every local entry's `imageUrl` to the verified URL. This is the source of truth.
+- **`src/hooks/usePlaces.ts`** `IMAGE_OVERRIDES` map: extend with canonical keys for every DB-only entry that came back with a valid Wikimedia URL, so DB rows without `image_url` also resolve correctly.
 
-**4. Add explicit image overrides for currently broken/wrong places**
-- In `src/hooks/usePlaces.ts` or `src/data/placesData.ts` add a verified image override map keyed by canonical monument key.
-- Priority:
-  - France
-  - Italy
-  - Spain
-- Specifically fix the screenshot cases first:
-  - Chartres
-  - Lisieux
-  - Domrémy-la-Pucelle / Basilique du Bois-Chenu
-  - Gordes / Sénanque if that is the affected card
-  - Loreto
-  - Padua/Padoue
-- Each override should point to the correct monument image, not a reused generic one.
+**4. Apply overrides to local entries too (Phase 23 gap)**
+- In `usePlaces.ts`, after building the merged list, walk it once: any entry whose `imageUrl` is missing/placeholder gets the `IMAGE_OVERRIDES` lookup applied. This guarantees future local entries with broken paths still get the override.
 
-**5. Keep UI unchanged**
-- No layout changes to `LocationsTab.tsx`, country page structure, sorting, counters, A–Z rail, Planner, Globe, or transport modes.
-- Only data/merge/image resolution behavior changes.
+**5. Local-vs-local dedup (Phase 23 gap)**
+- `mergePlaces` currently never dedupes local-vs-local. Add a first pass that dedupes `localPlaces` by canonical key, keeping the entry with a valid `imageUrl` when keys collide.
 
 ### Files to update
-- `src/hooks/usePlaces.ts` — canonical deduplication, alias handling, safer image resolution, verified image overrides
-- `src/data/placesData.ts` — only if a local entry still has a wrong image or an obvious alias duplicate that should be cleaned at source
+- `src/data/placesData.ts` — bulk imageUrl fixes
+- `src/hooks/usePlaces.ts` — extend overrides, apply to local, dedupe local-vs-local
 
 ### Verification
-1. `/country/France`
-   - only one Chartres card
-   - no blank card for Lisieux / Domrémy / Gordes problem entries
-2. `/country/Italy`
-   - only one Saint-Antoine de Padoue card
-   - Loreto and Padua show the correct monument images
-3. No obvious reused hero image across unrelated places
-4. Existing sorting remains country → city → place
-5. No UI regression on country page cards or modal images
+- Open France, Italy, Spain, plus 3 random other countries; confirm zero placeholders.
+- Confirm no duplicate cards on country pages.
+- Confirm no reused image across unrelated monuments (visual spot-check).
 
-### Risk control
-- Use a narrow alias/override list instead of aggressive fuzzy deduplication.
-- Keep local data as the source of truth when local and backend rows refer to the same monument.
+### Risk
+- Wikimedia lookup may fail or return wrong image for very obscure entries — those keep the placeholder (no regression vs current state) and get logged for manual review.
+- Bulk edit to placesData.ts is large but mechanical (only `imageUrl` field changes).
+
