@@ -96,6 +96,47 @@ interface POI {
   placeId: string; // ID of the associated place
   distanceFromPlace?: number; // distance in km from the sacred place
 }
+
+// Vertical golden A–Z jump rail
+const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+const AlphaJumpRail = ({
+  availableLetters,
+  containerRef,
+}: {
+  availableLetters: Set<string>;
+  containerRef: React.RefObject<HTMLDivElement>;
+}) => {
+  const jumpToLetter = (letter: string) => {
+    const root = containerRef.current;
+    if (!root) return;
+    const target = root.querySelector(`[data-letter="${letter}"]`) as HTMLElement | null;
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  return (
+    <div className="absolute right-1 top-2 bottom-2 w-6 flex flex-col items-center justify-center gap-[1px] z-10 pointer-events-none">
+      {ALPHABET.map((l) => {
+        const active = availableLetters.has(l);
+        return (
+          <button
+            key={l}
+            type="button"
+            disabled={!active}
+            onClick={() => jumpToLetter(l)}
+            className={cn(
+              'text-[10px] font-semibold leading-none transition-all pointer-events-auto',
+              active
+                ? 'text-[#F4C542] hover:text-white hover:scale-150 cursor-pointer'
+                : 'text-[#F4C542]/30 cursor-default'
+            )}
+          >
+            {l}
+          </button>
+        );
+      })}
+    </div>
+  );
+};
+
 const LocationsTab = () => {
   const navigate = useNavigate();
   const {
