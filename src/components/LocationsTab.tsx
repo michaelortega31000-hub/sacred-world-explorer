@@ -255,8 +255,21 @@ const LocationsTab = () => {
     pdf.setTextColor(0, 0, 0);
     pdf.text(`Ville de départ: ${startingCity}`, 20, yPosition);
     yPosition += 7;
-    pdf.text(`Mode de transport: ${transportLabel(transportMode)}`, 20, yPosition);
-    yPosition += 7;
+    const allSame = segmentModes.length > 0 && segmentModes.every(m => m === segmentModes[0]);
+    if (segmentModes.length === 0 || allSame) {
+      pdf.text(`Mode de transport: ${transportLabel(segmentModes[0] ?? transportMode)}`, 20, yPosition);
+      yPosition += 7;
+    } else {
+      pdf.text('Mode de transport: mixte', 20, yPosition);
+      yPosition += 6;
+      pdf.setFontSize(10);
+      segmentModes.forEach((m, i) => {
+        pdf.text(`  • Étape ${i + 1} → ${i + 2} : ${transportLabel(m)}`, 25, yPosition);
+        yPosition += 5;
+      });
+      pdf.setFontSize(12);
+      yPosition += 2;
+    }
     pdf.text(`Nombre d'étapes: ${optimizedRoute.length}`, 20, yPosition);
     yPosition += 10;
 
