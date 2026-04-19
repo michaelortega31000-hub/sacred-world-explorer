@@ -936,20 +936,24 @@ const LocationsTab = () => {
   };
 
   // Available first-letters for the A–Z rail (uppercase, accent-stripped)
+  const getJumpLetter = (place: typeof allPlaces[number]) => {
+    const source = selectedCountry !== 'all' ? (place.city || place.name) : (place.country || place.name);
+    return (source || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0]?.toUpperCase() ?? '';
+  };
   const availableLetters = useMemo(() => {
     const set = new Set<string>();
     filteredPlaces.forEach(p => {
-      const ch = (p.name || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0]?.toUpperCase();
+      const ch = getJumpLetter(p);
       if (ch && /[A-Z]/.test(ch)) set.add(ch);
     });
     return set;
-  }, [filteredPlaces]);
+  }, [filteredPlaces, selectedCountry]);
   const allListRef = useRef<HTMLDivElement>(null);
   const plannedListRef = useRef<HTMLDivElement>(null);
 
   const renderPlaceCard = (place: typeof allPlaces[number]) => {
     const inTrip = userProgress.tripPlaces?.includes(place.id) ?? false;
-    const letter = (place.name || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0]?.toUpperCase() ?? '';
+    const letter = getJumpLetter(place);
     return (
       <Card
         key={place.id}
