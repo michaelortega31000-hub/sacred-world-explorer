@@ -3713,3 +3713,15 @@ export const getCitiesByCountry = (country: string): string[] => {
   }
   return Array.from(set).sort(frCmp);
 };
+
+export const getAllCountries = (): string[] => {
+  const set = new Set<string>();
+  for (const p of mockPlaces) if (p.country) set.add(p.country);
+  return Array.from(set).sort(frCmp);
+};
+
+export const getPlaceById = (id: string) =>
+  mockPlaces.find((p) => p.id === id);
+
+export const getPlacesByCountry = (country: string) =>
+  mockPlaces.filter((p) => p.country === country);
