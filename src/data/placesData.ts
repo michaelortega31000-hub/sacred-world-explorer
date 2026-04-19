@@ -735,7 +735,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/aksum.jpg"
   },
   {
-    "id": "eth-2",
+    "id": "eth-2-2",
     "name": "Monastère de Debre Damo",
     "country": "Ethiopia",
     "city": "Debre Damo",
@@ -2766,7 +2766,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/leon-cathedral.jpg"
   },
   {
-    "id": "esp-11",
+    "id": "esp-11-2",
     "name": "Cathédrale de la Almudena",
     "country": "Spain",
     "city": "Madrid",
@@ -3480,7 +3480,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/st-louis-cathedral-nola.jpg"
   },
   {
-    "id": "usa-5",
+    "id": "usa-5-2",
     "name": "Cathédrale Riverside Church",
     "country": "United States",
     "city": "New York",
@@ -3536,7 +3536,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/cathedral-st-paul-mn.jpg"
   },
   {
-    "id": "usa-4",
+    "id": "usa-4-2",
     "name": "Salt Lake Temple",
     "country": "United States",
     "city": "Salt Lake City",
@@ -3564,7 +3564,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/san-fernando-cathedral.jpg"
   },
   {
-    "id": "usa-5",
+    "id": "usa-5-3",
     "name": "Grace Cathedral",
     "country": "United States",
     "city": "San Francisco",
@@ -3592,7 +3592,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/mission-san-juan-capistrano.jpg"
   },
   {
-    "id": "usa-3",
+    "id": "usa-3-2",
     "name": "Mission San Xavier del Bac",
     "country": "United States",
     "city": "Tucson",
@@ -3606,7 +3606,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/san-xavier-mission.jpg"
   },
   {
-    "id": "usa-1",
+    "id": "usa-1-2",
     "name": "Cathédrale Nationale de Washington",
     "country": "United States",
     "city": "Washington D.C.",
@@ -3634,7 +3634,7 @@ export const mockPlaces: Place[] = [
     "imageUrl": "/src/assets/places/lotus-temple-dc.jpg"
   },
   {
-    "id": "usa-2",
+    "id": "usa-2-2",
     "name": "Basilique du Sanctuaire National",
     "country": "United States",
     "city": "Washington DC",
