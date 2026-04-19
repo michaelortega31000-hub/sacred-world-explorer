@@ -923,7 +923,74 @@ const LocationsTab = () => {
       religious,
       museums,
       total: allPlaces.length
-    };
+  };
+
+  // Available first-letters for the A–Z rail (uppercase, accent-stripped)
+  const availableLetters = useMemo(() => {
+    const set = new Set<string>();
+    filteredPlaces.forEach(p => {
+      const ch = (p.name || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0]?.toUpperCase();
+      if (ch && /[A-Z]/.test(ch)) set.add(ch);
+    });
+    return set;
+  }, [filteredPlaces]);
+  const allListRef = useRef<HTMLDivElement>(null);
+  const plannedListRef = useRef<HTMLDivElement>(null);
+
+  const renderPlaceCard = (place: typeof allPlaces[number]) => {
+    const inTrip = userProgress.tripPlaces?.includes(place.id) ?? false;
+    const letter = (place.name || '').trim().normalize('NFD').replace(/[\u0300-\u036f]/g, '')[0]?.toUpperCase() ?? '';
+    return (
+      <Card
+        key={place.id}
+        data-letter={letter}
+        onClick={() => navigate(`/place/${place.id}`)}
+        className={cn(
+          'group relative overflow-hidden cursor-pointer transition-all duration-300 hover:scale-[1.03]',
+          inTrip
+            ? 'border-2 border-[#F4C542]/60 shadow-[0_0_24px_rgba(244,197,66,0.25)] hover:shadow-[0_12px_40px_rgba(244,197,66,0.35)]'
+            : 'border border-[#34E0A1]/15 hover:shadow-[0_12px_40px_rgba(244,197,66,0.18)]'
+        )}
+        style={{
+          background: 'linear-gradient(135deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
+        }}
+      >
+        <div className="relative aspect-[4/3] overflow-hidden rounded-t-lg">
+          <img
+            src={getImageUrl(place.imageUrl)}
+            alt={place.name}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
+          />
+          <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0E1B3F]/90 to-transparent pointer-events-none" />
+          {isPlaceVisited(place.id) && (
+            <Badge
+              className="absolute top-2 right-2 bg-primary text-primary-foreground"
+              style={{ boxShadow: '0 0 15px rgba(52, 224, 161, 0.5)' }}
+            >
+              Visité
+            </Badge>
+          )}
+        </div>
+        <CardHeader>
+          <CardTitle className="font-serif text-[#F4C542] line-clamp-1">
+            {place.name}
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <MapPin className="w-4 h-4" />
+              {place.city}, {t(`countries.${place.country}`, { defaultValue: place.country })}
+            </div>
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground line-clamp-2">
+            {place.description}
+          </p>
+        </CardContent>
+      </Card>
+    );
+  };
   }, [allPlaces]);
   const isPlaceVisited = (placeId: string) => {
     return userProgress.visitedPlaces.includes(placeId);
