@@ -46,6 +46,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useApp, SavedPOI } from '@/contexts/AppContext';
 import { getMapboxToken } from '@/lib/mapboxHelper';
 import { logger } from '@/lib/logger';
+import { buildSamplePOIs } from '@/lib/samplePoiData';
 import { AddMemoryDialog } from '@/components/AddMemoryDialog';
 import ReligiousSymbol from '@/components/ReligiousSymbol';
 import { ReligiousSymbol3D } from '@/components/ReligiousSymbol3D';
