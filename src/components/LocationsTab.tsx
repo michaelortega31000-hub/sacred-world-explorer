@@ -427,26 +427,6 @@ const LocationsTab = () => {
     }
   };
 
-  // Recompute a single segment after the user changes its mode
-  const recalcSegment = async (index: number, newMode: TransportMode) => {
-    setSegmentModes(prev => {
-      const next = [...prev];
-      next[index] = newMode;
-      return next;
-    });
-    if (!displayRoute || index >= displayRoute.length - 1) return;
-    setLoadingSegmentIdx(index);
-    try {
-      const seg = await computeSingleSegment(displayRoute[index], displayRoute[index + 1], newMode);
-      setRouteSegments(prev => {
-        const next = [...prev];
-        next[index] = seg;
-        return next;
-      });
-    } finally {
-      setLoadingSegmentIdx(null);
-    }
-  };
   const continents = useMemo(() => getAllContinents(), []);
   const countries = useMemo(() => {
     if (selectedContinent === 'all') return [];
