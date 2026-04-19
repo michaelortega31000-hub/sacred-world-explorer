@@ -1302,6 +1302,21 @@ const LocationsTab = () => {
                               })()}
                                       </span>
                                     </div>
+                                    {(transportMode === 'train' || transportMode === 'bus') && (() => {
+                                      const totalTransfers = routeSegments.reduce((sum, seg) => sum + (seg.transfers ?? 0), 0);
+                                      if (totalTransfers <= 0) return null;
+                                      return (
+                                        <>
+                                          <div className="w-px h-4 bg-border" />
+                                          <div className="flex items-center gap-2">
+                                            <ArrowRight className="w-4 h-4 text-primary" />
+                                            <span className="font-bold text-primary">
+                                              {totalTransfers} {totalTransfers > 1 ? 'correspondances' : 'correspondance'}
+                                            </span>
+                                          </div>
+                                        </>
+                                      );
+                                    })()}
                                   </div>
                                 </div>
                               </div>}
