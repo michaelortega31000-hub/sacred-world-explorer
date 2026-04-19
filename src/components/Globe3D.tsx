@@ -584,23 +584,16 @@ const Globe3D = ({
       logger.log('✅ Map style loaded successfully');
       setIsMapLoading(false);
 
-      // Add React control for MonumentFilter with responsive positioning
+      // Add React control for MonumentFilter — always top-left
       try {
-        const isMobile = window.innerWidth < 640;
-        const position = isMobile ? 'top-left' : 'bottom-left';
+        const position = 'top-left' as const;
         class ReactControl {
           _container!: HTMLDivElement;
           onAdd() {
             this._container = document.createElement('div');
             this._container.className = 'mapboxgl-ctrl monument-filter-control pointer-events-auto relative';
             this._container.style.marginLeft = '8px';
-
-            // Responsive spacing
-            if (position === 'bottom-left') {
-              this._container.style.marginBottom = 'calc(env(safe-area-inset-bottom, 0px) + 76px)';
-            } else {
-              this._container.style.marginTop = '8px';
-            }
+            this._container.style.marginTop = '8px';
             this._container.style.zIndex = '200';
             return this._container;
           }
