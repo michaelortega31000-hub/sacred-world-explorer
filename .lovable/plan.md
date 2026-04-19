@@ -1,63 +1,58 @@
 
 
-## Phase 17 — Add Métro mode + remove "Masquer l'itinéraire"
+## Phase 18 — Per-segment transport mode selection
 
 ### Goal
-Reorganize the transport grid in `LocationsTab.tsx`:
-- Add a new **🚇 Métro** button under Train.
-- Move **🚲 Vélo** under Métro (new column position).
-- Remove the **"Masquer l'itinéraire"** button entirely.
+Allow the user to pick a **different transport mode for each segment** of the itinerary in `LocationsTab.tsx` (e.g. Bordeaux→León by ✈️ Avion, then León→local by 🚲 Vélo, then →Delphi by ✈️ Avion, then Delphi local by 🚇 Métro).
 
-### Current layout (3×2 grid)
-```
-[✈️ Avion]    [🚂 Train]   [🚌 Bus]
-[🚗 Voiture]  [🚲 Vélo]    [🥾 Marche]
-[Masquer l'itinéraire — full width]
-```
+### Current behaviour
+- One global `transportMode` applied to **every** segment.
+- Top grid of 7 buttons sets the mode for the whole route.
 
-### New layout (4×2 grid)
-```
-[✈️ Avion]    [🚂 Train]   [🚌 Bus]    [🚗 Voiture]
-[🥾 Marche]   [🚇 Métro]   [🚲 Vélo]   [ (empty) ]
-```
+### New behaviour
+- Keep the global grid as a **"set all to…"** quick-action (one click → applies to every segment).
+- Add a **per-segment selector** inline with each route segment row showing a compact icon-only dropdown / button row, defaulting to the global mode but independently overridable.
+- When a per-segment mode changes, only **that segment** is recalculated (Transitous or Mapbox), not the whole route.
+- Totals row sums distance/duration/correspondances across mixed modes — already works since it just iterates `routeSegments`.
 
-Wait — re-reading the user: "underneath train you put métro and you put vélo underneath métro". So the user wants a **vertical** stack under Train:
-```
-Row 1: [Avion]  [Train]  [Bus]    [Voiture]  [Marche]
-Row 2:          [Métro]
-Row 3:          [Vélo]
-```
+### Implementation (1 file: `src/components/LocationsTab.tsx`)
 
-That's awkward in a grid. Simpler interpretation: keep the 3×2 grid, **add Métro and reflow**:
+1. **State**
+   - Add `const [segmentModes, setSegmentModes] = useState<TransportMode[]>([])`.
+   - When `displayRoute` changes length, resize `segmentModes` to `displayRoute.length - 1`, defaulting new entries to the current global `transportMode`.
+   - When the global `transportMode` changes via the top grid, reset all `segmentModes` to that value (the "set all" semantic).
 
-```
-[✈️ Avion]    [🚂 Train]    [🚌 Bus]
-[🚗 Voiture]  [🚇 Métro]    [🚲 Vélo]
-[🥾 Marche — full width or col 1]
-```
+2. **Refactor `calculateRouteSegments`**
+   - Take `places` + an array `modes: TransportMode[]` (one per pair).
+   - Inside the loop, use `modes[i]` instead of the single `mode` arg.
+   - Transit branch (`plane|train|bus|metro`) and Mapbox branch (`driving|cycling|walking`) selected per-iteration.
+   - Returns/sets `routeSegments` as today.
 
-I'll go with this clean 3-column layout (Métro added as new mode, Vélo stays beside it, Masquer removed). Will confirm only if user pushes back.
+3. **New helper `recalcSegment(index, newMode)`**
+   - Updates `segmentModes[index] = newMode`.
+   - Recomputes only that single segment (not all) and patches `routeSegments[index]`.
+   - Sets a per-segment loading flag `loadingSegmentIdx: number | null`.
 
-### Implementation (1 file)
+4. **UI: per-segment selector**
+   - Inside each route-segment row (the existing distance/duration/correspondances line), add a compact horizontal pill row of 7 small icon buttons (Plane/Train/Bus/Car/Metro/Bike/Footprints).
+   - Active mode = `segmentModes[i]` highlighted with `variant="default"`, others `variant="outline"`, `size="icon"` (`h-7 w-7`).
+   - On click → `recalcSegment(i, mode)`. While that index is loading, show `Loader2` spinner over the active button.
+   - Place above the distance/duration row, with subtle label "Mode pour ce trajet".
 
-**`src/components/LocationsTab.tsx`**
+5. **Top grid label tweak**
+   - Change the top grid heading (or add a small caption) to: `"Appliquer à tous les trajets"`. Functional change: clicking still updates global mode AND resets all per-segment modes.
 
-1. **Type extension** — add `'metro'` to the `transportMode` union (and any related `TransportMode` type).
-2. **Transitous mapping** — extend `fetchTransitousRoute` to handle `metro` → `['SUBWAY','WALK']`. Falls back to Haversine at 40 km/h average if API fails.
-3. **Haversine fallback speeds** — add `metro: 40` km/h.
-4. **Button grid** — replace current 3×2 grid:
-   - Row 1: Avion · Train · Bus
-   - Row 2: Voiture · Métro · Vélo
-   - Row 3: Marche (full width, same styling as siblings)
-   - Each new button mirrors existing pattern: `Loader2` spinner when active+loading, `disabled={loadingRouteInfo}`, lucide icon (use `TrainFront` for Métro since no dedicated metro icon — or keep `Train` icon variant).
-5. **Remove** the "Masquer l'itinéraire" button block entirely.
-6. **Recalc trigger** — `useEffect` already watches `transportMode`, so Métro will auto-refresh distance/duration/correspondances.
+6. **Totals row** — no change, already aggregates `routeSegments`.
+
+7. **PDF export** — when modes are mixed, replace the single "Mode de transport" line with a per-segment list (e.g. `Étape 1 → 2: Avion`, `Étape 2 → 3: Vélo`, …). If all equal → keep current single line.
 
 ### Untouched
-- Transitous helper structure, totals row, hotels amber, city headers turquoise, Mapbox driving/cycling/walking, Planner page, Globe, PlaceDetail.
+- Transitous helper, Mapbox routing logic per mode, totals row, hotels/restaurants, Planner page, Globe, PlaceDetail, design tokens.
 
 ### Verification after merge
-1. `/explore` → Mon itinéraire shows 7 transport buttons (no Masquer).
-2. Click Métro → spinner → distance/duration update (Transitous SUBWAY or Haversine fallback).
-3. All other modes still work, totals row still shows correspondances for Train/Bus/Métro.
+1. `/explore` → Mon itinéraire with Bordeaux → León → Delphi.
+2. Top grid set to Voiture → all 2 segments show Voiture, totals computed.
+3. Click Métro on segment 2 only → only segment 2 recalculates, totals update with mixed values + Métro correspondances counted.
+4. Spinner shows only on the segment being recalculated, not the whole route.
+5. Export PDF → lists each leg's mode.
 
