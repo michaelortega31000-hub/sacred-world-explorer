@@ -343,10 +343,10 @@ const LocationsTab = () => {
     }
 
     // Transit modes — try Transitous (real multi-modal routing), fallback to Haversine
-    if (mode === 'plane' || mode === 'train' || mode === 'bus') {
+    if (mode === 'plane' || mode === 'train' || mode === 'bus' || mode === 'metro') {
       setLoadingRouteInfo(true);
       try {
-        const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : 70;
+        const speedKmh = mode === 'plane' ? 750 : mode === 'train' ? 200 : mode === 'metro' ? 40 : 70;
         const segments: RouteSegment[] = [];
         for (let i = 0; i < places.length - 1; i++) {
           const start = places[i];
