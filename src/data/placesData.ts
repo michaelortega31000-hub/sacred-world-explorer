@@ -438,7 +438,7 @@ export const mockPlaces: Place[] = [
       18.1108,
       42.6414
     ],
-    "imageUrl": "/src/assets/places/dubrovnik-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "hrv-2",
@@ -452,7 +452,7 @@ export const mockPlaces: Place[] = [
       15.8956,
       43.735
     ],
-    "imageUrl": "/src/assets/places/sibenik-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "hrv-1",
@@ -466,7 +466,7 @@ export const mockPlaces: Place[] = [
       15.9795,
       45.8144
     ],
-    "imageUrl": "/src/assets/places/zagreb-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "cyp-1",
@@ -536,7 +536,7 @@ export const mockPlaces: Place[] = [
       10.2105,
       56.1575
     ],
-    "imageUrl": "/src/assets/places/aarhus-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "dnk-2",
@@ -550,7 +550,7 @@ export const mockPlaces: Place[] = [
       12.586,
       55.6846
     ],
-    "imageUrl": "/src/assets/places/marble-church-copenhagen.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "dnk-1",
@@ -1237,7 +1237,7 @@ export const mockPlaces: Place[] = [
       13.3355,
       52.505
     ],
-    "imageUrl": "/src/assets/places/kaiser-wilhelm-church.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "ger-1",
@@ -1279,7 +1279,7 @@ export const mockPlaces: Place[] = [
       9.4127,
       51.7769
     ],
-    "imageUrl": "/src/assets/places/corvey-abbey.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "deu-4",
@@ -1293,7 +1293,7 @@ export const mockPlaces: Place[] = [
       9.9925,
       48.3986
     ],
-    "imageUrl": "/src/assets/places/ulm-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "gre-1",
@@ -1517,7 +1517,7 @@ export const mockPlaces: Place[] = [
       -7.9879,
       53.3267
     ],
-    "imageUrl": "/src/assets/places/clonmacnoise.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "irl-3",
@@ -1531,7 +1531,7 @@ export const mockPlaces: Place[] = [
       -9.8908,
       53.5604
     ],
-    "imageUrl": "/src/assets/places/kylemore-abbey.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "irl-2",
@@ -1545,7 +1545,7 @@ export const mockPlaces: Place[] = [
       -6.2713,
       53.3432
     ],
-    "imageUrl": "/src/assets/places/christ-church-dublin.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "irl-1",
@@ -1559,7 +1559,7 @@ export const mockPlaces: Place[] = [
       -6.2714,
       53.3394
     ],
-    "imageUrl": "/src/assets/places/st-patrick-dublin.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "isr-4",
@@ -1671,7 +1671,7 @@ export const mockPlaces: Place[] = [
       13.6099,
       43.4406
     ],
-    "imageUrl": "/src/assets/places/loreto-basilica.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "ita-2",
@@ -1727,7 +1727,7 @@ export const mockPlaces: Place[] = [
       11.8812,
       45.4015
     ],
-    "imageUrl": "/src/assets/places/padua-st-anthony.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "ita-9",
@@ -1755,7 +1755,7 @@ export const mockPlaces: Place[] = [
       12.2035,
       44.4184
     ],
-    "imageUrl": "/src/assets/places/ravenna-basilica.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "ita-10",
@@ -2595,7 +2595,7 @@ export const mockPlaces: Place[] = [
       20.4689,
       44.7982
     ],
-    "imageUrl": "/src/assets/places/st-sava-belgrade.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "srb-2",
@@ -2609,7 +2609,7 @@ export const mockPlaces: Place[] = [
       20.535,
       43.4894
     ],
-    "imageUrl": "/src/assets/places/studenica-monastery.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "svk-1",
@@ -2847,7 +2847,7 @@ export const mockPlaces: Place[] = [
       -4.1476,
       40.5892
     ],
-    "imageUrl": "/src/assets/places/el-escorial.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "esp-4",
@@ -2917,7 +2917,7 @@ export const mockPlaces: Place[] = [
       7.4513,
       46.9472
     ],
-    "imageUrl": "/src/assets/places/bern-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "che-4",
@@ -2931,7 +2931,7 @@ export const mockPlaces: Place[] = [
       8.7462,
       47.1279
     ],
-    "imageUrl": "/src/assets/places/einsiedeln-abbey.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "che-1",
@@ -2945,7 +2945,7 @@ export const mockPlaces: Place[] = [
       6.6356,
       46.5225
     ],
-    "imageUrl": "/src/assets/places/lausanne-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "che-2",
@@ -2959,7 +2959,7 @@ export const mockPlaces: Place[] = [
       9.3767,
       47.4239
     ],
-    "imageUrl": "/src/assets/places/st-gallen-abbey.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "tha-7",
@@ -3351,7 +3351,7 @@ export const mockPlaces: Place[] = [
       -1.576,
       54.7733
     ],
-    "imageUrl": "/src/assets/places/durham-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "uk-7",
@@ -3365,7 +3365,7 @@ export const mockPlaces: Place[] = [
       -2.7184,
       51.1473
     ],
-    "imageUrl": "/src/assets/places/glastonbury-abbey.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "uk-8",
@@ -3379,7 +3379,7 @@ export const mockPlaces: Place[] = [
       -0.5366,
       53.2347
     ],
-    "imageUrl": "/src/assets/places/lincoln-cathedral.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "uk-5",
@@ -3393,7 +3393,7 @@ export const mockPlaces: Place[] = [
       -0.0983,
       51.5138
     ],
-    "imageUrl": "/src/assets/places/st-paul-london.jpg"
+    "imageUrl": "/images/place-placeholder.jpg"
   },
   {
     "id": "uk-2",
