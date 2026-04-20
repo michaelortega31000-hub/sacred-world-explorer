@@ -23,6 +23,18 @@ import { getCitySearchTerms, citiesMatch } from '@/lib/cityNormalization';
 import { calculateDistanceInKm } from '@/lib/geoUtils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { logger } from '@/lib/logger';
+import { toast } from 'sonner';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 // ---- Transitous MOTIS 2 routing (free, no key) ----
 async function fetchTransitousRoute(
