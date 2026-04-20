@@ -113,12 +113,16 @@ const Header = ({
               {onAssistantClick && (
                 <div
                   onClick={onAssistantClick}
-                  className="flex items-center justify-center w-11 h-11 rounded-full bg-primary/20 backdrop-blur-sm shadow-md border border-primary/40 overflow-hidden cursor-pointer hover:bg-primary/30 transition-colors"
+                  className="flex items-center justify-center w-14 h-14 rounded-full bg-primary/20 backdrop-blur-sm shadow-md border border-primary/40 overflow-hidden cursor-pointer hover:bg-primary/30 transition-colors"
                   title="Assistant Sacred World"
                   role="button"
                   aria-label="Assistant"
+                  style={{
+                    boxShadow:
+                      '0 0 18px rgba(244,197,66,0.55), 0 0 36px rgba(244,197,66,0.35), inset 0 1px 0 rgba(255,255,255,0.15)',
+                  }}
                 >
-                  <MessageCircle className="w-5 h-5 text-primary" />
+                  <MessageCircle className="w-7 h-7 text-primary" />
                 </div>
               )}
 
