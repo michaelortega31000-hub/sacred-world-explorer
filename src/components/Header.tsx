@@ -126,11 +126,6 @@ const Header = ({
                 </div>
               )}
 
-              {location.pathname !== '/explore' && (
-                <Button variant="ghost" size="sm" onClick={() => navigate('/explore')} className="p-1.5 sm:p-2 text-foreground hover:bg-primary/10" aria-label="Retour au globe" title="Retour au globe">
-                  <ArrowLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Button>
-              )}
             </div>
           </div>
         ) : (
@@ -184,12 +179,6 @@ const Header = ({
                     title="Assistant Sacred World"
                   >
                     <MessageCircle className="w-5 h-5" />
-                  </Button>
-                )}
-
-                {location.pathname !== '/explore' && (
-                  <Button variant="ghost" size="sm" onClick={() => navigate('/explore')} className="p-2 text-foreground hover:bg-primary/10" aria-label="Retour au globe" title="Retour au globe">
-                    <ArrowLeft className="w-5 h-5" />
                   </Button>
                 )}
 
