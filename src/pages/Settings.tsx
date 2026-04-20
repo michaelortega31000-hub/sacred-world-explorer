@@ -298,7 +298,7 @@ const Settings = () => {
       <div className="min-h-screen relative overflow-hidden pb-20">
         <BackButton />
 
-      <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8">
+      <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-4 sm:pb-8">
         <h1 className="text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
           <Smartphone className="w-8 h-8 text-primary" />
           Paramètres

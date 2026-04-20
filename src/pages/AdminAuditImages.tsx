@@ -253,7 +253,7 @@ const AdminAuditImages = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+      <div className="container mx-auto px-4 pt-16 pb-6 max-w-6xl">
         <Button
           variant="ghost"
           onClick={() => navigate('/admin')}

@@ -169,7 +169,7 @@ const AvatarsGallery = () => {
       <div className="min-h-screen relative">
         <BackButton to="/profile" />
 
-        <main className="relative z-10 max-w-6xl mx-auto px-4 py-8 pb-24">
+        <main className="relative z-10 max-w-6xl mx-auto px-4 pt-16 pb-24">
           {/* Header */}
           <div className="text-center mb-8">
             <h1 className="text-4xl font-bold mb-2 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">

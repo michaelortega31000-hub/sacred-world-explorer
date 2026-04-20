@@ -310,7 +310,7 @@ const UserProfile = () => {
       <div className="min-h-screen pb-20 relative">
         <BackButton />
       
-      <div className="container mx-auto px-4 py-6 space-y-6">
+      <div className="container mx-auto px-4 pt-16 pb-6 space-y-6">
         {/* Remove duplicate back button */}
 
         {/* Profile Header */}

@@ -32,7 +32,7 @@ const Calendar = () => {
   >
       <BackButton />
       
-      <div className="container mx-auto px-4 py-6">
+      <div className="container mx-auto px-4 pt-16 pb-6">
         <div className="space-y-6">
 
           <CalendarTab />
