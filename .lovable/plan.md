@@ -1,47 +1,43 @@
 
 
-## Phase 27 — Move Back button to top-left globally
+## Phase 28 — Shrink floating Back/Assistant buttons + add safe top padding
 
 ### Problem
-The floating AI assistant now lives at top-right on every page. The "Retour au globe" (back arrow) button currently also sits on the right side of the header — it now collides with the assistant button and creates visual clutter. It should move to the top-left, mirroring the assistant's position, on every page where it's relevant (i.e. NOT on `/explore`, where the globe IS the destination).
+The current `w-14 h-14` floating Back button (top-3 left-3) and Assistant button (top-3 right-3) overlap page titles like "Paramètres", "Admin Dashboard", "Test de Sécurité", and similar `h1` headings that sit close to the top of the page. See screenshot: the back arrow is layered over the "P" of "Paramètres".
 
 ### Fix
-Create a global `FloatingBackButton` component, mounted once in `App.tsx` next to `FloatingAssistantButton`. It renders a fixed circular button at `top-3 left-3` that navigates to `/explore`. It hides itself on routes where a back-to-globe action makes no sense, and the duplicate back arrows inside `Header.tsx` are removed.
+Two minimal, global changes — no per-page rewrites needed:
 
-### Implementation
+1. **Reduce both floating buttons** from `w-14 h-14` → `w-10 h-10`, icon `w-7 h-7` → `w-5 h-5`, and soften the glow. Keep position `top-3 left-3` / `top-3 right-3`. This alone eliminates most overlap because the small button (≈40px) clears typical heading line-height.
 
-**1. New file: `src/components/FloatingBackButton.tsx`**
-- Fixed position `top-3 left-3 z-[60]`.
-- Same circular `w-14 h-14` styling as the assistant button (golden glow, primary border) for visual symmetry — but with `ArrowLeft` icon.
-- Hidden on these routes:
-  - `/` (Splash)
-  - `/auth`, `/welcome`, `/onboarding/denomination`
-  - `/explore` (the globe itself — nothing to go back to)
-- On click: `navigate('/explore')`.
+2. **Add a small global top safe-area** so titles never sit underneath the buttons. Inject `scroll-padding-top` and a CSS variable `--floating-nav-safe` (≈56px = 40px button + 16px gap) in `src/index.css`, then apply `pt-14` (or use the variable) to the **two pages whose `h1` currently starts at the very top edge and is most at risk**:
+   - `src/pages/Settings.tsx` — `<h1>Paramètres</h1>` (line 302): change wrapper `py-4 sm:py-8` to `pt-16 sm:pt-20 pb-4 sm:pb-8`.
+   - `src/pages/SecurityTest.tsx` — title row at line 227: add `pt-16` to its container.
+   - `src/pages/AdminDashboard.tsx` — title row at line 33: add `pt-16` to its container.
+   - `src/pages/Profile.tsx`, `src/pages/Country.tsx`, `src/pages/UserProfile.tsx`, `src/pages/Badges.tsx`, `src/pages/AvatarsGallery.tsx`, `src/pages/Reminders.tsx`, `src/pages/OfflineManager.tsx`, `src/pages/AdminEnrichData.tsx`, `src/pages/AdminAuditImages.tsx`, `src/pages/Admin.tsx`, `src/pages/Traditions.tsx`, `src/pages/Calendar.tsx`, `src/pages/Journal.tsx`, `src/pages/PlaceDetail.tsx`, `src/pages/Planner.tsx`, `src/pages/PublicProfile.tsx`, `src/pages/NotFound.tsx` — verify each top container has `pt-16` (or sufficient existing top padding ≥ 56px). Add `pt-16` only where missing.
 
-**2. Edit `src/App.tsx`**
-- Import and mount `<FloatingBackButton />` alongside `<FloatingAssistantButton />`.
+   Pages we do NOT touch (back button hidden there): `Splash`, `Auth`, `Welcome`, `OnboardingDenomination`, `Explore`, `Home`.
 
-**3. Edit `src/components/Header.tsx`**
-- Remove both inline "Retour au globe" buttons (the compact-header one ~line 130 and the normal-header one ~line 175) since the floating button now handles this globally.
-- Leave the rest of the header untouched (logo, badges, messages, religion icon).
+### Files changed
+- `src/components/FloatingBackButton.tsx` — shrink button + icon, soften shadow.
+- `src/components/FloatingAssistantButton.tsx` — shrink button + icon, soften shadow (kept symmetric).
+- `src/pages/Settings.tsx`, `SecurityTest.tsx`, `AdminDashboard.tsx`, `Profile.tsx`, `Country.tsx`, `UserProfile.tsx`, `Badges.tsx`, `AvatarsGallery.tsx`, `Reminders.tsx`, `OfflineManager.tsx`, `AdminEnrichData.tsx`, `AdminAuditImages.tsx`, `Admin.tsx`, `Traditions.tsx`, `Calendar.tsx`, `Journal.tsx`, `PlaceDetail.tsx`, `Planner.tsx`, `PublicProfile.tsx`, `NotFound.tsx` — only adjust the OUTERMOST top-padding of the main container (e.g. `py-4` → `pt-16 pb-4`) when current top padding is < 56px. No layout, color, or content change.
 
 ### Visual
 ```text
-┌─────────────────────────────────────────────┐
-│  [← Back]              [💬 Assistant]       │  ← top-3, both w-14 h-14
-│                                             │
-│              Page content                    │
-└─────────────────────────────────────────────┘
+Before:                          After:
+┌─────────────────┐              ┌─────────────────┐
+│[←]Paramètres   [💬]│         │[←]         [💬]│   ← compact 40px buttons
+│  ↑ overlap      │              │ Paramètres      │   ← clear heading
+└─────────────────┘              └─────────────────┘
 ```
-Symmetric, glowing, always available.
 
 ### Verification
-- `/journal`, `/calendar`, `/profile`, `/country/*`, `/place/*`, `/planner`, `/settings`, `/badges`, `/traditions`, `/avatars`, `/reminders`, `/admin*` → back arrow visible top-left, assistant top-right.
-- `/explore` → only assistant visible (no back button).
-- `/`, `/auth`, `/welcome`, `/onboarding/denomination` → neither floating button visible.
-- No duplicate back arrows remain inside any header.
+- `/settings`: "Paramètres" title fully visible, no overlap with back button.
+- `/admin/dashboard`, `/security-test`, `/profile`, `/country/*`, `/badges`, `/calendar`, `/journal`, `/reminders`, `/avatars`, `/place/*`, `/planner`, `/u/*`, `/user/*`: titles visible with breathing room above.
+- `/explore`: only Assistant visible (smaller now), no Back button.
+- `/`, `/auth`, `/welcome`, `/onboarding/denomination`: no floating buttons, no padding change.
 
 ### Risk
-Minimal. Pure additive component + removal of two button blocks in `Header.tsx`. No data, routing, or state changes.
+Low. Pure CSS sizing + top-padding adjustments. No state, routing, or component logic changes. Padding additions are additive — content shifts down slightly, never breaks layout.
 
