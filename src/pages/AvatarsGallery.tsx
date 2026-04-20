@@ -167,8 +167,6 @@ const AvatarsGallery = () => {
       className="min-h-screen pb-20"
     >
       <div className="min-h-screen relative">
-        <BackButton to="/profile" />
-
         <main className="relative z-10 max-w-6xl mx-auto px-4 pt-16 pb-24">
           {/* Header */}
           <div className="text-center mb-8">

@@ -251,8 +251,6 @@ const Badges = () => {
       className="min-h-screen pb-20"
     >
       <div className="min-h-screen relative pb-20">
-        <BackButton to="/profile" />
-      
       <div className="relative z-10 container mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-4 sm:pb-6 space-y-6">
         <div className="text-center space-y-2">
           <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-accent via-accent/80 to-accent/60 bg-clip-text text-transparent">

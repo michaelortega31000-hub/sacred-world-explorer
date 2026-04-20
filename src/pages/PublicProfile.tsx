@@ -90,8 +90,6 @@ export default function PublicProfile() {
         className="min-h-screen pb-20"
       >
         <div className="min-h-screen relative">
-          <BackButton to="/" />
-          
           <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
             <div className="space-y-6">
               <Skeleton className="h-48 w-full rounded-2xl" />
@@ -117,8 +115,6 @@ export default function PublicProfile() {
         className="min-h-screen pb-20"
       >
         <div className="min-h-screen relative">
-          <BackButton to="/" />
-          
           <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
             <Card className="p-8 text-center bg-card/80 backdrop-blur-sm border-primary/20">
               <User className="w-16 h-16 mx-auto mb-4 text-muted-foreground" />
@@ -145,8 +141,6 @@ export default function PublicProfile() {
         <div className="absolute inset-0 opacity-20">
           <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
         </div>
-
-        <BackButton to="/" />
 
         <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-24">
           {/* Profile Header */}

@@ -254,15 +254,6 @@ const AdminAuditImages = () => {
       <Header />
       
       <div className="container mx-auto px-4 pt-16 pb-6 max-w-6xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/admin')}
-          className="mb-4"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour à l'admin
-        </Button>
-
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar - Stats & Filters */}
           <div className="lg:w-80 space-y-4">
