@@ -8,6 +8,7 @@ import { AppProvider } from "./contexts/AppContext";
 import "./i18n/config";
 import AssistantChat from "./components/AssistantChat";
 import FloatingAssistantButton from "./components/FloatingAssistantButton";
+import FloatingBackButton from "./components/FloatingBackButton";
 import Splash from "./pages/Splash";
 import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
@@ -78,6 +79,7 @@ const AppContent = () => {
         <Sonner />
         <AssistantWrapper isOpen={assistantOpen} setIsOpen={setAssistantOpen} />
         <FloatingAssistantButton />
+        <FloatingBackButton />
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
