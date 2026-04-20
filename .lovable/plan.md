@@ -1,32 +1,47 @@
 
 
-## Phase 25 — Add delete button to itinerary cards
+## Phase 27 — Move Back button to top-left globally
 
 ### Problem
-On `/explore` → "Mon itinéraire" tab, the planned place cards (Cathédrale Sainte-Marie, Uluru, etc.) have no way to be removed. `renderPlaceCard` in `LocationsTab.tsx` is shared with "Tous les lieux" and never renders a remove control. Currently users must open each place's detail page to remove it.
+The floating AI assistant now lives at top-right on every page. The "Retour au globe" (back arrow) button currently also sits on the right side of the header — it now collides with the assistant button and creates visual clutter. It should move to the top-left, mirroring the assistant's position, on every page where it's relevant (i.e. NOT on `/explore`, where the globe IS the destination).
 
 ### Fix
-Add a small floating X (remove) button on the top-left of each card image. It calls `removeFromTrip(place.id)` and is only shown when the card is rendered inside the "Mon itinéraire" tab (`activeTab === 'planned'`) AND the place is in the trip. Also add a confirmation toast.
+Create a global `FloatingBackButton` component, mounted once in `App.tsx` next to `FloatingAssistantButton`. It renders a fixed circular button at `top-3 left-3` that navigates to `/explore`. It hides itself on routes where a back-to-globe action makes no sense, and the duplicate back arrows inside `Header.tsx` are removed.
 
 ### Implementation
-**File:** `src/components/LocationsTab.tsx`
 
-1. In `renderPlaceCard` (line ~954), add a floating remove button absolutely positioned at `top-2 left-2` of the image container, visible only when `activeTab === 'planned' && inTrip`.
-2. Button styling: small circular destructive variant with the existing `X` icon (already imported), `e.stopPropagation()` on click to prevent navigating into the place detail.
-3. On click: call `removeFromTrip(place.id)` (already destructured at line 149) and show a toast: "Lieu retiré de votre itinéraire".
-4. Add a "Vider l'itinéraire" (Clear all) button at the top of the planned tab list (next to the "X lieu(x) dans votre itinéraire" counter at line 1174) that calls `clearTrip()` with a confirm dialog.
+**1. New file: `src/components/FloatingBackButton.tsx`**
+- Fixed position `top-3 left-3 z-[60]`.
+- Same circular `w-14 h-14` styling as the assistant button (golden glow, primary border) for visual symmetry — but with `ArrowLeft` icon.
+- Hidden on these routes:
+  - `/` (Splash)
+  - `/auth`, `/welcome`, `/onboarding/denomination`
+  - `/explore` (the globe itself — nothing to go back to)
+- On click: `navigate('/explore')`.
+
+**2. Edit `src/App.tsx`**
+- Import and mount `<FloatingBackButton />` alongside `<FloatingAssistantButton />`.
+
+**3. Edit `src/components/Header.tsx`**
+- Remove both inline "Retour au globe" buttons (the compact-header one ~line 130 and the normal-header one ~line 175) since the floating button now handles this globally.
+- Leave the rest of the header untouched (logo, badges, messages, religion icon).
 
 ### Visual
-- Remove button: 28×28 px circular, semi-transparent destructive red bg with white X, clear hover state.
-- Position: top-left of the card image (the "Visité" badge is on top-right, no conflict).
-- Only appears in "Mon itinéraire" tab — keeps "Tous les lieux" UI unchanged.
+```text
+┌─────────────────────────────────────────────┐
+│  [← Back]              [💬 Assistant]       │  ← top-3, both w-14 h-14
+│                                             │
+│              Page content                    │
+└─────────────────────────────────────────────┘
+```
+Symmetric, glowing, always available.
 
 ### Verification
-- Open `/explore` → "Mon itinéraire", confirm an X button appears on each card.
-- Click X: card disappears, toast confirms removal, place removed from `tripPlaces`.
-- Click "Vider l'itinéraire": after confirm, all planned places removed.
-- Confirm "Tous les lieux" tab cards are unchanged (no X button).
+- `/journal`, `/calendar`, `/profile`, `/country/*`, `/place/*`, `/planner`, `/settings`, `/badges`, `/traditions`, `/avatars`, `/reminders`, `/admin*` → back arrow visible top-left, assistant top-right.
+- `/explore` → only assistant visible (no back button).
+- `/`, `/auth`, `/welcome`, `/onboarding/denomination` → neither floating button visible.
+- No duplicate back arrows remain inside any header.
 
 ### Risk
-- Minimal: only adds conditional UI inside an existing render function. No data model change, no other screens affected.
+Minimal. Pure additive component + removal of two button blocks in `Header.tsx`. No data, routing, or state changes.
 
