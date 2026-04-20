@@ -42,7 +42,13 @@ const BottomNavigation = () => {
             return (
               <button
                 key={item.path}
-                onClick={() => navigate(item.path)}
+                onClick={() => {
+                  if (item.icon === Globe) {
+                    navigate('/explore?tab=map', { state: { resetToMap: Date.now() } });
+                  } else {
+                    navigate(item.path);
+                  }
+                }}
                 className={`flex flex-col items-center justify-center gap-0.5 py-1 rounded-md transition-all duration-300 ${
                   active
                     ? ''

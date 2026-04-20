@@ -32,7 +32,7 @@ const Explore = () => {
     if (tab && ['map', 'ar', 'nearby', 'locations', 'challenges', 'rankings'].includes(tab)) {
       setActiveTab(tab);
     }
-  }, [location.search]);
+  }, [location.key, location.search]);
   
   const handleCountryClick = (countryName: string) => {
     const normalizedName = normalizeCountryName(countryName);
