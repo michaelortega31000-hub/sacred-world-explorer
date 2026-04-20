@@ -1,45 +1,32 @@
 
 
-## Phase 24 — Bulk image audit + apply overrides everywhere
+## Phase 25 — Add delete button to itinerary cards
 
-### Reality check
-Screenshots only showed France/Italy, but the user confirms many more places (all countries) still render the placeholder. Phase 23 only fixed ~6 monuments via `IMAGE_OVERRIDES`, and that map is only consulted for DB entries, not local ones. Local mockPlaces entries with broken/missing imageUrl never benefit.
+### Problem
+On `/explore` → "Mon itinéraire" tab, the planned place cards (Cathédrale Sainte-Marie, Uluru, etc.) have no way to be removed. `renderPlaceCard` in `LocationsTab.tsx` is shared with "Tous les lieux" and never renders a remove control. Currently users must open each place's detail page to remove it.
 
-### Plan
+### Fix
+Add a small floating X (remove) button on the top-left of each card image. It calls `removeFromTrip(place.id)` and is only shown when the card is rendered inside the "Mon itinéraire" tab (`activeTab === 'planned'`) AND the place is in the trip. Also add a confirmation toast.
 
-**1. Audit step (script-driven, in default mode)**
-- Scan `src/data/placesData.ts` for every entry whose `imageUrl` is:
-  - missing
-  - `/images/place-placeholder.jpg`
-  - a `/src/assets/places/*.jpg` path that doesn't exist on disk
-- Also scan the live merged set: query Supabase `places` table for rows with `image_url IS NULL`.
-- Produce a single consolidated list of (id, name, city, country) needing an image.
+### Implementation
+**File:** `src/components/LocationsTab.tsx`
 
-**2. Source verified Wikimedia URLs**
-- For each entry in the audit list, fetch a verified Wikimedia Commons thumbnail URL.
-- Use the existing `fetch-wikipedia-image` edge function pattern, OR direct Wikimedia API calls in a Node script, queried by `"<name> <city>"`.
-- Reject results that don't look like the right monument (basic sanity: title contains city or monument keyword).
+1. In `renderPlaceCard` (line ~954), add a floating remove button absolutely positioned at `top-2 left-2` of the image container, visible only when `activeTab === 'planned' && inTrip`.
+2. Button styling: small circular destructive variant with the existing `X` icon (already imported), `e.stopPropagation()` on click to prevent navigating into the place detail.
+3. On click: call `removeFromTrip(place.id)` (already destructured at line 149) and show a toast: "Lieu retiré de votre itinéraire".
+4. Add a "Vider l'itinéraire" (Clear all) button at the top of the planned tab list (next to the "X lieu(x) dans votre itinéraire" counter at line 1174) that calls `clearTrip()` with a confirm dialog.
 
-**3. Write fixes in two places**
-- **`src/data/placesData.ts`**: inline-update every local entry's `imageUrl` to the verified URL. This is the source of truth.
-- **`src/hooks/usePlaces.ts`** `IMAGE_OVERRIDES` map: extend with canonical keys for every DB-only entry that came back with a valid Wikimedia URL, so DB rows without `image_url` also resolve correctly.
-
-**4. Apply overrides to local entries too (Phase 23 gap)**
-- In `usePlaces.ts`, after building the merged list, walk it once: any entry whose `imageUrl` is missing/placeholder gets the `IMAGE_OVERRIDES` lookup applied. This guarantees future local entries with broken paths still get the override.
-
-**5. Local-vs-local dedup (Phase 23 gap)**
-- `mergePlaces` currently never dedupes local-vs-local. Add a first pass that dedupes `localPlaces` by canonical key, keeping the entry with a valid `imageUrl` when keys collide.
-
-### Files to update
-- `src/data/placesData.ts` — bulk imageUrl fixes
-- `src/hooks/usePlaces.ts` — extend overrides, apply to local, dedupe local-vs-local
+### Visual
+- Remove button: 28×28 px circular, semi-transparent destructive red bg with white X, clear hover state.
+- Position: top-left of the card image (the "Visité" badge is on top-right, no conflict).
+- Only appears in "Mon itinéraire" tab — keeps "Tous les lieux" UI unchanged.
 
 ### Verification
-- Open France, Italy, Spain, plus 3 random other countries; confirm zero placeholders.
-- Confirm no duplicate cards on country pages.
-- Confirm no reused image across unrelated monuments (visual spot-check).
+- Open `/explore` → "Mon itinéraire", confirm an X button appears on each card.
+- Click X: card disappears, toast confirms removal, place removed from `tripPlaces`.
+- Click "Vider l'itinéraire": after confirm, all planned places removed.
+- Confirm "Tous les lieux" tab cards are unchanged (no X button).
 
 ### Risk
-- Wikimedia lookup may fail or return wrong image for very obscure entries — those keep the placeholder (no regression vs current state) and get logged for manual review.
-- Bulk edit to placesData.ts is large but mechanical (only `imageUrl` field changes).
+- Minimal: only adds conditional UI inside an existing render function. No data model change, no other screens affected.
 
