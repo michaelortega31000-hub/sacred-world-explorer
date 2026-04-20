@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 import { mockPlaces } from '@/data/placesData';
 import { inferReligionFromPlace } from '@/lib/religionHelper';
 import { getImageUrl } from '@/lib/imageHelper';
-import { BackButton } from '@/components/BackButton';
+
 const Calendar = () => {
   const { userProgress } = useApp();
   
@@ -30,8 +30,6 @@ const Calendar = () => {
     parallax={true}
     className="min-h-screen pb-20"
   >
-      <BackButton />
-      
       <div className="container mx-auto px-4 pt-16 pb-6">
         <div className="space-y-6">
 
