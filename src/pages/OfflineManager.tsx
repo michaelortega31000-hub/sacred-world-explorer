@@ -13,7 +13,7 @@ const OfflineManager: React.FC = () => {
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5 pb-20">
       {/* Header */}
       <div className="sticky top-0 z-50 bg-background/80 backdrop-blur-xl border-b border-border/50">
-        <div className="container max-w-2xl mx-auto px-4 py-4">
+        <div className="container max-w-2xl mx-auto px-4 pt-16 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Button
