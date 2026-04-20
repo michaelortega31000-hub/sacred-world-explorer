@@ -7,6 +7,7 @@ import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AppProvider } from "./contexts/AppContext";
 import "./i18n/config";
 import AssistantChat from "./components/AssistantChat";
+import FloatingAssistantButton from "./components/FloatingAssistantButton";
 import Splash from "./pages/Splash";
 import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
@@ -76,6 +77,7 @@ const AppContent = () => {
         <Toaster />
         <Sonner />
         <AssistantWrapper isOpen={assistantOpen} setIsOpen={setAssistantOpen} />
+        <FloatingAssistantButton />
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
