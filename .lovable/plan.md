@@ -1,32 +1,31 @@
 
-## Phase 29 — Make "Globe" bottom-nav item always return to /explore map
+## Phase 30 — Make Globe icon always reset to /explore map from any page
 
 ### Problem
-The bottom navigation already has a Globe icon pointing to `/explore`, but `/explore` keeps its last active tab (AR, Proche, Lieux, Défis, Rang). If a user left Explore on the "AR" or "Lieux" tab, clicking the Globe icon from another page brings them back to that tab, not the actual 3D map.
+The previous fix made the Globe bottom-nav button navigate to `/explore?tab=map`. But on any page **other than `/explore`**, clicking Globe still doesn't force the map view reliably if the user was previously on a non-map tab — and more importantly, the user wants a guarantee: **from every single page**, clicking Globe lands on the 3D map.
 
-The user wants: clicking the Globe icon — from any page, including from `/explore` itself — must always land on the **map** (Globe3D), regardless of the previously active tab.
+Today the active-state highlight in `BottomNavigation.tsx` strips the query string (`path.split('?')[0]`), so the path comparison works, but the navigation itself uses `navigate('/explore?tab=map')` which React Router treats as a no-op if the user is already on `/explore` with a different `?tab=` value in some edge cases (and doesn't re-trigger the effect cleanly).
 
 ### Fix
-Two tiny, surgical changes:
+One surgical change in `src/components/BottomNavigation.tsx`:
 
-1. **`src/components/BottomNavigation.tsx`** — Change the Globe item navigation so it always forces the map tab:
-   - Replace `navigate('/explore')` for the Globe item with `navigate('/explore?tab=map')` (and use `replace: false` so it works even when already on `/explore`).
-   - Keep all other nav items unchanged.
+- For the Globe item only, replace the generic `navigate(item.path)` call with a dedicated handler that:
+  1. Always calls `navigate('/explore?tab=map', { replace: false })`.
+  2. If already on `/explore`, also force the URL/state refresh by passing a timestamped key or calling `navigate` with a state object (e.g. `{ state: { resetToMap: Date.now() } }`) so the `useEffect` watching `location` in `Explore.tsx` always re-fires.
 
-2. **`src/pages/Explore.tsx`** — Read the `tab` search param and sync it into `activeTab`:
-   - Add a `useSearchParams` (or `useLocation`) effect: whenever the URL contains `?tab=map` (or any valid tab value), call `setActiveTab(tabFromUrl)`.
-   - This ensures clicking Globe from `/explore` itself (where the route doesn't change) still resets the tab to `map`.
-   - Default initial state stays `'map'`, so deep-links and fresh loads behave identically.
+And a complementary tweak in `src/pages/Explore.tsx`:
+
+- Change the sync `useEffect` dependency from `[location.search]` to `[location.key]` (or `[location]`) so that even an identical URL re-trigger from the Globe button forces `setActiveTab('map')`.
 
 ### Files changed
-- `src/components/BottomNavigation.tsx` — 1-line change to the Globe item path.
-- `src/pages/Explore.tsx` — add a `useEffect` watching `location.search` to sync `activeTab` from the `tab` query param.
+- `src/components/BottomNavigation.tsx` — dedicated onClick for the Globe item.
+- `src/pages/Explore.tsx` — broaden the effect dependency so re-clicks always reset the tab.
 
 ### Verification
-- From `/profile`, `/settings`, `/journal`, `/planner`, `/calendar`, `/country/*`, `/place/*`, `/badges`, etc. → click Globe icon → lands on `/explore` showing the 3D map (not AR/Lieux/Défis/Rang).
-- Already on `/explore` with "Lieux" tab active → click Globe icon → switches back to the map tab.
-- Deep link `/explore` (no query) → still defaults to map.
+- From `/profile`, `/settings`, `/journal`, `/planner`, `/calendar`, `/country/*`, `/place/*`, `/badges`, `/avatars`, `/reminders`, `/admin/*`, `/u/*`, `/user/*`, `/offline` → click Globe → lands on `/explore` showing the 3D map.
+- Already on `/explore` with "Lieux"/"Défis"/"Rang"/"AR"/"Proche" tab active → click Globe → instantly switches back to the map tab.
+- Repeated clicks on Globe while on `/explore` → always re-asserts the map tab.
 - Other bottom-nav buttons (Profil, Planifier, Journal, Réglages) unchanged.
 
 ### Risk
-Minimal. One nav path tweak + one effect. No state, routing, styling, or component logic changes elsewhere.
+Minimal. Two tiny edits, no routing/state/styling logic changes elsewhere.
