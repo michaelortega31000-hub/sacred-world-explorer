@@ -7,7 +7,7 @@ const BottomNavigation = () => {
 
   const navItems = [
     { icon: User, label: 'Profil', path: '/profile', highlight: false },
-    { icon: Globe, label: 'Globe', path: '/explore', highlight: false },
+    { icon: Globe, label: 'Globe', path: '/explore?tab=map', highlight: false },
     { icon: Route, label: 'Planifier', path: '/planner', highlight: true },
     { icon: BookHeart, label: 'Journal', path: '/journal', highlight: false },
     { icon: Settings, label: 'Réglages', path: '/settings', highlight: false },

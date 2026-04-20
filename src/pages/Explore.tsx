@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Globe, MapPin, Trophy, Target, Compass, Camera } from 'lucide-react';
 import Header from '@/components/Header';
@@ -24,6 +24,15 @@ const Explore = () => {
   const { userProgress } = useApp();
   const { setIsOpen: setAssistantOpen } = useAssistant();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const tab = params.get('tab');
+    if (tab && ['map', 'ar', 'nearby', 'locations', 'challenges', 'rankings'].includes(tab)) {
+      setActiveTab(tab);
+    }
+  }, [location.search]);
   
   const handleCountryClick = (countryName: string) => {
     const normalizedName = normalizeCountryName(countryName);
