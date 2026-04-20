@@ -78,7 +78,7 @@ const AppContent = () => {
         <Toaster />
         <Sonner />
         <AssistantWrapper isOpen={assistantOpen} setIsOpen={setAssistantOpen} />
-        <FloatingAssistantButton />
+        
         <FloatingBackButton />
         <Routes>
           <Route path="/" element={<Splash />} />
