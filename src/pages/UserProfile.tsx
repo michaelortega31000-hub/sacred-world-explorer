@@ -259,7 +259,6 @@ const UserProfile = () => {
         className="min-h-screen pb-20"
       >
         <div className="min-h-screen pb-20 relative">
-          <BackButton />
         <div className="container mx-auto px-4 py-6">
           <div className="animate-pulse space-y-4">
             <div className="h-32 bg-muted rounded"></div>
@@ -282,7 +281,6 @@ const UserProfile = () => {
         className="min-h-screen pb-20"
       >
         <div className="min-h-screen pb-20 relative">
-          <BackButton />
         <div className="container mx-auto px-4 py-6">
           <Card>
             <CardContent className="py-12 text-center">
@@ -308,8 +306,6 @@ const UserProfile = () => {
       className="min-h-screen pb-20"
     >
       <div className="min-h-screen pb-20 relative">
-        <BackButton />
-      
       <div className="container mx-auto px-4 pt-16 pb-6 space-y-6">
         {/* Remove duplicate back button */}
 

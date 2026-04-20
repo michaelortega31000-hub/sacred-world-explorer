@@ -313,8 +313,6 @@ const Country = () => {
       className="min-h-screen flex flex-col"
     >
       <div className="min-h-screen flex flex-col relative">
-        <BackButton to="/world" />
-      
       <div className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border shadow-sm px-4 py-3">
         <div className="max-w-7xl mx-auto flex items-center gap-3">
           {/* Assistant Chat Button */}

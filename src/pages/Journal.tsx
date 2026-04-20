@@ -47,8 +47,6 @@ const Journal = () => {
       className="min-h-screen pb-20"
     >
       <div className="min-h-screen relative">
-        <BackButton />
-
         <div className="container mx-auto px-4 py-6 pt-16 relative z-10">
           <div className="space-y-6">
             <div className="space-y-2 animate-fade-in">

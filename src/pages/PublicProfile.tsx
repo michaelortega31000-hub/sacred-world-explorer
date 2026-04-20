@@ -90,8 +90,6 @@ export default function PublicProfile() {
         className="min-h-screen pb-20"
       >
         <div className="min-h-screen relative">
-          <BackButton to="/" />
-          
           <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
             <div className="space-y-6">
               <Skeleton className="h-48 w-full rounded-2xl" />

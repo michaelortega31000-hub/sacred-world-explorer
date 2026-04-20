@@ -270,15 +270,6 @@ const AdminEnrichData = () => {
       <Header />
       
       <div className="container mx-auto px-4 pt-16 pb-8 max-w-4xl">
-        <Button
-          variant="ghost"
-          onClick={() => navigate('/admin')}
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Retour Admin
-        </Button>
-
         <Card className="p-6">
           <div className="space-y-6">
             <div className="flex items-center gap-3">
