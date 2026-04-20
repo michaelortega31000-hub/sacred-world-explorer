@@ -159,7 +159,8 @@ const LocationsTab = () => {
     getPOIsForPlace,
     addToTrip,
     removeFromTrip,
-    reorderTrip
+    reorderTrip,
+    clearTrip
   } = useApp();
   const {
     data: allPlaces = [],
@@ -989,6 +990,21 @@ const LocationsTab = () => {
             loading="lazy"
           />
           <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-[#0E1B3F]/90 to-transparent pointer-events-none" />
+          {activeTab === 'planned' && inTrip && (
+            <Button
+              variant="destructive"
+              size="icon"
+              aria-label="Retirer de l'itinéraire"
+              className="absolute top-2 left-2 z-10 w-7 h-7 rounded-full shadow-lg bg-destructive/90 hover:bg-destructive"
+              onClick={(e) => {
+                e.stopPropagation();
+                removeFromTrip(place.id);
+                toast.success("Lieu retiré de votre itinéraire");
+              }}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+          )}
           {isPlaceVisited(place.id) && (
             <Badge
               className="absolute top-2 right-2 bg-primary text-primary-foreground"
@@ -1183,8 +1199,39 @@ const LocationsTab = () => {
                 <Input placeholder="Rechercher dans votre itinéraire..." value={searchQuery} onChange={e => setSearchQuery(e.target.value)} className="pl-10" />
               </div>
 
-              <div className="text-sm text-muted-foreground">
-                {filteredPlaces.length} lieu{filteredPlaces.length > 1 ? 'x' : ''} dans votre itinéraire
+              <div className="flex items-center justify-between gap-2">
+                <div className="text-sm text-muted-foreground">
+                  {filteredPlaces.length} lieu{filteredPlaces.length > 1 ? 'x' : ''} dans votre itinéraire
+                </div>
+                {plannedPlaces.length > 0 && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="outline" size="sm" className="gap-2 border-destructive/40 text-destructive hover:bg-destructive/10 hover:text-destructive">
+                        <X className="w-4 h-4" />
+                        Vider l'itinéraire
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Vider l'itinéraire ?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Cette action retirera tous les lieux de votre itinéraire. Vous pourrez en ajouter de nouveaux ensuite.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Annuler</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => {
+                            clearTrip();
+                            toast.success("Itinéraire vidé");
+                          }}
+                        >
+                          Vider
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </div>
 
               {filteredPlaces.length === 0 ? <Card className="border-2" style={{
