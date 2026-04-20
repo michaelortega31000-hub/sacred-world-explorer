@@ -253,7 +253,7 @@ const AdminEnrichData = () => {
     return (
       <div className="min-h-screen bg-background">
         <Header />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 pt-16 pb-8">
           <Card className="p-6 text-center">
             <p className="text-muted-foreground">Accès réservé aux administrateurs.</p>
             <Button onClick={() => navigate('/')} className="mt-4">
@@ -269,7 +269,7 @@ const AdminEnrichData = () => {
     <div className="min-h-screen bg-background">
       <Header />
       
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-4 pt-16 pb-8 max-w-4xl">
         <Button
           variant="ghost"
           onClick={() => navigate('/admin')}

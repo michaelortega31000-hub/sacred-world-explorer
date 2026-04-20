@@ -222,7 +222,7 @@ const SecurityTest = () => {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4 max-w-4xl">
+    <div className="container mx-auto pt-16 pb-8 px-4 max-w-4xl">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Shield className="w-8 h-8 text-primary" />

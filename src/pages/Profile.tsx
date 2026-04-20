@@ -392,7 +392,7 @@ const Profile = () => {
 
         <BackButton to="/settings" />
 
-        <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 py-4 sm:py-8 pb-24">
+        <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-24">
           {/* Modern Header with Avatar */}
           <div className="relative mb-8">
             <div 
