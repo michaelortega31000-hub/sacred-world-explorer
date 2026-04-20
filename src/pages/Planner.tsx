@@ -248,17 +248,7 @@ const Planner = () => {
       <div className="relative z-10 flex h-full flex-col">
         {/* Header */}
         <header className="flex items-center justify-between px-4 pt-6 pb-2 sm:px-6">
-          <button
-            onClick={() => navigate(-1)}
-            className="flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-md transition-colors hover:bg-white/10"
-            style={{
-              background: 'rgba(14, 27, 63, 0.6)',
-              border: '1px solid rgba(244, 197, 66, 0.25)',
-            }}
-            aria-label="Retour"
-          >
-            <ArrowLeft className="h-5 w-5 text-[#F4C542]" />
-          </button>
+          <div className="w-10" aria-hidden />
           <div className="inline-block scale-[1.18] origin-center">
             <Logo variant="main" size="small" effect="glow" />
           </div>
