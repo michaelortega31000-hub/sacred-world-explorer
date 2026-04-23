@@ -2,7 +2,7 @@ import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-function-secret',
 };
 
 interface LeaderboardRewardPayload {
@@ -19,6 +19,45 @@ Deno.serve(async (req) => {
   console.log('[Leaderboard Notify] Starting notification process...');
 
   try {
+    // Restrict to internal callers only.
+    // Accept either: (a) shared FUNCTION_SECRET header from internal callers (DB triggers / cron),
+    // or (b) an authenticated admin user.
+    const functionSecret = Deno.env.get('FUNCTION_SECRET');
+    const providedSecret = req.headers.get('x-function-secret');
+    let authorized = false;
+
+    if (functionSecret && providedSecret && providedSecret === functionSecret) {
+      authorized = true;
+    } else {
+      const authHeader = req.headers.get('Authorization');
+      if (authHeader?.startsWith('Bearer ')) {
+        const supabaseAuth = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_ANON_KEY') ?? '',
+          { global: { headers: { Authorization: authHeader } } }
+        );
+        const token = authHeader.replace('Bearer ', '');
+        const { data: claimsData } = await supabaseAuth.auth.getClaims(token);
+        const userId = claimsData?.claims?.sub;
+        if (userId) {
+          const { data: roleData } = await supabaseAuth
+            .from('user_roles')
+            .select('role')
+            .eq('user_id', userId)
+            .eq('role', 'admin')
+            .maybeSingle();
+          authorized = !!roleData;
+        }
+      }
+    }
+
+    if (!authorized) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',

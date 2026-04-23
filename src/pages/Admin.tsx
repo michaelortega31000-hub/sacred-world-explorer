@@ -5,10 +5,12 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { migratePlacesToSupabase } from '@/utils/migratePlacesData';
 import Header from '@/components/Header';
-import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus, Image } from 'lucide-react';
-import { useNavigate, Link } from 'react-router-dom';
+import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus, Image, Loader2 } from 'lucide-react';
+import { useNavigate, Link, Navigate } from 'react-router-dom';
+import { useIsAdmin } from '@/hooks/useIsAdmin';
 
 const Admin = () => {
+  const { isAdmin, loading: adminLoading } = useIsAdmin();
   const [isMigrating, setIsMigrating] = useState(false);
   const [progress, setProgress] = useState(0);
   const [currentPlace, setCurrentPlace] = useState('');
@@ -54,6 +56,18 @@ const Admin = () => {
       setIsMigrating(false);
     }
   };
+
+  if (adminLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!isAdmin) {
+    return <Navigate to="/welcome" replace />;
+  }
 
   return (
     <div className="min-h-screen bg-background">

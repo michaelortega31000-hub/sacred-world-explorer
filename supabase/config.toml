@@ -47,3 +47,9 @@ verify_jwt = false
 
 [functions.elevenlabs-tts]
 verify_jwt = false
+
+[functions.geocode-restaurants]
+verify_jwt = false
+
+[functions.process-expired-bans]
+verify_jwt = false
