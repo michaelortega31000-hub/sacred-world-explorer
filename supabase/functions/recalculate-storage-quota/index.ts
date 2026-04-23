@@ -22,37 +22,45 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabaseClient = createClient(supabaseUrl, supabaseServiceKey);
 
-    // Verify user authentication for manual calls
+    // Always require authentication
     const authHeader = req.headers.get('Authorization');
-    let isAdmin = false;
-    
-    if (authHeader) {
-      const token = authHeader.replace('Bearer ', '');
-      const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
-      
-      if (!authError && user) {
-        // Check if user is admin
-        const { data: roleData } = await supabaseClient
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id)
-          .eq('role', 'admin')
-          .single();
-        
-        isAdmin = !!roleData;
-      }
+    if (!authHeader?.startsWith('Bearer ')) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token);
+    if (authError || !user) {
+      return new Response(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+    // Check if user is admin
+    const { data: roleData } = await supabaseClient
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+    const isAdmin = !!roleData;
 
     // Parse request body
     const body: RecalculateRequest = await req.json().catch(() => ({}));
-    const { userId } = body;
+    let { userId } = body;
 
-    // If userId is specified, verify authorization
-    if (userId && !isAdmin) {
-      return new Response(
-        JSON.stringify({ error: 'Unauthorized. Admin access required.' }),
-        { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    // Non-admins may only recalculate their own quota.
+    if (!isAdmin) {
+      if (userId && userId !== user.id) {
+        return new Response(
+          JSON.stringify({ error: 'Forbidden' }),
+          { status: 403, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      // Force scope to current user
+      userId = user.id;
     }
 
     console.log(`[Storage Quota] Starting recalculation${userId ? ` for user ${userId}` : ' for all users'}`);
