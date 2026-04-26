@@ -1,42 +1,31 @@
-## Phase 31 — Seamless Globe view: remove the visual cut between map and tabs
+
+## Phase 30 — Make Globe icon always reset to /explore map from any page
 
 ### Problem
-On `/explore` (map tab), there is a visible horizontal band between the 3D globe and the bottom navigation. It comes from two stacked bars:
+The previous fix made the Globe bottom-nav button navigate to `/explore?tab=map`. But on any page **other than `/explore`**, clicking Globe still doesn't force the map view reliably if the user was previously on a non-map tab — and more importantly, the user wants a guarantee: **from every single page**, clicking Globe lands on the 3D map.
 
-1. The secondary `TabsList` (AR / Proche / Lieux / Défis / Rang) in `src/pages/Explore.tsx` — uses `bg-background/95 backdrop-blur-md shadow-2xl border-t-2 border-primary/40`, which renders as a hard opaque strip with a top border + shadow.
-2. The primary `BottomNavigation` in `src/components/BottomNavigation.tsx` — uses `border-t border-primary/20` and `boxShadow: '0 -4px 20px rgba(52, 224, 161, 0.1)'`, plus a near-opaque dark gradient.
+Today the active-state highlight in `BottomNavigation.tsx` strips the query string (`path.split('?')[0]`), so the path comparison works, but the navigation itself uses `navigate('/explore?tab=map')` which React Router treats as a no-op if the user is already on `/explore` with a different `?tab=` value in some edge cases (and doesn't re-trigger the effect cleanly).
 
-Together they create the "purple/gray band" the user wants gone.
+### Fix
+One surgical change in `src/components/BottomNavigation.tsx`:
 
-### Fix (scoped to bottom bars — keeps icons clearly visible)
+- For the Globe item only, replace the generic `navigate(item.path)` call with a dedicated handler that:
+  1. Always calls `navigate('/explore?tab=map', { replace: false })`.
+  2. If already on `/explore`, also force the URL/state refresh by passing a timestamped key or calling `navigate` with a state object (e.g. `{ state: { resetToMap: Date.now() } }`) so the `useEffect` watching `location` in `Explore.tsx` always re-fires.
 
-**1. `src/pages/Explore.tsx` — secondary TabsList (sub-tabs above bottom nav)**
-- Remove `border-t-2 border-primary/40` and `shadow-2xl`.
-- Replace `bg-background/95 backdrop-blur-md` with a transparent → dark gradient that blends into the map: `bg-gradient-to-b from-transparent via-background/40 to-background/80 backdrop-blur-sm`.
-- Keep `fixed bottom-[36px]` positioning, grid, and triggers untouched (so AR/Proche/Lieux/Défis/Rang still work).
-- Result: tabs float over the globe with a soft fade — no hard line.
+And a complementary tweak in `src/pages/Explore.tsx`:
 
-**2. `src/components/BottomNavigation.tsx` — primary bottom nav**
-- Remove `border-t border-primary/20`.
-- Remove the green top glow `boxShadow: '0 -4px 20px rgba(52, 224, 161, 0.1)'`.
-- Soften the gradient start so it fades from semi-transparent into the existing deep-blue: change `linear-gradient(180deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)` to `linear-gradient(180deg, rgba(20, 43, 79, 0.55) 0%, rgba(14, 27, 63, 0.92) 100%)`.
-- Keep `backdrop-blur-md` so icons stay legible.
-- Icons, labels, golden highlight, active states — all unchanged.
-
-### What stays the same
-- All five sub-tabs and their icons/labels.
-- Bottom-nav items (Profil, Globe, Planifier, Journal, Réglages), navigation behavior, golden Planifier highlight.
-- Fullscreen mode (already hides both bars — unaffected).
+- Change the sync `useEffect` dependency from `[location.search]` to `[location.key]` (or `[location]`) so that even an identical URL re-trigger from the Globe button forces `setActiveTab('map')`.
 
 ### Files changed
-- `src/pages/Explore.tsx` — className change on the secondary `TabsList`.
-- `src/components/BottomNavigation.tsx` — className + inline style changes on the `<nav>`.
+- `src/components/BottomNavigation.tsx` — dedicated onClick for the Globe item.
+- `src/pages/Explore.tsx` — broaden the effect dependency so re-clicks always reset the tab.
 
 ### Verification
-- `/explore` map tab: globe extends seamlessly into the bottom area; tab icons float over the map with a soft dark fade — no visible line, border, or shadow band.
-- Sub-tabs and bottom-nav buttons remain tappable and visually clear.
-- Switching to AR / Proche / Lieux / Défis / Rang and back to map still works.
-- Fullscreen toggle still hides both bars.
+- From `/profile`, `/settings`, `/journal`, `/planner`, `/calendar`, `/country/*`, `/place/*`, `/badges`, `/avatars`, `/reminders`, `/admin/*`, `/u/*`, `/user/*`, `/offline` → click Globe → lands on `/explore` showing the 3D map.
+- Already on `/explore` with "Lieux"/"Défis"/"Rang"/"AR"/"Proche" tab active → click Globe → instantly switches back to the map tab.
+- Repeated clicks on Globe while on `/explore` → always re-asserts the map tab.
+- Other bottom-nav buttons (Profil, Planifier, Journal, Réglages) unchanged.
 
 ### Risk
-Very low. Pure styling change on two components, no logic, no routing, no state.
+Minimal. Two tiny edits, no routing/state/styling logic changes elsewhere.
