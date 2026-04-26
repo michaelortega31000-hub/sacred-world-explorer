@@ -20,12 +20,11 @@ const BottomNavigation = () => {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-50 border-t border-primary/20"
+      className="fixed bottom-0 left-0 right-0 z-50"
       style={{
         background:
-          'linear-gradient(180deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)',
-        backdropFilter: 'blur(10px)',
-        boxShadow: '0 -4px 20px rgba(52, 224, 161, 0.1)',
+          'linear-gradient(180deg, rgba(20, 43, 79, 0.55) 0%, rgba(14, 27, 63, 0.92) 100%)',
+        backdropFilter: 'blur(14px)',
       }}
     >
       <div className="max-w-7xl mx-auto px-2 py-1">
