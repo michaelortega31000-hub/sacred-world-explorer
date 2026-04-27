@@ -1,7 +1,7 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import logoGlow from "@/assets/logo-glow.png";
-import logoMain from "@/assets/logo-v4.png";
+import logoGlow from "@/assets/sacredworld-logo-official.png";
+import logoMain from "@/assets/sacredworld-logo-official.png";
 
 const containerVariants = cva(
   "relative inline-block rounded-full overflow-hidden transition-all duration-300",

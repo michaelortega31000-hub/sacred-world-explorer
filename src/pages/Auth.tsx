@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/sacredworld-logo-official.png';
 import { z } from 'zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ImageBackground } from '@/components/ImageBackground';

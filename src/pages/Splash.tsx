@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { WifiOff, BookOpen, Globe, Trophy, Calendar, Target, Users, Settings, Check, LogOut, LucideIcon, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import sacredWorldLogo from '@/assets/sacredworld-logo-official.png';
 
 const languages = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -333,45 +334,12 @@ const Splash = () => {
           {/* Halo ring */}
           <div className="absolute w-56 h-56 rounded-full border border-emerald-300/30" style={{ boxShadow: '0 0 60px rgba(74, 222, 168, 0.25), inset 0 0 40px rgba(74, 222, 168, 0.15)' }} />
 
-          {/* Emblem SVG */}
-          <svg
-            viewBox="0 0 200 200"
-            className="relative w-36 h-36 sm:w-44 sm:h-44 drop-shadow-[0_0_30px_rgba(251,191,36,0.5)]"
-            aria-label="SacredWorld emblem"
-          >
-            <defs>
-              <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%">
-                <stop offset="0%" stopColor="#fde047" />
-                <stop offset="60%" stopColor="#f59e0b" />
-                <stop offset="100%" stopColor="#b45309" />
-              </radialGradient>
-            </defs>
-            {/* Sun rays */}
-            {Array.from({ length: 16 }).map((_, i) => {
-              const angle = (i * 360) / 16;
-              return (
-                <line
-                  key={i}
-                  x1="100"
-                  y1="100"
-                  x2="100"
-                  y2="20"
-                  stroke="#fbbf24"
-                  strokeWidth="3"
-                  strokeLinecap="round"
-                  transform={`rotate(${angle} 100 100)`}
-                  opacity="0.85"
-                />
-              );
-            })}
-            {/* Sun disc */}
-            <circle cx="100" cy="100" r="58" fill="url(#sunGradient)" />
-            {/* Rising figure */}
-            <g fill="#fef3c7">
-              <circle cx="100" cy="78" r="9" />
-              <path d="M 100 90 L 100 130 L 70 115 Q 68 112 70 108 L 95 120 L 95 130 L 75 165 Q 73 170 78 172 Q 82 173 85 168 L 100 140 L 115 168 Q 118 173 122 172 Q 127 170 125 165 L 105 130 L 105 120 L 130 108 Q 132 112 130 115 L 100 130 Z" />
-            </g>
-          </svg>
+          {/* Official emblem */}
+          <img
+            src={sacredWorldLogo}
+            alt="SacredWorld emblem"
+            className="relative w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_0_30px_rgba(251,191,36,0.45)]"
+          />
         </div>
 
         {/* Wordmark */}

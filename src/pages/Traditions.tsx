@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Palette, Building2, Award, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import logo from '@/assets/sacredworld-logo.png';
+import logo from '@/assets/sacredworld-logo-official.png';
 import { logger } from '@/lib/logger';
 import { getIconicImageForReligion, getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { ImageBackground } from '@/components/ImageBackground';
