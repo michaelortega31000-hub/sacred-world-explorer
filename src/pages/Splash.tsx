@@ -306,6 +306,19 @@ const Splash = () => {
         </div>
       </div>
       
+      {/* Mask over the baked-in English tagline in the background image */}
+      <div
+        aria-hidden="true"
+        className="absolute left-1/2 -translate-x-1/2 z-[5] pointer-events-none"
+        style={{
+          top: '60%',
+          width: 'min(92vw, 720px)',
+          height: '12vh',
+          background:
+            'radial-gradient(ellipse at center, #0E1B3F 55%, rgba(14,27,63,0.92) 78%, rgba(14,27,63,0) 100%)',
+        }}
+      />
+
       {/* Clickable zones overlay - transparent areas positioned on the image */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pt-20">
         {/* Empty space for logo and text - centered */}
