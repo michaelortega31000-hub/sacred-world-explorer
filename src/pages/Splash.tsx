@@ -252,17 +252,36 @@ const Splash = () => {
         background: 'linear-gradient(180deg, #0A1628 0%, #0E1B3F 30%, #1a3a52 60%, #0E1B3F 100%)'
       }}
     >
-      {/* Background image */}
-      <img 
-        src={splashHero}
-        srcSet={`${splashHeroMobile} 640w, ${splashHeroTablet} 1024w, ${splashHero} 1920w`}
-        sizes="100vw"
-        alt="SacredWorld" 
-        className="w-full h-full object-contain"
-        loading="eager"
-        fetchPriority="high"
-      />
-      
+      {/* Decorative flower-of-life ornaments */}
+      <svg
+        aria-hidden="true"
+        className="absolute left-2 sm:left-6 top-1/4 w-32 sm:w-48 h-32 sm:h-48 opacity-10 pointer-events-none text-primary"
+        viewBox="0 0 200 200"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1"
+      >
+        {[
+          [100, 100], [100, 60], [100, 140], [65, 80], [65, 120], [135, 80], [135, 120],
+        ].map(([cx, cy], i) => (
+          <circle key={i} cx={cx} cy={cy} r="35" />
+        ))}
+      </svg>
+      <svg
+        aria-hidden="true"
+        className="absolute right-2 sm:right-6 top-2/3 w-32 sm:w-48 h-32 sm:h-48 opacity-10 pointer-events-none text-primary"
+        viewBox="0 0 200 200"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1"
+      >
+        {[
+          [100, 100], [100, 60], [100, 140], [65, 80], [65, 120], [135, 80], [135, 120],
+        ].map(([cx, cy], i) => (
+          <circle key={i} cx={cx} cy={cy} r="35" />
+        ))}
+      </svg>
+
       {/* Boutons Mode hors ligne, Tutoriel et Déconnexion - En haut */}
       <div className="absolute top-4 sm:top-6 left-0 right-0 z-10 px-4 sm:px-6">
         <div className="max-w-lg mx-auto flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
@@ -302,41 +321,95 @@ const Splash = () => {
           )}
         </div>
       </div>
-      
-      {/* Clickable zones overlay - transparent areas positioned on the image */}
-      <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pt-20">
-        {/* Empty space for logo and text - centered */}
-        <div className="flex-1 flex items-center justify-center w-full max-w-2xl">
-          {/* This space contains the logo and text from the image */}
+
+      {/* Main content stack - logo, wordmark, tagline, CTA, language */}
+      <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-2xl px-6 pt-24 pb-8">
+        {/* Emblem with green halo */}
+        <div className="relative mb-8 flex items-center justify-center">
+          {/* Outer green halo */}
+          <div className="absolute w-72 h-72 rounded-full bg-[#3a8a6b]/25 blur-3xl" />
+          {/* Inner golden glow */}
+          <div className="absolute w-56 h-56 rounded-full bg-amber-400/20 blur-2xl" />
+          {/* Halo ring */}
+          <div className="absolute w-56 h-56 rounded-full border border-emerald-300/30" style={{ boxShadow: '0 0 60px rgba(74, 222, 168, 0.25), inset 0 0 40px rgba(74, 222, 168, 0.15)' }} />
+
+          {/* Emblem SVG */}
+          <svg
+            viewBox="0 0 200 200"
+            className="relative w-36 h-36 sm:w-44 sm:h-44 drop-shadow-[0_0_30px_rgba(251,191,36,0.5)]"
+            aria-label="SacredWorld emblem"
+          >
+            <defs>
+              <radialGradient id="sunGradient" cx="50%" cy="50%" r="50%">
+                <stop offset="0%" stopColor="#fde047" />
+                <stop offset="60%" stopColor="#f59e0b" />
+                <stop offset="100%" stopColor="#b45309" />
+              </radialGradient>
+            </defs>
+            {/* Sun rays */}
+            {Array.from({ length: 16 }).map((_, i) => {
+              const angle = (i * 360) / 16;
+              return (
+                <line
+                  key={i}
+                  x1="100"
+                  y1="100"
+                  x2="100"
+                  y2="20"
+                  stroke="#fbbf24"
+                  strokeWidth="3"
+                  strokeLinecap="round"
+                  transform={`rotate(${angle} 100 100)`}
+                  opacity="0.85"
+                />
+              );
+            })}
+            {/* Sun disc */}
+            <circle cx="100" cy="100" r="58" fill="url(#sunGradient)" />
+            {/* Rising figure */}
+            <g fill="#fef3c7">
+              <circle cx="100" cy="78" r="9" />
+              <path d="M 100 90 L 100 130 L 70 115 Q 68 112 70 108 L 95 120 L 95 130 L 75 165 Q 73 170 78 172 Q 82 173 85 168 L 100 140 L 115 168 Q 118 173 122 172 Q 127 170 125 165 L 105 130 L 105 120 L 130 108 Q 132 112 130 115 L 100 130 Z" />
+            </g>
+          </svg>
         </div>
 
-        {/* Tagline overlay (Phase 3) — visible above the CTA */}
-        <div className="w-full max-w-xl mb-4 px-4 text-center pointer-events-none">
-          <p className="text-base sm:text-lg font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] leading-snug">
-            Découvrez, vivez et collectionnez le patrimoine sacré chrétien
-          </p>
-          <p className="text-xs sm:text-sm text-white/85 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] mt-1">
-            Pour les chrétiens et les curieux de patrimoine
-          </p>
-        </div>
+        {/* Wordmark */}
+        <h1 className="font-cinzel text-5xl sm:text-6xl md:text-7xl font-bold text-amber-50 tracking-wide drop-shadow-[0_2px_12px_rgba(0,0,0,0.6)] mb-6 text-center">
+          SacredWorld
+        </h1>
 
-        {/* Button zone 1 - "Commencer l'exploration" ou "Continuer" */}
-        <div className="w-full max-w-md mb-3">
+        {/* Tagline */}
+        <p className="text-center text-base sm:text-lg md:text-xl text-white/95 max-w-xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] mb-10 px-2">
+          La plateforme mondiale pour explorer, comprendre et collectionner le patrimoine sacré, culturel et naturel.
+        </p>
+
+        {/* CTA button */}
+        <div className="relative mb-6">
+          <div className="absolute inset-0 rounded-full bg-amber-400/30 blur-2xl" />
           <button
             onClick={handleStartExploration}
-            className="w-full h-16 cursor-pointer opacity-0 hover:opacity-5 transition-opacity bg-primary rounded-full"
             aria-label={isLoggedIn ? "Continuer vers l'application" : "Commencer l'exploration"}
-          />
+            className="relative px-10 sm:px-14 py-4 sm:py-5 rounded-full text-lg sm:text-xl font-medium text-amber-50 transition-all duration-300 hover:scale-105"
+            style={{
+              background: 'linear-gradient(180deg, rgba(20, 60, 70, 0.65) 0%, rgba(15, 40, 55, 0.85) 100%)',
+              border: '1.5px solid rgba(251, 191, 36, 0.6)',
+              boxShadow: '0 0 40px rgba(251, 191, 36, 0.35), inset 0 0 20px rgba(251, 191, 36, 0.1)',
+            }}
+          >
+            {isLoggedIn ? "Continuer" : "Commencer l'exploration"}
+          </button>
         </div>
-        
-        {/* Button zone 2 - "Français" (Language selector) - plus de zone tutoriel ici */}
-        <div className="mb-8">
-          <button
-            onClick={handleLanguageClick}
-            className="w-48 h-10 cursor-pointer opacity-0 hover:opacity-5 transition-opacity bg-primary rounded-lg"
-            aria-label="Choisir la langue"
-          />
-        </div>
+
+        {/* Language selector */}
+        <button
+          onClick={handleLanguageClick}
+          className="flex items-center gap-2 text-white/90 hover:text-white text-sm sm:text-base transition-colors py-2 px-3"
+          aria-label="Choisir la langue"
+        >
+          <Globe className="w-4 h-4" />
+          <span>{currentLang.name}</span>
+        </button>
       </div>
 
       {/* Language selection dialog */}
