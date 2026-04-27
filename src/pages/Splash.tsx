@@ -311,22 +311,13 @@ const Splash = () => {
         aria-hidden="true"
         className="absolute left-1/2 -translate-x-1/2 z-[5] pointer-events-none"
         style={{
-          top: '62%',
-          width: 'min(90vw, 640px)',
-          height: '14vh',
+          top: '60%',
+          width: 'min(92vw, 720px)',
+          height: '12vh',
           background:
-            'radial-gradient(ellipse at center, #0E1B3F 60%, rgba(14,27,63,0.95) 80%, rgba(14,27,63,0) 100%)',
+            'radial-gradient(ellipse at center, #0E1B3F 55%, rgba(14,27,63,0.92) 78%, rgba(14,27,63,0) 100%)',
         }}
-      >
-        <div className="w-full h-full flex flex-col items-center justify-center px-4 text-center">
-          <p className="text-base sm:text-lg md:text-xl font-semibold text-white drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] leading-snug">
-            Découvrez, vivez et collectionnez le patrimoine sacré chrétien
-          </p>
-          <p className="text-xs sm:text-sm text-white/85 drop-shadow-[0_2px_6px_rgba(0,0,0,0.7)] mt-1">
-            Pour les chrétiens et les curieux de patrimoine
-          </p>
-        </div>
-      </div>
+      />
 
       {/* Clickable zones overlay - transparent areas positioned on the image */}
       <div className="absolute inset-0 flex flex-col items-center justify-center p-4 pt-20">
