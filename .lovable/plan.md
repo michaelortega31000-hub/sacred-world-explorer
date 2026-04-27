@@ -1,37 +1,51 @@
-## Phase 32 — Rebuild Splash page as pure HTML/CSS (no background image)
+## Goal
 
-### Goal
-Recreate the splash page exactly as shown in the reference screenshot, but rendered entirely with HTML, Tailwind CSS, and SVG — removing the dependency on the `splash-hero.webp` background image. The result must be visually identical: deep blue gradient, golden "rising figure in sun" emblem with green halo, "SacredWorld" wordmark, tagline, glowing CTA, language selector, and the three top buttons (Hors ligne / Tutoriel / Déconnexion).
+Replace the old SacredWorld logo with the new official one (golden sun-figure with turquoise halo on deep blue, uploaded as `iZcEy.jpg`) everywhere it appears in the app — including the inline SVG emblem on the Splash page shown in the screenshot.
 
-### Changes
+## Approach
 
-**`src/pages/Splash.tsx`** (single file edit)
-- Remove the three `splash-hero*.webp` imports and the `<img>` element rendering them.
-- Keep the deep blue gradient background already on the root `div`.
-- Add subtle decorative SVG flower-of-life motifs on the left/right edges (low opacity, like in the screenshot).
-- Replace the invisible "click zones" (currently transparent buttons overlaid on the image) with **real, visible UI elements** stacked vertically and centered:
-  1. **Logo emblem** — inline SVG: golden circle with a stylized "rising person with arms raised" silhouette and radiating sun rays, surrounded by a soft green/turquoise concentric halo glow (CSS `radial-gradient` + `blur` + `box-shadow`).
-  2. **"SacredWorld"** wordmark — large serif (`font-cinzel`), warm cream color, drop shadow.
-  3. **Tagline** (two lines): "La plateforme mondiale pour explorer, comprendre et collectionner le patrimoine sacré, culturel et naturel." (white, centered, max-width constrained).
-  4. **CTA button** "Commencer l'exploration" / "Continuer" — pill-shaped, semi-transparent dark teal background, golden border, golden glow halo, large readable text. Wired to existing `handleStartExploration`.
-  5. **Language selector** below CTA — globe icon + current language name (e.g. "🌐 Français"), text-button style. Wired to existing `handleLanguageClick`.
-- Keep the existing top button row (Hors ligne / Tutoriel / Déconnexion) and both dialogs (language picker, tutorial) **unchanged**.
-- Keep all existing logic untouched: auth check, denomination redirect, tutorial open via `?tutorial=true`, language state, offline mode handler, logout.
+1. **Save the new logo as a real image asset** (one source of truth).
+   - Copy `user-uploads://iZcEy.jpg` → `src/assets/sacredworld-logo-official.png` (used by all React components via ES module import).
+   - Also copy it to `public/logo-icon.png` (overwrites the existing file used by push notifications and as the PWA icon).
 
-### Visual details
-- Background: existing `linear-gradient(180deg, #0A1628 0%, #0E1B3F 30%, #1a3a52 60%, #0E1B3F 100%)`.
-- Halo around emblem: layered `div`s with `bg-[#3a8a6b]/30 blur-3xl` and `bg-primary/20 blur-2xl` for the green glow + golden inner glow.
-- CTA halo: `shadow-[0_0_40px_rgba(234,179,8,0.4)]` plus a wrapping blurred gradient ring.
-- Decorative side ornaments: two small inline SVG flower-of-life patterns at `opacity-10`, positioned `absolute left-4 top-1/3` and `absolute right-4 top-2/3`.
+2. **Centralize the import** in `src/components/ui/logo.tsx` so both `variant="main"` and `variant="icon"` point to the new asset. The existing `<Logo />` wrapper, sizing, and glow effects stay unchanged — only the underlying image file changes.
 
-### Files touched
-- `src/pages/Splash.tsx` — only file modified.
-- The `src/assets/splash-hero*.webp` files are left in place (not deleted) in case other code references them; imports are simply removed from `Splash.tsx`.
+3. **Update every direct logo import** to use the new asset:
 
-### Out of scope
-- No changes to routing, auth flow, tutorial steps, language list, or dialog contents.
-- No changes to other pages, components, or styles.
-- No deletion of the legacy `.webp` assets.
+   | File | Current import | New import |
+   |---|---|---|
+   | `src/components/ui/logo.tsx` | `logo-glow.png` + `logo-v4.png` | `sacredworld-logo-official.png` (both variants) |
+   | `src/pages/Welcome.tsx` | `sacredworld-logo-new.png` + `logo-glow.png` | `sacredworld-logo-official.png` |
+   | `src/pages/Traditions.tsx` | `sacredworld-logo.png` | `sacredworld-logo-official.png` |
+   | `src/pages/Auth.tsx` | `sacredworld-logo.png` | `sacredworld-logo-official.png` |
+   | `src/pages/NotFound.tsx` | `logo-glow.png` | `sacredworld-logo-official.png` |
+   | `src/components/Header.tsx` | `sacred-world-logo-header.png` | `sacredworld-logo-official.png` |
 
-### Risk
-Low. Single-file rewrite of presentational JSX. All handlers and state logic are preserved verbatim.
+4. **Splash page (`src/pages/Splash.tsx`)** — this is the page in the screenshot. Today the central emblem is a hand-drawn inline SVG (sun rays + figure built from `<circle>`/`<path>` with `sunGradient`). Replace that SVG block (around lines 337–374) with an `<img src={sacredWorldLogo} />` rendering the new official logo. Keep:
+   - the surrounding container, sizing (`w-36 h-36` → bumped to `w-44 h-44` so it matches the screenshot's prominence),
+   - the soft turquoise halo glow (`blur-3xl` ring behind it),
+   - the floating "flower-of-life" ornaments on the sides,
+   - all auth / language / tutorial / "Continuer" / "Hors ligne" / "Tutoriel" / "Déconnexion" logic and layout untouched.
+
+   The new logo image already contains its own halo + rays, so the extra decorative ring SVG inside the emblem is removed to avoid double-glow; the outer `bg-[#3a8a6b]/25 blur-3xl` aura is kept for soft integration with the dark background.
+
+5. **Push notifications** (`src/hooks/useEventReminders.ts`) keep referencing `/logo-icon.png` — no code change needed since we overwrote that file in step 1.
+
+6. **Leave the old asset files in place** (`logo-v4.png`, `logo-glow.png`, `sacredworld-logo.png`, etc.) but unreferenced. Safer than deleting in case any cached PWA manifest still points at them; can be cleaned up in a later pass.
+
+## Out of scope
+
+- No changes to the favicon (`public/favicon.ico`) — that's a separate `.ico` format and the user only mentioned the in-app logo. Can be addressed later if requested.
+- No layout, color-token, or copy changes on any page. Pure asset swap + Splash emblem swap.
+
+## Files touched
+
+- `src/assets/sacredworld-logo-official.png` (new)
+- `public/logo-icon.png` (overwrite)
+- `src/components/ui/logo.tsx`
+- `src/components/Header.tsx`
+- `src/pages/Splash.tsx`
+- `src/pages/Welcome.tsx`
+- `src/pages/Traditions.tsx`
+- `src/pages/Auth.tsx`
+- `src/pages/NotFound.tsx`

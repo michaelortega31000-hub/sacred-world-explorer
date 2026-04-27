@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowLeft, WifiOff, BookOpen, Sparkles, Users, MapPin } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import logo from '@/assets/sacredworld-logo-new.png';
-import logoGlow from '@/assets/logo-glow.png';
+import logo from '@/assets/sacredworld-logo-official.png';
+import logoGlow from '@/assets/sacredworld-logo-official.png';
 import ChristianIcon from '@/components/ChristianIcon';
 
 interface OnboardingScreen {
