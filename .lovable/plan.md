@@ -1,42 +1,37 @@
-## Phase 31 — Seamless Globe view: remove the visual cut between map and tabs
+## Phase 32 — Rebuild Splash page as pure HTML/CSS (no background image)
 
-### Problem
-On `/explore` (map tab), there is a visible horizontal band between the 3D globe and the bottom navigation. It comes from two stacked bars:
+### Goal
+Recreate the splash page exactly as shown in the reference screenshot, but rendered entirely with HTML, Tailwind CSS, and SVG — removing the dependency on the `splash-hero.webp` background image. The result must be visually identical: deep blue gradient, golden "rising figure in sun" emblem with green halo, "SacredWorld" wordmark, tagline, glowing CTA, language selector, and the three top buttons (Hors ligne / Tutoriel / Déconnexion).
 
-1. The secondary `TabsList` (AR / Proche / Lieux / Défis / Rang) in `src/pages/Explore.tsx` — uses `bg-background/95 backdrop-blur-md shadow-2xl border-t-2 border-primary/40`, which renders as a hard opaque strip with a top border + shadow.
-2. The primary `BottomNavigation` in `src/components/BottomNavigation.tsx` — uses `border-t border-primary/20` and `boxShadow: '0 -4px 20px rgba(52, 224, 161, 0.1)'`, plus a near-opaque dark gradient.
+### Changes
 
-Together they create the "purple/gray band" the user wants gone.
+**`src/pages/Splash.tsx`** (single file edit)
+- Remove the three `splash-hero*.webp` imports and the `<img>` element rendering them.
+- Keep the deep blue gradient background already on the root `div`.
+- Add subtle decorative SVG flower-of-life motifs on the left/right edges (low opacity, like in the screenshot).
+- Replace the invisible "click zones" (currently transparent buttons overlaid on the image) with **real, visible UI elements** stacked vertically and centered:
+  1. **Logo emblem** — inline SVG: golden circle with a stylized "rising person with arms raised" silhouette and radiating sun rays, surrounded by a soft green/turquoise concentric halo glow (CSS `radial-gradient` + `blur` + `box-shadow`).
+  2. **"SacredWorld"** wordmark — large serif (`font-cinzel`), warm cream color, drop shadow.
+  3. **Tagline** (two lines): "La plateforme mondiale pour explorer, comprendre et collectionner le patrimoine sacré, culturel et naturel." (white, centered, max-width constrained).
+  4. **CTA button** "Commencer l'exploration" / "Continuer" — pill-shaped, semi-transparent dark teal background, golden border, golden glow halo, large readable text. Wired to existing `handleStartExploration`.
+  5. **Language selector** below CTA — globe icon + current language name (e.g. "🌐 Français"), text-button style. Wired to existing `handleLanguageClick`.
+- Keep the existing top button row (Hors ligne / Tutoriel / Déconnexion) and both dialogs (language picker, tutorial) **unchanged**.
+- Keep all existing logic untouched: auth check, denomination redirect, tutorial open via `?tutorial=true`, language state, offline mode handler, logout.
 
-### Fix (scoped to bottom bars — keeps icons clearly visible)
+### Visual details
+- Background: existing `linear-gradient(180deg, #0A1628 0%, #0E1B3F 30%, #1a3a52 60%, #0E1B3F 100%)`.
+- Halo around emblem: layered `div`s with `bg-[#3a8a6b]/30 blur-3xl` and `bg-primary/20 blur-2xl` for the green glow + golden inner glow.
+- CTA halo: `shadow-[0_0_40px_rgba(234,179,8,0.4)]` plus a wrapping blurred gradient ring.
+- Decorative side ornaments: two small inline SVG flower-of-life patterns at `opacity-10`, positioned `absolute left-4 top-1/3` and `absolute right-4 top-2/3`.
 
-**1. `src/pages/Explore.tsx` — secondary TabsList (sub-tabs above bottom nav)**
-- Remove `border-t-2 border-primary/40` and `shadow-2xl`.
-- Replace `bg-background/95 backdrop-blur-md` with a transparent → dark gradient that blends into the map: `bg-gradient-to-b from-transparent via-background/40 to-background/80 backdrop-blur-sm`.
-- Keep `fixed bottom-[36px]` positioning, grid, and triggers untouched (so AR/Proche/Lieux/Défis/Rang still work).
-- Result: tabs float over the globe with a soft fade — no hard line.
+### Files touched
+- `src/pages/Splash.tsx` — only file modified.
+- The `src/assets/splash-hero*.webp` files are left in place (not deleted) in case other code references them; imports are simply removed from `Splash.tsx`.
 
-**2. `src/components/BottomNavigation.tsx` — primary bottom nav**
-- Remove `border-t border-primary/20`.
-- Remove the green top glow `boxShadow: '0 -4px 20px rgba(52, 224, 161, 0.1)'`.
-- Soften the gradient start so it fades from semi-transparent into the existing deep-blue: change `linear-gradient(180deg, rgba(20, 43, 79, 0.95) 0%, rgba(14, 27, 63, 0.98) 100%)` to `linear-gradient(180deg, rgba(20, 43, 79, 0.55) 0%, rgba(14, 27, 63, 0.92) 100%)`.
-- Keep `backdrop-blur-md` so icons stay legible.
-- Icons, labels, golden highlight, active states — all unchanged.
-
-### What stays the same
-- All five sub-tabs and their icons/labels.
-- Bottom-nav items (Profil, Globe, Planifier, Journal, Réglages), navigation behavior, golden Planifier highlight.
-- Fullscreen mode (already hides both bars — unaffected).
-
-### Files changed
-- `src/pages/Explore.tsx` — className change on the secondary `TabsList`.
-- `src/components/BottomNavigation.tsx` — className + inline style changes on the `<nav>`.
-
-### Verification
-- `/explore` map tab: globe extends seamlessly into the bottom area; tab icons float over the map with a soft dark fade — no visible line, border, or shadow band.
-- Sub-tabs and bottom-nav buttons remain tappable and visually clear.
-- Switching to AR / Proche / Lieux / Défis / Rang and back to map still works.
-- Fullscreen toggle still hides both bars.
+### Out of scope
+- No changes to routing, auth flow, tutorial steps, language list, or dialog contents.
+- No changes to other pages, components, or styles.
+- No deletion of the legacy `.webp` assets.
 
 ### Risk
-Very low. Pure styling change on two components, no logic, no routing, no state.
+Low. Single-file rewrite of presentational JSX. All handlers and state logic are preserved verbatim.
