@@ -1,8 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import splashHero from '@/assets/splash-hero.webp';
-import splashHeroMobile from '@/assets/splash-hero-mobile.webp';
-import splashHeroTablet from '@/assets/splash-hero-tablet.webp';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
