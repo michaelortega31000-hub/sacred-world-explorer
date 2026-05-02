@@ -174,15 +174,20 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
     }
   }, [externalFilters]);
 
-  // Calculate panel position when opened
+  // Calculate panel position when opened.
+  // Always open *below* the button and clamp inside the viewport so the
+  // 340px panel never overflows on desktop (was breaking when the button
+  // sat near the top of the screen — the upward-opening logic pushed the
+  // panel offscreen above the fold).
   useEffect(() => {
     if (isOpen && buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
-      const isMobile = window.innerWidth < 640;
-      
+      const PANEL_W = 340;
+      const MARGIN = 12;
+      const maxLeft = Math.max(MARGIN, window.innerWidth - PANEL_W - MARGIN);
       setPanelPosition({
-        top: isMobile ? rect.bottom + 8 : rect.top - 8,
-        left: rect.left,
+        top: rect.bottom + 8,
+        left: Math.min(rect.left, maxLeft),
       });
     }
   }, [isOpen]);
@@ -312,12 +317,11 @@ const MonumentFilter = ({ onFilterChange, externalFilters, matchingCount }: Monu
       ref={panelRef}
       className="fixed z-[9999] w-[340px] max-w-[calc(100vw-2rem)] max-h-[70vh] overflow-y-auto backdrop-blur-xl border-2 rounded-2xl shadow-2xl animate-scale-in"
       style={{
-        top: window.innerWidth < 640 ? `${panelPosition.top}px` : 'auto',
-        bottom: window.innerWidth >= 640 ? `${window.innerHeight - panelPosition.top}px` : 'auto',
+        top: `${panelPosition.top}px`,
         left: `${panelPosition.left}px`,
-        background: 'rgba(20, 43, 79, 0.98)',
-        borderColor: 'rgba(52, 224, 161, 0.4)',
-        boxShadow: '0 8px 40px rgba(52, 224, 161, 0.3), 0 0 60px rgba(14, 27, 63, 0.6)',
+        background: 'rgba(7, 7, 18, 0.96)',
+        borderColor: 'rgba(244, 197, 66, 0.30)',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.55), 0 0 60px rgba(244,197,66,0.18)',
       }}
     >
       {/* Header */}
