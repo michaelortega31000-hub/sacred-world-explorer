@@ -4,6 +4,8 @@
 // We reproduce that here in pure SVG so the emblem lives on transparent
 // background (no rectangular ghost) and renders in the cathedral gold palette.
 
+import { useId } from 'react';
+
 interface Props {
   size?: number;
   className?: string;
@@ -11,6 +13,16 @@ interface Props {
 }
 
 export const SacredEmblem = ({ size = 200, className = '', animate = true }: Props) => {
+  // Unique IDs per instance — `<defs>` id collisions would corrupt rendering
+  // when multiple emblems mount in the same DOM (e.g. /logo-iterations or any
+  // page that shows favicon-scale + hero-scale at once). Safari is strictest.
+  const uid = useId().replace(/:/g, '');
+  const idHalo = `${uid}-halo`;
+  const idDisc = `${uid}-disc`;
+  const idRay = `${uid}-ray`;
+  const idFigure = `${uid}-figure`;
+  const idGlow = `${uid}-glow`;
+  const idFigureGlow = `${uid}-figure-glow`;
   // Sun rays — sparser, more breathable. Organic spacing (not perfectly even)
   // keeps the hand-drawn feel without crowding the figure.
   const RAYS: Array<{ angle: number; length: number; width: number }> = [
@@ -43,35 +55,35 @@ export const SacredEmblem = ({ size = 200, className = '', animate = true }: Pro
     >
       <defs>
         {/* Outer halo — soft warm gold (original was turquoise; unified to gold) */}
-        <radialGradient id="se-halo" cx="50%" cy="50%" r="50%">
+        <radialGradient id={idHalo} cx="50%" cy="50%" r="50%">
           <stop offset="0%"   stopColor="rgba(244,197,66,0.55)" />
           <stop offset="60%"  stopColor="rgba(244,197,66,0.20)" />
           <stop offset="100%" stopColor="rgba(244,197,66,0.00)" />
         </radialGradient>
 
         {/* Inner amber disc — saffron orange to deeper amber */}
-        <radialGradient id="se-disc" cx="50%" cy="40%" r="65%">
+        <radialGradient id={idDisc} cx="50%" cy="40%" r="65%">
           <stop offset="0%"   stopColor="#FFD86B" />
           <stop offset="55%"  stopColor="#F4A93C" />
           <stop offset="100%" stopColor="#B86A14" />
         </radialGradient>
 
         {/* Ray gradient — bright outer tip → warm amber base */}
-        <linearGradient id="se-ray" x1="50%" y1="0%" x2="50%" y2="100%">
+        <linearGradient id={idRay} x1="50%" y1="0%" x2="50%" y2="100%">
           <stop offset="0%"   stopColor="rgba(255,234,170,0.95)" />
           <stop offset="55%"  stopColor="rgba(244,197,66,0.92)" />
           <stop offset="100%" stopColor="rgba(244,168,40,0.55)" />
         </linearGradient>
 
         {/* Figure highlight — luminous parchment */}
-        <linearGradient id="se-figure" x1="50%" y1="0%" x2="50%" y2="100%">
+        <linearGradient id={idFigure} x1="50%" y1="0%" x2="50%" y2="100%">
           <stop offset="0%"   stopColor="#FFF6D6" />
           <stop offset="60%"  stopColor="#FFE9A3" />
           <stop offset="100%" stopColor="#F4C542" />
         </linearGradient>
 
         {/* Soft glow for the rays */}
-        <filter id="se-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <filter id={idGlow} x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="1.6" result="b" />
           <feMerge>
             <feMergeNode in="b" />
@@ -80,7 +92,7 @@ export const SacredEmblem = ({ size = 200, className = '', animate = true }: Pro
         </filter>
 
         {/* Stronger glow for the central figure */}
-        <filter id="se-figure-glow" x="-50%" y="-50%" width="200%" height="200%">
+        <filter id={idFigureGlow} x="-50%" y="-50%" width="200%" height="200%">
           <feGaussianBlur stdDeviation="2.4" result="b" />
           <feMerge>
             <feMergeNode in="b" />
@@ -90,22 +102,22 @@ export const SacredEmblem = ({ size = 200, className = '', animate = true }: Pro
       </defs>
 
       {/* 1. Outer halo glow — soft, no hard ring */}
-      <circle cx="120" cy="120" r="118" fill="url(#se-halo)" />
+      <circle cx="120" cy="120" r="118" fill={`url(#${idHalo})`} />
 
       {/* 2. Sun rays — organic, asymmetric spikes */}
-      <g filter="url(#se-glow)">
+      <g filter={`url(#${idGlow})`}>
         {RAYS.map((r, i) => (
           <polygon
             key={i}
             points={`120,${120 - r.length} ${120 - r.width},${120 - 38} ${120 + r.width},${120 - 38}`}
-            fill="url(#se-ray)"
+            fill={`url(#${idRay})`}
             transform={`rotate(${r.angle} 120 120)`}
           />
         ))}
       </g>
 
       {/* 4. Inner amber disc (the saffron sun behind the figure) */}
-      <circle cx="120" cy="120" r="44" fill="url(#se-disc)" />
+      <circle cx="120" cy="120" r="44" fill={`url(#${idDisc})`} />
       {/* Subtle inner ring to define the disc edge */}
       <circle
         cx="120"
@@ -118,15 +130,17 @@ export const SacredEmblem = ({ size = 200, className = '', animate = true }: Pro
 
       {/* 5. Central figure — bolder silhouette: head, V-arms, tapering body */}
       <g
-        filter="url(#se-figure-glow)"
-        fill="url(#se-figure)"
+        filter={`url(#${idFigureGlow})`}
+        fill={`url(#${idFigure})`}
         stroke="rgba(255,234,170,0.70)"
         strokeWidth="0.6"
         strokeLinejoin="round"
         strokeLinecap="round"
       >
-        {/* Single combined silhouette path — arms up + torso + flowing skirt */}
-        <path d="
+        {/* Single combined silhouette path — arms up + torso + flowing skirt.
+            fillRule="evenodd" is safer for multi-M subpaths in older Safari/iOS
+            where winding-number computation at shared boundary points can glitch. */}
+        <path fillRule="evenodd" d="
           M 120,87
           C 116.5,87 114,89.5 114,93
           C 114,96.5 116.5,99 120,99

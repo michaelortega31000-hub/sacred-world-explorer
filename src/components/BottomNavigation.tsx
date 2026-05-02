@@ -1,10 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Globe, Route, BookHeart } from 'lucide-react';
+import { Home, Globe, Route, BookHeart } from 'lucide-react';
 
 // Flat 4-tab nav — no floating orb. Globe gets a permanent gold tint to
 // signal it's the primary destination.
+// Profil is reachable from the IdentityHeader avatar on /home; the bottom
+// nav prioritizes returning to the hub (Accueil) over a dedicated profile tab.
 const NAV_ITEMS = [
-  { icon: User,      label: 'Profil',    path: '/profile',         gold: false },
+  { icon: Home,      label: 'Accueil',   path: '/home',            gold: false },
   { icon: Route,     label: 'Planifier', path: '/planner',         gold: false },
   { icon: Globe,     label: 'Globe',     path: '/explore?tab=map', gold: true  },
   { icon: BookHeart, label: 'Journal',   path: '/journal',         gold: false },
@@ -37,7 +39,7 @@ const BottomNavigation = () => {
       >
         <div className="mx-auto max-w-lg px-4 pb-4">
           <div
-            className="rounded-2xl"
+            className="rounded-2xl relative"
             style={{
               background: 'linear-gradient(160deg, rgba(22,48,92,0.72) 0%, rgba(12,24,58,0.88) 100%)',
               backdropFilter: 'blur(22px) saturate(160%)',
