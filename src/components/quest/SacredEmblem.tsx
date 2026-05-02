@@ -11,35 +11,25 @@ interface Props {
 }
 
 export const SacredEmblem = ({ size = 200, className = '', animate = true }: Props) => {
-  // Sun rays: pseudo-random angles + lengths to mimic the original's organic,
-  // hand-drawn feel rather than a perfectly symmetrical sunburst.
+  // Sun rays — sparser, more breathable. Organic spacing (not perfectly even)
+  // keeps the hand-drawn feel without crowding the figure.
   const RAYS: Array<{ angle: number; length: number; width: number }> = [
-    { angle:   0, length: 92, width: 3.6 },
-    { angle:  14, length: 76, width: 2.8 },
-    { angle:  28, length: 88, width: 3.2 },
-    { angle:  42, length: 70, width: 2.4 },
-    { angle:  56, length: 84, width: 3.0 },
-    { angle:  70, length: 78, width: 2.6 },
-    { angle:  84, length: 90, width: 3.4 },
-    { angle:  98, length: 72, width: 2.4 },
-    { angle: 112, length: 86, width: 3.2 },
-    { angle: 126, length: 74, width: 2.6 },
-    { angle: 140, length: 92, width: 3.4 },
-    { angle: 154, length: 80, width: 2.8 },
-    { angle: 168, length: 86, width: 3.2 },
-    { angle: 182, length: 76, width: 2.6 },
-    { angle: 196, length: 88, width: 3.4 },
-    { angle: 210, length: 72, width: 2.4 },
-    { angle: 224, length: 84, width: 3.0 },
-    { angle: 238, length: 78, width: 2.6 },
-    { angle: 252, length: 90, width: 3.2 },
-    { angle: 266, length: 74, width: 2.4 },
-    { angle: 280, length: 86, width: 3.0 },
-    { angle: 294, length: 76, width: 2.6 },
-    { angle: 308, length: 92, width: 3.4 },
-    { angle: 322, length: 78, width: 2.8 },
-    { angle: 336, length: 84, width: 3.0 },
-    { angle: 350, length: 72, width: 2.4 },
+    { angle:   0, length: 92, width: 3.4 },
+    { angle:  24, length: 84, width: 3.0 },
+    { angle:  46, length: 90, width: 3.2 },
+    { angle:  68, length: 80, width: 2.8 },
+    { angle:  92, length: 88, width: 3.2 },
+    { angle: 114, length: 82, width: 2.8 },
+    { angle: 136, length: 90, width: 3.4 },
+    { angle: 158, length: 78, width: 2.6 },
+    { angle: 180, length: 88, width: 3.2 },
+    { angle: 204, length: 82, width: 2.8 },
+    { angle: 226, length: 90, width: 3.0 },
+    { angle: 248, length: 80, width: 2.6 },
+    { angle: 272, length: 88, width: 3.2 },
+    { angle: 294, length: 82, width: 2.8 },
+    { angle: 316, length: 92, width: 3.4 },
+    { angle: 338, length: 84, width: 3.0 },
   ];
 
   return (
