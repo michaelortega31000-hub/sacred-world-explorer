@@ -313,7 +313,7 @@ const Settings = () => {
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" className="max-h-72 overflow-y-auto">
                     <SelectItem value="fr">🇫🇷 Français</SelectItem>
                     <SelectItem value="en">🇬🇧 English</SelectItem>
                     <SelectItem value="es">🇪🇸 Español</SelectItem>
@@ -436,7 +436,7 @@ const Settings = () => {
                   <SelectTrigger className="w-full">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" className="max-h-72 overflow-y-auto">
                     <SelectItem value="default">Défaut (Turquoise & Or)</SelectItem>
                     <SelectItem value="ocean">Océan (Bleu & Cyan)</SelectItem>
                     <SelectItem value="sunset">Coucher de soleil (Orange & Rose)</SelectItem>

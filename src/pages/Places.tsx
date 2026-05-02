@@ -126,7 +126,7 @@ const Places = () => {
         subtitle={`${filtered.length} lieux · patrimoine chrétien`}
       />
 
-      <main className="px-4 space-y-4 max-w-3xl mx-auto">
+      <main className="px-4 space-y-4 w-full max-w-3xl mx-auto">
         {/* Search */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
@@ -144,7 +144,7 @@ const Places = () => {
             <SelectTrigger>
               <SelectValue placeholder="Région" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" className="max-h-72 overflow-y-auto">
               {REGIONS.map((r) => (
                 <SelectItem key={r} value={r}>
                   {r}
@@ -156,7 +156,7 @@ const Places = () => {
             <SelectTrigger>
               <SelectValue placeholder="Type" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" className="max-h-72 overflow-y-auto">
               {TYPES.map((t) => (
                 <SelectItem key={t} value={t}>
                   {t}

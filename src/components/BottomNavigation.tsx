@@ -35,7 +35,7 @@ const BottomNavigation = () => {
         className="fixed bottom-0 left-0 right-0 z-50"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       >
-        <div className="mx-auto max-w-md px-4 pb-4">
+        <div className="mx-auto max-w-lg px-4 pb-4">
           <div
             className="rounded-2xl"
             style={{

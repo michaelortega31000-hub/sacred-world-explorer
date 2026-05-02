@@ -45,7 +45,7 @@ const Explore = () => {
   // Debug log removed to prevent performance issues
   
   return (
-    <div className={`min-h-screen flex flex-col ${isFullscreen ? 'bg-black' : 'bg-background'}`}>
+    <div className={`min-h-screen w-full flex flex-col ${isFullscreen ? 'bg-black' : 'bg-background'}`}>
       {/* Header with category filter - hidden in fullscreen mode */}
       {!isFullscreen && (
         <Header 
@@ -53,10 +53,10 @@ const Explore = () => {
         />
       )}
       
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col w-full">
         {/* Contenu pleine hauteur — la nav du bas et le pill flottent par-dessus */}
         <div
-          className={`flex-1 overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
+          className={`flex-1 w-full overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
           style={{ height: isFullscreen ? '100dvh' : '100dvh' }}
         >
           <TabsContent value="map" className="h-full m-0 p-0">
@@ -99,7 +99,7 @@ const Explore = () => {
                        data-[state=active]:bg-transparent
                        inline-flex w-auto"
             style={{
-              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 130px)',
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 90px)',
               background: 'linear-gradient(180deg, rgba(20,43,79,0.55) 0%, rgba(14,27,63,0.82) 100%)',
               backdropFilter: 'blur(18px) saturate(140%)',
               WebkitBackdropFilter: 'blur(18px) saturate(140%)',
