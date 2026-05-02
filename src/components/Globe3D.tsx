@@ -26,6 +26,7 @@ import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { mapStyleUrls, atmospherePresets } from '@/types/globeSettings';
+import { attachSpiritualOverlay, type SpiritualOverlayHandle } from '@/components/quest/spiritualOverlay';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -78,6 +79,7 @@ const Globe3D = ({
   const tripEndMarker = useRef<mapboxgl.Marker | null>(null);
   const tripMarkers = useRef<mapboxgl.Marker[]>([]);
   const endMarkerTimeout = useRef<NodeJS.Timeout | null>(null);
+  const spiritualOverlayRef = useRef<SpiritualOverlayHandle | null>(null);
   const hasInitiallyZoomed = useRef(false);
   const pendingRecenter = useRef(false);
   
@@ -533,7 +535,8 @@ const Globe3D = ({
     // Map error handler with filtering for non-critical errors
     map.current.on('error', e => {
       if (!map.current) return;
-      const errorMsg = (e?.error?.message || '').toLowerCase();
+      const rawMsg = e?.error?.message ?? e?.error ?? e?.message ?? '';
+      const errorMsg = (typeof rawMsg === 'string' ? rawMsg : '').toLowerCase();
 
       // List of non-critical errors to ignore
       const nonFatalPatterns = ['events.mapbox.com',
@@ -552,7 +555,9 @@ const Globe3D = ({
       // Rate limiting (handled differently)
       'networkerror' // Temporary network issues
       ];
-      const isNonFatal = nonFatalPatterns.some(pattern => errorMsg.includes(pattern));
+      const isNonFatal = nonFatalPatterns.some(pattern => errorMsg.includes(pattern))
+        || errorMsg.length < 10
+        || typeof rawMsg !== 'string'; // ignore opaque non-string Mapbox errors
 
       // Only show error overlay if map hasn't loaded AND error is critical
       if (isNonFatal || map.current.isStyleLoaded() || isMapReadyRef.current) {
@@ -967,6 +972,14 @@ const Globe3D = ({
         }
       });
 
+      // Spiritual overlay — gold badge / cyan token / purple skill auras on the real globe
+      try {
+        spiritualOverlayRef.current?.destroy();
+        spiritualOverlayRef.current = attachSpiritualOverlay(map.current);
+      } catch (err) {
+        logger.error('spiritual overlay failed', err);
+      }
+
       // Add hover effect
       map.current.on('mouseenter', 'places-circles', () => {
         if (map.current) map.current.getCanvas().style.cursor = 'pointer';
@@ -1280,6 +1293,12 @@ const Globe3D = ({
         userLocationMarker.current = null;
       }
 
+      // Tear down spiritual overlay before the map itself
+      if (spiritualOverlayRef.current) {
+        try { spiritualOverlayRef.current.destroy(); } catch { /* map already gone */ }
+        spiritualOverlayRef.current = null;
+      }
+
       // Remove map
       if (map.current) {
         map.current.remove();
@@ -1431,6 +1450,7 @@ const Globe3D = ({
         userLocationMarker.current.remove();
         userLocationMarker.current = null;
       }
+      try { spiritualOverlayRef.current?.setSelectionBeam(null); } catch { /* */ }
       hasInitiallyZoomed.current = false;
       pendingRecenter.current = false;
       return;
@@ -1441,24 +1461,8 @@ const Globe3D = ({
         longitude
       } = userPosition;
 
-      // Create or update the marker
-      if (!userLocationMarker.current) {
-        const el = document.createElement('div');
-        el.className = 'user-location-marker';
-        el.style.cssText = `
-          width: 20px;
-          height: 20px;
-          background: #34E0A1;
-          border: 3px solid white;
-          border-radius: 50%;
-          box-shadow: 0 0 10px rgba(52, 224, 161, 0.8);
-        `;
-        userLocationMarker.current = new mapboxgl.Marker({
-          element: el
-        }).setLngLat([longitude, latitude]).addTo(map.current);
-      } else {
-        userLocationMarker.current.setLngLat([longitude, latitude]);
-      }
+      // User-location renders as a bright crystalline selection beam in the spiritual overlay
+      try { spiritualOverlayRef.current?.setSelectionBeam([longitude, latitude]); } catch { /* */ }
 
       // IMPORTANT UX: Header toggle only enables location tracking.
       // Do NOT auto-zoom on first fix; zoom is reserved for the “Recentrer” button.
@@ -1797,7 +1801,9 @@ const Globe3D = ({
       {/* Map container */}
       <div ref={mapContainer} className="absolute inset-0" style={{
       width: '100%',
-      height: '100%'
+      height: '100%',
+      // Mute the saturated satellite greens; gives a more painterly Earth tone.
+      filter: 'saturate(0.78) contrast(1.05) brightness(0.96) hue-rotate(-4deg)',
     }} />
       
       {/* Search bar */}

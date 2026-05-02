@@ -5,6 +5,7 @@ import { Globe, MapPin, Trophy, Target, Compass, Camera } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import Globe3D from '@/components/Globe3D';
+import { SpiritualOverlayLegend } from '@/components/quest/SpiritualOverlayLegend';
 import LocationsTab from '@/components/LocationsTab';
 import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
@@ -53,18 +54,19 @@ const Explore = () => {
       )}
       
       <Tabs value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
-        {/* Contenu qui remplit l'espace disponible */}
-        <div 
+        {/* Contenu pleine hauteur — la nav du bas et le pill flottent par-dessus */}
+        <div
           className={`flex-1 overflow-hidden ${isFullscreen ? 'fixed inset-0 z-50' : ''}`}
-          style={{ height: isFullscreen ? '100dvh' : 'calc(100dvh - 36px)' }}
+          style={{ height: isFullscreen ? '100dvh' : '100dvh' }}
         >
           <TabsContent value="map" className="h-full m-0 p-0">
             <div className="h-full w-full relative">
-              <Globe3D 
-                tripPlaces={userProgress.tripPlaces} 
+              <Globe3D
+                tripPlaces={userProgress.tripPlaces}
                 onCountryClick={handleCountryClick}
                 onFullscreenChange={setIsFullscreen}
               />
+              {!isFullscreen && <SpiritualOverlayLegend />}
             </div>
           </TabsContent>
 
@@ -89,29 +91,43 @@ const Explore = () => {
           </TabsContent>
         </div>
 
-        {/* TabsList FIXE au-dessus de BottomNavigation - hidden in fullscreen mode */}
+        {/* Pill flottant — glass-morphism, au-dessus du bottom nav, jamais une bande pleine largeur */}
         {!isFullscreen && (
-          <TabsList className="fixed bottom-[36px] left-0 right-0 z-40 grid grid-cols-5 h-auto bg-gradient-to-b from-transparent via-background/40 to-background/80 backdrop-blur-sm border-0 shadow-none p-1 rounded-none">
-            <TabsTrigger value="ar" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
-              <Camera className="w-4 h-4" />
-              <span className="text-[11px] leading-none">AR</span>
-            </TabsTrigger>
-            <TabsTrigger value="nearby" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
-              <Compass className="w-4 h-4" />
-              <span className="text-[11px] leading-none">Proche</span>
-            </TabsTrigger>
-            <TabsTrigger value="locations" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
-              <MapPin className="w-4 h-4" />
-              <span className="text-[11px] leading-none">Lieux</span>
-            </TabsTrigger>
-            <TabsTrigger value="challenges" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
-              <Target className="w-4 h-4" />
-              <span className="text-[11px] leading-none">Défis</span>
-            </TabsTrigger>
-            <TabsTrigger value="rankings" className="flex flex-col items-center justify-center gap-0.5 py-1.5">
-              <Trophy className="w-4 h-4" />
-              <span className="text-[11px] leading-none">Rang</span>
-            </TabsTrigger>
+          <TabsList
+            className="fixed left-1/2 -translate-x-1/2 z-40 h-auto p-1 gap-1
+                       border-0 shadow-none rounded-full
+                       data-[state=active]:bg-transparent
+                       inline-flex w-auto"
+            style={{
+              bottom: 'calc(env(safe-area-inset-bottom, 0px) + 130px)',
+              background: 'linear-gradient(180deg, rgba(20,43,79,0.55) 0%, rgba(14,27,63,0.82) 100%)',
+              backdropFilter: 'blur(18px) saturate(140%)',
+              WebkitBackdropFilter: 'blur(18px) saturate(140%)',
+              boxShadow:
+                '0 0 0 1px rgba(255,255,255,0.06) inset, 0 12px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(244,197,66,0.10)',
+            }}
+          >
+            {[
+              { value: 'ar',         Icon: Camera,  label: 'AR' },
+              { value: 'nearby',     Icon: Compass, label: 'Proche' },
+              { value: 'locations',  Icon: MapPin,  label: 'Lieux' },
+              { value: 'challenges', Icon: Target,  label: 'Défis' },
+              { value: 'rankings',   Icon: Trophy,  label: 'Rang' },
+            ].map(({ value, Icon, label }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="relative px-3 py-1.5 rounded-full flex flex-col items-center gap-0.5
+                           text-white/65 hover:text-white transition-colors
+                           data-[state=active]:bg-gradient-to-br data-[state=active]:from-amber-300/30 data-[state=active]:to-amber-500/15
+                           data-[state=active]:text-amber-100
+                           data-[state=active]:shadow-[0_0_14px_rgba(244,197,66,0.35)]
+                           data-[state=active]:border data-[state=active]:border-amber-300/40"
+              >
+                <Icon className="w-[15px] h-[15px]" />
+                <span className="text-[10px] leading-none font-medium">{label}</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
         )}
       </Tabs>

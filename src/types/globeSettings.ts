@@ -22,7 +22,7 @@ export const defaultGlobeSettings: GlobeSettings = {
 
 // Mapbox style URLs
 export const mapStyleUrls: Record<MapStyle, string> = {
-  satellite: 'mapbox://styles/mapbox/satellite-streets-v12',
+  satellite: 'mapbox://styles/mapbox/satellite-v9',
   streets: 'mapbox://styles/mapbox/streets-v12',
   dark: 'mapbox://styles/mapbox/navigation-night-v1',
   outdoors: 'mapbox://styles/mapbox/outdoors-v12',

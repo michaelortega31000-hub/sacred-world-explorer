@@ -326,6 +326,174 @@ All colors MUST be HSL.
   box-shadow: 0 0 16px hsl(var(--primary) / 0.3);
 }
 
+/* === Quest Hub polish — Phase 2 visual upgrade === */
+@keyframes hub-aurora {
+  0%   { background-position: 0%   50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0%   50%; }
+}
+@keyframes hub-shimmer {
+  0%   { transform: translateX(-120%); }
+  100% { transform: translateX(220%); }
+}
+@keyframes hub-float-mote {
+  0%, 100% { transform: translate(0, 0); opacity: 0.55; }
+  50%      { transform: translate(6px, -10px); opacity: 0.95; }
+}
+@keyframes hub-breath {
+  0%, 100% { transform: scale(1);     filter: brightness(1); }
+  50%      { transform: scale(1.04);  filter: brightness(1.18); }
+}
+@keyframes hub-rank-rise {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes hub-streak-danger {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.55); }
+  50%      { box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+}
+@keyframes hub-orbit {
+  from { transform: rotate(0deg)   translateX(28px) rotate(0deg); }
+  to   { transform: rotate(360deg) translateX(28px) rotate(-360deg); }
+}
+
+.hub-aurora {
+  background: linear-gradient(125deg,
+    #0A1628 0%,
+    #112248 18%,
+    #1a3a72 38%,
+    #2a1a5e 55%,
+    #112248 75%,
+    #0A1628 100%);
+  background-size: 220% 220%;
+  animation: hub-aurora 22s ease-in-out infinite;
+}
+.hub-grain::after {
+  content: '';
+  position: absolute; inset: 0;
+  background-image:
+    radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-size: 3px 3px;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+}
+.hub-shimmer-bar {
+  position: absolute; inset: 0;
+  background: linear-gradient(90deg,
+    transparent 0%,
+    rgba(255,255,255,0.32) 50%,
+    transparent 100%);
+  animation: hub-shimmer 2.4s ease-in-out infinite;
+  mix-blend-mode: overlay;
+  pointer-events: none;
+}
+.hub-mote {
+  position: absolute;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,225,150,0.95), rgba(255,225,150,0));
+  filter: blur(0.5px);
+  animation: hub-float-mote 5s ease-in-out infinite;
+}
+.hub-breath { animation: hub-breath 3.4s ease-in-out infinite; }
+.hub-rank-rise { animation: hub-rank-rise 380ms ease-out both; }
+.hub-streak-danger { animation: hub-streak-danger 1.8s ease-in-out infinite; }
+.hub-orbit-dot {
+  position: absolute;
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: rgba(244,197,66,0.9);
+  box-shadow: 0 0 8px rgba(244,197,66,0.7);
+  animation: hub-orbit 6s linear infinite;
+}
+.hub-card-glow {
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.04) inset,
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 18px 40px -22px rgba(0,0,0,0.7),
+    0 0 60px -40px hsl(var(--primary) / 0.55);
+}
+
+/* ── Sacred glass card — consistent glass morphism across all pages ── */
+.sacred-glass {
+  background: linear-gradient(160deg,
+    rgba(22, 48, 92, 0.60) 0%,
+    rgba(12, 24, 58, 0.75) 100%);
+  backdrop-filter: blur(18px) saturate(150%);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow:
+    0 0 0 1px rgba(244, 197, 66, 0.08) inset,
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 20px 50px -20px rgba(0, 0, 0, 0.6);
+}
+
+/* A stronger card with gold top hairline */
+.sacred-card {
+  background: linear-gradient(160deg,
+    rgba(26, 55, 100, 0.65) 0%,
+    rgba(14, 28, 65, 0.80) 100%);
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-top-color: rgba(244, 197, 66, 0.22);
+  box-shadow:
+    0 0 0 1px rgba(244, 197, 66, 0.06) inset,
+    0 24px 60px -24px rgba(0, 0, 0, 0.65),
+    0 0 80px -50px rgba(244, 197, 66, 0.12);
+  border-radius: 1rem;
+}
+
+/* Section header label */
+.sacred-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(244, 197, 66, 0.80);
+}
+
+/* Glowing text — for page titles / site names */
+.sacred-title-glow {
+  text-shadow:
+    0 0 30px rgba(244, 197, 66, 0.35),
+    0 0 60px rgba(244, 197, 66, 0.15);
+}
+
+/* Upward beam divider — echo of the map's light pillars */
+@keyframes sacred-beam-rise {
+  0%   { opacity: 0.3; transform: scaleY(0.85); }
+  50%  { opacity: 1.0; transform: scaleY(1.0); }
+  100% { opacity: 0.3; transform: scaleY(0.85); }
+}
+.sacred-beam-divider {
+  position: relative;
+  display: flex;
+  justify-content: center;
+}
+.sacred-beam-divider::before {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 36px;
+  background: linear-gradient(180deg, transparent 0%, rgba(244,197,66,0.7) 60%, rgba(244,197,66,0.95) 100%);
+  animation: sacred-beam-rise 3s ease-in-out infinite;
+}
+
+/* Richer aurora — used on any full-page background */
+.hub-aurora {
+  background: linear-gradient(125deg,
+    #080f1e 0%,
+    #0e1f42 15%,
+    #162d60 32%,
+    #1e1550 50%,
+    #0e1f42 68%,
+    #0a1525 85%,
+    #080f1e 100%);
+  background-size: 260% 260%;
+  animation: hub-aurora 26s ease-in-out infinite;
+}
+
 /* Sacred World Animations */
 @keyframes breathing-glow {
   0%, 100% {

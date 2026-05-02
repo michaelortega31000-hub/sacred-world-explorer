@@ -505,9 +505,38 @@ serve(async (req) => {
     // Get UI layout for current route
     const uiLayout = getUILayoutForRoute(currentRoute || '');
 
+    // Track-aware framing (Q26).
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('denominations:denomination_id (code)')
+      .eq('id', userId)
+      .maybeSingle();
+    const userTrack = (profile?.denominations as any)?.code as
+      | 'catholic' | 'protestant' | 'orthodox' | 'heritage' | undefined;
+    const TRACK_FRAMING: Record<string, string> = {
+      catholic: `L'utilisateur appartient à la tradition CATHOLIQUE.
+- Vocabulaire familier : sacrements, eucharistie, communion des saints, magistère, Vierge Marie, rosaire, pèlerinages, liturgie romaine.
+- Citez les saints, les conciles et le Catéchisme avec respect.
+- Restez factuel et fidèle à l'enseignement catholique sans le présenter comme supérieur aux autres traditions.`,
+      protestant: `L'utilisateur appartient à la tradition PROTESTANTE / ÉVANGÉLIQUE.
+- Cadrage : sola scriptura, foi personnelle, prédication, communauté locale, Réforme.
+- Citez les Écritures directement (références bibliques) ; évitez l'autorité du magistère.
+- Évoquez la diversité protestante (luthérienne, réformée, baptiste, évangélique, méthodiste...) sans hiérarchiser.`,
+      orthodox: `L'utilisateur appartient à la tradition ORTHODOXE.
+- Vocabulaire : Pères de l'Église, Tradition, divine liturgie, icônes, jeûnes, théosis.
+- Citez les Pères grecs et les conciles œcuméniques.
+- Distinguer si pertinent les Églises orthodoxes (grecque, russe, copte, antiochienne...) avec respect.`,
+      heritage: `L'utilisateur s'intéresse au PATRIMOINE chrétien sans nécessairement croire.
+- Cadrage culturel et historique : architecture, art sacré, héritage, contexte historique.
+- Évitez le langage dévotionnel ; restez factuel et accessible.
+- Présentez les traditions de manière comparée et non-hiérarchique.`,
+    };
+    const trackPrompt = userTrack ? TRACK_FRAMING[userTrack] : '';
+
     const systemPrompt = mode === 'help' ? HELP_SYSTEM_PROMPT : HISTORY_SYSTEM_PROMPT;
     const fullSystemPrompt = `${systemPrompt}
 
+${trackPrompt ? `CADRAGE DE L'UTILISATEUR :\n${trackPrompt}\n` : ''}
 CONNAISSANCE DE L'INTERFACE - UTILISE CES INFORMATIONS POUR GUIDER L'UTILISATEUR :
 ${uiLayout}
 
