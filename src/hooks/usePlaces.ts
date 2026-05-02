@@ -120,7 +120,7 @@ const canonicalKey = (name: string, city: string, _country: string): string => {
  * Resolve image for a DB place: DB url > canonical override > placeholder.
  * No fuzzy local matching — that caused unrelated monuments to share an image.
  */
-const resolveDbImage = (dbPlace: DBPlace, key: string): string => {
+const resolveDbImage = (dbPlace: DBPlace, key: string): string | undefined => {
   if (dbPlace.image_url) {
     return dbPlace.image_url.startsWith('http')
       ? dbPlace.image_url
@@ -130,7 +130,9 @@ const resolveDbImage = (dbPlace: DBPlace, key: string): string => {
   if (override) {
     return override.startsWith('http') ? override : getImageUrl(override);
   }
-  return '/images/place-placeholder.jpg';
+  // Return undefined (not a placeholder image) — the UI uses <PlaceSymbol>
+  // for entries without verified photography. No misleading visuals.
+  return undefined;
 };
 
 const normalizeDbPlace = (dbPlace: DBPlace, key: string): Place => ({

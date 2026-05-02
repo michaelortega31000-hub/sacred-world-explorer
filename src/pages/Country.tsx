@@ -28,6 +28,7 @@ import { ImageBackground } from '@/components/ImageBackground';
 import { getImagesByCountry } from '@/lib/religionImageHelper';
 import { useAssistant } from '@/App';
 import { MessageCircle } from 'lucide-react';
+import { PlaceSymbol } from '@/components/quest/PlaceSymbol';
 
 
 const Country = () => {
@@ -496,8 +497,8 @@ const Country = () => {
                                 </div>
                               </div>
                             ) : (
-                              <div className="h-48 bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center cursor-pointer" onClick={() => setSelectedPlace(place)}>
-                                <MapPin className="w-16 h-16 text-primary" />
+                              <div className="h-48 cursor-pointer" onClick={() => setSelectedPlace(place)}>
+                                <PlaceSymbol type={place.type} name={place.name} />
                               </div>
                             )}
                             <CardHeader className="cursor-pointer" onClick={() => setSelectedPlace(place)}>
@@ -617,8 +618,10 @@ const Country = () => {
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-0">
           {selectedPlace && (
             <>
-              {/* Galerie d'images */}
-              {selectedPlace.imageUrl && (
+              {/* Galerie d'images — only show carousel if we have a verified
+                  photo. For unverified entries (Wikidata-sourced), show the
+                  symbolic PlaceSymbol instead of misleading photography. */}
+              {selectedPlace.imageUrl ? (
                 <div className="relative w-full h-72 bg-muted">
                   <Carousel className="w-full h-full">
                     <CarouselContent>
@@ -639,6 +642,10 @@ const Country = () => {
                     <CarouselPrevious className="left-4" />
                     <CarouselNext className="right-4" />
                   </Carousel>
+                </div>
+              ) : (
+                <div className="relative w-full h-72">
+                  <PlaceSymbol type={selectedPlace.type} name={selectedPlace.name} />
                 </div>
               )}
 

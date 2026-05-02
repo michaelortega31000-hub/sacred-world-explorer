@@ -197,7 +197,11 @@ export async function fetchWikidataPlaces(country: string): Promise<Place[]> {
       description: b.descr?.value ?? '',
       points: 30, // Wikidata-sourced sites get a baseline reward
       coordinates: coords,
-      imageUrl: b.image?.value, // Wikimedia Commons URL
+      // Intentionally NO imageUrl — Wikidata P18 is community-edited and
+      // frequently mismatched (e.g. baroque cathedral photo on a pyramid
+      // entry). Showing wrong photography is worse than showing none —
+      // the UI falls back to <PlaceSymbol> with a typographic icon card.
+      imageUrl: undefined,
       // Heuristic: anything matching our religious type set is Christian-leaning,
       // but we don't *assert* it — leave undefined so the UI doesn't claim wrongly.
       religion: undefined as unknown as Religion | undefined,
