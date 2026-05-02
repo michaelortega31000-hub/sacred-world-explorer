@@ -1,20 +1,17 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { User, Globe, Route, BookHeart } from 'lucide-react';
+import { User, Globe, BookHeart } from 'lucide-react';
 
 // Tab definition. `hero` = center elevated orb treatment (Globe).
-// `gold` = always golden accent even when inactive (Planifier).
 const NAV_ITEMS = [
-  { icon: User,      label: 'Profil',    path: '/profile',         gold: false, hero: false },
-  { icon: Route,     label: 'Planifier', path: '/planner',         gold: true,  hero: false },
-  { icon: Globe,     label: 'Globe',     path: '/explore?tab=map', gold: false, hero: true  },
-  { icon: BookHeart, label: 'Journal',   path: '/journal',         gold: false, hero: false },
+  { icon: User,      label: 'Profil',  path: '/profile',         gold: false, hero: false },
+  { icon: Globe,     label: 'Globe',   path: '/explore?tab=map', gold: false, hero: true  },
+  { icon: BookHeart, label: 'Journal', path: '/journal',         gold: false, hero: false },
 ] as const;
 
 // Per-tab accent colours
 const ACCENT = {
-  hero:     { color: '#F4C542', glow: 'rgba(244,197,66,0.60)', ring: 'rgba(244,197,66,0.35)' },
-  gold:     { color: '#F4C542', glow: 'rgba(244,197,66,0.50)', ring: 'rgba(244,197,66,0.20)' },
-  default:  { color: '#34E0A1', glow: 'rgba(52,224,161,0.50)', ring: 'rgba(52,224,161,0.18)' },
+  hero:    { color: '#F4C542', glow: 'rgba(244,197,66,0.60)', ring: 'rgba(244,197,66,0.35)' },
+  default: { color: '#34E0A1', glow: 'rgba(52,224,161,0.50)', ring: 'rgba(52,224,161,0.18)' },
 };
 
 const BottomNavigation = () => {
@@ -54,7 +51,7 @@ const BottomNavigation = () => {
 
             {/* ── Globe hero orb ── floats above the bar ───────────────────── */}
             {(() => {
-              const item   = NAV_ITEMS[2]; // Globe
+              const item   = NAV_ITEMS[1]; // Globe
               const active = isActive(item.path);
               const Icon   = item.icon;
               return (
@@ -132,7 +129,7 @@ const BottomNavigation = () => {
                     'linear-gradient(90deg, transparent 0%, rgba(244,197,66,0.5) 30%, rgba(244,197,66,0.7) 50%, rgba(244,197,66,0.5) 70%, transparent 100%)',
                 }} />
 
-              <ul className="grid grid-cols-4 px-1">
+              <ul className="grid grid-cols-3 px-1">
                 {NAV_ITEMS.map((item, idx) => {
                   const Icon   = item.icon;
                   const active = isActive(item.path);
@@ -146,7 +143,7 @@ const BottomNavigation = () => {
                     );
                   }
 
-                  const accent = item.gold ? ACCENT.gold : ACCENT.default;
+                  const accent = ACCENT.default;
 
                   return (
                     <li key={item.path}>
@@ -191,9 +188,7 @@ const BottomNavigation = () => {
                         <Icon
                           className="w-[18px] h-[18px] relative z-10"
                           style={{
-                            color: active
-                              ? accent.color
-                              : item.gold ? 'rgba(244,197,66,0.7)' : 'rgba(255,255,255,0.55)',
+                            color: active ? accent.color : 'rgba(255,255,255,0.55)',
                             filter: active ? `drop-shadow(0 0 5px ${accent.glow})` : 'none',
                             transition: 'color 200ms ease, filter 200ms ease',
                           }}
@@ -201,9 +196,7 @@ const BottomNavigation = () => {
                         <span
                           className="text-[10px] font-medium leading-none relative z-10 tracking-wide"
                           style={{
-                            color: active
-                              ? accent.color
-                              : item.gold ? 'rgba(244,197,66,0.7)' : 'rgba(255,255,255,0.45)',
+                            color: active ? accent.color : 'rgba(255,255,255,0.45)',
                             transition: 'color 200ms ease',
                           }}
                         >
