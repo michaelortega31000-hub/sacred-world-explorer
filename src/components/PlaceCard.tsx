@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { MapPin, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { getBadgeForPlace } from '@/data/christianBadges';
+import { PlacePhoto } from '@/components/quest/PlacePhoto';
 import type { Place, PlaceCategory, Religion } from '@/contexts/AppContext';
 
 interface PlaceCardProps {
@@ -65,17 +66,17 @@ const PlaceCard = ({
 
   return (
     <Card className="overflow-hidden hover:shadow-xl transition-all duration-300 group relative">
-      {/* Background image */}
-      <div className="relative h-48 overflow-hidden">
-        <img
-          src={imageUrl || '/images/place-placeholder.jpg'}
+      {/* Background image — falls back to typographic symbol on error/missing */}
+      <div
+        className="relative h-48 overflow-hidden transition-transform duration-500 group-hover:scale-110"
+        style={{ filter: unlocked ? 'brightness(1)' : 'brightness(0.6) grayscale(50%)' }}
+      >
+        <PlacePhoto
+          src={imageUrl}
           alt={name}
-          className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-          referrerPolicy="no-referrer"
-          style={{
-            filter: unlocked ? 'brightness(1)' : 'brightness(0.6) grayscale(50%)'
-          }}
-          onError={(e) => { e.currentTarget.src = '/images/place-placeholder.jpg'; }}
+          type={type}
+          name={name}
+          className="absolute inset-0 w-full h-full"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 

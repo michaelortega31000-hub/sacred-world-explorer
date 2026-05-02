@@ -29,6 +29,7 @@ import { getImagesByCountry } from '@/lib/religionImageHelper';
 import { useAssistant } from '@/App';
 import { MessageCircle } from 'lucide-react';
 import { PlaceSymbol } from '@/components/quest/PlaceSymbol';
+import { PlacePhoto } from '@/components/quest/PlacePhoto';
 
 
 const Country = () => {
@@ -441,17 +442,16 @@ const Country = () => {
                       return (
                           <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
                             {place.imageUrl ? (
-                              <div 
+                              <div
                                 className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
                                 onClick={() => setSelectedPlace(place)}
                               >
-                                <img 
+                                <PlacePhoto
                                   src={resolveImageUrl(place.imageUrl) || place.imageUrl}
                                   alt={place.name}
-                                  loading="lazy"
-                                  referrerPolicy="no-referrer"
-                                  onError={(e) => { e.currentTarget.src = '/images/place-placeholder.jpg'; }}
-                                  className="w-full h-full object-cover"
+                                  type={place.type}
+                                  name={place.name}
+                                  className="w-full h-full"
                                 />
                                 {/* Restaurant button - top left */}
                                 <div className="absolute top-2 left-2">
@@ -628,12 +628,12 @@ const Country = () => {
                       {[selectedPlace.imageUrl, selectedPlace.imageUrl, selectedPlace.imageUrl].map((img, index) => (
                         <CarouselItem key={index}>
                           <div className="relative w-full h-72">
-                            <img
+                            <PlacePhoto
                               src={resolveImageUrl(img) || img}
                               alt={`${selectedPlace.name} - Photo ${index + 1}`}
-                              className="w-full h-full object-cover"
-                              referrerPolicy="no-referrer"
-                              onError={(e) => { e.currentTarget.src = '/images/place-placeholder.jpg'; }}
+                              type={selectedPlace.type}
+                              name={selectedPlace.name}
+                              className="w-full h-full"
                             />
                           </div>
                         </CarouselItem>

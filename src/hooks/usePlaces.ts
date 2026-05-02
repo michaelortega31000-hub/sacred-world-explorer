@@ -246,12 +246,28 @@ export const usePlacesByCountry = (country: string | undefined) => {
     localFiltered.map(p => canonicalKey(p.name, p.city || '', p.country)),
   );
 
+  // Apply curated IMAGE_OVERRIDES to ANY place without an image — including
+  // Wikidata-sourced ones. Previously overrides only applied to DB rows; that
+  // meant well-known monuments coming through Wikidata (Notre-Dame, Chartres,
+  // etc.) lost their curated photos and fell back to the symbol card.
+  // Now: if the canonical key matches a curated reference, restore the photo.
+  const enrichWithOverride = (p: Place): Place => {
+    if (p.imageUrl) return p;
+    const key = canonicalKey(p.name, p.city || '', p.country);
+    const override = IMAGE_OVERRIDES[key];
+    if (!override) return p;
+    return {
+      ...p,
+      imageUrl: override.startsWith('http') ? override : getImageUrl(override),
+    };
+  };
+
   const uniqueWikidata = (wikidataPlaces ?? []).filter(p => {
     const key = canonicalKey(p.name, p.city || '', p.country);
     if (seenKeys.has(key)) return false;
     seenKeys.add(key);
     return true;
-  });
+  }).map(enrichWithOverride);
 
   const merged = [...localFiltered, ...uniqueWikidata];
 
