@@ -27,6 +27,11 @@ import { Badge } from '@/components/ui/badge';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { mapStyleUrls, atmospherePresets } from '@/types/globeSettings';
 import { attachSpiritualOverlay, type SpiritualOverlayHandle } from '@/components/quest/spiritualOverlay';
+import {
+  attachUnescoOverlay,
+  type UnescoOverlayHandle,
+  UNESCO_DOT_LAYER,
+} from '@/components/quest/unescoOverlay';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -80,6 +85,7 @@ const Globe3D = ({
   const tripMarkers = useRef<mapboxgl.Marker[]>([]);
   const endMarkerTimeout = useRef<NodeJS.Timeout | null>(null);
   const spiritualOverlayRef = useRef<SpiritualOverlayHandle | null>(null);
+  const unescoOverlayRef = useRef<UnescoOverlayHandle | null>(null);
   const hasInitiallyZoomed = useRef(false);
   const pendingRecenter = useRef(false);
   
@@ -980,12 +986,56 @@ const Globe3D = ({
         logger.error('spiritual overlay failed', err);
       }
 
+      // UNESCO World Heritage layer — ~1,200 sites globally, fades in at zoom >= 2.5
+      // Pulled from Wikidata (CC0); cached for the lifetime of the page.
+      try {
+        unescoOverlayRef.current?.destroy();
+        attachUnescoOverlay(map.current).then((handle) => {
+          unescoOverlayRef.current = handle;
+        }).catch((err) => logger.error('UNESCO overlay failed', err));
+      } catch (err) {
+        logger.error('UNESCO overlay attachment failed', err);
+      }
+
       // Add hover effect
       map.current.on('mouseenter', 'places-circles', () => {
         if (map.current) map.current.getCanvas().style.cursor = 'pointer';
       });
       map.current.on('mouseleave', 'places-circles', () => {
         if (map.current) map.current.getCanvas().style.cursor = '';
+      });
+
+      // UNESCO marker hover + click popup
+      map.current.on('mouseenter', UNESCO_DOT_LAYER, () => {
+        if (map.current) map.current.getCanvas().style.cursor = 'pointer';
+      });
+      map.current.on('mouseleave', UNESCO_DOT_LAYER, () => {
+        if (map.current) map.current.getCanvas().style.cursor = '';
+      });
+      map.current.on('click', UNESCO_DOT_LAYER, (e) => {
+        if (!e.features?.length || !map.current) return;
+        const f = e.features[0];
+        const coords = (f.geometry as { coordinates: [number, number] }).coordinates;
+        const props = f.properties as { name: string; country: string; category: string; inDanger: boolean };
+        if (currentPopup.current) currentPopup.current.remove();
+        const danger = props.inDanger
+          ? '<div style="color:#fca5a5;font-size:10px;margin-top:4px;">⚠ En péril</div>'
+          : '';
+        currentPopup.current = new mapboxgl.Popup({
+          closeButton: true,
+          maxWidth: '260px',
+          className: 'unesco-popup',
+        })
+          .setLngLat(coords)
+          .setHTML(`
+            <div style="background:rgba(7,7,15,0.96);border:1px solid rgba(244,197,66,0.30);border-radius:10px;padding:10px 12px;color:#fff;font-family:system-ui;">
+              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(244,197,66,0.85);margin-bottom:4px;">UNESCO · ${props.category}</div>
+              <div style="font-size:13px;font-weight:600;color:#fff;line-height:1.3;">${props.name}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">${props.country}</div>
+              ${danger}
+            </div>
+          `)
+          .addTo(map.current);
       });
 
       // Hover and click handlers for trip places
@@ -1297,6 +1347,10 @@ const Globe3D = ({
       if (spiritualOverlayRef.current) {
         try { spiritualOverlayRef.current.destroy(); } catch { /* map already gone */ }
         spiritualOverlayRef.current = null;
+      }
+      if (unescoOverlayRef.current) {
+        try { unescoOverlayRef.current.destroy(); } catch { /* map already gone */ }
+        unescoOverlayRef.current = null;
       }
 
       // Remove map
