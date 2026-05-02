@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { mockPlaces } from '@/data/placesData';
 import { getImageUrl } from '@/lib/imageHelper';
 import { logger } from '@/lib/logger';
+import { useWikidataPlaces } from '@/hooks/useWikidataPlaces';
 import type { Place, Religion, PlaceCategory } from '@/contexts/AppContext';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -219,16 +220,45 @@ export const usePlaces = () => {
 };
 
 /**
- * Get places filtered by country
+ * Get places filtered by country, enriched with Wikidata heritage sites.
+ *
+ * Local + DB places are authoritative — they have curated descriptions,
+ * verified images, and reward values. Wikidata fills the long tail:
+ * any country in the supported QID map gets ~50–200 extra sites pulled
+ * from Wikidata, deduplicated against local entries by canonical key.
+ *
+ * The Wikidata fetch fails gracefully — if the endpoint is down or the
+ * country isn't in the QID map, the user just sees the local + DB set.
  */
 export const usePlacesByCountry = (country: string | undefined) => {
-  const { data: places, isLoading, error } = usePlaces();
+  const { data: places, isLoading: localLoading, error } = usePlaces();
+  const { data: wikidataPlaces, isLoading: wdLoading } = useWikidataPlaces(country);
 
-  const filteredPlaces = places?.filter(
-    p => p.country.toLowerCase() === country?.toLowerCase()
+  const localFiltered = places?.filter(
+    p => p.country.toLowerCase() === country?.toLowerCase(),
   ) || [];
 
-  return { places: filteredPlaces, isLoading, error };
+  // Dedupe Wikidata against the local+DB set using the same canonical key
+  // logic that mergePlaces uses for DB→local dedupe.
+  const seenKeys = new Set(
+    localFiltered.map(p => canonicalKey(p.name, p.city || '', p.country)),
+  );
+
+  const uniqueWikidata = (wikidataPlaces ?? []).filter(p => {
+    const key = canonicalKey(p.name, p.city || '', p.country);
+    if (seenKeys.has(key)) return false;
+    seenKeys.add(key);
+    return true;
+  });
+
+  const merged = [...localFiltered, ...uniqueWikidata];
+
+  return {
+    places: merged,
+    isLoading: localLoading || wdLoading,
+    error,
+    wikidataCount: uniqueWikidata.length,
+  };
 };
 
 /**

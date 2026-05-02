@@ -507,7 +507,7 @@ const Country = () => {
                                   {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
                                 </div>
                               </div>
-                              <CardDescription className="flex items-center gap-2">
+                              <CardDescription className="flex items-center gap-2 flex-wrap">
                                 {place.placeCategory === 'museum' ? (
                                   <Building2 className="w-3 h-3 text-blue-500" />
                                 ) : (
@@ -517,6 +517,15 @@ const Country = () => {
                                 {place.placeCategory === 'museum' && (
                                   <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/20">
                                     Musée
+                                  </Badge>
+                                )}
+                                {place.tags?.includes('wikidata') && (
+                                  <Badge
+                                    variant="secondary"
+                                    className="text-[10px] bg-amber-300/10 text-amber-200/85 border-amber-300/25 font-medium"
+                                    title="Donnée enrichie depuis Wikidata (CC0)"
+                                  >
+                                    Wikidata
                                   </Badge>
                                 )}
                               </CardDescription>
