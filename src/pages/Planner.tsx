@@ -5,7 +5,8 @@ import { ArrowLeft, MapPin, Plus, Route as RouteIcon, Save, Cross, X } from 'luc
 import { toast } from 'sonner';
 import ItineraryGlobe3D from '@/components/ItineraryGlobe3D';
 import BottomNavigation from '@/components/BottomNavigation';
-import { Logo } from '@/components/ui/logo';
+import { PlannerRouteEmblem } from '@/components/planner/PlannerRouteEmblem';
+import { PageHeader } from '@/components/quest/PageHeader';
 import { getImagesByCountry } from '@/lib/religionImageHelper';
 import PlaceSelectorModal, { type SelectedPlace } from '@/components/planner/PlaceSelectorModal';
 import { useApp } from '@/contexts/AppContext';
@@ -202,7 +203,7 @@ const Planner = () => {
       className="fixed inset-0 overflow-hidden"
       style={{
         background:
-          'radial-gradient(ellipse at center, #142B4F 0%, #0E1B3F 50%, #0A1628 100%)',
+          'radial-gradient(ellipse at center, #0d1530 0%, #07070f 60%, #030308 100%)',
       }}
     >
       {/* 3D Globe background */}
@@ -246,37 +247,11 @@ const Planner = () => {
 
       {/* Content */}
       <div className="relative z-10 flex h-full flex-col">
-        {/* Header */}
-        <header className="flex items-center justify-between px-4 pt-6 pb-2 sm:px-6">
-          <div className="w-10" aria-hidden />
-          <div className="inline-block scale-[1.18] origin-center">
-            <Logo variant="main" size="small" effect="glow" />
-          </div>
-          <div className="w-10" aria-hidden />
-        </header>
-
-        {/* Title block - lowered for breathing room */}
-        <div className="flex flex-col items-center px-6 pt-16 sm:pt-20 text-center">
-          <h1
-            className="text-3xl sm:text-4xl font-bold tracking-tight"
-            style={{
-              background:
-                'linear-gradient(135deg, #FFFFFF 0%, #F4C542 60%, #E0A84C 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-              filter: 'drop-shadow(0 2px 12px rgba(244, 197, 66, 0.3))',
-            }}
-          >
-            Planifier un trajet
-          </h1>
-          <p
-            className="mt-2 text-sm font-medium tracking-wide text-[#F4C542]/85"
-            style={{ filter: 'drop-shadow(0 0 8px rgba(244, 197, 66, 0.5))' }}
-          >
-            ✦ Vers un lieu sacré ✦
-          </p>
-        </div>
+        <PageHeader
+          emblem={<PlannerRouteEmblem size={92} />}
+          title="Planifier un trajet"
+          subtitle="d'un départ vers un lieu sacré"
+        />
 
         {/* Action panel */}
         <div className="flex-1 flex flex-col justify-end px-5 pb-28 sm:px-8 sm:pb-32">

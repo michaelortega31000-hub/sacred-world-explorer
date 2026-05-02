@@ -17,13 +17,15 @@ import { getCountryByCode } from '@/data/countries';
 import { useToast } from '@/hooks/use-toast';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
 import { useTranslation } from 'react-i18next';
-import { ImageBackground } from '@/components/ImageBackground';
-import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import EventReminderSettings from '@/components/EventReminderSettings';
 import { logger } from '@/lib/logger';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Progress } from '@/components/ui/progress';
 import GlobeSettingsCard from '@/components/settings/GlobeSettingsCard';
+import { PrivacyConsentCard } from '@/components/settings/PrivacyConsentCard';
+import { DevToolsCard } from '@/components/settings/DevToolsCard';
+import { PageHeader } from '@/components/quest/PageHeader';
+import { SettingsEmblem } from '@/components/quest/SettingsEmblem';
 
 const Settings = () => {
   const navigate = useNavigate();
@@ -69,7 +71,6 @@ const Settings = () => {
     }
   };
   const { isAdmin } = useIsAdmin();
-  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [notifications, setNotifications] = useState(true);
   const [soundEffects, setSoundEffects] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
@@ -84,7 +85,8 @@ const Settings = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate('/auth');
+        if (!import.meta.env.DEV) navigate('/auth');
+        return;
       } else {
         setUserId(session.user.id);
         // Fetch username
@@ -288,19 +290,15 @@ const Settings = () => {
   };
 
   return (
-    <ImageBackground 
-      images={backgroundImages}
-      carousel={true}
-      blur={3}
-      overlay="gradient"
-      className="min-h-screen pb-20"
-    >
-      <div className="min-h-screen relative overflow-hidden pb-20">
-      <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-4 sm:pb-8">
-        <h1 className="text-3xl font-bold text-foreground mb-6 flex items-center gap-3">
-          <Smartphone className="w-8 h-8 text-primary" />
-          Paramètres
-        </h1>
+    <div className="cathedral-rose-bg min-h-screen pb-24">
+      <div className="min-h-screen relative overflow-hidden">
+      <main className="relative z-10 max-w-4xl mx-auto px-3 sm:px-4 pt-6 pb-4 sm:pb-8">
+        <PageHeader
+          emblem={<SettingsEmblem size={92} />}
+          title="Réglages"
+          subtitle="préférences · sécurité · compte"
+        />
+        <div className="h-4" />
 
         <div className="space-y-4">
           {/* Langue */}
@@ -327,7 +325,7 @@ const Settings = () => {
             </div>
           </Card>
 
-          {/* Mon profil chrétien */}
+          {/* Tradition (read-only — change goes through dedicated flow) */}
           <Card className="p-6 bg-card border-border">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-primary/10 rounded-full">
@@ -335,31 +333,28 @@ const Settings = () => {
               </div>
               <div className="flex-1">
                 <Label className="text-lg font-semibold text-foreground mb-1 block">
-                  Mon profil chrétien
+                  Ma tradition
                 </Label>
                 <p className="text-sm text-muted-foreground mb-3">
-                  Adapte le contenu spirituel des lieux et l'accès aux forums dédiés.
+                  {(() => {
+                    const t = userProgress.track;
+                    if (t === 'catholic') return 'Catholique';
+                    if (t === 'protestant') return 'Protestant';
+                    if (t === 'orthodox') return 'Orthodoxe';
+                    if (t === 'heritage') return 'Curieux & Patrimoine';
+                    return 'Non définie';
+                  })()}
                 </p>
-                <Select
-                  value={userProgress.denomination ?? ''}
-                  onValueChange={(v) => handleDenominationChange(v as Denomination)}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => navigate('/settings/change-denomination')}
                 >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Choisir un profil" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="catholique">✝️ Catholique</SelectItem>
-                    <SelectItem value="protestant">📖 Protestant</SelectItem>
-                    <SelectItem value="curieux">🏛️ Curieux du patrimoine chrétien</SelectItem>
-                  </SelectContent>
-                </Select>
-                {userProgress.denomination && (
-                  <p className="text-xs text-muted-foreground mt-2 italic">
-                    {userProgress.denomination === 'catholique' && '« Tradition, sacrements, pèlerinages et vie paroissiale. »'}
-                    {userProgress.denomination === 'protestant' && '« Bible, foi personnelle, temples et héritage de la Réforme. »'}
-                    {userProgress.denomination === 'curieux' && '« Architecture, histoire, art et beauté du patrimoine sacré. »'}
-                  </p>
-                )}
+                  Changer de tradition
+                </Button>
+                <p className="text-[11px] text-muted-foreground mt-2">
+                  Changement à friction élevée : cooldown progressif, raison requise, confirmation explicite.
+                </p>
               </div>
             </div>
           </Card>
@@ -458,6 +453,12 @@ const Settings = () => {
 
           {/* Globe Customization */}
           <GlobeSettingsCard />
+
+          {/* Confidentialité & consentements */}
+          <PrivacyConsentCard />
+
+          {/* Dev-only quick actions */}
+          <DevToolsCard />
 
           {/* Mode sombre */}
           <Card className="p-6 bg-card border-border">
@@ -684,7 +685,7 @@ const Settings = () => {
         </DialogContent>
       </Dialog>
     </div>
-  </ImageBackground>
+    </div>
   );
 };
 

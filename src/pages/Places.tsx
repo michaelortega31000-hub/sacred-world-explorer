@@ -8,6 +8,8 @@ import PlaceCard from '@/components/PlaceCard';
 import { usePlaces } from '@/hooks/usePlaces';
 import { useApp } from '@/contexts/AppContext';
 import ChristianIcon from '@/components/ChristianIcon';
+import { PageHeader } from '@/components/quest/PageHeader';
+import { PlacesEmblem } from '@/components/quest/MoreEmblems';
 
 const REGIONS = [
   'Toutes les régions',
@@ -117,19 +119,12 @@ const Places = () => {
   }, [places, search, region, type]);
 
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <header className="px-4 pt-6 pb-3 flex items-center gap-3">
-        <ChristianIcon size="md" />
-        <div className="flex-1 min-w-0">
-          <h1 className="text-xl sm:text-2xl font-bold leading-tight">Lieux sacrés</h1>
-          <p className="text-[11px] sm:text-xs text-muted-foreground">
-            Patrimoine chrétien — France & Europe
-          </p>
-        </div>
-        <Badge variant="outline" className="gap-1">
-          <Church className="w-3 h-3" /> {filtered.length}
-        </Badge>
-      </header>
+    <div className="min-h-screen cathedral-rose-bg pb-24">
+      <PageHeader
+        emblem={<PlacesEmblem size={88} />}
+        title="Lieux sacrés"
+        subtitle={`${filtered.length} lieux · patrimoine chrétien`}
+      />
 
       <main className="px-4 space-y-4 max-w-3xl mx-auto">
         {/* Search */}

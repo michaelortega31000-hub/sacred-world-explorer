@@ -1,19 +1,17 @@
 import BottomNavigation from '@/components/BottomNavigation';
 import SocialTab from '@/components/SocialTab';
-import { BackButton } from '@/components/BackButton';
-import { ImageBackground } from '@/components/ImageBackground';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { Share2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { useApp } from '@/contexts/AppContext';
 import { usePlaces } from '@/hooks/usePlaces';
-import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
+import { PageHeader } from '@/components/quest/PageHeader';
+import { JournalEmblem } from '@/components/quest/JournalEmblem';
 
 const Journal = () => {
   const { userProgress } = useApp();
   const { data: places } = usePlaces();
-  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
 
   const total = places?.length ?? 0;
   const unlocked = userProgress.visitedPlaces?.length ?? 0;
@@ -39,51 +37,39 @@ const Journal = () => {
   };
 
   return (
-    <ImageBackground
-      images={backgroundImages}
-      carousel={true}
-      blur={3}
-      overlay="gradient"
-      className="min-h-screen pb-20"
-    >
-      <div className="min-h-screen relative">
-        <div className="container mx-auto px-4 py-6 pt-16 relative z-10">
-          <div className="space-y-6">
-            <div className="space-y-2 animate-fade-in">
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Ma Collection
-              </h1>
-              <p className="text-lg text-muted-foreground">
-                Vos lieux sacrés débloqués, souvenirs et partages
-              </p>
-            </div>
+    <div className="cathedral-rose-bg min-h-screen pb-24">
+      <div className="container mx-auto px-4 py-6 pt-6 relative z-10">
+        <div className="space-y-6">
+          <PageHeader
+            emblem={<JournalEmblem size={92} />}
+            title="Mon Journal"
+            subtitle="lieux sacrés · souvenirs · partages"
+          />
 
-            {/* Progression globale + partage */}
-            <div className="rounded-xl border border-border/60 bg-background/70 backdrop-blur-md p-4 space-y-3 animate-fade-in" style={{ animationDelay: '0.1s' }}>
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold">Progression</p>
-                  <p className="text-xs text-muted-foreground">
-                    {unlocked} / {total} lieux débloqués
-                  </p>
-                </div>
-                <Button onClick={handleShare} variant="outline" size="sm" className="gap-2 shrink-0">
-                  <Share2 className="w-4 h-4" />
-                  Partager
-                </Button>
+          {/* Progression globale + partage */}
+          <div className="cg-lead rounded-xl p-4 space-y-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-sm font-semibold text-white">Progression</p>
+                <p className="text-xs text-white/55">
+                  {unlocked} / {total} lieux débloqués
+                </p>
               </div>
-              <Progress value={pct} className="h-2" />
+              <Button onClick={handleShare} variant="ghost" size="sm"
+                className="gap-2 shrink-0 border border-amber-300/25 text-amber-200 hover:bg-amber-300/10">
+                <Share2 className="w-4 h-4" />
+                Partager
+              </Button>
             </div>
-
-            <div className="animate-fade-in" style={{ animationDelay: '0.2s' }}>
-              <SocialTab />
-            </div>
+            <Progress value={pct} className="h-1.5" />
           </div>
-        </div>
 
-        <BottomNavigation />
+          <SocialTab />
+        </div>
       </div>
-    </ImageBackground>
+
+      <BottomNavigation />
+    </div>
   );
 };
 

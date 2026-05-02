@@ -11,9 +11,9 @@ import { Button } from '@/components/ui/button';
 import { Award, Trophy, Star, Lock, Calendar, Compass, Target, MapPin, Medal, TrendingUp, Building2, Palette, BookOpen, Crown, Shield } from 'lucide-react';
 import { Progress } from '@/components/ui/progress';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart } from 'recharts';
-import { ImageBackground } from '@/components/ImageBackground';
-import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { getImageUrl } from '@/lib/imageHelper';
+import { PageHeader } from '@/components/quest/PageHeader';
+import { BadgesEmblem } from '@/components/quest/BadgesEmblem';
 
 interface UserBadge {
   id: string;
@@ -43,7 +43,6 @@ interface MonthlyProgress {
 const Badges = () => {
   const { session, userProgress } = useApp();
   const navigate = useNavigate();
-  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [badges, setBadges] = useState<UserBadge[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<string>('all');
@@ -243,66 +242,56 @@ const Badges = () => {
     : religionBadges;
 
   return (
-    <ImageBackground 
-      images={backgroundImages}
-      carousel={true}
-      blur={3}
-      overlay="gradient"
-      className="min-h-screen pb-20"
-    >
-      <div className="min-h-screen relative pb-20">
-      <div className="relative z-10 container mx-auto px-3 sm:px-4 pt-16 sm:pt-20 pb-4 sm:pb-6 space-y-6">
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-accent via-accent/80 to-accent/60 bg-clip-text text-transparent">
-            Collection de Badges
-          </h1>
-          <p className="text-muted-foreground">
-            {badges.length} badge{badges.length > 1 ? 's' : ''} débloqué{badges.length > 1 ? 's' : ''}
-          </p>
-        </div>
+    <div className="cathedral-rose-bg min-h-screen pb-24">
+      <div className="container mx-auto px-3 sm:px-4 pt-6 pb-4 sm:pb-6 space-y-6">
+        <PageHeader
+          emblem={<BadgesEmblem size={92} />}
+          title="Collection de Badges"
+          subtitle={`${badges.length} badge${badges.length > 1 ? 's' : ''} débloqué${badges.length > 1 ? 's' : ''}`}
+        />
 
         {/* Statistics Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+          <Card className="cg-lead">
             <CardContent className="pt-4 pb-3 px-3 text-center">
               <Trophy className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-accent" />
-              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">{stats.totalBadges}</div>
+              <div className="text-xl sm:text-2xl font-bold text-white">{stats.totalBadges}</div>
               <div className="text-xs text-muted-foreground">Badges totaux</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+          <Card className="cg-lead">
             <CardContent className="pt-4 pb-3 px-3 text-center">
               <Target className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-primary" />
-              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">{stats.completionRate}%</div>
+              <div className="text-xl sm:text-2xl font-bold text-white">{stats.completionRate}%</div>
               <div className="text-xs text-muted-foreground">Complétion</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+          <Card className="cg-lead">
             <CardContent className="pt-4 pb-3 px-3 text-center">
               <Star className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-yellow-500" />
-              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">{stats.rareBadges}</div>
+              <div className="text-xl sm:text-2xl font-bold text-white">{stats.rareBadges}</div>
               <div className="text-xs text-muted-foreground">Badges rares</div>
             </CardContent>
           </Card>
 
-          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+          <Card className="cg-lead">
             <CardContent className="pt-4 pb-3 px-3 text-center">
               <Medal className="w-6 h-6 sm:w-8 sm:h-8 mx-auto mb-2 text-blue-500" />
-              <div className="text-xl sm:text-2xl font-bold text-sacred-blue">#{stats.rank}</div>
+              <div className="text-xl sm:text-2xl font-bold text-white">#{stats.rank}</div>
               <div className="text-xs text-muted-foreground">Classement</div>
             </CardContent>
           </Card>
         </div>
 
         {/* Progress Card */}
-        <Card className="bg-gradient-to-r from-accent/10 via-primary/10 to-accent/10 backdrop-blur-sm border-accent/30">
+        <Card className="cg-amber">
           <CardContent className="pt-4 pb-4">
             <div className="space-y-3">
               <div className="flex justify-between items-center">
                 <div>
-                  <h3 className="font-semibold text-sacred-blue">Progression globale</h3>
+                  <h3 className="font-semibold text-white">Progression globale</h3>
                   <p className="text-xs text-muted-foreground">
                     Vous êtes classé(e) #{stats.rank} sur {stats.totalUsers} utilisateurs
                   </p>
@@ -322,7 +311,7 @@ const Badges = () => {
 
         {/* Monthly Progress Chart */}
         {monthlyData.length > 0 && (
-          <Card className="bg-sacred-beige/90 backdrop-blur-sm border-primary/20">
+          <Card className="cg-lead">
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
                 <TrendingUp className="w-5 h-5 text-primary" />
@@ -599,8 +588,7 @@ const Badges = () => {
       </div>
 
       <BottomNavigation />
-      </div>
-    </ImageBackground>
+    </div>
   );
 };
 

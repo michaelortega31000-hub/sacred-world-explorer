@@ -15,8 +15,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useRateLimit } from '@/hooks/useRateLimit';
 import { useAvatarUnlock } from '@/hooks/useAvatarUnlock';
 import { logger } from '@/lib/logger';
-import { ImageBackground } from '@/components/ImageBackground';
-import { getBackgroundRotationImages } from '@/lib/religionImageHelper';
 import { mockPlaces } from '@/data/placesData';
 import { getImageUrl } from '@/lib/imageHelper';
 import { StatsCard } from '@/components/profile/StatsCard';
@@ -34,7 +32,6 @@ const Profile = () => {
   const { toast } = useToast();
   const { userProgress } = useApp();
   const { checkRateLimit } = useRateLimit();
-  const backgroundImages = getBackgroundRotationImages(userProgress.selectedReligion);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
@@ -66,7 +63,7 @@ const Profile = () => {
     const checkAuth = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        navigate('/auth');
+        if (!import.meta.env.DEV) navigate('/auth');
       } else {
         setUserId(session.user.id);
         fetchAvatar(session.user.id);
@@ -377,17 +374,10 @@ const Profile = () => {
   }, [userProgress.visitedPlaces]);
 
   return (
-    <ImageBackground 
-      images={backgroundImages}
-      carousel={true}
-      blur={3}
-      overlay="gradient"
-      className="min-h-screen pb-20"
-    >
+    <div className="cathedral-rose-bg min-h-screen pb-24">
       <div className="min-h-screen relative overflow-hidden">
-        {/* Background with rotating globe effect */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent" />
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
+          <div className="absolute inset-0 bg-gradient-to-b from-amber-300/10 to-transparent" />
         </div>
 
         
@@ -447,10 +437,21 @@ const Profile = () => {
                     />
                   </label>
                 </div>
-                <h1 className="text-3xl font-bold text-foreground mb-2">Mon Profil</h1>
-                {userProgress.selectedReligion && (
-                  <p className="text-muted-foreground capitalize">{userProgress.selectedReligion}</p>
-                )}
+                <h1
+                  className="text-3xl sm:text-4xl font-bold tracking-tight font-cinzel"
+                  style={{
+                    background: 'linear-gradient(135deg, #FFFFFF 0%, #F4C542 60%, #E0A84C 100%)',
+                    WebkitBackgroundClip: 'text',
+                    WebkitTextFillColor: 'transparent',
+                    backgroundClip: 'text',
+                    filter: 'drop-shadow(0 2px 12px rgba(244, 197, 66, 0.3))',
+                  }}
+                >
+                  Mon Profil
+                </h1>
+                <p className="mt-1.5 text-[12.5px] font-medium tracking-[0.16em] uppercase text-[#F4C542]/75">
+                  {userProgress.selectedReligion ? userProgress.selectedReligion : 'pèlerin · curieux & patrimoine'}
+                </p>
                 {uploading && (
                   <p className="text-sm text-muted-foreground mt-2">Téléchargement en cours...</p>
                 )}
@@ -666,7 +667,7 @@ const Profile = () => {
           newLevel={levelUpData.level}
           totalPoints={levelUpData.points}
         />
-    </ImageBackground>
+    </div>
   );
 };
 
