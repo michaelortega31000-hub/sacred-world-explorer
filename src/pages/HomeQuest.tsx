@@ -156,7 +156,7 @@ const HomeQuest = () => {
               rewardXp={30}
               onClaim={() => navigate('/explore?tab=challenges')}
             />
-            <div className="hub-card-glow flex flex-col items-center justify-center bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-3 relative overflow-hidden">
+            <div className="cg-amber flex flex-col items-center justify-center rounded-xl p-3 relative overflow-hidden">
               <StreakRing
                 streak={userProgress.currentStreak ?? 0}
                 longest={userProgress.longestStreak ?? 0}

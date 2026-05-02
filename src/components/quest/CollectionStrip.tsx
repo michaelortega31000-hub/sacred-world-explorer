@@ -1,4 +1,3 @@
-import { Card } from '@/components/ui/card';
 import { Award, Coins, Star, ChevronRight } from 'lucide-react';
 
 interface Props {
@@ -9,70 +8,81 @@ interface Props {
 }
 
 export const CollectionStrip = ({ badges, tokens, skills, onOpen }: Props) => (
-  <div className="grid grid-cols-3 gap-3">
-    <Item
+  <div className="grid grid-cols-3 gap-2.5">
+    <JewelPane
       Icon={Award}
       label="Badges"
       count={badges}
-      colorFrom="from-amber-300/35"
-      colorTo="to-amber-500/15"
-      border="border-amber-300/40"
-      iconColor="text-amber-200"
-      glow="rgba(244,197,66,0.55)"
+      glassCls="cg-ruby"
+      iconColor="#F87171"
+      glow="rgba(180,30,55,0.7)"
       onClick={() => onOpen?.('badges')}
     />
-    <Item
+    <JewelPane
       Icon={Coins}
       label="Tokens"
       count={tokens}
-      colorFrom="from-cyan-300/35"
-      colorTo="to-cyan-500/15"
-      border="border-cyan-300/40"
-      iconColor="text-cyan-200"
-      glow="rgba(125,211,252,0.55)"
+      glassCls="cg-sapphire"
+      iconColor="#60A5FA"
+      glow="rgba(30,80,200,0.7)"
       onClick={() => onOpen?.('tokens')}
     />
-    <Item
+    <JewelPane
       Icon={Star}
       label="Skills"
       count={skills}
-      colorFrom="from-purple-300/35"
-      colorTo="to-purple-500/15"
-      border="border-purple-300/40"
-      iconColor="text-purple-200"
-      glow="rgba(192,132,252,0.55)"
+      glassCls="cg-amethyst"
+      iconColor="#C084FC"
+      glow="rgba(100,30,180,0.7)"
       onClick={() => onOpen?.('skills')}
     />
   </div>
 );
 
-const Item = ({
-  Icon, label, count, colorFrom, colorTo, border, iconColor, glow, onClick,
+const JewelPane = ({
+  Icon, label, count, glassCls, iconColor, glow, onClick,
 }: {
   Icon: typeof Award; label: string; count: number;
-  colorFrom: string; colorTo: string; border: string; iconColor: string; glow: string;
+  glassCls: string; iconColor: string; glow: string;
   onClick?: () => void;
 }) => (
   <button
     onClick={onClick}
-    className={`hub-card-glow relative overflow-hidden rounded-xl bg-gradient-to-br ${colorFrom} ${colorTo} backdrop-blur-md border ${border} p-3 text-left
-                hover:scale-[1.03] active:scale-95 transition-transform`}
+    className={`${glassCls} cg-interactive relative overflow-hidden rounded-xl p-3 text-left`}
   >
+    {/* Strong backlit glow from top */}
     <div
-      className="absolute -top-6 -right-6 w-20 h-20 rounded-full blur-2xl pointer-events-none"
-      style={{ background: glow }}
+      className="absolute -top-4 inset-x-0 h-16 pointer-events-none"
+      style={{ background: `radial-gradient(ellipse at 50% 0%, ${glow.replace('0.7', '0.35')} 0%, transparent 70%)` }}
     />
-    <div className="relative flex items-center gap-2 mb-2">
-      <Icon className={`w-4 h-4 ${iconColor}`} style={{ filter: `drop-shadow(0 0 6px ${glow})` }} />
-      <span className="text-[10px] tracking-[0.18em] uppercase text-white/85 font-semibold">
+
+    <div className="relative flex items-center gap-1.5 mb-2.5">
+      <Icon
+        className="w-4 h-4 shrink-0"
+        style={{ color: iconColor, filter: `drop-shadow(0 0 6px ${glow})` }}
+      />
+      <span
+        className="text-[9.5px] tracking-[0.20em] uppercase font-bold"
+        style={{ color: iconColor, opacity: 0.85 }}
+      >
         {label}
       </span>
     </div>
+
     <div className="relative flex items-end justify-between">
-      <span className="text-[26px] leading-none font-bold text-white tabular-nums">
+      <span
+        className="text-[28px] leading-none font-bold tabular-nums"
+        style={{
+          color: '#fff',
+          textShadow: `0 0 20px ${glow}`,
+        }}
+      >
         {count}
       </span>
-      <ChevronRight className="w-4 h-4 text-white/50" />
+      <ChevronRight
+        className="w-3.5 h-3.5 mb-1"
+        style={{ color: iconColor, opacity: 0.6 }}
+      />
     </div>
   </button>
 );

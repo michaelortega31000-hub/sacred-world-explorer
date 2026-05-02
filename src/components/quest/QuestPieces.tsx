@@ -12,26 +12,18 @@ import {
 export const AuroraBg = ({ children }: { children: ReactNode }) => {
   const motes = useMemo(
     () =>
-      Array.from({ length: 14 }).map((_, i) => ({
-        top: `${Math.round(Math.random() * 90)}%`,
-        left: `${Math.round(Math.random() * 96)}%`,
-        delay: `${(Math.random() * 4).toFixed(1)}s`,
-        scale: (0.6 + Math.random() * 1.4).toFixed(2),
+      Array.from({ length: 10 }).map((_, i) => ({
+        top:   `${Math.round(Math.random() * 90)}%`,
+        left:  `${Math.round(Math.random() * 96)}%`,
+        delay: `${(Math.random() * 6).toFixed(1)}s`,
+        scale: (0.5 + Math.random() * 1.0).toFixed(2),
+        hue:   ['rgba(200,140,20', 'rgba(140,15,35', 'rgba(15,45,130', 'rgba(70,15,130'][i % 4],
       })),
     [],
   );
   return (
-    <div className="relative min-h-screen overflow-hidden">
-      <div className="absolute inset-0 hub-aurora hub-grain" />
-      {/* radial vignette for focus */}
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          background:
-            'radial-gradient(120% 80% at 50% 0%, transparent 0%, rgba(0,0,0,0.45) 100%)',
-        }}
-      />
-      {/* floating gold motes */}
+    <div className="relative min-h-screen overflow-hidden cathedral-rose-bg">
+      {/* Cathedral motes — colored jewel sparks, not just gold */}
       <div className="absolute inset-0 pointer-events-none">
         {motes.map((m, i) => (
           <span
@@ -41,6 +33,7 @@ export const AuroraBg = ({ children }: { children: ReactNode }) => {
               top: m.top, left: m.left,
               animationDelay: m.delay,
               transform: `scale(${m.scale})`,
+              background: `radial-gradient(circle, ${m.hue},0.90), ${m.hue},0))`,
             }}
           />
         ))}
@@ -104,8 +97,8 @@ export const QuestCard = ({
   rewardXp: number;
   onClaim: () => void;
 }) => (
-  <Card className="hub-card-glow relative overflow-hidden col-span-2 bg-gradient-to-br from-[#1a2d5a]/70 to-[#0E1B3F]/70 backdrop-blur-md border-amber-300/20 p-4">
-    <div className="absolute top-0 right-0 w-28 h-28 rounded-full bg-amber-300/20 blur-2xl pointer-events-none" />
+  <Card className="cg-ruby relative overflow-hidden col-span-2 rounded-xl p-4">
+    <div className="absolute top-0 right-0 w-32 h-32 rounded-full blur-3xl pointer-events-none" style={{ background: 'rgba(180,20,45,0.25)' }} />
     <div className="relative">
       <div className="flex items-center gap-2 mb-1">
         <Target className="w-4 h-4 text-amber-300" />
@@ -202,12 +195,9 @@ export const NearbyCard = ({
 }) => (
   <Card
     onClick={onCheckIn}
-    className="hub-card-glow relative overflow-hidden bg-white/5 backdrop-blur-md border-white/10 p-3 flex items-center gap-3
-               hover:bg-white/10 hover:border-amber-300/30 transition-all cursor-pointer
-               active:scale-[0.99]"
+    className="cg-sapphire cg-interactive relative overflow-hidden rounded-xl p-3 flex items-center gap-3 cursor-pointer"
   >
-    {/* subtle animated edge highlight */}
-    <div className="absolute inset-0 rounded-lg pointer-events-none bg-gradient-to-r from-transparent via-amber-300/0 to-transparent group-hover:via-amber-300/10" />
+    <div className="absolute inset-0 rounded-xl pointer-events-none" />
     <div
       className="w-11 h-11 rounded-full shrink-0 relative flex items-center justify-center
                  bg-gradient-to-br from-amber-300/25 to-amber-700/15 border border-amber-300/30"
@@ -262,7 +252,7 @@ export const LeaderboardCard = ({ entries }: { entries: LeaderboardEntry[] }) =>
   ].filter(Boolean) as LeaderboardEntry[];
 
   return (
-    <Card className="hub-card-glow bg-white/5 backdrop-blur-md border-white/10 p-4 space-y-4">
+    <Card className="cg-amber rounded-xl p-4 space-y-4">
       {/* Podium */}
       <div className="grid grid-cols-3 gap-2 items-end pt-1">
         {podium.map((e) => {
@@ -322,22 +312,29 @@ export const QuickActionTile = ({
   onClick: () => void;
   accent?: 'amber' | 'sky' | 'rose' | 'emerald';
 }) => {
-  const palette = {
-    amber:   'from-amber-300/25 to-amber-500/10 border-amber-300/30 text-amber-200',
-    sky:     'from-sky-300/25 to-sky-500/10 border-sky-300/30 text-sky-200',
-    rose:    'from-rose-300/25 to-rose-500/10 border-rose-300/30 text-rose-200',
-    emerald: 'from-emerald-300/25 to-emerald-500/10 border-emerald-300/30 text-emerald-200',
+  const glassMap = {
+    amber:   { cls: 'cg-amber',     color: '#F4C542', glow: 'rgba(200,140,20,0.7)'  },
+    sky:     { cls: 'cg-sapphire',  color: '#60A5FA', glow: 'rgba(30,80,200,0.7)'   },
+    rose:    { cls: 'cg-ruby',      color: '#F87171', glow: 'rgba(180,30,55,0.7)'   },
+    emerald: { cls: 'cg-emerald',   color: '#6EE7B7', glow: 'rgba(10,120,80,0.7)'   },
   }[accent];
 
   return (
     <button
       onClick={onClick}
-      className={`group relative flex flex-col items-center justify-center gap-1.5 px-2 py-3 rounded-xl
-                  bg-gradient-to-br ${palette} backdrop-blur-md border
-                  hover:scale-[1.04] active:scale-95 transition-transform`}
+      className={`${glassMap.cls} cg-interactive relative flex flex-col items-center justify-center
+                  gap-1.5 px-2 py-3 rounded-xl overflow-hidden`}
     >
-      <Icon className="w-5 h-5" />
-      <span className="text-[11px] font-medium text-white/90">{label}</span>
+      {/* Top glow halo */}
+      <div
+        className="absolute -top-3 inset-x-0 h-10 pointer-events-none"
+        style={{ background: `radial-gradient(ellipse at 50% 0%, ${glassMap.glow.replace('0.7','0.28')} 0%, transparent 70%)` }}
+      />
+      <Icon
+        className="relative w-5 h-5"
+        style={{ color: glassMap.color, filter: `drop-shadow(0 0 5px ${glassMap.glow})` }}
+      />
+      <span className="relative text-[11px] font-medium text-white/90">{label}</span>
     </button>
   );
 };
@@ -360,7 +357,7 @@ export const SkeletonRow = () => (
 // SupporterCard — ethical premium teaser.
 // ============================================================================
 export const SupporterCard = ({ onClick }: { onClick?: () => void }) => (
-  <Card className="hub-card-glow relative overflow-hidden bg-gradient-to-br from-amber-500/15 via-orange-500/10 to-rose-500/10 border-amber-300/30 p-5 text-center">
+  <Card className="cg-amber relative overflow-hidden rounded-xl p-5 text-center">
     <div className="absolute -top-10 -right-10 w-32 h-32 rounded-full bg-amber-300/20 blur-3xl pointer-events-none" />
     <Sparkles className="w-7 h-7 text-amber-300 mx-auto mb-2" style={{ filter: 'drop-shadow(0 0 8px rgba(244,197,66,0.7))' }} />
     <h3 className="text-[15px] font-cinzel text-white mb-1">Soutenir SacredWorld</h3>

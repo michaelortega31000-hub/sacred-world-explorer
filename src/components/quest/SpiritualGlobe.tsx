@@ -76,7 +76,7 @@ export const SpiritualGlobe = ({
   };
 
   return (
-    <Card className="hub-card-glow relative overflow-hidden bg-gradient-to-br from-[#0c1a3e]/80 to-[#020716]/85 backdrop-blur-md border-white/10 p-3">
+    <Card className="cg-sapphire relative overflow-hidden p-3">
       <div className="flex items-center justify-between px-1 mb-2">
         <div className="flex items-center gap-2">
           <Compass className="w-4 h-4 text-amber-300" />

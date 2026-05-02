@@ -73,11 +73,15 @@ export const AIHero = ({ greeting, trackLabel, firstName = 'Pèlerin' }: Props) 
   };
 
   return (
-    <Card className="hub-card-glow relative overflow-hidden bg-gradient-to-br from-[#15265e]/70 via-[#1a3a72]/55 to-[#0E1B3F]/70 backdrop-blur-md border-amber-300/25 p-5">
-      {/* aura blobs */}
-      <div className="absolute -top-16 -left-12 w-56 h-56 rounded-full bg-amber-300/15 blur-3xl pointer-events-none" />
-      <div className="absolute -bottom-12 -right-14 w-44 h-44 rounded-full bg-cyan-300/10 blur-3xl pointer-events-none" />
-      {/* twinkle particles */}
+    <Card className="cg-amber relative overflow-hidden p-5">
+      {/* Backlit amber aura at top (the "stained glass light source") */}
+      <div className="absolute -top-10 left-1/2 -translate-x-1/2 w-72 h-32 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(200,140,20,0.28) 0%, transparent 70%)' }}
+      />
+      <div className="absolute -bottom-8 -right-8 w-40 h-40 rounded-full pointer-events-none"
+        style={{ background: 'radial-gradient(circle, rgba(40,80,200,0.18) 0%, transparent 70%)' }}
+      />
+      {/* Cathedral motes */}
       {Array.from({ length: 6 }).map((_, i) => (
         <span
           key={i}

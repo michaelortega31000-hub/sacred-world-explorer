@@ -23,7 +23,7 @@ interface Props {
 
 // Compact 5-domain spiritual skill grid. Tap to navigate to full skill tree.
 export const SkillTreePreview = ({ onOpen }: Props) => (
-  <Card className="hub-card-glow bg-white/5 backdrop-blur-md border-white/10 p-3">
+  <Card className="cg-amethyst p-3">
     <div className="flex items-center justify-between px-1 mb-2">
       <h2 className="text-[13px] font-semibold text-white tracking-wide">
         Vos disciplines spirituelles

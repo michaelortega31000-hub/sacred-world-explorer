@@ -38,8 +38,14 @@ export const IdentityHeader = ({
 
   return (
     <header
-      className="px-4 pt-5 pb-3 sticky top-0 z-30 backdrop-blur-md
-                 bg-gradient-to-b from-[#0A1628]/85 via-[#0A1628]/55 to-transparent"
+      className="px-4 pt-5 pb-3 sticky top-0 z-30"
+      style={{
+        backdropFilter: 'blur(24px) saturate(180%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(180%)',
+        background: 'linear-gradient(180deg, rgba(7,7,15,0.92) 0%, rgba(7,7,15,0.60) 70%, transparent 100%)',
+        borderBottom: '1px solid rgba(200,150,20,0.12)',
+        boxShadow: '0 1px 0 rgba(200,150,20,0.08)',
+      }}
     >
       <div className="flex items-center justify-between">
         <button
@@ -118,7 +124,13 @@ const RingedAvatar = ({ track, pct }: { track: Track | null; pct: number }) => {
         </defs>
       </svg>
       {/* avatar core = track emblem (placeholder until photo upload exists here) */}
-      <div className="absolute inset-[5px] rounded-full bg-gradient-to-br from-[#142B4F] to-[#0A1628] flex items-center justify-center border border-white/10">
+      <div className="absolute inset-[5px] rounded-full flex items-center justify-center"
+        style={{
+          background: 'radial-gradient(circle at 40% 35%, rgba(40,40,80,0.9), rgba(7,7,18,0.98))',
+          border: '1px solid rgba(200,150,20,0.25)',
+          boxShadow: '0 0 12px rgba(200,150,20,0.15) inset',
+        }}
+      >
         <TrackEmblem track={track} size={36} />
       </div>
     </div>

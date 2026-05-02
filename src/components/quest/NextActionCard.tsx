@@ -24,7 +24,7 @@ export const NextActionCard = ({ suggestion }: Props) => {
 
   if (!suggestion) {
     return (
-      <Card className="hub-card-glow relative overflow-hidden bg-white/5 backdrop-blur-md border border-white/10 p-4 text-center">
+      <Card className="cg-lead relative overflow-hidden p-4 text-center">
         <p className="text-[11px] text-white/55 uppercase tracking-[0.18em]">Pour vous, ce soir</p>
         <p className="text-[14px] text-white/85 mt-1">Choisissez un lieu sur le globe pour commencer.</p>
       </Card>
