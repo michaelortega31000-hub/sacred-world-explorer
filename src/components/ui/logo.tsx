@@ -1,10 +1,9 @@
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
-import logoGlow from "@/assets/sacredworld-logo-official.png";
-import logoMain from "@/assets/sacredworld-logo-official.png";
+import { SacredEmblem } from "@/components/quest/SacredEmblem";
 
 const containerVariants = cva(
-  "relative inline-block rounded-full overflow-hidden transition-all duration-300",
+  "relative inline-block transition-all duration-300",
   {
     variants: {
       size: {
@@ -14,7 +13,7 @@ const containerVariants = cva(
       },
       effect: {
         static: "",
-        glow: "drop-shadow-[0_0_20px_rgba(244,197,66,0.75)] drop-shadow-[0_0_40px_rgba(244,197,66,0.75)]",
+        glow: "drop-shadow-[0_0_20px_rgba(244,197,66,0.55)] drop-shadow-[0_0_40px_rgba(244,197,66,0.45)]",
         pulse: "animate-pulse",
       },
     },
@@ -28,17 +27,16 @@ const containerVariants = cva(
 export interface LogoProps extends VariantProps<typeof containerVariants> {
   className?: string;
   onClick?: () => void;
-  variant?: "main" | "icon";
 }
 
-export const Logo = ({
-  size,
-  effect,
-  className,
-  onClick,
-  variant = "icon",
-}: LogoProps) => {
-  const logoSrc = variant === "main" ? logoMain : logoGlow;
+const SIZE_PX: Record<NonNullable<LogoProps["size"]>, number> = {
+  small: 128,
+  medium: 224,
+  large: 384,
+};
+
+export const Logo = ({ size = "medium", effect, className, onClick }: LogoProps) => {
+  const px = SIZE_PX[size];
 
   return (
     <div
@@ -49,11 +47,7 @@ export const Logo = ({
       )}
       onClick={onClick}
     >
-      <img
-        src={logoSrc}
-        alt="Sacred World Logo"
-        className="sacred-logo-gold w-full h-full object-contain object-center scale-[1.45]"
-      />
+      <SacredEmblem size={px} />
     </div>
   );
 };

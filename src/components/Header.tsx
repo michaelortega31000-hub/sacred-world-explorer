@@ -2,7 +2,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ArrowLeft, Mail, Award, MessageCircle } from 'lucide-react';
-import logo from '@/assets/sacredworld-logo-official.png';
+import { SacredEmblem } from '@/components/quest/SacredEmblem';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
 import VoiceCommand from '@/components/VoiceCommand';
@@ -89,8 +89,13 @@ const Header = ({
             </div>
             
             {/* Centre : Logo */}
-            <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src={logo} alt="SacredWorld Logo" className="sacred-logo-gold h-24 w-24 sm:h-32 sm:w-32 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
+            <div
+              className="absolute left-1/2 transform -translate-x-1/2 cursor-pointer"
+              onClick={() => navigate('/explore')}
+              role="button"
+              aria-label="Retour à l'accueil"
+            >
+              <SacredEmblem size={64} animate={false} className="drop-shadow-[0_0_12px_rgba(244,197,66,0.45)]" />
             </div>
             
             {/* Droite : Micro + Mail + Assistant + Retour */}
@@ -139,7 +144,9 @@ const Header = ({
           // Header normal pour les autres pages
           <>
             <div className="flex flex-col items-center mb-4">
-              <img src={logo} alt="SacredWorld Logo" className="sacred-logo-gold h-16 w-16 object-contain cursor-pointer mb-2" onClick={() => navigate('/explore')} />
+              <div className="cursor-pointer mb-2" onClick={() => navigate('/explore')}>
+                <SacredEmblem size={56} animate={false} />
+              </div>
               <h1 className="font-serif text-foreground tracking-wide cursor-pointer text-2xl" onClick={() => navigate('/explore')}>
                 Sacred World
               </h1>

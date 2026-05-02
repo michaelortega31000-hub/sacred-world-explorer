@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
-import logo from '@/assets/sacredworld-logo-official.png';
+import { SacredEmblem } from '@/components/quest/SacredEmblem';
 import { z } from 'zod';
 import { Checkbox } from '@/components/ui/checkbox';
 import { ImageBackground } from '@/components/ImageBackground';
@@ -235,11 +235,7 @@ const Auth = () => {
       <Card className="w-full max-w-md relative z-10 bg-card/90 backdrop-blur-md border-primary/20 shadow-halo turquoise-reflection">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
-            <img
-              src={logo}
-              alt="SacredWorld Logo"
-              className="sacred-logo-gold w-32 h-32 object-contain gold-halo breathing-glow"
-            />
+            <SacredEmblem size={128} className="drop-shadow-[0_0_24px_rgba(244,197,66,0.55)]" />
           </div>
           <CardDescription className="text-base text-muted-foreground">
             {showForgotPassword
