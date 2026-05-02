@@ -9,80 +9,57 @@ interface Props {
 
 export const CollectionStrip = ({ badges, tokens, skills, onOpen }: Props) => (
   <div className="grid grid-cols-3 gap-2.5">
+    {/* Unified palette — same warm gold/parchment for all three. Categories
+        are distinguished by icon shape and label, not by category color. */}
     <JewelPane
       Icon={Award}
       label="Badges"
       count={badges}
-      glassCls="cg-ruby"
-      iconColor="#F87171"
-      glow="rgba(180,30,55,0.7)"
+      iconColor="rgba(244,197,66,0.85)"
       onClick={() => onOpen?.('badges')}
     />
     <JewelPane
       Icon={Coins}
       label="Tokens"
       count={tokens}
-      glassCls="cg-sapphire"
-      iconColor="#60A5FA"
-      glow="rgba(30,80,200,0.7)"
+      iconColor="rgba(244,197,66,0.85)"
       onClick={() => onOpen?.('tokens')}
     />
     <JewelPane
       Icon={Star}
       label="Skills"
       count={skills}
-      glassCls="cg-amethyst"
-      iconColor="#C084FC"
-      glow="rgba(100,30,180,0.7)"
+      iconColor="rgba(244,197,66,0.85)"
       onClick={() => onOpen?.('skills')}
     />
   </div>
 );
 
 const JewelPane = ({
-  Icon, label, count, glassCls, iconColor, glow, onClick,
+  Icon, label, count, iconColor, onClick,
 }: {
   Icon: typeof Award; label: string; count: number;
-  glassCls: string; iconColor: string; glow: string;
+  iconColor: string;
   onClick?: () => void;
 }) => (
   <button
     onClick={onClick}
-    className={`${glassCls} cg-interactive relative overflow-hidden rounded-xl p-3 text-left`}
+    className="cg-lead cg-interactive relative overflow-hidden rounded-xl p-3 text-left"
   >
-    {/* Strong backlit glow from top */}
-    <div
-      className="absolute -top-4 inset-x-0 h-16 pointer-events-none"
-      style={{ background: `radial-gradient(ellipse at 50% 0%, ${glow.replace('0.7', '0.35')} 0%, transparent 70%)` }}
-    />
-
     <div className="relative flex items-center gap-1.5 mb-2.5">
-      <Icon
-        className="w-4 h-4 shrink-0"
-        style={{ color: iconColor, filter: `drop-shadow(0 0 6px ${glow})` }}
-      />
+      <Icon className="w-4 h-4 shrink-0" style={{ color: iconColor }} />
       <span
-        className="text-[9.5px] tracking-[0.20em] uppercase font-bold"
-        style={{ color: iconColor, opacity: 0.85 }}
+        className="text-[9.5px] tracking-[0.20em] uppercase font-semibold text-white/65"
       >
         {label}
       </span>
     </div>
 
     <div className="relative flex items-end justify-between">
-      <span
-        className="text-[28px] leading-none font-bold tabular-nums"
-        style={{
-          color: '#fff',
-          textShadow: `0 0 20px ${glow}`,
-        }}
-      >
+      <span className="text-[28px] leading-none font-semibold tabular-nums text-white/95">
         {count}
       </span>
-      <ChevronRight
-        className="w-3.5 h-3.5 mb-1"
-        style={{ color: iconColor, opacity: 0.6 }}
-      />
+      <ChevronRight className="w-3.5 h-3.5 mb-1 text-white/35" />
     </div>
   </button>
 );

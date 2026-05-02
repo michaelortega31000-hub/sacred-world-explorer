@@ -98,68 +98,33 @@ export const NextActionCard = ({ suggestion }: Props) => {
   );
 };
 
+// Single tonal palette — all action kinds share the same lead glass + gold
+// accents. The icon shape and eyebrow label communicate the category;
+// color is no longer the differentiator.
+const PALETTE = {
+  bg: 'linear-gradient(135deg, rgba(20,18,28,0.85) 0%, rgba(10,9,16,0.92) 100%)',
+  border: 'rgba(244,197,66,0.18)',
+  shadow:
+    '0 0 0 1px rgba(255,255,255,0.025) inset, 0 14px 32px rgba(0,0,0,0.55), 0 0 24px rgba(244,197,66,0.06)',
+  iconBg: 'linear-gradient(135deg, rgba(244,197,66,0.18), rgba(244,197,66,0.04))',
+  iconColor: 'rgba(244,197,66,0.90)',
+  glow: 'rgba(244,197,66,0.18)',
+  eyebrow: 'rgba(244,197,66,0.70)',
+  rewardBg: 'rgba(244,197,66,0.10)',
+  rewardColor: 'rgba(254,235,165,0.95)',
+  rewardBorder: 'rgba(244,197,66,0.35)',
+};
+
 const visualFor = (k: Kind) => {
   switch (k) {
     case 'visit':
-      return {
-        Icon: MapPin,
-        eyebrowLabel: 'Près de vous',
-        eyebrow: '#7DD3FC',
-        bg: 'linear-gradient(135deg, rgba(8,30,68,0.85) 0%, rgba(11,46,110,0.78) 100%)',
-        border: 'rgba(125,211,252,0.35)',
-        shadow: '0 0 0 1px rgba(125,211,252,0.10), 0 14px 32px rgba(8,16,40,0.55), 0 0 28px rgba(125,211,252,0.18)',
-        iconBg: 'linear-gradient(135deg, rgba(125,211,252,0.25), rgba(125,211,252,0.05))',
-        iconColor: '#7DD3FC',
-        glow: 'rgba(125,211,252,0.35)',
-        rewardBg: 'rgba(125,211,252,0.12)',
-        rewardColor: '#bfeeff',
-        rewardBorder: 'rgba(125,211,252,0.45)',
-      };
+      return { ...PALETTE, Icon: MapPin,    eyebrowLabel: 'Près de vous' };
     case 'feast':
-      return {
-        Icon: Sparkles,
-        eyebrowLabel: 'Aujourd\'hui',
-        eyebrow: '#F4C542',
-        bg: 'linear-gradient(135deg, rgba(48,28,8,0.78) 0%, rgba(70,42,12,0.78) 100%)',
-        border: 'rgba(244,197,66,0.35)',
-        shadow: '0 0 0 1px rgba(244,197,66,0.10), 0 14px 32px rgba(8,16,40,0.55), 0 0 28px rgba(244,197,66,0.20)',
-        iconBg: 'linear-gradient(135deg, rgba(244,197,66,0.30), rgba(244,197,66,0.05))',
-        iconColor: '#F4C542',
-        glow: 'rgba(244,197,66,0.40)',
-        rewardBg: 'rgba(244,197,66,0.15)',
-        rewardColor: '#fde68a',
-        rewardBorder: 'rgba(244,197,66,0.55)',
-      };
+      return { ...PALETTE, Icon: Sparkles,  eyebrowLabel: 'Aujourd\'hui' };
     case 'streak':
-      return {
-        Icon: Flame,
-        eyebrowLabel: 'Votre série',
-        eyebrow: '#FB923C',
-        bg: 'linear-gradient(135deg, rgba(50,18,8,0.82) 0%, rgba(90,30,12,0.78) 100%)',
-        border: 'rgba(251,146,60,0.35)',
-        shadow: '0 0 0 1px rgba(251,146,60,0.10), 0 14px 32px rgba(8,16,40,0.55), 0 0 28px rgba(251,146,60,0.20)',
-        iconBg: 'linear-gradient(135deg, rgba(251,146,60,0.30), rgba(251,146,60,0.05))',
-        iconColor: '#FB923C',
-        glow: 'rgba(251,146,60,0.40)',
-        rewardBg: 'rgba(251,146,60,0.15)',
-        rewardColor: '#fed7aa',
-        rewardBorder: 'rgba(251,146,60,0.55)',
-      };
+      return { ...PALETTE, Icon: Flame,     eyebrowLabel: 'Votre série' };
     case 'devotional':
     default:
-      return {
-        Icon: BookOpen,
-        eyebrowLabel: 'Pour vous, ce soir',
-        eyebrow: '#C084FC',
-        bg: 'linear-gradient(135deg, rgba(28,12,52,0.82) 0%, rgba(46,18,80,0.78) 100%)',
-        border: 'rgba(192,132,252,0.35)',
-        shadow: '0 0 0 1px rgba(192,132,252,0.10), 0 14px 32px rgba(8,16,40,0.55), 0 0 28px rgba(192,132,252,0.20)',
-        iconBg: 'linear-gradient(135deg, rgba(192,132,252,0.30), rgba(192,132,252,0.05))',
-        iconColor: '#C084FC',
-        glow: 'rgba(192,132,252,0.40)',
-        rewardBg: 'rgba(192,132,252,0.15)',
-        rewardColor: '#e9d5ff',
-        rewardBorder: 'rgba(192,132,252,0.55)',
-      };
+      return { ...PALETTE, Icon: BookOpen,  eyebrowLabel: 'Pour vous, ce soir' };
   }
 };

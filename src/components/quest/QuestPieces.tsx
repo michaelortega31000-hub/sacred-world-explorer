@@ -312,29 +312,18 @@ export const QuickActionTile = ({
   onClick: () => void;
   accent?: 'amber' | 'sky' | 'rose' | 'emerald';
 }) => {
-  const glassMap = {
-    amber:   { cls: 'cg-amber',     color: '#F4C542', glow: 'rgba(200,140,20,0.7)'  },
-    sky:     { cls: 'cg-sapphire',  color: '#60A5FA', glow: 'rgba(30,80,200,0.7)'   },
-    rose:    { cls: 'cg-ruby',      color: '#F87171', glow: 'rgba(180,30,55,0.7)'   },
-    emerald: { cls: 'cg-emerald',   color: '#6EE7B7', glow: 'rgba(10,120,80,0.7)'   },
-  }[accent];
+  // Unified palette — accent prop is kept for API compatibility but ignored;
+  // all tiles share the same lead glass + warm gold icon.
+  void accent;
 
   return (
     <button
       onClick={onClick}
-      className={`${glassMap.cls} cg-interactive relative flex flex-col items-center justify-center
-                  gap-1.5 px-2 py-3 rounded-xl overflow-hidden`}
+      className="cg-lead cg-interactive relative flex flex-col items-center justify-center
+                 gap-1.5 px-2 py-3 rounded-xl overflow-hidden"
     >
-      {/* Top glow halo */}
-      <div
-        className="absolute -top-3 inset-x-0 h-10 pointer-events-none"
-        style={{ background: `radial-gradient(ellipse at 50% 0%, ${glassMap.glow.replace('0.7','0.28')} 0%, transparent 70%)` }}
-      />
-      <Icon
-        className="relative w-5 h-5"
-        style={{ color: glassMap.color, filter: `drop-shadow(0 0 5px ${glassMap.glow})` }}
-      />
-      <span className="relative text-[11px] font-medium text-white/90">{label}</span>
+      <Icon className="relative w-5 h-5 text-amber-300/85" />
+      <span className="relative text-[11px] font-medium text-white/85">{label}</span>
     </button>
   );
 };
