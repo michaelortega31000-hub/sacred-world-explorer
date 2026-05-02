@@ -6,7 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { Globe, Trophy, Calendar, Target, Users, Settings, Check, LogOut, LucideIcon, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
-import sacredWorldLogo from '@/assets/sacredworld-logo-official.png';
+import { SacredEmblem } from '@/components/quest/SacredEmblem';
 
 const languages = [
   { code: 'fr', name: 'Français', flag: '🇫🇷' },
@@ -296,11 +296,10 @@ const Splash = () => {
             style={{ boxShadow: '0 0 60px rgba(244,197,66,0.30), inset 0 0 40px rgba(244,197,66,0.16)' }}
           />
 
-          {/* Official emblem */}
-          <img
-            src={sacredWorldLogo}
-            alt="SacredWorld emblem"
-            className="sacred-logo-gold relative w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_0_30px_rgba(244,197,66,0.55)]"
+          {/* Vector emblem — pure SVG, no rectangular asset frame */}
+          <SacredEmblem
+            size={208}
+            className="relative drop-shadow-[0_0_30px_rgba(244,197,66,0.55)]"
           />
         </div>
 

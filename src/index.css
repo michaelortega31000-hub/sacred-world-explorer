@@ -508,6 +508,16 @@ All colors MUST be HSL.
   0%, 100% { opacity: 0.55; }
   50%       { opacity: 0.85; }
 }
+/* SacredEmblem — soft breath on the sun rays */
+@keyframes sacred-emblem-breath {
+  0%, 100% { transform: scale(1);    filter: drop-shadow(0 0 14px rgba(244,197,66,0.45)); }
+  50%      { transform: scale(1.025); filter: drop-shadow(0 0 22px rgba(244,197,66,0.65)); }
+}
+.sacred-emblem-breath {
+  animation: sacred-emblem-breath 5.2s ease-in-out infinite;
+  transform-origin: 50% 50%;
+}
+
 /* Brand-unify the bundled logo asset (which has a turquoise glow baked in)
    into the cathedral gold palette without re-exporting the artwork.
    sepia → saturate → hue-rotate composes the existing pixels into amber/gold. */

@@ -4,8 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, ArrowLeft, Sparkles, Users, MapPin } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
-import logo from '@/assets/sacredworld-logo-official.png';
-import logoGlow from '@/assets/sacredworld-logo-official.png';
+import { SacredEmblem } from '@/components/quest/SacredEmblem';
 import ChristianIcon from '@/components/ChristianIcon';
 
 interface OnboardingScreen {
@@ -72,20 +71,12 @@ const Welcome = () => {
       {/* Main content */}
       <div className="flex-1 flex flex-col items-center justify-center px-6 pb-12 relative z-10">
         <div className="max-w-2xl w-full text-center">
-          {/* Logo with cross glow */}
-          <div className="mb-10 flex justify-center animate-fade-in relative">
+          {/* Vector emblem — no rectangular asset frame, pure SVG sunburst */}
+          <div className="mb-8 flex justify-center animate-fade-in relative">
             <div className="relative">
-              <img
-                src={logoGlow}
-                alt=""
-                className="sacred-logo-gold absolute inset-0 w-full h-full object-contain opacity-80 blur-2xl scale-125 animate-pulse"
-                aria-hidden="true"
-              />
-              <img
-                src={logo}
-                alt="SacredWorld"
-                className="sacred-logo-gold relative z-10 w-48 h-auto drop-shadow-[0_0_40px_hsl(var(--primary)/0.4)]"
-              />
+              {/* Outer ambient halo blur */}
+              <div className="absolute inset-0 rounded-full bg-amber-300/20 blur-3xl scale-110" />
+              <SacredEmblem size={188} className="relative z-10" />
             </div>
           </div>
 
