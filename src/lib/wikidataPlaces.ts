@@ -208,10 +208,9 @@ export async function fetchWikidataPlaces(country: string): Promise<Place[]> {
       description: b.descr?.value ?? '',
       points: 30, // Wikidata-sourced sites get a baseline reward
       coordinates: coords,
-      // Intentionally NO imageUrl — Wikidata P18 is community-edited and
-      // frequently mismatched (e.g. baroque cathedral photo on a pyramid
-      // entry). Showing wrong photography is worse than showing none —
-      // the UI falls back to <PlaceSymbol> with a typographic icon card.
+      // Intentionally NO Wikidata P18 — it's community-edited at the entity
+      // level and often mismatched. We enrich below from Wikipedia's lead
+      // image, which is curated by article editors and far more accurate.
       imageUrl: undefined,
       // Heuristic: anything matching our religious type set is Christian-leaning,
       // but we don't *assert* it — leave undefined so the UI doesn't claim wrongly.
@@ -221,5 +220,8 @@ export async function fetchWikidataPlaces(country: string): Promise<Place[]> {
     });
   }
 
+  // Wikipedia enrichment happens in a separate hook (useWikipediaImages)
+  // so the Wikidata SPARQL result returns immediately and the UI can
+  // render symbol cards while images load progressively.
   return places;
 }

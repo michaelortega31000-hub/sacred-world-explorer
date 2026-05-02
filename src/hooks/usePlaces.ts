@@ -4,6 +4,7 @@ import { mockPlaces } from '@/data/placesData';
 import { getImageUrl } from '@/lib/imageHelper';
 import { logger } from '@/lib/logger';
 import { useWikidataPlaces } from '@/hooks/useWikidataPlaces';
+import { useWikipediaImages } from '@/hooks/useWikipediaImages';
 import type { Place, Religion, PlaceCategory } from '@/contexts/AppContext';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -287,6 +288,14 @@ export const usePlacesByCountry = (country: string | undefined) => {
   const { data: places, isLoading: localLoading, error } = usePlaces();
   const { data: wikidataPlaces, isLoading: wdLoading } = useWikidataPlaces(country);
 
+  // Wikipedia thumbnails for any Wikidata place that doesn't already have
+  // a curated photo. Runs as a separate query so the list shows symbol
+  // cards immediately and photos fade in progressively.
+  const wdNamesNeedingImages = (wikidataPlaces ?? [])
+    .filter((p) => !p.imageUrl)
+    .map((p) => p.name);
+  const { data: wikipediaThumbs } = useWikipediaImages(wdNamesNeedingImages);
+
   const localFiltered = places?.filter(
     p => p.country.toLowerCase() === country?.toLowerCase(),
   ) || [];
@@ -302,15 +311,22 @@ export const usePlacesByCountry = (country: string | undefined) => {
   // meant well-known monuments coming through Wikidata (Notre-Dame, Chartres,
   // etc.) lost their curated photos and fell back to the symbol card.
   // Now: if the canonical key matches a curated reference, restore the photo.
+  // If no override matches, try the Wikipedia article thumbnail.
   const enrichWithOverride = (p: Place): Place => {
     if (p.imageUrl) return p;
     const key = canonicalKey(p.name, p.city || '', p.country);
     const override = IMAGE_OVERRIDES[key];
-    if (!override) return p;
-    return {
-      ...p,
-      imageUrl: override.startsWith('http') ? override : getImageUrl(override),
-    };
+    if (override) {
+      return {
+        ...p,
+        imageUrl: override.startsWith('http') ? override : getImageUrl(override),
+      };
+    }
+    // Tier 2: Wikipedia article lead image (curated by editors,
+    // far more reliable than Wikidata P18).
+    const wpThumb = wikipediaThumbs?.get(p.name);
+    if (wpThumb) return { ...p, imageUrl: wpThumb };
+    return p;
   };
 
   const uniqueWikidata = (wikidataPlaces ?? []).filter(p => {
