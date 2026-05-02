@@ -16,9 +16,11 @@ interface Props {
   type?: string;
   name?: string;
   className?: string;
+  /** Forward-pass through to PlaceSymbol so the contribute CTA can attach. */
+  placeId?: string;
 }
 
-export const PlacePhoto = ({ src, alt, type, name, className = '' }: Props) => {
+export const PlacePhoto = ({ src, alt, type, name, className = '', placeId }: Props) => {
   const [errored, setErrored] = useState(false);
 
   // Reset error state when the src changes — without this, a card whose
@@ -30,7 +32,7 @@ export const PlacePhoto = ({ src, alt, type, name, className = '' }: Props) => {
   if (!src || errored) {
     return (
       <div className={className}>
-        <PlaceSymbol type={type} name={name} />
+        <PlaceSymbol type={type} name={name} placeId={placeId} />
       </div>
     );
   }

@@ -451,6 +451,7 @@ const Country = () => {
                                   alt={place.name}
                                   type={place.type}
                                   name={place.name}
+                                  placeId={place.id}
                                   className="w-full h-full"
                                 />
                                 {/* Restaurant button - top left */}
@@ -497,8 +498,8 @@ const Country = () => {
                                 </div>
                               </div>
                             ) : (
-                              <div className="h-48 cursor-pointer" onClick={() => setSelectedPlace(place)}>
-                                <PlaceSymbol type={place.type} name={place.name} />
+                              <div className="h-48 cursor-pointer relative" onClick={() => setSelectedPlace(place)}>
+                                <PlaceSymbol type={place.type} name={place.name} placeId={place.id} />
                               </div>
                             )}
                             <CardHeader className="cursor-pointer" onClick={() => setSelectedPlace(place)}>
@@ -635,6 +636,7 @@ const Country = () => {
                               alt={`${selectedPlace.name} - Photo ${index + 1}`}
                               type={selectedPlace.type}
                               name={selectedPlace.name}
+                              placeId={selectedPlace.id}
                               className="w-full h-full"
                             />
                           </div>

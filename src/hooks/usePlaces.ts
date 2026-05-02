@@ -5,6 +5,7 @@ import { getImageUrl } from '@/lib/imageHelper';
 import { logger } from '@/lib/logger';
 import { useWikidataPlaces } from '@/hooks/useWikidataPlaces';
 import { useWikipediaImages } from '@/hooks/useWikipediaImages';
+import { useApprovedPlacePhotos } from '@/hooks/usePlacePhotos';
 import type { Place, Religion, PlaceCategory } from '@/contexts/AppContext';
 import type { Json } from '@/integrations/supabase/types';
 
@@ -300,19 +301,30 @@ export const usePlacesByCountry = (country: string | undefined) => {
     p => p.country.toLowerCase() === country?.toLowerCase(),
   ) || [];
 
+  // User-contributed (approved) photos win over Wikipedia/IMAGE_OVERRIDES —
+  // they're the closest thing to "ground truth" we have for unverified places.
+  const allPlaceIds = [
+    ...localFiltered.map((p) => p.id),
+    ...(wikidataPlaces ?? []).map((p) => p.id),
+  ];
+  const { data: userPhotos } = useApprovedPlacePhotos(allPlaceIds);
+
   // Dedupe Wikidata against the local+DB set using the same canonical key
   // logic that mergePlaces uses for DB→local dedupe.
   const seenKeys = new Set(
     localFiltered.map(p => canonicalKey(p.name, p.city || '', p.country)),
   );
 
-  // Apply curated IMAGE_OVERRIDES to ANY place without an image — including
-  // Wikidata-sourced ones. Previously overrides only applied to DB rows; that
-  // meant well-known monuments coming through Wikidata (Notre-Dame, Chartres,
-  // etc.) lost their curated photos and fell back to the symbol card.
-  // Now: if the canonical key matches a curated reference, restore the photo.
-  // If no override matches, try the Wikipedia article thumbnail.
+  // Photo tier resolver — applied to any place without a curated image:
+  //   1. User-contributed approved photo (closest to ground truth)
+  //   2. IMAGE_OVERRIDES (manually-mapped Wikimedia URLs)
+  //   3. Wikipedia article lead image
+  //   4. (no image → UI shows PlaceSymbol)
   const enrichWithOverride = (p: Place): Place => {
+    // User contributions win even over a curated image — if a real visitor
+    // uploaded a verified photo, it's more current than any default.
+    const userPhoto = userPhotos?.get(p.id);
+    if (userPhoto) return { ...p, imageUrl: userPhoto };
     if (p.imageUrl) return p;
     const key = canonicalKey(p.name, p.city || '', p.country);
     const override = IMAGE_OVERRIDES[key];
@@ -322,8 +334,6 @@ export const usePlacesByCountry = (country: string | undefined) => {
         imageUrl: override.startsWith('http') ? override : getImageUrl(override),
       };
     }
-    // Tier 2: Wikipedia article lead image (curated by editors,
-    // far more reliable than Wikidata P18).
     const wpThumb = wikipediaThumbs?.get(p.name);
     if (wpThumb) return { ...p, imageUrl: wpThumb };
     return p;
@@ -336,8 +346,11 @@ export const usePlacesByCountry = (country: string | undefined) => {
     return true;
   }).map(enrichWithOverride);
 
+  // Apply user-photo enrichment to local entries too (not just Wikidata).
+  const localEnriched = localFiltered.map(enrichWithOverride);
+
   // Hygiene pass: ensure no photo represents more than one place.
-  const merged = dedupeImagesAcrossPlaces([...localFiltered, ...uniqueWikidata]);
+  const merged = dedupeImagesAcrossPlaces([...localEnriched, ...uniqueWikidata]);
 
   return {
     places: merged,

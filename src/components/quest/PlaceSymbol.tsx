@@ -10,11 +10,14 @@
 // the symbol instead of P18 (which is community-edited and often wrong).
 
 import { Church, Castle, Mountain, BookOpen, Crown, Sparkles, Building2, type LucideIcon } from 'lucide-react';
+import { ContributePhotoButton } from './ContributePhotoButton';
 
 interface Props {
   type?: string;
   name?: string;
   className?: string;
+  /** When provided, shows a "Contribuer une photo" CTA in the corner. */
+  placeId?: string;
 }
 
 // Map place type label → lucide icon. Strings come from the Wikidata
@@ -36,7 +39,7 @@ const ICON_FOR_TYPE = (type?: string): LucideIcon => {
   return Sparkles;
 };
 
-export const PlaceSymbol = ({ type, name, className = '' }: Props) => {
+export const PlaceSymbol = ({ type, name, className = '', placeId }: Props) => {
   const Icon = ICON_FOR_TYPE(type);
 
   return (
@@ -99,6 +102,11 @@ export const PlaceSymbol = ({ type, name, className = '' }: Props) => {
           </div>
         )}
       </div>
+
+      {/* Contribute-photo CTA — only when we have a placeId to attach to */}
+      {placeId && name && (
+        <ContributePhotoButton placeId={placeId} placeName={name} />
+      )}
     </div>
   );
 };
