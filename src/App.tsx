@@ -12,7 +12,7 @@ import FloatingBackButton from "./components/FloatingBackButton";
 import Splash from "./pages/Splash";
 import Auth from "./pages/Auth";
 import Welcome from "./pages/Welcome";
-import Home from "./pages/Home";
+import HomeQuest from "./pages/HomeQuest";
 import Places from "./pages/Places";
 import Explore from "./pages/Explore";
 import Traditions from "./pages/Traditions";
@@ -34,8 +34,22 @@ import AdminAuditImages from "./pages/AdminAuditImages";
 import Reminders from "./pages/Reminders";
 import SecurityTest from "./pages/SecurityTest";
 import OfflineManager from "./pages/OfflineManager";
-import OnboardingDenomination from "./pages/OnboardingDenomination";
+import ChangeDenomination from "./pages/ChangeDenomination";
+import OnboardingDenomination from "./pages/onboarding/OnboardingDenomination";
+import OnboardingHome from "./pages/onboarding/OnboardingHome";
+import OnboardingConsent from "./pages/onboarding/OnboardingConsent";
+import OnboardingTutorial from "./pages/onboarding/OnboardingTutorial";
 import Planner from "./pages/Planner";
+import LogoIterations from "./pages/LogoIterations";
+import { RequireAuth } from "./components/RequireAuth";
+import { RequireOnboarding } from "./components/RequireOnboarding";
+
+const isDev = import.meta.env.DEV;
+const Gate = ({ children }: { children: JSX.Element }) => (
+  <RequireAuth>
+    <RequireOnboarding>{children}</RequireOnboarding>
+  </RequireAuth>
+);
 
 const queryClient = new QueryClient();
 
@@ -83,30 +97,38 @@ const AppContent = () => {
         <Routes>
           <Route path="/" element={<Splash />} />
           <Route path="/welcome" element={<Welcome />} />
+          <Route path="/logo-iterations" element={<LogoIterations />} />
           <Route path="/auth" element={<Auth />} />
-          <Route path="/home" element={<Home />} />
-          <Route path="/places" element={<Places />} />
-          <Route path="/explore" element={<Explore />} />
-          <Route path="/traditions" element={<Traditions />} />
-          <Route path="/calendar" element={<Calendar />} />
-          <Route path="/journal" element={<Journal />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/badges" element={<Badges />} />
-          <Route path="/avatars" element={<AvatarsGallery />} />
+          <Route path="/home" element={<Gate><HomeQuest /></Gate>} />
+          <Route path="/places" element={<Gate><Places /></Gate>} />
+          <Route path="/explore" element={<Gate><Explore /></Gate>} />
+          <Route path="/traditions" element={<Gate><Traditions /></Gate>} />
+          <Route path="/calendar" element={<Gate><Calendar /></Gate>} />
+          <Route path="/journal" element={<Gate><Journal /></Gate>} />
+          <Route path="/profile" element={<Gate><Profile /></Gate>} />
+          <Route path="/settings" element={<Gate><Settings /></Gate>} />
+          <Route path="/settings/change-denomination" element={<Gate><ChangeDenomination /></Gate>} />
+          <Route path="/badges" element={<Gate><Badges /></Gate>} />
+          <Route path="/avatars" element={<Gate><AvatarsGallery /></Gate>} />
           <Route path="/u/:username" element={<PublicProfile />} />
-          <Route path="/user/:userId" element={<UserProfile />} />
-          <Route path="/country/:countryName" element={<Country />} />
-          <Route path="/place/:placeId" element={<PlaceDetail />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/enrich-data" element={<AdminEnrichData />} />
-          <Route path="/admin/audit-images" element={<AdminAuditImages />} />
-          <Route path="/reminders" element={<Reminders />} />
-          <Route path="/security-test" element={<SecurityTest />} />
-          <Route path="/offline" element={<OfflineManager />} />
-          <Route path="/onboarding/denomination" element={<OnboardingDenomination />} />
-          <Route path="/planner" element={<Planner />} />
+          <Route path="/user/:userId" element={<Gate><UserProfile /></Gate>} />
+          <Route path="/country/:countryName" element={<Gate><Country /></Gate>} />
+          <Route path="/place/:placeId" element={<Gate><PlaceDetail /></Gate>} />
+          <Route path="/admin" element={<Gate><Admin /></Gate>} />
+          <Route path="/admin/dashboard" element={<Gate><AdminDashboard /></Gate>} />
+          <Route path="/admin/enrich-data" element={<Gate><AdminEnrichData /></Gate>} />
+          <Route path="/admin/audit-images" element={<Gate><AdminAuditImages /></Gate>} />
+          <Route path="/reminders" element={<Gate><Reminders /></Gate>} />
+          {isDev && <Route path="/security-test" element={<SecurityTest />} />}
+          <Route path="/offline" element={<Gate><OfflineManager /></Gate>} />
+
+          {/* Onboarding flow — auth required, but NOT onboarding-required */}
+          <Route path="/onboarding/denomination" element={<RequireAuth><OnboardingDenomination /></RequireAuth>} />
+          <Route path="/onboarding/home" element={<RequireAuth><OnboardingHome /></RequireAuth>} />
+          <Route path="/onboarding/consent" element={<RequireAuth><OnboardingConsent /></RequireAuth>} />
+          <Route path="/onboarding/tutorial" element={<RequireAuth><OnboardingTutorial /></RequireAuth>} />
+
+          <Route path="/planner" element={<Gate><Planner /></Gate>} />
 
           {/* Legacy paths redirects */}
           <Route path="/world" element={<Navigate to="/explore" replace />} />
