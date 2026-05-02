@@ -178,14 +178,38 @@ const mergePlaces = (dbPlaces: DBPlace[], localPlaces: Place[]): Place[] => {
   const isPlaceholder = (url: string | undefined): boolean =>
     !url || url === '/placeholder.svg' || url === '/images/place-placeholder.jpg';
 
-  const merged = [...localPlaces, ...uniqueDb].map(p => {
+  const enriched = [...localPlaces, ...uniqueDb].map(p => {
     if (!isPlaceholder(p.imageUrl)) return p;
     const key = canonicalKey(p.name, p.city, p.country);
     const override = IMAGE_OVERRIDES[key];
     return override ? { ...p, imageUrl: override } : p;
   });
 
-  return merged;
+  // Final hygiene: no photo file should be assigned to two different places.
+  // Defined later in the file (hoisted via fn declaration).
+  return dedupeImagesAcrossPlacesGlobal(enriched);
+};
+
+/**
+ * Same dedupe as the per-country pass, but module-level so mergePlaces
+ * (a non-hook function) can call it. Kept identical in semantics.
+ */
+const dedupeImagesAcrossPlacesGlobal = (places: Place[]): Place[] => {
+  const seenUrls = new Map<string, string>();
+  return places.map((p) => {
+    if (!p.imageUrl) return p;
+    const existing = seenUrls.get(p.imageUrl);
+    if (existing) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          `🖼️  Image collision: "${p.imageUrl}" assigned to both "${existing}" and "${p.name}". Keeping it on "${existing}", showing symbol for "${p.name}".`,
+        );
+      }
+      return { ...p, imageUrl: undefined };
+    }
+    seenUrls.set(p.imageUrl, p.name);
+    return p;
+  });
 };
 
 /**
@@ -218,6 +242,33 @@ export const usePlaces = () => {
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
+  });
+};
+
+/**
+ * Internal hygiene: a single photo file should never represent more than
+ * one place. If two entries end up sharing an imageUrl (because of a
+ * fuzzy match collision, an IMAGE_OVERRIDES key duplicated by accident,
+ * or a DB row pointing to the same asset as a local entry), keep the
+ * photo on the FIRST entry and clear it on the rest — they fall back
+ * to <PlaceSymbol>. Also logs a console warning in dev so the
+ * collision can be cleaned up at the source.
+ */
+const dedupeImagesAcrossPlaces = (places: Place[]): Place[] => {
+  const seenUrls = new Map<string, string>(); // url → first place name
+  return places.map((p) => {
+    if (!p.imageUrl) return p;
+    const existing = seenUrls.get(p.imageUrl);
+    if (existing) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          `🖼️  Image collision: "${p.imageUrl}" assigned to both "${existing}" and "${p.name}". Keeping it on "${existing}", showing symbol for "${p.name}".`,
+        );
+      }
+      return { ...p, imageUrl: undefined };
+    }
+    seenUrls.set(p.imageUrl, p.name);
+    return p;
   });
 };
 
@@ -269,7 +320,8 @@ export const usePlacesByCountry = (country: string | undefined) => {
     return true;
   }).map(enrichWithOverride);
 
-  const merged = [...localFiltered, ...uniqueWikidata];
+  // Hygiene pass: ensure no photo represents more than one place.
+  const merged = dedupeImagesAcrossPlaces([...localFiltered, ...uniqueWikidata]);
 
   return {
     places: merged,

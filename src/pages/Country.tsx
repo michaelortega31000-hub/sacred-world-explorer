@@ -508,7 +508,9 @@ const Country = () => {
                                   {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
                                 </div>
                               </div>
-                              <CardDescription className="flex items-center gap-2 flex-wrap">
+                              {/* Use a div instead of CardDescription (<p>) so the
+                                  child Badges (<div>) don't violate DOM nesting. */}
+                              <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
                                 {place.placeCategory === 'museum' ? (
                                   <Building2 className="w-3 h-3 text-blue-500" />
                                 ) : (
@@ -529,7 +531,7 @@ const Country = () => {
                                     Wikidata
                                   </Badge>
                                 )}
-                              </CardDescription>
+                              </div>
                             </CardHeader>
                             <CardContent className="cursor-pointer" onClick={() => setSelectedPlace(place)}>
                               <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
