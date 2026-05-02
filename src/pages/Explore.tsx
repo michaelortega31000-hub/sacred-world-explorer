@@ -5,7 +5,6 @@ import { Globe, MapPin, Trophy, Target, Compass, Camera } from 'lucide-react';
 import Header from '@/components/Header';
 import BottomNavigation from '@/components/BottomNavigation';
 import Globe3D from '@/components/Globe3D';
-import { SpiritualOverlayLegend } from '@/components/quest/SpiritualOverlayLegend';
 import LocationsTab from '@/components/LocationsTab';
 import RankingsTab from '@/components/RankingsTab';
 import ChallengesTab from '@/components/ChallengesTab';
@@ -66,7 +65,6 @@ const Explore = () => {
                 onCountryClick={handleCountryClick}
                 onFullscreenChange={setIsFullscreen}
               />
-              {!isFullscreen && <SpiritualOverlayLegend />}
             </div>
           </TabsContent>
 
