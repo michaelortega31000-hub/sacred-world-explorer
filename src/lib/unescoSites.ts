@@ -77,9 +77,18 @@ export async function fetchUnescoSites(): Promise<UnescoSite[]> {
     encodeURIComponent(QUERY);
 
   // No custom headers — User-Agent triggers CORS preflight that fails.
-  const res = await fetch(url, {
-    headers: { Accept: 'application/sparql-results+json' },
-  });
+  // Hard 20s timeout — UNESCO query is heavier than per-country (~1200 results).
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 20_000);
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Accept: 'application/sparql-results+json' },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
   if (!res.ok) throw new Error(`UNESCO SPARQL HTTP ${res.status}`);
 
   const data: SparqlResponse = await res.json();

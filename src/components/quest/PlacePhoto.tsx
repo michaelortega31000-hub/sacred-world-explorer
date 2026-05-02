@@ -7,7 +7,7 @@
 // broken-image case across the app — Khufu pyramids, museums, etc.
 // Honest fallback now: a typographic identity card, not a wrong photo.
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PlaceSymbol } from './PlaceSymbol';
 
 interface Props {
@@ -20,6 +20,12 @@ interface Props {
 
 export const PlacePhoto = ({ src, alt, type, name, className = '' }: Props) => {
   const [errored, setErrored] = useState(false);
+
+  // Reset error state when the src changes — without this, a card whose
+  // image errored once would stay stuck on PlaceSymbol even after a new
+  // src arrives (e.g. IMAGE_OVERRIDES enriches a Wikidata entry on a
+  // subsequent render).
+  useEffect(() => { setErrored(false); }, [src]);
 
   if (!src || errored) {
     return (

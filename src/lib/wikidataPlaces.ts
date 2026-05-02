@@ -160,9 +160,20 @@ export async function fetchWikidataPlaces(country: string): Promise<Place[]> {
   // as a forbidden header, which forces a CORS preflight that Wikidata's
   // SPARQL endpoint doesn't satisfy → request fails with ERR_FAILED.
   // Wikidata accepts unauthenticated browser requests with simple Accept.
-  const res = await fetch(url, {
-    headers: { Accept: 'application/sparql-results+json' },
-  });
+  //
+  // Hard 15s timeout — the public SPARQL endpoint regularly stalls under
+  // load. Without this the page would spin indefinitely on hot countries.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 15_000);
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      headers: { Accept: 'application/sparql-results+json' },
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
     throw new Error(`Wikidata SPARQL HTTP ${res.status}`);

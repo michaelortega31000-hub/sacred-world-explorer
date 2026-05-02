@@ -17,6 +17,13 @@ export interface UnescoOverlayHandle {
 
 let cachedFeatures: GeoJSON.FeatureCollection | null = null;
 
+// Vite HMR: drop the cache on hot-reload so dev edits to the SPARQL
+// query or normalization don't get masked by stale data from the
+// previous module instance.
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => { cachedFeatures = null; });
+}
+
 const buildFeatureCollection = async (): Promise<GeoJSON.FeatureCollection> => {
   if (cachedFeatures) return cachedFeatures;
   const sites = await fetchUnescoSites();
@@ -62,12 +69,17 @@ export const attachUnescoOverlay = async (
 
   const fc = await buildFeatureCollection();
 
-  // If the map was destroyed while the SPARQL request was in flight, bail out.
+  // If the map was destroyed while the SPARQL request was in flight, bail.
   if (!map.getStyle()) {
     return { destroy: () => { /* noop */ }, setVisible: () => { /* noop */ } };
   }
 
-  map.addSource(UNESCO_SOURCE, { type: 'geojson', data: fc });
+  // Wrap source + layer adds in a single try/catch — the map can be
+  // disposed *between* synchronous calls (StrictMode unmount, fast tab
+  // switch). Mapbox throws if so; we swallow and return a noop handle
+  // rather than letting the rejection bubble up to React Query.
+  try {
+    map.addSource(UNESCO_SOURCE, { type: 'geojson', data: fc });
 
   // Dot markers — small white circles with cream rim, slight glow.
   // Colored differently for cultural / natural / mixed.
@@ -135,6 +147,12 @@ export const attachUnescoOverlay = async (
       'text-halo-blur': 0.5,
     },
   });
+  } catch {
+    // Map disposed mid-attach; nothing to clean up beyond what mapbox
+    // already tore down. Return a noop handle so callers can call .destroy()
+    // / .setVisible() without further checks.
+    return { destroy: () => { /* */ }, setVisible: () => { /* */ } };
+  }
 
   return {
     destroy: () => {
