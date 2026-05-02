@@ -32,6 +32,7 @@ import {
   type UnescoOverlayHandle,
   UNESCO_DOT_LAYER,
 } from '@/components/quest/unescoOverlay';
+import { fetchWikipediaThumbnails } from '@/lib/wikipediaImages';
 
 interface Globe3DProps {
   onCountryClick?: (countryName: string) => void;
@@ -1021,21 +1022,49 @@ const Globe3D = ({
         const danger = props.inDanger
           ? '<div style="color:#fca5a5;font-size:10px;margin-top:4px;">⚠ En péril</div>'
           : '';
+        // Escape HTML to avoid breaking out of the popup template if a name
+        // contains quotes/brackets.
+        const esc = (s: string) =>
+          s.replace(/[&<>"']/g, (c) =>
+            ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!),
+          );
+        const renderPopup = (photoUrl?: string) => `
+          <div style="background:rgba(7,7,15,0.96);border:1px solid rgba(244,197,66,0.30);border-radius:10px;overflow:hidden;color:#fff;font-family:system-ui;width:240px;">
+            ${
+              photoUrl
+                ? `<div style="width:100%;height:130px;background:#0a0a14 url('${esc(photoUrl)}') center/cover no-repeat;"></div>`
+                : ''
+            }
+            <div style="padding:10px 12px;">
+              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(244,197,66,0.85);margin-bottom:4px;">UNESCO · ${esc(props.category)}</div>
+              <div style="font-size:13px;font-weight:600;color:#fff;line-height:1.3;">${esc(props.name)}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">${esc(props.country)}</div>
+              ${danger}
+            </div>
+          </div>
+        `;
         currentPopup.current = new mapboxgl.Popup({
           closeButton: true,
           maxWidth: '260px',
           className: 'unesco-popup',
         })
           .setLngLat(coords)
-          .setHTML(`
-            <div style="background:rgba(7,7,15,0.96);border:1px solid rgba(244,197,66,0.30);border-radius:10px;padding:10px 12px;color:#fff;font-family:system-ui;">
-              <div style="font-size:9px;letter-spacing:0.18em;text-transform:uppercase;color:rgba(244,197,66,0.85);margin-bottom:4px;">UNESCO · ${props.category}</div>
-              <div style="font-size:13px;font-weight:600;color:#fff;line-height:1.3;">${props.name}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,0.6);margin-top:2px;">${props.country}</div>
-              ${danger}
-            </div>
-          `)
+          .setHTML(renderPopup())
           .addTo(map.current);
+
+        // Async-fetch the Wikipedia article lead image and slot it in.
+        // Best-effort: if Wikipedia has no matching article the popup just
+        // stays text-only — never falls back to a wrong stock photo.
+        const popupAtClick = currentPopup.current;
+        fetchWikipediaThumbnails([props.name])
+          .then((thumbs) => {
+            const url = thumbs.get(props.name);
+            // Only update if this popup is still the active one.
+            if (url && popupAtClick === currentPopup.current) {
+              popupAtClick.setHTML(renderPopup(url));
+            }
+          })
+          .catch(() => { /* silent — text-only popup is fine */ });
       });
 
       // Hover and click handlers for trip places
