@@ -99,21 +99,17 @@ const Auth = () => {
       });
 
       if (error) {
-        if (error.message.includes('already registered')) {
-          toast({
-            title: 'Erreur',
-            description: 'Cet email est déjà utilisé. Connectez-vous ou utilisez un autre email.',
-            variant: 'destructive'
-          });
-        } else {
-          throw error;
-        }
+        // Generic message — do not leak whether the email already exists.
+        toast({
+          title: 'Vérifiez votre boîte mail',
+          description: 'Si cet email est valide, vous recevrez un message de confirmation.',
+        });
         return;
       }
 
       toast({
-        title: 'Compte créé !',
-        description: 'Vous pouvez maintenant vous connecter.',
+        title: 'Vérifiez votre boîte mail',
+        description: 'Si cet email est valide, vous recevrez un message de confirmation.',
       });
       
       setIsLogin(true);
@@ -153,15 +149,11 @@ const Auth = () => {
       });
 
       if (error) {
-        if (error.message.includes('Invalid login credentials')) {
-          toast({
-            title: 'Erreur',
-            description: 'Email ou mot de passe incorrect.',
-            variant: 'destructive'
-          });
-        } else {
-          throw error;
-        }
+        toast({
+          title: 'Erreur',
+          description: 'Email ou mot de passe incorrect.',
+          variant: 'destructive'
+        });
         return;
       }
 
@@ -243,10 +235,10 @@ const Auth = () => {
       <Card className="w-full max-w-md relative z-10 bg-card/90 backdrop-blur-md border-primary/20 shadow-halo turquoise-reflection">
         <CardHeader className="space-y-4 text-center">
           <div className="flex justify-center">
-            <img 
-              src={logo} 
-              alt="SacredWorld Logo" 
-              className="w-32 h-32 object-contain gold-halo breathing-glow"
+            <img
+              src={logo}
+              alt="SacredWorld Logo"
+              className="sacred-logo-gold w-32 h-32 object-contain gold-halo breathing-glow"
             />
           </div>
           <CardDescription className="text-base text-muted-foreground">

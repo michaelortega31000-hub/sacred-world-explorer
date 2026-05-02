@@ -90,7 +90,7 @@ const Header = ({
             
             {/* Centre : Logo */}
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <img src={logo} alt="SacredWorld Logo" className="h-24 w-24 sm:h-32 sm:w-32 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
+              <img src={logo} alt="SacredWorld Logo" className="sacred-logo-gold h-24 w-24 sm:h-32 sm:w-32 object-contain cursor-pointer" onClick={() => navigate('/explore')} />
             </div>
             
             {/* Droite : Micro + Mail + Assistant + Retour */}
@@ -139,7 +139,7 @@ const Header = ({
           // Header normal pour les autres pages
           <>
             <div className="flex flex-col items-center mb-4">
-              <img src={logo} alt="SacredWorld Logo" className="h-16 w-16 object-contain cursor-pointer mb-2" onClick={() => navigate('/explore')} />
+              <img src={logo} alt="SacredWorld Logo" className="sacred-logo-gold h-16 w-16 object-contain cursor-pointer mb-2" onClick={() => navigate('/explore')} />
               <h1 className="font-serif text-foreground tracking-wide cursor-pointer text-2xl" onClick={() => navigate('/explore')}>
                 Sacred World
               </h1>

@@ -52,7 +52,7 @@ export const Logo = ({
       <img
         src={logoSrc}
         alt="Sacred World Logo"
-        className="w-full h-full object-contain object-center scale-[1.45]"
+        className="sacred-logo-gold w-full h-full object-contain object-center scale-[1.45]"
       />
     </div>
   );

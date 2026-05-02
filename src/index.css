@@ -508,6 +508,18 @@ All colors MUST be HSL.
   0%, 100% { opacity: 0.55; }
   50%       { opacity: 0.85; }
 }
+/* Brand-unify the bundled logo asset (which has a turquoise glow baked in)
+   into the cathedral gold palette without re-exporting the artwork.
+   sepia → saturate → hue-rotate composes the existing pixels into amber/gold. */
+.sacred-logo-gold {
+  filter:
+    sepia(0.85)
+    saturate(2.4)
+    hue-rotate(-15deg)
+    brightness(1.08)
+    contrast(1.05);
+}
+
 .cathedral-rose-bg {
   position: relative;
   background: #07070f;

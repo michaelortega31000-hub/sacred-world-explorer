@@ -300,7 +300,7 @@ const Splash = () => {
           <img
             src={sacredWorldLogo}
             alt="SacredWorld emblem"
-            className="relative w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_0_30px_rgba(244,197,66,0.55)]"
+            className="sacred-logo-gold relative w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_0_30px_rgba(244,197,66,0.55)]"
           />
         </div>
 

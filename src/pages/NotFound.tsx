@@ -16,10 +16,10 @@ const NotFound = () => {
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="text-center space-y-6 p-8">
         <div className="flex justify-center mb-6">
-          <img 
-            src={logo} 
-            alt="SacredWorld Logo" 
-            className="w-24 h-24 object-contain"
+          <img
+            src={logo}
+            alt="SacredWorld Logo"
+            className="sacred-logo-gold w-24 h-24 object-contain"
           />
         </div>
         <h1 className="text-6xl font-bold text-foreground">404</h1>

@@ -78,13 +78,13 @@ const Welcome = () => {
               <img
                 src={logoGlow}
                 alt=""
-                className="absolute inset-0 w-full h-full object-contain opacity-80 blur-2xl scale-125 animate-pulse"
+                className="sacred-logo-gold absolute inset-0 w-full h-full object-contain opacity-80 blur-2xl scale-125 animate-pulse"
                 aria-hidden="true"
               />
               <img
                 src={logo}
                 alt="SacredWorld"
-                className="relative z-10 w-48 h-auto drop-shadow-[0_0_40px_hsl(var(--primary)/0.4)]"
+                className="sacred-logo-gold relative z-10 w-48 h-auto drop-shadow-[0_0_40px_hsl(var(--primary)/0.4)]"
               />
             </div>
           </div>
