@@ -48,7 +48,14 @@ const Header = ({
   };
 
   return (
-    <div className={`relative ${isTextOnlyPage ? 'py-1 px-3' : 'p-4'} ${transparent ? 'bg-transparent' : 'bg-sacred-blue border-b border-primary/20'}`}>
+    <div
+      className={`relative ${isTextOnlyPage ? 'py-1 px-3' : 'p-4'} ${transparent ? 'bg-transparent' : 'border-b border-amber-300/15'}`}
+      style={transparent ? undefined : {
+        background: 'linear-gradient(180deg, rgba(7,7,15,0.94) 0%, rgba(7,7,15,0.78) 100%)',
+        backdropFilter: 'blur(20px) saturate(160%)',
+        WebkitBackdropFilter: 'blur(20px) saturate(160%)',
+      }}
+    >
       <div className="max-w-7xl mx-auto">
         {isTextOnlyPage ? (
           // Header compact pour les pages Globe/Planifier/Journal/Classements

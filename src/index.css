@@ -25,17 +25,17 @@ All colors MUST be HSL.
     --popover: 217 40% 12%;
     --popover-foreground: 0 0% 96%;
 
-    --primary: 180 65% 55%; /* Turquoise cyan #4ECDC4 */
-    --primary-foreground: 217 40% 12%;
+    --primary: 43 90% 58%; /* Cathedral gold #F4C542 */
+    --primary-foreground: 240 28% 6%;
 
-    --secondary: 215 35% 18%; /* Dark blue secondary */
-    --secondary-foreground: 0 0% 96%;
+    --secondary: 240 18% 14%; /* Lead glass secondary */
+    --secondary-foreground: 40 20% 92%;
 
-    --muted: 215 35% 18%;
-    --muted-foreground: 0 0% 65%;
+    --muted: 240 16% 14%;
+    --muted-foreground: 40 12% 65%;
 
-    --accent: 180 65% 55%;
-    --accent-foreground: 217 40% 12%;
+    --accent: 43 90% 58%; /* Cathedral gold accent */
+    --accent-foreground: 240 28% 6%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 96%;

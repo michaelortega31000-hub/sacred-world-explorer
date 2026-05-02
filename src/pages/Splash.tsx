@@ -234,12 +234,7 @@ const Splash = () => {
   const currentLang = languages.find(l => l.code === selectedLanguage) || languages[0];
 
   return (
-    <div 
-      className="w-screen h-screen flex items-center justify-center overflow-hidden relative"
-      style={{
-        background: 'linear-gradient(180deg, #0A1628 0%, #0E1B3F 30%, #1a3a52 60%, #0E1B3F 100%)'
-      }}
-    >
+    <div className="cathedral-rose-bg w-screen h-screen flex items-center justify-center overflow-hidden relative">
       {/* Decorative flower-of-life ornaments */}
       <svg
         aria-hidden="true"
@@ -289,20 +284,23 @@ const Splash = () => {
 
       {/* Main content stack - logo, wordmark, tagline, CTA, language */}
       <div className="relative z-10 flex flex-col items-center justify-center w-full max-w-2xl px-6 pt-24 pb-8">
-        {/* Emblem with green halo */}
+        {/* Emblem with cathedral gold halo */}
         <div className="relative mb-8 flex items-center justify-center">
-          {/* Outer green halo */}
-          <div className="absolute w-72 h-72 rounded-full bg-[#3a8a6b]/25 blur-3xl" />
-          {/* Inner golden glow */}
-          <div className="absolute w-56 h-56 rounded-full bg-amber-400/20 blur-2xl" />
-          {/* Halo ring */}
-          <div className="absolute w-56 h-56 rounded-full border border-emerald-300/30" style={{ boxShadow: '0 0 60px rgba(74, 222, 168, 0.25), inset 0 0 40px rgba(74, 222, 168, 0.15)' }} />
+          {/* Outer warm gold halo */}
+          <div className="absolute w-72 h-72 rounded-full bg-amber-300/22 blur-3xl" />
+          {/* Inner amber glow */}
+          <div className="absolute w-56 h-56 rounded-full bg-orange-400/15 blur-2xl" />
+          {/* Gold halo ring */}
+          <div
+            className="absolute w-56 h-56 rounded-full border border-amber-300/30"
+            style={{ boxShadow: '0 0 60px rgba(244,197,66,0.30), inset 0 0 40px rgba(244,197,66,0.16)' }}
+          />
 
           {/* Official emblem */}
           <img
             src={sacredWorldLogo}
             alt="SacredWorld emblem"
-            className="relative w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_0_30px_rgba(251,191,36,0.45)]"
+            className="relative w-44 h-44 sm:w-52 sm:h-52 object-contain drop-shadow-[0_0_30px_rgba(244,197,66,0.55)]"
           />
         </div>
 
@@ -312,22 +310,21 @@ const Splash = () => {
         </h1>
 
         {/* Tagline */}
-        <p className="text-center text-base sm:text-lg md:text-xl text-white/95 max-w-xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] mb-10 px-2">
+        <p className="text-center text-base sm:text-lg md:text-xl text-amber-50/85 max-w-xl leading-relaxed drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)] mb-10 px-2">
           La plateforme mondiale pour explorer, comprendre et collectionner le patrimoine sacré, culturel et naturel.
         </p>
 
-        {/* CTA button */}
+        {/* CTA button — same cathedral gold gradient as HomeQuest */}
         <div className="relative mb-6">
           <div className="absolute inset-0 rounded-full bg-amber-400/30 blur-2xl" />
           <button
             onClick={handleStartExploration}
             aria-label={isLoggedIn ? "Continuer vers l'application" : "Commencer l'exploration"}
-            className="relative px-10 sm:px-14 py-4 sm:py-5 rounded-full text-lg sm:text-xl font-medium text-amber-50 transition-all duration-300 hover:scale-105"
-            style={{
-              background: 'linear-gradient(180deg, rgba(20, 60, 70, 0.65) 0%, rgba(15, 40, 55, 0.85) 100%)',
-              border: '1.5px solid rgba(251, 191, 36, 0.6)',
-              boxShadow: '0 0 40px rgba(251, 191, 36, 0.35), inset 0 0 20px rgba(251, 191, 36, 0.1)',
-            }}
+            className="hub-breath relative inline-flex items-center gap-2 px-10 sm:px-14 py-4 sm:py-5
+                       rounded-full text-lg sm:text-xl font-semibold text-amber-950
+                       bg-gradient-to-r from-amber-300 to-orange-400
+                       shadow-[0_0_28px_rgba(244,197,66,0.60)] active:scale-95
+                       transition-transform duration-200"
           >
             {isLoggedIn ? "Continuer" : "Commencer l'exploration"}
           </button>

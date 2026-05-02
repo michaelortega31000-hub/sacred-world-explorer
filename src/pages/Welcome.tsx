@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, ArrowLeft, WifiOff, BookOpen, Sparkles, Users, MapPin } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Sparkles, Users, MapPin } from 'lucide-react';
 import { LanguageSelector } from '@/components/LanguageSelector';
 import logo from '@/assets/sacredworld-logo-official.png';
 import logoGlow from '@/assets/sacredworld-logo-official.png';
@@ -63,29 +63,10 @@ const Welcome = () => {
   const handleSkip = () => navigate('/home');
 
   return (
-    <div className="min-h-screen flex flex-col bg-background relative">
-      {/* Subtle gold/turquoise overlay */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-primary/10 pointer-events-none" />
-
-      {/* Header */}
-      <header className="w-full p-4 flex justify-between items-center relative z-10">
-        <Button variant="outline" size="default" className="gap-2 font-medium">
-          <WifiOff className="w-4 h-4" />
-          Hors ligne
-        </Button>
-
-        <div className="flex items-center gap-3">
-          <Button
-            variant="outline"
-            size="default"
-            className="gap-2 font-medium"
-            onClick={() => navigate('/?tutorial=true')}
-          >
-            <BookOpen className="w-4 h-4" />
-            Tutoriel
-          </Button>
-          <LanguageSelector />
-        </div>
+    <div className="cathedral-rose-bg min-h-screen flex flex-col relative">
+      {/* Header — language only, no clutter */}
+      <header className="w-full p-4 flex justify-end items-center relative z-10">
+        <LanguageSelector />
       </header>
 
       {/* Main content */}
@@ -109,28 +90,32 @@ const Welcome = () => {
           </div>
 
           {/* Tagline */}
-          <p className="mb-8 text-lg md:text-xl font-cinzel text-primary/90 tracking-wide animate-fade-in">
+          <p className="mb-8 text-lg md:text-xl font-cinzel text-amber-200/90 tracking-wide animate-fade-in">
             Découvrez, vivez et collectionnez le patrimoine sacré chrétien
           </p>
 
           {/* Onboarding step */}
-          <div
-            key={step}
-            className="space-y-6 mb-10 animate-fade-in"
-          >
+          <div key={step} className="space-y-6 mb-10 animate-fade-in">
             <div className="flex justify-center">
               <div className="relative">
-                <div className="absolute inset-0 rounded-full bg-primary/30 blur-2xl scale-125 animate-pulse" />
-                <div className="relative flex items-center justify-center w-24 h-24 rounded-full bg-primary/15 border border-primary/30 backdrop-blur-sm">
-                  <StepIcon className="w-12 h-12 text-primary" />
+                <div className="absolute inset-0 rounded-full bg-amber-300/30 blur-2xl scale-125 animate-pulse" />
+                <div
+                  className="relative flex items-center justify-center w-24 h-24 rounded-full backdrop-blur-sm"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(244,197,66,0.18) 0%, rgba(7,7,15,0.85) 70%)',
+                    border: '1px solid rgba(244,197,66,0.35)',
+                    boxShadow: '0 0 30px rgba(244,197,66,0.25), inset 0 0 20px rgba(244,197,66,0.10)',
+                  }}
+                >
+                  <StepIcon className="w-12 h-12 text-amber-300" style={{ filter: 'drop-shadow(0 0 8px rgba(244,197,66,0.55))' }} />
                 </div>
               </div>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-extrabold text-foreground font-cinzel leading-tight">
+            <h1 className="text-3xl md:text-4xl font-extrabold text-amber-50 font-cinzel leading-tight">
               {current.title}
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground leading-relaxed font-inter font-light max-w-xl mx-auto">
+            <p className="text-lg md:text-xl text-white/70 leading-relaxed font-inter font-light max-w-xl mx-auto">
               {current.description}
             </p>
           </div>
@@ -141,7 +126,7 @@ const Welcome = () => {
               <div
                 key={i}
                 className={`h-2 rounded-full transition-all duration-300 ${
-                  i === step ? 'w-8 bg-primary' : 'w-2 bg-primary/30'
+                  i === step ? 'w-8 bg-amber-300' : 'w-2 bg-amber-300/25'
                 }`}
               />
             ))}
@@ -153,33 +138,35 @@ const Welcome = () => {
               <Button
                 onClick={() => setStep(step - 1)}
                 size="lg"
-                variant="outline"
-                className="px-6 py-6 rounded-full"
+                variant="ghost"
+                className="px-6 py-6 rounded-full border border-amber-300/30 text-amber-200 hover:bg-amber-300/10"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
             )}
-            <Button
+            <button
               onClick={handleNext}
-              size="lg"
-              className="px-10 py-6 text-lg font-bold rounded-full shadow-2xl hover:shadow-primary/50 hover:scale-105 transition-all duration-300 font-poppins bg-gradient-to-r from-primary to-primary/80"
+              className="hub-breath inline-flex items-center gap-2 px-10 py-4 text-lg font-semibold rounded-full
+                         text-amber-950 bg-gradient-to-r from-amber-300 to-orange-400
+                         shadow-[0_0_28px_rgba(244,197,66,0.55)] hover:scale-105 active:scale-95
+                         transition-transform duration-200"
             >
               {isLast ? 'Commencer mon pèlerinage' : 'Suivant'}
-              <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
+              <ArrowRight className="ml-1 w-5 h-5" />
+            </button>
           </div>
 
           {!isLast && (
             <button
               onClick={handleSkip}
-              className="mt-6 text-sm text-muted-foreground hover:text-primary transition-colors"
+              className="mt-6 text-sm text-white/45 hover:text-amber-200 transition-colors"
             >
               Passer l'introduction
             </button>
           )}
 
           {/* Subtle Christian identity mark */}
-          <div className="mt-10 flex items-center justify-center gap-2 text-xs text-muted-foreground/70">
+          <div className="mt-10 flex items-center justify-center gap-2 text-xs text-white/50">
             <ChristianIcon size="sm" className="opacity-70" />
             <span>Pour les chrétiens et les curieux de patrimoine</span>
           </div>
