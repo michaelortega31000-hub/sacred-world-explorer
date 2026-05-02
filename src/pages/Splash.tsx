@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { WifiOff, BookOpen, Globe, Trophy, Calendar, Target, Users, Settings, Check, LogOut, LucideIcon, MessageCircle } from 'lucide-react';
+import { Globe, Trophy, Calendar, Target, Users, Settings, Check, LogOut, LucideIcon, MessageCircle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import sacredWorldLogo from '@/assets/sacredworld-logo-official.png';
 
@@ -188,19 +188,6 @@ const Splash = () => {
     setShowLanguages(false);
   };
 
-  const handleOfflineMode = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    // Stocker le mode hors ligne et aller directement à l’accueil
-    localStorage.setItem('selectedMode', 'offline');
-    navigate('/welcome');
-  };
-
-  const handleTutorialOpen = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowTutorial(true);
-    setTutorialStep(0);
-  };
-
   const handleTutorialNext = () => {
     if (isAnimating) return;
     
@@ -283,38 +270,15 @@ const Splash = () => {
         ))}
       </svg>
 
-      {/* Boutons Mode hors ligne, Tutoriel et Déconnexion - En haut */}
-      <div className="absolute top-4 sm:top-6 left-0 right-0 z-10 px-4 sm:px-6">
-        <div className="max-w-lg mx-auto flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
-          {/* Bouton Mode hors ligne */}
-          <Button
-            onClick={handleOfflineMode}
-            variant="outline"
-            size="lg"
-            className="gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-11 sm:h-12 text-xs sm:text-sm px-3 sm:px-4"
-          >
-            <WifiOff className="w-4 h-4" />
-            <span>Hors ligne</span>
-          </Button>
-          
-          {/* Bouton Tutoriel */}
-          <Button
-            onClick={handleTutorialOpen}
-            variant="outline"
-            size="lg"
-            className="gap-2 border-primary/30 bg-sacred-blue/90 backdrop-blur-md hover:bg-primary/20 text-foreground shadow-lg h-11 sm:h-12 text-xs sm:text-sm px-3 sm:px-4"
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>Tutoriel</span>
-          </Button>
-
-          {/* Bouton Déconnexion - visible uniquement si connecté */}
+      {/* Bouton Déconnexion — haut droite, visible uniquement si connecté */}
+      <div className="absolute top-4 right-4 z-10">
+        <div className="flex items-center justify-end">
           {isLoggedIn && (
             <Button
               onClick={handleLogout}
               variant="outline"
-              size="lg"
-              className="gap-2 border-destructive/40 bg-sacred-blue/90 backdrop-blur-md hover:bg-destructive/20 text-foreground shadow-lg h-11 sm:h-12 text-xs sm:text-sm px-3 sm:px-4"
+              size="sm"
+              className="gap-2 border-destructive/40 bg-black/40 backdrop-blur-md hover:bg-destructive/20 text-white/70 shadow-lg text-xs px-3"
             >
               <LogOut className="w-4 h-4" />
               <span>Déconnexion</span>
