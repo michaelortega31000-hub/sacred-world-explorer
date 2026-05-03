@@ -63,6 +63,8 @@ export interface UserProgress {
   globeSettings: GlobeSettings;
   denomination: Denomination | null;
   countryOfOrigin: string | null;
+  track: Track | null;
+  onboardedAt: string | null;
 }
 
 interface AppContextType {
