@@ -10,6 +10,22 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   plugins: [react(), mode === "development" && componentTagger()].filter(Boolean),
+  define: {
+    // Build-time fallback for Supabase publishable values.
+    // Lovable's Secrets store rejects VITE_-prefixed names and .env is gitignored,
+    // so deployed bundles otherwise miss these. The anon key is safe in client bundles
+    // (protected by RLS). Real env vars (local .env) still take precedence.
+    'import.meta.env.VITE_SUPABASE_URL': JSON.stringify(
+      process.env.VITE_SUPABASE_URL || 'https://uekqjlaguhzotiuqskvb.supabase.co'
+    ),
+    'import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY': JSON.stringify(
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVla3FqbGFndWh6b3RpdXFza3ZiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkyNDgxODMsImV4cCI6MjA3NDgyNDE4M30.Y6LSLi7NWu6VZ5lh5RAi-eTII0wY7iDSK4eo0xiNMKo'
+    ),
+    'import.meta.env.VITE_SUPABASE_PROJECT_ID': JSON.stringify(
+      process.env.VITE_SUPABASE_PROJECT_ID || 'uekqjlaguhzotiuqskvb'
+    ),
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
