@@ -163,6 +163,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     return () => subscription.unsubscribe();
   }, []);
 
+  const refreshProfile = React.useCallback(async () => {
+    if (!session?.user) {
+      setProfileLoaded(true);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('onboarded_at, denomination_id, denominations:denomination_id(code)')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      if (error) {
+        logger.error('refreshProfile error:', error);
+      }
+      const trackCode = ((data as any)?.denominations?.code ?? null) as Track | null;
+      const onboardedAt = ((data as any)?.onboarded_at ?? null) as string | null;
+      setUserProgress(prev => ({ ...prev, track: trackCode, onboardedAt }));
+    } catch (e) {
+      logger.error('refreshProfile exception:', e);
+    } finally {
+      setProfileLoaded(true);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    setProfileLoaded(false);
+    refreshProfile();
+  }, [session, refreshProfile]);
+
   // Load progress from database when session is established
   useEffect(() => {
     const loadProgressFromDB = async () => {
