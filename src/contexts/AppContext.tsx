@@ -12,6 +12,7 @@ import {
   resumeAudioContext 
 } from '@/utils/audioEffects';
 import { GlobeSettings, defaultGlobeSettings } from '@/types/globeSettings';
+import type { Track } from '@/types/track';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
