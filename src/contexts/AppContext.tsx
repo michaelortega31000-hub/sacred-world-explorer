@@ -97,6 +97,9 @@ interface AppContextType {
   updateGlobeSettings: (settings: Partial<GlobeSettings>) => void;
   setDenomination: (denomination: Denomination) => Promise<void>;
   setCountryOfOrigin: (code: string) => Promise<void>;
+  track: Track | null;
+  profileLoaded: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
