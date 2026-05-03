@@ -29,7 +29,10 @@ const REASONS = [
 
 export default function ChangeDenomination() {
   const navigate = useNavigate();
-  const { track, userProgress, refreshProfile } = useApp();
+  const ctx = useApp() as any;
+  const { userProgress } = useApp();
+  const track: Track | undefined = ctx.track;
+  const refreshProfile: () => Promise<void> = ctx.refreshProfile ?? (async () => {});
   const [target, setTarget] = useState<Track | ''>('');
   const [reasonCat, setReasonCat] = useState('');
   const [reasonText, setReasonText] = useState('');
@@ -39,11 +42,12 @@ export default function ChangeDenomination() {
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const lockedUntil = userProgress.denominationLockedUntil
-    ? new Date(userProgress.denominationLockedUntil)
+  const up = userProgress as any;
+  const lockedUntil = up.denominationLockedUntil
+    ? new Date(up.denominationLockedUntil)
     : null;
   const lockActive = !!(lockedUntil && lockedUntil.getTime() > Date.now());
-  const changeCount = userProgress.denominationChangeCount;
+  const changeCount: number = up.denominationChangeCount ?? 0;
   const remainingChanges = Math.max(0, 3 - changeCount);
 
   const submit = async () => {
@@ -53,7 +57,7 @@ export default function ChangeDenomination() {
       return;
     }
     setSubmitting(true);
-    const { error } = await supabase.rpc('change_denomination', {
+    const { error } = await supabase.rpc('change_denomination' as any, {
       p_to_code: target,
       p_reason_category: reasonCat || 'other',
       p_reason_text: reasonText,

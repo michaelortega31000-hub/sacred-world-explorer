@@ -32,7 +32,8 @@ const features = [
 
 const OnboardingTutorial = () => {
   const navigate = useNavigate();
-  const { session, refreshProfile } = useApp();
+  const { session } = useApp();
+  const refreshProfile: () => Promise<void> = (useApp() as any).refreshProfile ?? (async () => {});
   const [submitting, setSubmitting] = useState(false);
 
   const finish = async () => {
@@ -40,7 +41,7 @@ const OnboardingTutorial = () => {
     setSubmitting(true);
     await supabase
       .from('profiles')
-      .update({ onboarded_at: new Date().toISOString() })
+      .update({ onboarded_at: new Date().toISOString() } as any)
       .eq('id', session.user.id);
     await refreshProfile();
     setSubmitting(false);

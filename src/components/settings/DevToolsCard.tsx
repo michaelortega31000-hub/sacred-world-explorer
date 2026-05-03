@@ -10,7 +10,8 @@ import { useApp } from '@/contexts/AppContext';
 // whole card so it never ships to production.
 export const DevToolsCard = () => {
   const navigate = useNavigate();
-  const { session, refreshProfile } = useApp();
+  const { session } = useApp();
+  const refreshProfile: () => Promise<void> = (useApp() as any).refreshProfile ?? (async () => {});
 
   if (!import.meta.env.DEV) return null;
 

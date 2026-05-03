@@ -540,7 +540,7 @@ const Globe3D = ({
     map.current.boxZoom.enable(); // Shift + drag to zoom
 
     // Map error handler with filtering for non-critical errors
-    map.current.on('error', e => {
+    map.current.on('error', (e: any) => {
       if (!map.current) return;
       const rawMsg = e?.error?.message ?? e?.error ?? e?.message ?? '';
       const errorMsg = (typeof rawMsg === 'string' ? rawMsg : '').toLowerCase();
@@ -1016,7 +1016,7 @@ const Globe3D = ({
       map.current.on('click', UNESCO_DOT_LAYER, (e) => {
         if (!e.features?.length || !map.current) return;
         const f = e.features[0];
-        const coords = (f.geometry as { coordinates: [number, number] }).coordinates;
+        const coords = (f.geometry as unknown as { coordinates: [number, number] }).coordinates;
         const props = f.properties as { name: string; country: string; category: string; inDanger: boolean };
         if (currentPopup.current) currentPopup.current.remove();
         const danger = props.inDanger

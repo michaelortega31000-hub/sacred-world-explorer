@@ -337,7 +337,7 @@ const Settings = () => {
                 </Label>
                 <p className="text-sm text-muted-foreground mb-3">
                   {(() => {
-                    const t = userProgress.track;
+                    const t = (userProgress as any).track;
                     if (t === 'catholic') return 'Catholique';
                     if (t === 'protestant') return 'Protestant';
                     if (t === 'orthodox') return 'Orthodoxe';

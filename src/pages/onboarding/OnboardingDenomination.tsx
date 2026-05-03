@@ -19,7 +19,8 @@ const FALLBACK_ROWS: DenominationRow[] = [
 
 const OnboardingDenomination = () => {
   const navigate = useNavigate();
-  const { session, refreshProfile } = useApp();
+  const { session } = useApp();
+  const refreshProfile: () => Promise<void> = (useApp() as any).refreshProfile ?? (async () => {});
   const [rows, setRows] = useState<DenominationRow[]>([]);
   const [pending, setPending] = useState<Track | null>(null);
   const [submitting, setSubmitting] = useState(false);

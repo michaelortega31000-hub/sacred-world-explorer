@@ -10,10 +10,14 @@ import { useApp } from '@/contexts/AppContext';
 // Granular consent toggles + location-history erasure.
 // Mirrors the onboarding consent step; this is the revocation surface.
 export const PrivacyConsentCard = () => {
-  const { session, userProgress, refreshProfile } = useApp();
+  const ctx = useApp() as any;
+  const { session, userProgress } = useApp();
+  const refreshProfile: () => Promise<void> = ctx.refreshProfile ?? (async () => {});
   const [busy, setBusy] = useState<string | null>(null);
 
-  const consents = userProgress.consents;
+  const consents = (userProgress as any).consents as
+    | Record<string, { granted: boolean; ts: string } | undefined>
+    | undefined;
   const get = (k: 'geolocation_checkin' | 'geolocation_friends' | 'community_map') =>
     consents?.[k]?.granted ?? false;
 
@@ -30,7 +34,7 @@ export const PrivacyConsentCard = () => {
     };
     const { error } = await supabase
       .from('profiles')
-      .update({ consents: next })
+      .update({ consents: next } as any)
       .eq('id', session.user.id);
     if (error) {
       toast.error('Impossible de mettre à jour cette préférence.');
@@ -47,7 +51,7 @@ export const PrivacyConsentCard = () => {
       "sont conservés."
     )) return;
     setBusy('erase');
-    const { error } = await supabase.rpc('erase_my_location_history');
+    const { error } = await supabase.rpc('erase_my_location_history' as any);
     if (error) {
       toast.error("Impossible d'effacer maintenant. Réessayez plus tard.");
     } else {
