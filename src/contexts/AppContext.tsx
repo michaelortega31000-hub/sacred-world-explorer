@@ -12,6 +12,7 @@ import {
   resumeAudioContext 
 } from '@/utils/audioEffects';
 import { GlobeSettings, defaultGlobeSettings } from '@/types/globeSettings';
+import type { Track } from '@/types/track';
 
 export type Religion = 'christianity' | 'islam' | 'judaism' | 'buddhism' | 'hinduism' | 'astronomy' | 'traditional' | 'atheism';
 
@@ -62,6 +63,8 @@ export interface UserProgress {
   globeSettings: GlobeSettings;
   denomination: Denomination | null;
   countryOfOrigin: string | null;
+  track: Track | null;
+  onboardedAt: string | null;
 }
 
 interface AppContextType {
@@ -94,6 +97,9 @@ interface AppContextType {
   updateGlobeSettings: (settings: Partial<GlobeSettings>) => void;
   setDenomination: (denomination: Denomination) => Promise<void>;
   setCountryOfOrigin: (code: string) => Promise<void>;
+  track: Track | null;
+  profileLoaded: boolean;
+  refreshProfile: () => Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -135,8 +141,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       globeSettings: defaultGlobeSettings,
       denomination: null,
       countryOfOrigin: null,
+      track: null,
+      onboardedAt: null,
     };
   });
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const { position, error } = useGeolocation(userProgress.geolocationEnabled);
 
@@ -156,6 +165,35 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
     return () => subscription.unsubscribe();
   }, []);
+
+  const refreshProfile = React.useCallback(async () => {
+    if (!session?.user) {
+      setProfileLoaded(true);
+      return;
+    }
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('onboarded_at, denomination_id, denominations:denomination_id(code)')
+        .eq('id', session.user.id)
+        .maybeSingle();
+      if (error) {
+        logger.error('refreshProfile error:', error);
+      }
+      const trackCode = ((data as any)?.denominations?.code ?? null) as Track | null;
+      const onboardedAt = ((data as any)?.onboarded_at ?? null) as string | null;
+      setUserProgress(prev => ({ ...prev, track: trackCode, onboardedAt }));
+    } catch (e) {
+      logger.error('refreshProfile exception:', e);
+    } finally {
+      setProfileLoaded(true);
+    }
+  }, [session]);
+
+  useEffect(() => {
+    setProfileLoaded(false);
+    refreshProfile();
+  }, [session, refreshProfile]);
 
   // Load progress from database when session is established
   useEffect(() => {
@@ -196,7 +234,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           longestStreak: data.longest_streak || 0,
           globeSettings: localProgress?.globeSettings ?? defaultGlobeSettings,
           denomination: ((data as any).denomination ?? localProgress?.denomination ?? null) as Denomination | null,
-          countryOfOrigin: ((data as any).country_of_origin ?? localProgress?.countryOfOrigin ?? null) as string | null
+          countryOfOrigin: ((data as any).country_of_origin ?? localProgress?.countryOfOrigin ?? null) as string | null,
+          track: null,
+          onboardedAt: null,
         };
 
         // Merge localStorage data if it exists - particularly for religion and trip data
@@ -658,7 +698,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       awardQuestBadge,
       updateGlobeSettings,
       setDenomination,
-      setCountryOfOrigin
+      setCountryOfOrigin,
+      track: userProgress.track,
+      profileLoaded,
+      refreshProfile
     }}>
       {children}
     </AppContext.Provider>
