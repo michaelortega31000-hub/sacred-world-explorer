@@ -202,7 +202,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           longestStreak: data.longest_streak || 0,
           globeSettings: localProgress?.globeSettings ?? defaultGlobeSettings,
           denomination: ((data as any).denomination ?? localProgress?.denomination ?? null) as Denomination | null,
-          countryOfOrigin: ((data as any).country_of_origin ?? localProgress?.countryOfOrigin ?? null) as string | null
+          countryOfOrigin: ((data as any).country_of_origin ?? localProgress?.countryOfOrigin ?? null) as string | null,
+          track: null,
+          onboardedAt: null,
         };
 
         // Merge localStorage data if it exists - particularly for religion and trip data
