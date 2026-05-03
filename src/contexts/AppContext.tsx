@@ -698,7 +698,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       awardQuestBadge,
       updateGlobeSettings,
       setDenomination,
-      setCountryOfOrigin
+      setCountryOfOrigin,
+      track: userProgress.track,
+      profileLoaded,
+      refreshProfile
     }}>
       {children}
     </AppContext.Provider>
