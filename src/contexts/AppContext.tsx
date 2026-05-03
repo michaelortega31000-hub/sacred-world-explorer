@@ -138,8 +138,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       globeSettings: defaultGlobeSettings,
       denomination: null,
       countryOfOrigin: null,
+      track: null,
+      onboardedAt: null,
     };
   });
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   const { position, error } = useGeolocation(userProgress.geolocationEnabled);
 
