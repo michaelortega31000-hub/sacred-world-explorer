@@ -41,7 +41,8 @@ const LEADERBOARD: LeaderboardEntry[] = [
 
 const HomeQuest = () => {
   const navigate = useNavigate();
-  const { userProgress, track } = useApp();
+  const { userProgress } = useApp();
+  const track = (useApp() as any).track as 'catholic' | 'protestant' | 'orthodox' | 'heritage' | undefined;
   const [checkInPlace, setCheckInPlace] = useState<{ id: string; name: string } | null>(null);
 
   const trackLabel = track ? TRACK_LABEL[track] : 'Curieux & Patrimoine';

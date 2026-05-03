@@ -370,7 +370,7 @@ const fetchOsmChurches = async (
           isCathedral,
         };
       })
-      .filter((x): x is OsmChurch => !!x);
+      .filter(Boolean) as OsmChurch[];
   } catch {
     return [];
   }
@@ -1009,6 +1009,7 @@ export const attachSpiritualOverlay = (map: mapboxgl.Map): SpiritualOverlayHandl
   const seenIds = new Set<number>();
   const accumulated: OsmChurch[] = [];
   let osmTimer: ReturnType<typeof setTimeout> | null = null;
+  let osmAbort: AbortController | null = null;
   let lastQueryAt = 0;
   let backoffUntil = 0;
   let inflight = false;

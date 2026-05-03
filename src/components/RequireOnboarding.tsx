@@ -9,7 +9,8 @@ interface Props {
 // track yet (denomination_id IS NULL on profiles), redirect to the onboarding
 // flow regardless of original destination.
 export const RequireOnboarding = ({ children }: Props) => {
-  const { session, track, userProgress } = useApp();
+  const { session, userProgress } = useApp();
+  const track = (useApp() as any).track;
   const location = useLocation();
 
   // Dev-only: bypass the gate so designers can preview every surface without a session.
@@ -18,7 +19,7 @@ export const RequireOnboarding = ({ children }: Props) => {
   // Wait for the profile fetch to settle before deciding.
   if (!session) return null;
 
-  const onboardingComplete = !!track && !!userProgress.onboardedAt;
+  const onboardingComplete = !!track && !!(userProgress as any).onboardedAt;
   if (!onboardingComplete && !location.pathname.startsWith('/onboarding')) {
     return <Navigate to="/onboarding/denomination" replace state={{ from: location.pathname + location.search }} />;
   }

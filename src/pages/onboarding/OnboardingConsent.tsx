@@ -10,7 +10,8 @@ import { OnboardingLayout } from './OnboardingLayout';
 
 const OnboardingConsent = () => {
   const navigate = useNavigate();
-  const { session, refreshProfile } = useApp();
+  const { session } = useApp();
+  const refreshProfile: () => Promise<void> = (useApp() as any).refreshProfile ?? (async () => {});
   const [checkin, setCheckin] = useState(true);
   const [friends, setFriends] = useState(false);
   const [communityMap, setCommunityMap] = useState(false);
@@ -26,7 +27,7 @@ const OnboardingConsent = () => {
       geolocation_friends: { granted: friends, ts },
       community_map: { granted: communityMap, ts },
     };
-    await supabase.from('profiles').update({ consents }).eq('id', session.user.id);
+    await supabase.from('profiles').update({ consents } as any).eq('id', session.user.id);
     await refreshProfile();
     setSubmitting(false);
     navigate('/onboarding/tutorial');

@@ -9,7 +9,8 @@ import { OnboardingLayout } from './OnboardingLayout';
 
 const OnboardingHome = () => {
   const navigate = useNavigate();
-  const { session, refreshProfile } = useApp();
+  const { session } = useApp();
+  const refreshProfile: () => Promise<void> = (useApp() as any).refreshProfile ?? (async () => {});
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,7 +31,7 @@ const OnboardingHome = () => {
           .update({
             home_location: wkt,
             home_location_set_at: new Date().toISOString(),
-          })
+          } as any)
           .eq('id', session.user.id);
         if (error) {
           setError("Impossible d'enregistrer votre position.");

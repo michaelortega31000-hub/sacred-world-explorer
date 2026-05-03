@@ -36,11 +36,12 @@ export function useSubscription(): SubscriptionState & {
         .eq('user_id', session.user.id)
         .maybeSingle();
       if (cancelled) return;
-      const active = data?.status === 'active' && (data?.subscription_tier ?? 'free') === 'premium';
+      const row = data as any;
+      const active = row?.status === 'active' && (row?.subscription_tier ?? 'free') === 'premium';
       setState({
         tier: active ? 'premium' : 'free',
-        status: (data?.status as SubscriptionState['status']) ?? null,
-        endsAt: (data?.subscription_end as string | null) ?? null,
+        status: (row?.status as SubscriptionState['status']) ?? null,
+        endsAt: (row?.subscription_end as string | null) ?? null,
         loading: false,
       });
     };
