@@ -35,6 +35,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminEnrichData = lazy(() => import("./pages/AdminEnrichData"));
 const AdminAuditImages = lazy(() => import("./pages/AdminAuditImages"));
+const AdminCommunitySubmissions = lazy(() => import("./pages/AdminCommunitySubmissions"));
 const Reminders = lazy(() => import("./pages/Reminders"));
 const SecurityTest = lazy(() => import("./pages/SecurityTest"));
 const OfflineManager = lazy(() => import("./pages/OfflineManager"));
