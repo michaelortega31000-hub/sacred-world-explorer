@@ -1110,6 +1110,7 @@ export type Database = {
           is_new_place: boolean
           latitude: number | null
           longitude: number | null
+          moderation_reason: string | null
           place_id: string
           place_name: string
           reaction_hands: number
@@ -1131,6 +1132,7 @@ export type Database = {
           is_new_place?: boolean
           latitude?: number | null
           longitude?: number | null
+          moderation_reason?: string | null
           place_id: string
           place_name: string
           reaction_hands?: number
@@ -1152,6 +1154,7 @@ export type Database = {
           is_new_place?: boolean
           latitude?: number | null
           longitude?: number | null
+          moderation_reason?: string | null
           place_id?: string
           place_name?: string
           reaction_hands?: number

@@ -35,6 +35,7 @@ const Admin = lazy(() => import("./pages/Admin"));
 const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const AdminEnrichData = lazy(() => import("./pages/AdminEnrichData"));
 const AdminAuditImages = lazy(() => import("./pages/AdminAuditImages"));
+const AdminCommunitySubmissions = lazy(() => import("./pages/AdminCommunitySubmissions"));
 const Reminders = lazy(() => import("./pages/Reminders"));
 const SecurityTest = lazy(() => import("./pages/SecurityTest"));
 const OfflineManager = lazy(() => import("./pages/OfflineManager"));
@@ -127,6 +128,7 @@ const AppContent = () => {
             <Route path="/admin/dashboard" element={<Gate><AdminDashboard /></Gate>} />
             <Route path="/admin/enrich-data" element={<Gate><AdminEnrichData /></Gate>} />
             <Route path="/admin/audit-images" element={<Gate><AdminAuditImages /></Gate>} />
+            <Route path="/admin/community-submissions" element={<Gate><AdminCommunitySubmissions /></Gate>} />
             <Route path="/reminders" element={<Gate><Reminders /></Gate>} />
             {isDev && <Route path="/security-test" element={<SecurityTest />} />}
             <Route path="/offline" element={<Gate><OfflineManager /></Gate>} />

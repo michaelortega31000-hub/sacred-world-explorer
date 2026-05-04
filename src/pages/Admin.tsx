@@ -5,9 +5,12 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { migratePlacesToSupabase } from '@/utils/migratePlacesData';
 import Header from '@/components/Header';
-import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus, Image, Loader2 } from 'lucide-react';
+import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus, Image, Loader2, ShieldCheck } from 'lucide-react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useQuery } from '@tanstack/react-query';
+import { countPendingNewPlaces } from '@/lib/placePhotos';
+import { Badge } from '@/components/ui/badge';
 
 const Admin = () => {
   const { isAdmin, loading: adminLoading } = useIsAdmin();
@@ -17,6 +20,13 @@ const Admin = () => {
   const [result, setResult] = useState<{ success: number; errors: number; details: string[] } | null>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const { data: pendingCount = 0 } = useQuery({
+    queryKey: ['admin-pending-community-count'],
+    queryFn: countPendingNewPlaces,
+    enabled: isAdmin,
+    staleTime: 60_000,
+  });
 
   const handleMigration = async () => {
     setIsMigrating(true);
@@ -110,6 +120,25 @@ const Admin = () => {
                 <Button size="lg" variant="outline">
                   <Image className="mr-2 h-4 w-4" />
                   Auditer les images
+                </Button>
+              </Link>
+            </div>
+
+            {/* Community Moderation Section */}
+            <div className="border-t pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-xl font-semibold">Modération communautaire</h2>
+                {pendingCount > 0 && (
+                  <Badge variant="destructive">{pendingCount} en attente</Badge>
+                )}
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Approuvez, rejetez ou signalez les nouveaux lieux sacrés soumis par la communauté.
+              </p>
+              <Link to="/admin/community-submissions">
+                <Button size="lg" variant="outline">
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Modérer les soumissions
                 </Button>
               </Link>
             </div>

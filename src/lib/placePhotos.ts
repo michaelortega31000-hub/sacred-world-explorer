@@ -15,6 +15,7 @@
 // and the caller surfaces a toast. The read path returns null.
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 const BUCKET = 'place-photos';
 
@@ -348,4 +349,198 @@ export async function fetchUserReactions(photoIds: string[]): Promise<Map<string
     out.get(r.photo_id)!.add(r.kind);
   }
   return out;
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// ADMIN MODERATION
+// ════════════════════════════════════════════════════════════════════════════
+
+
+export type SubmissionStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
+export type ModerationAction = 'approve' | 'reject' | 'flag';
+
+export interface SubmissionRow {
+  id: string;
+  place_id: string;
+  place_name: string;
+  user_id: string;
+  storage_path: string;
+  caption: string | null;
+  status: SubmissionStatus;
+  is_new_place: boolean;
+  country: string | null;
+  city: string | null;
+  tradition: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  created_at: string;
+  reviewed_at: string | null;
+  reviewed_by: string | null;
+  moderation_reason: string | null;
+  url: string;
+  author_username: string | null;
+}
+
+const TRADITION_TO_RELIGION: Record<string, string> = {
+  christianity: 'christianity',
+  islam: 'islam',
+  judaism: 'judaism',
+  hinduism: 'hinduism',
+  buddhism: 'buddhism',
+  sikhism: 'sikhism',
+  shinto: 'shinto',
+  taoism: 'taoism',
+  other: 'other',
+};
+
+/** Admin-only: list submissions filtered by status (and optionally only new-place ones). */
+export async function fetchSubmissions(opts: {
+  status?: SubmissionStatus;
+  isNewPlace?: boolean;
+  limit?: number;
+} = {}): Promise<SubmissionRow[]> {
+  try {
+    let q = supabase
+      .from('place_photos' as never)
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(opts.limit ?? 100);
+
+    if (opts.status) q = q.eq('status', opts.status);
+    if (opts.isNewPlace !== undefined) q = q.eq('is_new_place', opts.isNewPlace);
+
+    const { data, error } = await q;
+    if (error) {
+      logger.error('[fetchSubmissions] failed', error);
+      return [];
+    }
+    const rows = (data ?? []) as Array<Omit<SubmissionRow, 'url' | 'author_username'>>;
+
+    const userIds = Array.from(new Set(rows.map((r) => r.user_id)));
+    let profileMap = new Map<string, string | null>();
+    if (userIds.length > 0) {
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, username')
+        .in('id', userIds);
+      (profiles ?? []).forEach((p) => profileMap.set(p.id, p.username));
+    }
+
+    return rows.map((r) => {
+      const { data: pub } = supabase.storage.from(BUCKET).getPublicUrl(r.storage_path);
+      return {
+        ...r,
+        url: pub.publicUrl,
+        author_username: profileMap.get(r.user_id) ?? null,
+      };
+    });
+  } catch (err) {
+    logger.error('[fetchSubmissions] exception', err);
+    return [];
+  }
+}
+
+/** Admin-only: count of pending community new-place submissions. */
+export async function countPendingNewPlaces(): Promise<number> {
+  try {
+    const { count, error } = await supabase
+      .from('place_photos' as never)
+      .select('id', { count: 'exact', head: true })
+      .eq('status', 'pending')
+      .eq('is_new_place', true);
+    if (error) return 0;
+    return count ?? 0;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Admin-only: moderate a single submission. On approve+is_new_place, also
+ * inserts the matching public.places row so it shows on the globe.
+ */
+export async function moderateSubmission(
+  photoId: string,
+  action: ModerationAction,
+  reason?: string,
+): Promise<void> {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error('Authentification requise.');
+
+  const trimmedReason = reason?.trim().slice(0, 300) || null;
+  const newStatus: SubmissionStatus =
+    action === 'approve' ? 'approved' : action === 'reject' ? 'rejected' : 'flagged';
+
+  // Fetch the row first so we can spawn a places entry on approve
+  const { data: row, error: fetchErr } = await supabase
+    .from('place_photos' as never)
+    .select('*')
+    .eq('id', photoId)
+    .maybeSingle();
+  if (fetchErr || !row) throw new Error('Soumission introuvable.');
+  const r = row as SubmissionRow;
+
+  const { error: updateErr } = await supabase
+    .from('place_photos' as never)
+    .update({
+      status: newStatus,
+      moderation_reason: trimmedReason,
+      reviewed_by: user.id,
+      reviewed_at: new Date().toISOString(),
+    } as never)
+    .eq('id', photoId);
+  if (updateErr) throw new Error(`Modération échouée: ${updateErr.message}`);
+
+  // On approve of a community-submitted new place: create the places row
+  if (action === 'approve' && r.is_new_place) {
+    const lat = r.latitude;
+    const lng = r.longitude;
+    if (typeof lat === 'number' && typeof lng === 'number') {
+      const religion = TRADITION_TO_RELIGION[r.tradition ?? 'other'] ?? 'other';
+      const { error: placeErr } = await supabase
+        .from('places')
+        .upsert({
+          id: r.place_id,
+          name: r.place_name,
+          country: r.country ?? '',
+          city: r.city ?? '',
+          type: 'religious_site',
+          place_category: 'religious_site',
+          religion,
+          coordinates: { lat, lng },
+          data_source: 'community',
+          verification_status: 'community_verified',
+          verified_by: user.id,
+          verified_at: new Date().toISOString(),
+          cross_visible: true,
+          description: r.caption ?? null,
+        } as never, { onConflict: 'id' });
+      if (placeErr) {
+        logger.error('[moderateSubmission] places insert failed', placeErr);
+        throw new Error(`Lieu créé partiellement: ${placeErr.message}`);
+      }
+    } else {
+      logger.warn('[moderateSubmission] approved without coordinates — place not created', { id: r.id });
+    }
+  }
+}
+
+/** Admin-only: moderate many submissions sequentially. Returns counts. */
+export async function bulkModerate(
+  ids: string[],
+  action: ModerationAction,
+  reason?: string,
+): Promise<{ success: number; failed: number }> {
+  let success = 0;
+  let failed = 0;
+  for (const id of ids) {
+    try {
+      await moderateSubmission(id, action, reason);
+      success++;
+    } catch (err) {
+      logger.error('[bulkModerate] item failed', { id, err });
+      failed++;
+    }
+  }
+  return { success, failed };
 }
