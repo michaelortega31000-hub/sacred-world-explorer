@@ -1,5 +1,6 @@
 import { Navigate, useLocation } from 'react-router-dom';
 import { useApp } from '@/contexts/AppContext';
+import { AppLoader } from '@/components/AppLoader';
 
 interface Props {
   children: JSX.Element;
@@ -14,10 +15,10 @@ export const RequireOnboarding = ({ children }: Props) => {
   // Dev-only: bypass the gate so designers can preview every surface without a session.
   if (import.meta.env.DEV) return children;
 
-  if (!session) return null;
+  if (!session) return <AppLoader />;
 
   // Wait for profile fetch before making routing decisions.
-  if (!profileLoaded) return null;
+  if (!profileLoaded) return <AppLoader />;
 
   const onboardingComplete = !!track;
   if (!onboardingComplete && !location.pathname.startsWith('/onboarding')) {
@@ -25,3 +26,4 @@ export const RequireOnboarding = ({ children }: Props) => {
   }
   return children;
 };
+
