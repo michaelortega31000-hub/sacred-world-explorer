@@ -46,7 +46,8 @@ const Country = () => {
   const audioGuide = useAudioGuide();
   const [checkingLocation, setCheckingLocation] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
-  
+  const [addPlaceOpen, setAddPlaceOpen] = useState(false);
+
   const cityRefs = useRef<Record<string, HTMLDivElement | null>>({});
   
   // Get active tab from URL or default to 'places'
@@ -1129,6 +1130,24 @@ const Country = () => {
         }
       `}</style>
       </div>
+
+      {/* Community: contribute a brand-new sacred place */}
+      <button
+        onClick={() => setAddPlaceOpen(true)}
+        className="fixed bottom-24 right-4 z-40 flex items-center gap-2 px-4 py-3 rounded-full
+                   bg-gradient-to-r from-primary to-primary/80 text-primary-foreground
+                   shadow-lg shadow-primary/30 hover:shadow-primary/50 hover:scale-105
+                   active:scale-95 transition-all"
+        aria-label="Ajouter un lieu sacré"
+      >
+        <Plus className="w-5 h-5" />
+        <span className="text-sm font-medium hidden sm:inline">Ajouter un lieu sacré</span>
+      </button>
+      <AddSacredPlaceDialog
+        open={addPlaceOpen}
+        onOpenChange={setAddPlaceOpen}
+        defaultCountry={country}
+      />
     </ImageBackground>
   );
 };
