@@ -2,16 +2,19 @@ import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
-import { Users, MessageSquare, BookHeart, Newspaper, MessagesSquare } from 'lucide-react';
+import { Users, MessageSquare, BookHeart, Newspaper, MessagesSquare, Church } from 'lucide-react';
 import FriendsTab from './FriendsTab';
 import ForumTab from './ForumTab';
 import MessagesTab from './MessagesTab';
 import MemoriesTab from './MemoriesTab';
 import ActivityFeed from './ActivityFeed';
+import CommunityPlacesFeed from './community/CommunityPlacesFeed';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useUnreadForumPosts } from '@/hooks/useUnreadForumPosts';
 
-const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' | 'friends' | 'messages' | 'forum' }) => {
+type SocialSubTab = 'feed' | 'memories' | 'friends' | 'messages' | 'forum' | 'places';
+
+const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: SocialSubTab }) => {
   const location = useLocation();
   const [activeTab, setActiveTab] = useState(defaultTab);
   const { unreadCount: unreadMessages, markAsRead: markMessagesRead } = useUnreadMessages();
@@ -19,22 +22,17 @@ const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' |
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const subTab = params.get('sub') as 'feed' | 'memories' | 'friends' | 'messages' | 'forum';
+    const subTab = params.get('sub') as SocialSubTab | null;
     if (subTab) {
       setActiveTab(subTab);
     }
   }, [location.search]);
 
   const handleTabChange = (value: string) => {
-    if (value === 'feed' || value === 'memories' || value === 'friends' || value === 'messages' || value === 'forum') {
-      setActiveTab(value);
-      
-      // Mark as read when switching to the tab
-      if (value === 'messages') {
-        markMessagesRead();
-      } else if (value === 'forum') {
-        markForumRead();
-      }
+    if (['feed','memories','friends','messages','forum','places'].includes(value)) {
+      setActiveTab(value as SocialSubTab);
+      if (value === 'messages') markMessagesRead();
+      else if (value === 'forum') markForumRead();
     }
   };
 
@@ -74,6 +72,10 @@ const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' |
                   </Badge>
                 )}
               </TabsTrigger>
+              <TabsTrigger value="places" className="flex-col sm:flex-row gap-0.5 sm:gap-2 rounded-none border-b-2 data-[state=active]:border-primary flex-shrink-0 px-2 sm:px-4 py-2 min-w-[60px] sm:min-w-0">
+                <Church className="w-4 h-4 flex-shrink-0" />
+                <span className="text-[10px] sm:text-sm whitespace-nowrap leading-tight">Lieux</span>
+              </TabsTrigger>
             </TabsList>
           </div>
         </div>
@@ -96,6 +98,10 @@ const SocialTab = ({ defaultTab = 'feed' }: { defaultTab?: 'feed' | 'memories' |
 
         <TabsContent value="forum" className="mt-0">
           <ForumTab />
+        </TabsContent>
+
+        <TabsContent value="places" className="mt-0">
+          <CommunityPlacesFeed />
         </TabsContent>
       </Tabs>
     </div>
