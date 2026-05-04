@@ -5,9 +5,12 @@ import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
 import { migratePlacesToSupabase } from '@/utils/migratePlacesData';
 import Header from '@/components/Header';
-import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus, Image, Loader2 } from 'lucide-react';
+import { ArrowLeft, Database, AlertCircle, CheckCircle2, BookPlus, Image, Loader2, ShieldCheck } from 'lucide-react';
 import { useNavigate, Link, Navigate } from 'react-router-dom';
 import { useIsAdmin } from '@/hooks/useIsAdmin';
+import { useQuery } from '@tanstack/react-query';
+import { countPendingNewPlaces } from '@/lib/placePhotos';
+import { Badge } from '@/components/ui/badge';
 
 const Admin = () => {
   const { isAdmin, loading: adminLoading } = useIsAdmin();
