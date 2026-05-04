@@ -30,7 +30,7 @@ import { useAssistant } from '@/App';
 import { MessageCircle } from 'lucide-react';
 import { PlaceSymbol } from '@/components/quest/PlaceSymbol';
 import { PlacePhoto } from '@/components/quest/PlacePhoto';
-
+import AddSacredPlaceDialog from '@/components/community/AddSacredPlaceDialog';
 
 const Country = () => {
   const { countryName: country } = useParams<{ countryName: string }>();
