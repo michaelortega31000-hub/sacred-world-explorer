@@ -1071,6 +1071,101 @@ export type Database = {
         }
         Relationships: []
       }
+      place_photo_reactions: {
+        Row: {
+          created_at: string
+          kind: string
+          photo_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          kind: string
+          photo_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          kind?: string
+          photo_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "place_photo_reactions_photo_id_fkey"
+            columns: ["photo_id"]
+            isOneToOne: false
+            referencedRelation: "place_photos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      place_photos: {
+        Row: {
+          caption: string | null
+          city: string | null
+          country: string | null
+          created_at: string
+          id: string
+          is_new_place: boolean
+          latitude: number | null
+          longitude: number | null
+          place_id: string
+          place_name: string
+          reaction_hands: number
+          reaction_heart: number
+          reaction_sparkle: number
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          storage_path: string
+          tradition: string | null
+          user_id: string
+        }
+        Insert: {
+          caption?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_new_place?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          place_id: string
+          place_name: string
+          reaction_hands?: number
+          reaction_heart?: number
+          reaction_sparkle?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          storage_path: string
+          tradition?: string | null
+          user_id: string
+        }
+        Update: {
+          caption?: string | null
+          city?: string | null
+          country?: string | null
+          created_at?: string
+          id?: string
+          is_new_place?: boolean
+          latitude?: number | null
+          longitude?: number | null
+          place_id?: string
+          place_name?: string
+          reaction_hands?: number
+          reaction_heart?: number
+          reaction_sparkle?: number
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          storage_path?: string
+          tradition?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       places: {
         Row: {
           city: string
