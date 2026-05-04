@@ -1,36 +1,41 @@
-Le problème visible est maintenant isolé : l’application finit par démarrer dans une session propre, mais le démarrage est trop fragile et trop lourd dans l’aperçu intégré. Le shell de chargement s’affiche, puis l’app attend le chargement de beaucoup de modules avant de masquer l’écran. Chez toi, cela reste bloqué sur “Chargement…” malgré les boutons de récupération.
+# Add a visible Settings (Réglages) entry point
 
-Plan de correction :
+## Problem
+From `/explore` (and most screens), there is no way to reach **Réglages / Settings**. The bottom nav only has Accueil, Planifier, Globe, Journal. The `/settings` page exists and is fully built, but it's currently only reachable through `/profile`, which itself has no dedicated nav slot.
 
-1. Rendre l’écran de démarrage autonome et non bloquant
-- Ne plus dépendre uniquement de l’attribut React `data-app-mounted` pour cacher l’écran “Chargement…”.
-- Ajouter une logique de secours qui masque le shell dès que `#root` contient réellement du contenu React.
-- Si React échoue, afficher un message clair avec un bouton de récupération, mais ne pas masquer une app déjà rendue.
+## Goal
+Make Settings reachable in **one tap from any main screen**, without crowding the compact header or breaking the symmetric layout (per the header-layout-v4 memory rule).
 
-2. Alléger fortement le chargement initial
-- Modifier `src/App.tsx` pour charger les pages lourdes à la demande avec `React.lazy` et `Suspense`.
-- Garder les pages critiques du démarrage rapides : `/`, `/auth`, `/welcome`.
-- Charger seulement les pages nécessaires quand l’utilisateur navigue vers elles : globe 3D, journal, profil, admin, paramètres, pays, lieux, planner, etc.
-- Cela évite que l’écran d’accueil doive télécharger presque toute l’application avant d’apparaître.
+## Approach
 
-3. Corriger la cause probable liée au cache/service worker
-- Ajuster `public/sw.js` pour ne jamais servir `index.html`, `/`, les scripts Vite/React, ni les modules `/src/...` en mode cache-first.
-- Passer ces fichiers en “network-first” ou les exclure du cache afin qu’une ancienne version ne puisse pas coincer l’iframe.
-- Garder le cache utile pour les images et l’offline, sans bloquer le démarrage.
+### 1. Add a Settings (gear) icon in the global `Header.tsx`
+- **Compact header branch** (`/explore`, `/profile`, `/country/*`, `/place/*`):
+  - Insert a small `Settings` (lucide gear) icon button in the **right cluster**, placed **between the Mail icon and the Assistant orb**.
+  - Same styling vocabulary as the Mail button: `w-11 h-11 rounded-full text-foreground hover:bg-primary/10`, with a Tooltip "Réglages".
+  - On click: `navigate('/settings')`.
+- **Standard header branch** (other pages):
+  - Add the same gear icon next to the Mail/Assistant cluster, using the smaller `p-2` button style already used there.
 
-4. Désactiver l’enregistrement du service worker dans l’aperçu de développement
-- Adapter `src/hooks/usePushNotifications.ts` pour éviter `navigator.serviceWorker.register('/sw.js')` en environnement de preview/dev.
-- Les notifications resteront disponibles en production, mais l’aperçu Lovable ne sera plus piégé par un ancien service worker.
+### 2. Add a quick "Profil" shortcut alongside it
+Since Profile is also currently hard to reach from `/explore`, add a tiny avatar/User icon button next to the gear in the same right cluster (compact branch only). Tooltip "Profil", navigates to `/profile`. This is optional — confirm before adding if it would crowd the header on a 758px viewport.
 
-5. Remplacer le reset actuel par une récupération plus sûre
-- Supprimer le comportement qui peut recharger automatiquement au mauvais moment.
-- Utiliser une purge de cache explicite et non destructive, sans boucle de reload.
-- Conserver les préférences utilisateur importantes dans `localStorage` autant que possible.
+### 3. Keep existing elements intact
+- Do **not** remove or resize: ChristianIcon, badges pill, GeolocationToggle, VoiceCommand, Mail, Assistant orb, centered SacredEmblem.
+- Do **not** touch the bottom navigation (rule: keep 4-tab compact nav).
+- Do **not** add Settings as a 5th bottom-nav tab.
 
-6. Vérification après correction
-- Recharger la route `/` à la taille actuelle de ton aperçu.
-- Vérifier que l’écran SacredWorld apparaît sans rester bloqué.
-- Vérifier que le bouton “Continuer” reste visible et fonctionnel.
-- Vérifier qu’aucune erreur console ne bloque le rendu.
+### 4. Visual constraints
+- Gear icon size: `w-5 h-5` inside an `11x11` round button (matches Mail).
+- No glow, no gold ring — keep it discreet so the Assistant orb remains the visual anchor on the right.
+- Respect mobile viewport (758 CSS px and below): icons should not wrap. If space becomes tight after adding the gear, reduce horizontal gaps from `gap-1 sm:gap-2` to `gap-0.5 sm:gap-1.5` in the right cluster only.
 
-Résultat attendu : l’app doit s’ouvrir directement sur la page SacredWorld au lieu de rester sur “SACREDWORLD — CHARGEMENT…”, même dans l’aperçu intégré.
+## Files to edit
+- `src/components/Header.tsx` — add the Settings button in both header variants; import `Settings` from `lucide-react` and `useNavigate` (already imported).
+
+## Out of scope
+- No changes to `/settings` page content.
+- No changes to routing, auth gates, or bottom navigation.
+- No new memory entries needed (this is a UX completion, not a new rule).
+
+## Question for you
+Do you also want the small **Profil** avatar shortcut next to the gear, or just the **Settings gear** for now?

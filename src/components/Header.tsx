@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Mail, Award, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Award, MessageCircle, Settings, User } from 'lucide-react';
 import { SacredEmblem } from '@/components/quest/SacredEmblem';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
