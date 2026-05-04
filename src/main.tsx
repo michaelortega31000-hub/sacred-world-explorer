@@ -28,46 +28,42 @@ if (import.meta.env.DEV) {
 // One-time production cleanup: previous builds aggressively cached the app
 // shell, which can keep the embedded preview iframe blank after updates.
 // Bump SW_RESET_KEY to force another single cleanup in the future.
-const SW_RESET_KEY = "sw-reset-2026-05-04-b";
-const SW_RELOAD_FLAG = "sw-reset-reload-done";
-if (!import.meta.env.DEV && typeof window !== "undefined") {
-  try {
-    if (localStorage.getItem(SW_RESET_KEY) !== "1") {
-      const tasks: Promise<unknown>[] = [];
-      let unregisteredAny = false;
-      if ("serviceWorker" in navigator) {
-        tasks.push(
-          navigator.serviceWorker.getRegistrations().then(async (regs) => {
-            for (const r of regs) {
-              const ok = await r.unregister();
-              if (ok) unregisteredAny = true;
-            }
-          }),
-        );
-      }
-      if ("caches" in window) {
-        tasks.push(
-          caches.keys().then((names) =>
-            Promise.all(names.map((n) => caches.delete(n))),
-          ),
-        );
-      }
-      Promise.all(tasks).finally(() => {
-        try {
-          localStorage.setItem(SW_RESET_KEY, "1");
-        } catch {
-          /* ignore */
+const SW_RESET_KEY = "sw-reset-2026-05-04-c";
+if (typeof window !== "undefined") {
+  const host = window.location.hostname;
+  const isPreviewSandbox =
+    host.endsWith(".lovableproject.com") ||
+    host.endsWith(".lovable.app") ||
+    host === "localhost" ||
+    host === "127.0.0.1";
+
+  // In preview/sandbox: always unregister any SW so a stale one cannot
+  // trap the iframe on the loading shell. Do NOT reload — that causes loops.
+  if (isPreviewSandbox && "serviceWorker" in navigator) {
+    navigator.serviceWorker.getRegistrations()
+      .then((regs) => regs.forEach((r) => r.unregister()))
+      .catch(() => { /* ignore */ });
+  }
+
+  // Production: one-time cache + SW cleanup, no automatic reload.
+  if (!import.meta.env.DEV && !isPreviewSandbox) {
+    try {
+      if (localStorage.getItem(SW_RESET_KEY) !== "1") {
+        if ("serviceWorker" in navigator) {
+          navigator.serviceWorker.getRegistrations()
+            .then((regs) => regs.forEach((r) => r.unregister()))
+            .catch(() => { /* ignore */ });
         }
-        // Reload once if we actually killed a stale SW, so the freshly-served
-        // bundle is picked up. sessionStorage guard prevents reload loops.
-        if (unregisteredAny && sessionStorage.getItem(SW_RELOAD_FLAG) !== "1") {
-          try { sessionStorage.setItem(SW_RELOAD_FLAG, "1"); } catch { /* ignore */ }
-          location.reload();
+        if ("caches" in window) {
+          caches.keys()
+            .then((names) => Promise.all(names.map((n) => caches.delete(n))))
+            .catch(() => { /* ignore */ });
         }
-      });
+        try { localStorage.setItem(SW_RESET_KEY, "1"); } catch { /* ignore */ }
+      }
+    } catch {
+      /* localStorage may be unavailable in some preview iframes */
     }
-  } catch {
-    /* localStorage may be unavailable in some preview iframes */
   }
 }
 
