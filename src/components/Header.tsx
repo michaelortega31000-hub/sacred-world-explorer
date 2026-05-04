@@ -220,6 +220,28 @@ const Header = ({
                   </Tooltip>
                 </TooltipProvider>
 
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/profile')}
+                  className="p-2 text-foreground hover:bg-primary/10"
+                  aria-label="Profil"
+                  title="Profil"
+                >
+                  <User className="w-5 h-5" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/settings')}
+                  className="p-2 text-foreground hover:bg-primary/10"
+                  aria-label="Réglages"
+                  title="Réglages"
+                >
+                  <Settings className="w-5 h-5" />
+                </Button>
+
                 {onAssistantClick && (
                   <Button 
                     variant="ghost" 
