@@ -1737,7 +1737,7 @@ export type Database = {
           geolocation_enabled: boolean
           id: string
           language: string
-          last_quest_date: string
+          last_quest_date: string | null
           longest_streak: number
           planned_route_start_city: string
           saved_pois: Json | null
@@ -1759,7 +1759,7 @@ export type Database = {
           geolocation_enabled?: boolean
           id?: string
           language?: string
-          last_quest_date?: string
+          last_quest_date?: string | null
           longest_streak?: number
           planned_route_start_city?: string
           saved_pois?: Json | null
@@ -1781,7 +1781,7 @@ export type Database = {
           geolocation_enabled?: boolean
           id?: string
           language?: string
-          last_quest_date?: string
+          last_quest_date?: string | null
           longest_streak?: number
           planned_route_start_city?: string
           saved_pois?: Json | null
