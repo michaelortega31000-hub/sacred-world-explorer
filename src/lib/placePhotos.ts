@@ -15,6 +15,7 @@
 // and the caller surfaces a toast. The read path returns null.
 
 import { supabase } from '@/integrations/supabase/client';
+import { logger } from '@/lib/logger';
 
 const BUCKET = 'place-photos';
 
