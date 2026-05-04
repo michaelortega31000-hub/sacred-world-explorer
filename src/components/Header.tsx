@@ -157,13 +157,7 @@ const Header = ({
                   <TooltipContent><p>Réglages</p></TooltipContent>
                 </Tooltip>
               </TooltipProvider>
-                  {unreadCount > 0 && (
-                    <TooltipContent>
-                      <p>{unreadCount} message{unreadCount > 1 ? 's' : ''} non lu{unreadCount > 1 ? 's' : ''}</p>
-                    </TooltipContent>
-                  )}
-                </Tooltip>
-              </TooltipProvider>
+
 
               {onAssistantClick && (
                 <div
