@@ -128,6 +128,7 @@ const AppContent = () => {
             <Route path="/admin/dashboard" element={<Gate><AdminDashboard /></Gate>} />
             <Route path="/admin/enrich-data" element={<Gate><AdminEnrichData /></Gate>} />
             <Route path="/admin/audit-images" element={<Gate><AdminAuditImages /></Gate>} />
+            <Route path="/admin/community-submissions" element={<Gate><AdminCommunitySubmissions /></Gate>} />
             <Route path="/reminders" element={<Gate><Reminders /></Gate>} />
             {isDev && <Route path="/security-test" element={<SecurityTest />} />}
             <Route path="/offline" element={<Gate><OfflineManager /></Gate>} />
