@@ -1,0 +1,1 @@
+ALTER TABLE public.user_progress ALTER COLUMN last_quest_date DROP NOT NULL;
