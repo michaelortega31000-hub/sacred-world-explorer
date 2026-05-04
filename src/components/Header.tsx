@@ -1,7 +1,7 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { ArrowLeft, Mail, Award, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Mail, Award, MessageCircle, Settings, User } from 'lucide-react';
 import { SacredEmblem } from '@/components/quest/SacredEmblem';
 import { useUnreadMessages } from '@/hooks/useUnreadMessages';
 import { useApp } from '@/contexts/AppContext';
@@ -98,8 +98,8 @@ const Header = ({
               <SacredEmblem size={64} animate={false} className="drop-shadow-[0_0_12px_rgba(244,197,66,0.45)]" />
             </div>
             
-            {/* Droite : Micro + Mail + Assistant + Retour */}
-            <div className="flex items-center gap-1 sm:gap-2">
+            {/* Droite : Micro + Mail + Profil + Réglages + Assistant */}
+            <div className="flex items-center gap-0.5 sm:gap-1.5">
               {showExploreControls && <VoiceCommand />}
 
               <TooltipProvider>
@@ -121,6 +121,43 @@ const Header = ({
                   )}
                 </Tooltip>
               </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate('/profile')}
+                      className="w-11 h-11 rounded-full text-foreground hover:bg-primary/10"
+                      aria-label="Profil"
+                      title="Profil"
+                    >
+                      <User className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Profil</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => navigate('/settings')}
+                      className="w-11 h-11 rounded-full text-foreground hover:bg-primary/10"
+                      aria-label="Réglages"
+                      title="Réglages"
+                    >
+                      <Settings className="w-5 h-5" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent><p>Réglages</p></TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+
 
               {onAssistantClick && (
                 <div
@@ -182,6 +219,28 @@ const Header = ({
                     )}
                   </Tooltip>
                 </TooltipProvider>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/profile')}
+                  className="p-2 text-foreground hover:bg-primary/10"
+                  aria-label="Profil"
+                  title="Profil"
+                >
+                  <User className="w-5 h-5" />
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => navigate('/settings')}
+                  className="p-2 text-foreground hover:bg-primary/10"
+                  aria-label="Réglages"
+                  title="Réglages"
+                >
+                  <Settings className="w-5 h-5" />
+                </Button>
 
                 {onAssistantClick && (
                   <Button 
