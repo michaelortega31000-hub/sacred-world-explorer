@@ -125,12 +125,35 @@
       </div>
     </div>
     <script>
-      // Self-dismissing safety net: if React never mounts within 6s, surface
-      // recovery actions so the user is never permanently trapped.
+      // Robust shell hider: hide as soon as React renders ANY content into
+      // #root, regardless of the data-app-mounted attribute. Also offers a
+      // recovery UI if nothing renders within 8s.
       (function () {
+        var shell = document.getElementById('sw-bootstrap');
+        var root = document.getElementById('root');
+        if (!shell || !root) return;
+
+        function hideShell() {
+          shell.style.display = 'none';
+        }
+        function isMounted() {
+          return (
+            root.getAttribute('data-app-mounted') === 'true' ||
+            root.childElementCount > 0
+          );
+        }
+        if (isMounted()) { hideShell(); return; }
+
+        var observer = new MutationObserver(function () {
+          if (isMounted()) {
+            hideShell();
+            observer.disconnect();
+          }
+        });
+        observer.observe(root, { childList: true, subtree: false, attributes: true, attributeFilter: ['data-app-mounted'] });
+
         setTimeout(function () {
-          var root = document.getElementById('root');
-          if (root && root.getAttribute('data-app-mounted') === 'true') return;
+          if (isMounted()) return;
           var rec = document.getElementById('sw-recovery');
           if (rec) rec.style.display = 'flex';
 
@@ -158,7 +181,7 @@
             } catch (_) { /* ignore */ }
             location.reload();
           });
-        }, 6000);
+        }, 8000);
       })();
     </script>
     <script type="module" src="/src/main.tsx"></script>

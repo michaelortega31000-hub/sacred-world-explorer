@@ -1,41 +1,36 @@
-## Problem
+Le problème visible est maintenant isolé : l’application finit par démarrer dans une session propre, mais le démarrage est trop fragile et trop lourd dans l’aperçu intégré. Le shell de chargement s’affiche, puis l’app attend le chargement de beaucoup de modules avant de masquer l’écran. Chez toi, cela reste bloqué sur “Chargement…” malgré les boutons de récupération.
 
-The user is stuck on the pre-React bootstrap shell ("SACREDWORLD / CHARGEMENT…") inside the embedded preview iframe. Verification shows the app actually mounts correctly when loaded directly in a browser (Splash renders with the "Continuer" CTA), so this is **not** a runtime error in `Country.tsx` or `Splash.tsx`.
+Plan de correction :
 
-The bootstrap shell lives inside `#root` in `index.html`. React's `createRoot(container).render(...)` normally replaces those children on mount — so the shell only persists if **`main.tsx` never executes `render()`** in that iframe. Most likely causes for the embedded preview specifically:
+1. Rendre l’écran de démarrage autonome et non bloquant
+- Ne plus dépendre uniquement de l’attribut React `data-app-mounted` pour cacher l’écran “Chargement…”.
+- Ajouter une logique de secours qui masque le shell dès que `#root` contient réellement du contenu React.
+- Si React échoue, afficher un message clair avec un bouton de récupération, mais ne pas masquer une app déjà rendue.
 
-1. A stale **service worker** from a previous build is still controlling the iframe and serving an outdated `index.html` / module bundle that fails silently.
-2. The one-shot SW cleanup in `main.tsx` (keyed by `localStorage["sw-reset-2026-05-04"]`) already ran once for this origin in a prior session, so it does nothing now even though the SW is still serving stale assets.
-3. The bootstrap shell has no self-timeout — if React fails to mount for any reason, the user is trapped forever with no fallback.
+2. Alléger fortement le chargement initial
+- Modifier `src/App.tsx` pour charger les pages lourdes à la demande avec `React.lazy` et `Suspense`.
+- Garder les pages critiques du démarrage rapides : `/`, `/auth`, `/welcome`.
+- Charger seulement les pages nécessaires quand l’utilisateur navigue vers elles : globe 3D, journal, profil, admin, paramètres, pays, lieux, planner, etc.
+- Cela évite que l’écran d’accueil doive télécharger presque toute l’application avant d’apparaître.
 
-## Fix
+3. Corriger la cause probable liée au cache/service worker
+- Ajuster `public/sw.js` pour ne jamais servir `index.html`, `/`, les scripts Vite/React, ni les modules `/src/...` en mode cache-first.
+- Passer ces fichiers en “network-first” ou les exclure du cache afin qu’une ancienne version ne puisse pas coincer l’iframe.
+- Garder le cache utile pour les images et l’offline, sans bloquer le démarrage.
 
-Three small, defensive changes — no feature work, no risk to existing flows.
+4. Désactiver l’enregistrement du service worker dans l’aperçu de développement
+- Adapter `src/hooks/usePushNotifications.ts` pour éviter `navigator.serviceWorker.register('/sw.js')` en environnement de preview/dev.
+- Les notifications resteront disponibles en production, mais l’aperçu Lovable ne sera plus piégé par un ancien service worker.
 
-### 1. `index.html` — make the bootstrap shell self-dismissing
+5. Remplacer le reset actuel par une récupération plus sûre
+- Supprimer le comportement qui peut recharger automatiquement au mauvais moment.
+- Utiliser une purge de cache explicite et non destructive, sans boucle de reload.
+- Conserver les préférences utilisateur importantes dans `localStorage` autant que possible.
 
-- Add a `<script>` at the end of `<body>` that, after **6 seconds**, if `#root` does not yet have `data-app-mounted="true"`:
-  - Replaces the shell with a minimal recovery UI: "Le chargement prend plus de temps que prévu" + a **"Recharger l'application"** button that calls `location.reload()` and a **"Vider le cache et recharger"** button that unregisters service workers, clears `caches`, clears `localStorage["sw-reset-*"]` keys, then reloads.
-- This guarantees the user can never be permanently trapped on the loading shell, regardless of cause.
+6. Vérification après correction
+- Recharger la route `/` à la taille actuelle de ton aperçu.
+- Vérifier que l’écran SacredWorld apparaît sans rester bloqué.
+- Vérifier que le bouton “Continuer” reste visible et fonctionnel.
+- Vérifier qu’aucune erreur console ne bloque le rendu.
 
-### 2. `main.tsx` — bump the cache-reset key and harden cleanup
-
-- Change `SW_RESET_KEY` from `"sw-reset-2026-05-04"` to `"sw-reset-2026-05-04-b"` so the one-shot cleanup runs again for every existing user (this clears whatever stale SW/cache is currently trapping the preview).
-- After `caches.delete(...)` and `registration.unregister(...)` complete, if any SW was actually unregistered, call `location.reload()` once (guarded by a sessionStorage flag to avoid loops) so the freshly-served assets are picked up.
-
-### 3. `index.html` — move the bootstrap shell out of `#root`
-
-- Currently the shell is a child of `#root`, which is fine in theory (React clears it on mount) but means a half-failed mount can leave the page blank with no indicator.
-- Move `#sw-bootstrap` to be a **sibling** of `#root` (direct child of `<body>`), positioned `fixed inset-0 z-[-1]`. The CSS rule already hides it via `#root[data-app-mounted="true"] ~ #sw-bootstrap { display: none; }` (updated selector). This way the shell acts as a true background — it doesn't depend on React replacing children, and the recovery script in step 1 can manipulate it independently.
-
-## Files touched
-
-- `index.html` — restructure shell, add recovery `<script>`, update CSS selector.
-- `src/main.tsx` — bump `SW_RESET_KEY`, add one-shot reload after cache cleanup.
-
-## Verification
-
-After implementation:
-1. Hard-refresh the preview — shell appears, then disappears within ~1s as React mounts (Splash visible).
-2. Simulate a stuck mount (temporarily throw in `main.tsx`) — after 6s the recovery UI appears with working "Recharger" / "Vider le cache" buttons.
-3. Confirm `Country.tsx` (the recent refactor) still renders correctly with both "Lieux sacrés" and "Musées & lieux culturels" sections.
+Résultat attendu : l’app doit s’ouvrir directement sur la page SacredWorld au lieu de rester sur “SACREDWORLD — CHARGEMENT…”, même dans l’aperçu intégré.

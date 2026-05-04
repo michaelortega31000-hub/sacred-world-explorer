@@ -52,7 +52,20 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch event - serve from cache, fallback to network
+// Helper: network-first with cache fallback
+function networkFirst(request, cacheName) {
+  return fetch(request)
+    .then((response) => {
+      if (response && response.ok && request.url.startsWith(self.location.origin)) {
+        const clone = response.clone();
+        caches.open(cacheName).then((cache) => cache.put(request, clone));
+      }
+      return response;
+    })
+    .catch(() => caches.match(request));
+}
+
+// Fetch event - network-first for app shell/scripts, cache-first for images/tiles
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
@@ -60,7 +73,33 @@ self.addEventListener('fetch', (event) => {
   // Skip non-GET requests
   if (request.method !== 'GET') return;
 
-  // Handle Mapbox tile requests
+  // Never intercept Vite dev/HMR or module graph
+  if (
+    url.pathname.startsWith('/@vite') ||
+    url.pathname.startsWith('/@react-refresh') ||
+    url.pathname.startsWith('/@id/') ||
+    url.pathname.startsWith('/@fs/') ||
+    url.pathname.startsWith('/node_modules/') ||
+    url.pathname.startsWith('/src/') ||
+    url.search.includes('import') ||
+    url.search.includes('t=')
+  ) {
+    return;
+  }
+
+  // Navigations (HTML) — always network-first so a new deploy is picked up
+  if (request.mode === 'navigate' || request.destination === 'document') {
+    event.respondWith(networkFirst(request, DYNAMIC_CACHE));
+    return;
+  }
+
+  // App scripts/styles — network-first to avoid serving stale chunks
+  if (request.destination === 'script' || request.destination === 'style') {
+    event.respondWith(networkFirst(request, DYNAMIC_CACHE));
+    return;
+  }
+
+  // Mapbox tiles — cache-first
   if (url.hostname.includes('mapbox.com') && url.pathname.includes('/tiles/')) {
     event.respondWith(
       caches.open(MAP_CACHE).then((cache) => {
@@ -74,7 +113,6 @@ self.addEventListener('fetch', (event) => {
             }
             return networkResponse;
           }).catch(() => {
-            // Return placeholder for failed tile requests
             return new Response('', { status: 404 });
           });
         });
@@ -83,27 +121,13 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Handle API requests - network first, fallback to cache
+  // API requests - network-first
   if (url.pathname.includes('/rest/') || url.pathname.includes('/functions/')) {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const responseClone = response.clone();
-            caches.open(DYNAMIC_CACHE).then((cache) => {
-              cache.put(request, responseClone);
-            });
-          }
-          return response;
-        })
-        .catch(() => {
-          return caches.match(request);
-        })
-    );
+    event.respondWith(networkFirst(request, DYNAMIC_CACHE));
     return;
   }
 
-  // Handle image requests
+  // Images - cache-first with placeholder fallback
   if (request.destination === 'image') {
     event.respondWith(
       caches.match(request).then((cachedResponse) => {
@@ -119,7 +143,6 @@ self.addEventListener('fetch', (event) => {
           }
           return networkResponse;
         }).catch(() => {
-          // Return placeholder for failed image requests
           return caches.match('/images/place-placeholder.jpg');
         });
       })
@@ -127,23 +150,8 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Default: cache first, fallback to network
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-      return fetch(request).then((networkResponse) => {
-        if (networkResponse.ok && request.url.startsWith(self.location.origin)) {
-          const responseClone = networkResponse.clone();
-          caches.open(DYNAMIC_CACHE).then((cache) => {
-            cache.put(request, responseClone);
-          });
-        }
-        return networkResponse;
-      });
-    })
-  );
+  // Default: network-first
+  event.respondWith(networkFirst(request, DYNAMIC_CACHE));
 });
 
 // Push event - handle incoming push notifications

@@ -19,9 +19,17 @@ export const usePushNotifications = () => {
   useEffect(() => {
     // Check if Service Workers and Push API are supported
     const supported = 'serviceWorker' in navigator && 'PushManager' in window;
-    setIsSupported(supported);
+    // Skip SW registration in Lovable preview/dev sandboxes — a stale SW
+    // can trap the iframe on the loading shell.
+    const host = typeof window !== 'undefined' ? window.location.hostname : '';
+    const isPreviewSandbox =
+      host.endsWith('.lovableproject.com') ||
+      host.endsWith('.lovable.app') ||
+      host === 'localhost' ||
+      host === '127.0.0.1';
+    setIsSupported(supported && !isPreviewSandbox);
 
-    if (supported) {
+    if (supported && !isPreviewSandbox) {
       registerServiceWorker();
     }
   }, []);
