@@ -21,6 +21,13 @@ const Admin = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  const { data: pendingCount = 0 } = useQuery({
+    queryKey: ['admin-pending-community-count'],
+    queryFn: countPendingNewPlaces,
+    enabled: isAdmin,
+    staleTime: 60_000,
+  });
+
   const handleMigration = async () => {
     setIsMigrating(true);
     setProgress(0);
