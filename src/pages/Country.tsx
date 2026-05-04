@@ -83,19 +83,35 @@ const Country = () => {
     return { religious, museums, total: places.length };
   }, [places]);
 
-  // Group places by city
-  const citiesByLetter = Object.entries(
-    places.reduce((acc, place) => {
-      const city = place.city || 'Autres';
-      if (!acc[city]) acc[city] = [];
-      acc[city].push(place);
-      return acc;
-    }, {} as Record<string, Place[]>)
-  ).sort(([cityA], [cityB]) => {
-    if (cityA === 'Autres') return 1;
-    if (cityB === 'Autres') return -1;
-    return cityA.localeCompare(cityB);
-  });
+  // Split into two distinct sections (project rule: never mix sacred & cultural).
+  const religiousPlaces = useMemo(
+    () => places.filter((p) => (p.placeCategory || 'religious_site') !== 'museum'),
+    [places],
+  );
+  const culturalPlaces = useMemo(
+    () => places.filter((p) => p.placeCategory === 'museum'),
+    [places],
+  );
+
+  // Helper: group a list of places by city, alphabetically (Autres last).
+  const groupByCity = (list: Place[]) =>
+    Object.entries(
+      list.reduce((acc, place) => {
+        const city = place.city || 'Autres';
+        if (!acc[city]) acc[city] = [];
+        acc[city].push(place);
+        return acc;
+      }, {} as Record<string, Place[]>),
+    ).sort(([cityA], [cityB]) => {
+      if (cityA === 'Autres') return 1;
+      if (cityB === 'Autres') return -1;
+      return cityA.localeCompare(cityB);
+    });
+
+  const religiousByCity = useMemo(() => groupByCity(religiousPlaces), [religiousPlaces]);
+  const culturalByCity = useMemo(() => groupByCity(culturalPlaces), [culturalPlaces]);
+  // Union for the alphabet navigator (keeps existing behavior).
+  const citiesByLetter = useMemo(() => groupByCity(places), [places]);
 
   // Resolve image URLs:
   // - External URLs (http/https) should be used as-is
