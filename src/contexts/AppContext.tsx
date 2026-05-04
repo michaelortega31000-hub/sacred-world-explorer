@@ -235,8 +235,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           globeSettings: localProgress?.globeSettings ?? defaultGlobeSettings,
           denomination: ((data as any).denomination ?? localProgress?.denomination ?? null) as Denomination | null,
           countryOfOrigin: ((data as any).country_of_origin ?? localProgress?.countryOfOrigin ?? null) as string | null,
-          track: null,
-          onboardedAt: null,
+          // Preserve onboarding fields fetched by refreshProfile — never reset to null here.
+          track: userProgress.track,
+          onboardedAt: userProgress.onboardedAt,
         };
 
         // Merge localStorage data if it exists - particularly for religion and trip data
