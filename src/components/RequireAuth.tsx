@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import type { Session } from '@supabase/supabase-js';
+import { AppLoader } from '@/components/AppLoader';
 
 interface Props {
   children: JSX.Element;
@@ -20,9 +21,10 @@ export const RequireAuth = ({ children }: Props) => {
   // Dev-only: bypass the gate so designers can preview every surface without a session.
   if (import.meta.env.DEV) return children;
 
-  if (session === undefined) return null;
+  if (session === undefined) return <AppLoader />;
   if (session === null) {
     return <Navigate to="/auth" state={{ from: location.pathname + location.search }} replace />;
   }
   return children;
 };
+
