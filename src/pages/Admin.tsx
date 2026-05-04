@@ -124,6 +124,25 @@ const Admin = () => {
               </Link>
             </div>
 
+            {/* Community Moderation Section */}
+            <div className="border-t pt-6">
+              <div className="flex items-center gap-2 mb-4">
+                <h2 className="text-xl font-semibold">Modération communautaire</h2>
+                {pendingCount > 0 && (
+                  <Badge variant="destructive">{pendingCount} en attente</Badge>
+                )}
+              </div>
+              <p className="text-muted-foreground mb-4">
+                Approuvez, rejetez ou signalez les nouveaux lieux sacrés soumis par la communauté.
+              </p>
+              <Link to="/admin/community-submissions">
+                <Button size="lg" variant="outline">
+                  <ShieldCheck className="mr-2 h-4 w-4" />
+                  Modérer les soumissions
+                </Button>
+              </Link>
+            </div>
+
             <div className="border-t pt-6">
               <h2 className="text-xl font-semibold mb-4">Migration des lieux</h2>
               <p className="text-muted-foreground mb-4">
