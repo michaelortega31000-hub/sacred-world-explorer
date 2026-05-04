@@ -1,51 +1,42 @@
-## Goal
 
-Replace the old SacredWorld logo with the new official one (golden sun-figure with turquoise halo on deep blue, uploaded as `iZcEy.jpg`) everywhere it appears in the app — including the inline SVG emblem on the Splash page shown in the screenshot.
+## Diagnosis
 
-## Approach
+The app itself is **not broken**. I navigated directly to `/explore?tab=map` in a clean browser and the globe, header, and bottom nav rendered correctly. The white area you see is the **embedded preview iframe** in the Lovable editor.
 
-1. **Save the new logo as a real image asset** (one source of truth).
-   - Copy `user-uploads://iZcEy.jpg` → `src/assets/sacredworld-logo-official.png` (used by all React components via ES module import).
-   - Also copy it to `public/logo-icon.png` (overwrites the existing file used by push notifications and as the PWA icon).
+### Why the embedded preview is white
 
-2. **Centralize the import** in `src/components/ui/logo.tsx` so both `variant="main"` and `variant="icon"` point to the new asset. The existing `<Logo />` wrapper, sizing, and glow effects stay unchanged — only the underlying image file changes.
+- The embed URL `id-preview--<id>.lovable.app/...` returns **302 → `lovable.dev/auth-bridge?...`**.
+- That bridge needs Lovable's session cookie to be readable inside the iframe.
+- If the browser blocks third-party cookies (Safari ITP, Brave, Firefox strict, uBlock/Privacy Badger), or your Lovable login expired, the bridge can't complete inside the frame and the pane stays blank.
+- Opening in a new tab works because the page is now first-party, so the cookie is sent normally.
+- The console message `Unknown message type: RESET_BLANK_CHECK` is Lovable's blank-detector pinging the iframe — confirming the iframe is loaded but its body never paints.
 
-3. **Update every direct logo import** to use the new asset:
+This is an editor/browser-level issue, not an app bug. Things you can try right now (no code change needed):
+1. In the editor, click the small refresh icon in the preview toolbar.
+2. Open `https://lovable.dev` in a tab and make sure you're logged in, then come back.
+3. In your browser site settings for `lovable.dev` and `lovable.app`, allow third-party cookies.
+4. Disable any ad-blocker / privacy extension for `lovable.app`.
+5. Try a different browser (Chrome usually "just works").
 
-   | File | Current import | New import |
-   |---|---|---|
-   | `src/components/ui/logo.tsx` | `logo-glow.png` + `logo-v4.png` | `sacredworld-logo-official.png` (both variants) |
-   | `src/pages/Welcome.tsx` | `sacredworld-logo-new.png` + `logo-glow.png` | `sacredworld-logo-official.png` |
-   | `src/pages/Traditions.tsx` | `sacredworld-logo.png` | `sacredworld-logo-official.png` |
-   | `src/pages/Auth.tsx` | `sacredworld-logo.png` | `sacredworld-logo-official.png` |
-   | `src/pages/NotFound.tsx` | `logo-glow.png` | `sacredworld-logo-official.png` |
-   | `src/components/Header.tsx` | `sacred-world-logo-header.png` | `sacredworld-logo-official.png` |
+### One small code fix worth making
 
-4. **Splash page (`src/pages/Splash.tsx`)** — this is the page in the screenshot. Today the central emblem is a hand-drawn inline SVG (sun rays + figure built from `<circle>`/`<path>` with `sunGradient`). Replace that SVG block (around lines 337–374) with an `<img src={sacredWorldLogo} />` rendering the new official logo. Keep:
-   - the surrounding container, sizing (`w-36 h-36` → bumped to `w-44 h-44` so it matches the screenshot's prominence),
-   - the soft turquoise halo glow (`blur-3xl` ring behind it),
-   - the floating "flower-of-life" ornaments on the sides,
-   - all auth / language / tutorial / "Continuer" / "Hors ligne" / "Tutoriel" / "Déconnexion" logic and layout untouched.
+`src/main.tsx` currently unregisters every service worker and deletes every cache on **every page load, in production too**. This was added to fix a stale-bundle problem during development, but in production it:
+- defeats the offline mode you intentionally built (`public/sw.js`),
+- forces the browser to refetch everything on every visit,
+- can make the embedded preview look "stuck on white" longer because nothing is ever cached.
 
-   The new logo image already contains its own halo + rays, so the extra decorative ring SVG inside the emblem is removed to avoid double-glow; the outer `bg-[#3a8a6b]/25 blur-3xl` aura is kept for soft integration with the dark background.
+Proposed change in `src/main.tsx`:
+- Run the SW unregister + cache wipe **only in dev** (`import.meta.env.DEV`), or behind a one-time `localStorage` flag so it runs once per user and not on every load in production.
+- Leave the production service worker alone so offline mode keeps working.
 
-5. **Push notifications** (`src/hooks/useEventReminders.ts`) keep referencing `/logo-icon.png` — no code change needed since we overwrote that file in step 1.
+That's the only code edit. It won't fix the iframe-cookie issue (nothing in your code can — that's the platform/browser), but it stops your prod app from constantly clearing its own cache.
 
-6. **Leave the old asset files in place** (`logo-v4.png`, `logo-glow.png`, `sacredworld-logo.png`, etc.) but unreferenced. Safer than deleting in case any cached PWA manifest still points at them; can be cleaned up in a later pass.
+## Steps
 
-## Out of scope
+1. Edit `src/main.tsx`: gate the `serviceWorker.unregister()` + `caches.delete()` block behind `import.meta.env.DEV` (or a one-shot `localStorage` flag).
+2. No other files change.
 
-- No changes to the favicon (`public/favicon.ico`) — that's a separate `.ico` format and the user only mentioned the in-app logo. Can be addressed later if requested.
-- No layout, color-token, or copy changes on any page. Pure asset swap + Splash emblem swap.
+## What this will and will not fix
 
-## Files touched
-
-- `src/assets/sacredworld-logo-official.png` (new)
-- `public/logo-icon.png` (overwrite)
-- `src/components/ui/logo.tsx`
-- `src/components/Header.tsx`
-- `src/pages/Splash.tsx`
-- `src/pages/Welcome.tsx`
-- `src/pages/Traditions.tsx`
-- `src/pages/Auth.tsx`
-- `src/pages/NotFound.tsx`
+- Will: stop nuking caches/SW in prod, restoring offline mode and reducing reload churn in the embedded preview.
+- Will not: force the embedded iframe to render if your browser is blocking the auth-bridge cookie. For that, the fix is on the browser/Lovable-login side (refresh, re-login, allow third-party cookies, or use the new-tab preview button — which is what the platform recommends when this happens).
