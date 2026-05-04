@@ -58,4 +58,11 @@ if (container) {
       </BrowserRouter>
     </React.StrictMode>
   );
+  // Mark the root as mounted so the pre-React bootstrap shell hides.
+  // Use rAF to wait until React has actually painted the first frame.
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      container.setAttribute("data-app-mounted", "true");
+    });
+  });
 }

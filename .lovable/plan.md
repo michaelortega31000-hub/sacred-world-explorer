@@ -1,59 +1,26 @@
-## What I verified
+I can see the issue now: your screenshot shows the Lovable embedded preview is still rendering a white rounded phone frame, while the app itself renders correctly in my direct preview test. Instead of leaving this as a workaround, I’ll make the app much more resistant to embedded-preview blank states.
 
-I loaded your app inside the same headless browser the IDE uses:
+Plan:
 
-- `/explore` → fully renders the globe, header, bottom nav. No JS error.
-- `/u/:username` → renders correctly and shows "Profil introuvable" (because `:username` is the literal route placeholder, not a real username).
-- `document.body.innerText` confirms the React tree is mounted with full content on both routes.
+1. Add a real pre-React fallback inside `index.html`
+   - Put a small SacredWorld splash/loading shell directly inside `<div id="root">`.
+   - This means the preview will immediately show a dark SacredWorld screen instead of a white empty box, even before React finishes loading.
+   - React will replace it once the app mounts.
 
-So the app itself **is not blank**. What is blank is only the small embedded preview pane inside the Lovable IDE (the area to the right of the chat).
+2. Harden the base page sizing and background
+   - Add explicit `html`, `body`, and `#root` sizing (`min-height: 100%`, `width: 100%`) in `src/index.css`.
+   - Set the base background color at the raw CSS level, not only through Tailwind classes, so the embedded iframe cannot default to white.
+   - Add safe overflow behavior so the 390px mobile preview remains usable.
 
-## Root cause of the blank IDE pane
+3. Add a mount watchdog in `src/main.tsx`
+   - Add a tiny `data-app-mounted="true"` marker on `#root` once React renders.
+   - If mounting fails or stalls, keep the static SacredWorld fallback visible rather than leaving a blank white frame.
 
-This is a Lovable platform iframe issue, not an app bug:
+4. Keep the existing app logic intact
+   - I will not refactor routing, authentication, onboarding, or backend logic.
+   - This is a small defensive rendering fix only, aimed specifically at the blank embedded preview.
 
-- The IDE preview iframe runs `https://cdn.gpteng.co/lovable.js`, which posts a `RESET_BLANK_CHECK` message to detect blank iframes.
-- The console shows: `Unknown message type: RESET_BLANK_CHECK` — the message is being received but the iframe wrapper version doesn't recognize it. The handshake fails, so the IDE keeps showing the cached blank frame even though the app rendered.
-- Opening the preview in a new tab or fullscreen bypasses that handshake — which is exactly what you observe.
-
-There is **no code change in our project that will fix this** beyond what we already did (one-time SW/cache reset). The fix lives in Lovable's iframe wrapper. The reliable workaround stays: open the preview in a new tab or fullscreen.
-
-## Real bug found while investigating
-
-The network log shows every `user_progress` upsert returning **HTTP 400**:
-
-```
-{"code":"23502","message":"null value in column \"last_quest_date\" of relation \"user_progress\" violates not-null constraint"}
-```
-
-Cause: the new `guard_user_progress_insert` trigger force-sets `last_quest_date := NULL`, but the column is declared `NOT NULL`. Every save silently fails (only saved by chance because old rows already exist).
-
-## Plan
-
-### 1. Fix the `user_progress` 400 errors (migration)
-
-Make `last_quest_date` nullable so the security trigger can legitimately blank it on insert:
-
-```sql
-ALTER TABLE public.user_progress
-  ALTER COLUMN last_quest_date DROP NOT NULL;
-```
-
-(The trigger already sets server-controlled defaults; nothing else needs to change.)
-
-### 2. Tell you clearly about the IDE preview
-
-I'll add a short note in chat after applying the fix:
-
-- The blank inner preview is a Lovable IDE iframe handshake bug, not your code.
-- Use "Open in new tab" / fullscreen until Lovable updates `lovable.js`.
-- Everything else in the app (auth, globe, profiles, saving progress) will work correctly once the migration above ships.
-
-### 3. No other code edits
-
-I will not touch `main.tsx`, `AppContext`, route guards, or `PublicProfile` — they all behave correctly in the headless test. Adding more "blank screen workarounds" risks regressions without fixing the actual platform issue.
-
-## Out of scope
-
-- I will not implement a custom `RESET_BLANK_CHECK` listener — that's Lovable platform code, not app code.
-- I will not change route guards or the loader again — they render correctly.
+5. Verify visually after implementation
+   - Open the app at `/` in a 390px-wide preview.
+   - Confirm the embedded/phone-sized view shows either the SacredWorld splash or the app, never a white blank screen.
+   - Check browser console for runtime errors after the change.
