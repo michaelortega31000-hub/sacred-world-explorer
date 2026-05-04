@@ -1,59 +1,41 @@
-## Goal
+## Problem
 
-On the Country page (`/country/:countryName`), display religious/sacred places and museums/cultural landmarks in two distinct sections, and add a direct "Marquer ma visite" button on each card to earn points without opening the detail dialog.
+The user is stuck on the pre-React bootstrap shell ("SACREDWORLD / CHARGEMENT…") inside the embedded preview iframe. Verification shows the app actually mounts correctly when loaded directly in a browser (Splash renders with the "Continuer" CTA), so this is **not** a runtime error in `Country.tsx` or `Splash.tsx`.
 
-This aligns with the project rule: religious sites and museums must always be clearly separated and never mixed by default.
+The bootstrap shell lives inside `#root` in `index.html`. React's `createRoot(container).render(...)` normally replaces those children on mount — so the shell only persists if **`main.tsx` never executes `render()`** in that iframe. Most likely causes for the embedded preview specifically:
 
-## Current state
+1. A stale **service worker** from a previous build is still controlling the iframe and serving an outdated `index.html` / module bundle that fails silently.
+2. The one-shot SW cleanup in `main.tsx` (keyed by `localStorage["sw-reset-2026-05-04"]`) already ran once for this origin in a prior session, so it does nothing now even though the SW is still serving stale assets.
+3. The bootstrap shell has no self-timeout — if React fails to mount for any reason, the user is trapped forever with no fallback.
 
-- `src/pages/Country.tsx` already lists places per country, grouped only by city, mixing religious sites and museums.
-- Each card shows a small icon (Church / Building2) and a "Voir les détails" button. To validate a visit the user must: open the detail dialog → click "Vérifier ma visite" → choose GPS or photo.
-- The check-in modal (GPS within 500m or photo) and the reward modal already exist and call `visitPlace(id, points)` from `AppContext`, which awards points and badges.
-- `places` already carries `placeCategory: 'religious_site' | 'museum' | 'other'` and a `categoryCounts` memo is already computed.
+## Fix
 
-## Changes
+Three small, defensive changes — no feature work, no risk to existing flows.
 
-### 1. Two distinct sections on the "Lieux" tab (`src/pages/Country.tsx`)
+### 1. `index.html` — make the bootstrap shell self-dismissing
 
-Replace the single city-grouped list inside `TabsContent value="places"` with a category-first layout:
+- Add a `<script>` at the end of `<body>` that, after **6 seconds**, if `#root` does not yet have `data-app-mounted="true"`:
+  - Replaces the shell with a minimal recovery UI: "Le chargement prend plus de temps que prévu" + a **"Recharger l'application"** button that calls `location.reload()` and a **"Vider le cache et recharger"** button that unregisters service workers, clears `caches`, clears `localStorage["sw-reset-*"]` keys, then reloads.
+- This guarantees the user can never be permanently trapped on the loading shell, regardless of cause.
 
-```text
-Country header (name, counts)
-├── Section "Lieux sacrés" (Church icon, amber accent)
-│     └── Cities (existing city grouping) → cards (religious_site + other)
-└── Section "Musées & lieux culturels" (Building2 icon, blue accent)
-      └── Cities (existing city grouping) → cards (museum)
-```
+### 2. `main.tsx` — bump the cache-reset key and harden cleanup
 
-Implementation notes:
-- Build two arrays from `places`: `religiousPlaces` (`placeCategory !== 'museum'`) and `culturalPlaces` (`placeCategory === 'museum'`).
-- Reuse the existing `citiesByLetter` logic in a small helper `groupByCity(list)` so each section keeps its alphabetical city grouping and the alphabet navigator still works (computed from the union).
-- Each section gets a header band (icon + title + count) and is hidden when its list is empty, with a small empty-state hint when both are empty.
-- Keep visual identity: deep background, golden accents for sacred, turquoise/blue for cultural — already available in the existing badges.
+- Change `SW_RESET_KEY` from `"sw-reset-2026-05-04"` to `"sw-reset-2026-05-04-b"` so the one-shot cleanup runs again for every existing user (this clears whatever stale SW/cache is currently trapping the preview).
+- After `caches.delete(...)` and `registration.unregister(...)` complete, if any SW was actually unregistered, call `location.reload()` once (guarded by a sessionStorage flag to avoid loops) so the freshly-served assets are picked up.
 
-### 2. Direct "Marquer ma visite" CTA on each card
+### 3. `index.html` — move the bootstrap shell out of `#root`
 
-In the place card footer (around lines 540–555), replace the single "Voir les détails / Visité" button with two stacked buttons:
-
-- Primary CTA: **"Marquer ma visite"** (golden gradient already used in the modal). Disabled and replaced by "✓ Visité (+N pts)" once `visited` is true.
-- Secondary: **"Voir les détails"** (current behavior — opens the dialog).
-
-Click on the primary CTA sets `selectedPlace` and opens `setIsCheckinModalOpen(true)` directly (same flow as `handleCheckIn`). The existing GPS/photo modal handles the rest, calls `visitPlace`, then opens the reward modal — no other plumbing needed.
-
-### 3. Small UX polish
-
-- Show the points value (`+{place.points} pts`) as a small badge on the card so the reward is visible before clicking.
-- Keep the tap-on-image / tap-on-title behavior to open the detail dialog (unchanged).
-- The detail dialog's "Vérifier ma visite" button stays as a fallback inside the dialog (no removal, no regression).
-
-## Out of scope
-
-- No backend / DB / RLS / edge function changes. `visitPlace` and the existing GPS+photo flow already award points, badges and persist progress through `AppContext` → `user_progress`.
-- No change to the assistant, quests, restaurants, or other tabs.
-- Cultural-specific quests/badges (mentioned in project knowledge) are a separate, larger initiative — not included here.
+- Currently the shell is a child of `#root`, which is fine in theory (React clears it on mount) but means a half-failed mount can leave the page blank with no indicator.
+- Move `#sw-bootstrap` to be a **sibling** of `#root` (direct child of `<body>`), positioned `fixed inset-0 z-[-1]`. The CSS rule already hides it via `#root[data-app-mounted="true"] ~ #sw-bootstrap { display: none; }` (updated selector). This way the shell acts as a true background — it doesn't depend on React replacing children, and the recovery script in step 1 can manipulate it independently.
 
 ## Files touched
 
-- `src/pages/Country.tsx` — split list into two sections, add direct check-in CTA on cards, small points badge.
+- `index.html` — restructure shell, add recovery `<script>`, update CSS selector.
+- `src/main.tsx` — bump `SW_RESET_KEY`, add one-shot reload after cache cleanup.
 
-No new dependencies, no new files.
+## Verification
+
+After implementation:
+1. Hard-refresh the preview — shell appears, then disappears within ~1s as React mounts (Splash visible).
+2. Simulate a stuck mount (temporarily throw in `main.tsx`) — after 6s the recovery UI appears with working "Recharger" / "Vider le cache" buttons.
+3. Confirm `Country.tsx` (the recent refactor) still renders correctly with both "Lieux sacrés" and "Musées & lieux culturels" sections.
