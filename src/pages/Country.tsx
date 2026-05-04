@@ -83,19 +83,35 @@ const Country = () => {
     return { religious, museums, total: places.length };
   }, [places]);
 
-  // Group places by city
-  const citiesByLetter = Object.entries(
-    places.reduce((acc, place) => {
-      const city = place.city || 'Autres';
-      if (!acc[city]) acc[city] = [];
-      acc[city].push(place);
-      return acc;
-    }, {} as Record<string, Place[]>)
-  ).sort(([cityA], [cityB]) => {
-    if (cityA === 'Autres') return 1;
-    if (cityB === 'Autres') return -1;
-    return cityA.localeCompare(cityB);
-  });
+  // Split into two distinct sections (project rule: never mix sacred & cultural).
+  const religiousPlaces = useMemo(
+    () => places.filter((p) => (p.placeCategory || 'religious_site') !== 'museum'),
+    [places],
+  );
+  const culturalPlaces = useMemo(
+    () => places.filter((p) => p.placeCategory === 'museum'),
+    [places],
+  );
+
+  // Helper: group a list of places by city, alphabetically (Autres last).
+  const groupByCity = (list: Place[]) =>
+    Object.entries(
+      list.reduce((acc, place) => {
+        const city = place.city || 'Autres';
+        if (!acc[city]) acc[city] = [];
+        acc[city].push(place);
+        return acc;
+      }, {} as Record<string, Place[]>),
+    ).sort(([cityA], [cityB]) => {
+      if (cityA === 'Autres') return 1;
+      if (cityB === 'Autres') return -1;
+      return cityA.localeCompare(cityB);
+    });
+
+  const religiousByCity = useMemo(() => groupByCity(religiousPlaces), [religiousPlaces]);
+  const culturalByCity = useMemo(() => groupByCity(culturalPlaces), [culturalPlaces]);
+  // Union for the alphabet navigator (keeps existing behavior).
+  const citiesByLetter = useMemo(() => groupByCity(places), [places]);
 
   // Resolve image URLs:
   // - External URLs (http/https) should be used as-is
@@ -420,145 +436,225 @@ const Country = () => {
             </p>
 
 
-            {/* Group places by city */}
-            {citiesByLetter.map(([city, cityPlaces]) => (
-                <div 
-                  key={city} 
-                  className="mb-12 scroll-mt-24"
-                  ref={(el) => { cityRefs.current[city] = el; }}
-                >
-                  <div className="flex items-center gap-2 mb-6">
-                    <MapPin className="w-5 h-5 text-primary" />
-                    <h2 className="text-2xl font-bold text-foreground">{city}</h2>
-                    <span className="text-sm text-muted-foreground">
-                      ({cityPlaces.length} {cityPlaces.length === 1 ? 'lieu' : 'lieux'})
-                    </span>
-                  </div>
+            {/* Render a single place card. Same markup as before, with a new
+                direct "Marquer ma visite" CTA in the footer. */}
+            {(() => {
+              const renderPlaceCard = (place: Place) => {
+                const visited = isPlaceVisited(place.id);
+                const inTrip = isInTrip(place.id);
+                return (
+                  <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
+                    {place.imageUrl ? (
+                      <div
+                        className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
+                        onClick={() => setSelectedPlace(place)}
+                      >
+                        <PlacePhoto
+                          src={resolveImageUrl(place.imageUrl) || place.imageUrl}
+                          alt={place.name}
+                          type={place.type}
+                          name={place.name}
+                          placeId={place.id}
+                          className="w-full h-full"
+                        />
+                        {/* Points badge (top center) */}
+                        <div className="absolute top-2 left-1/2 -translate-x-1/2 pointer-events-none">
+                          <Badge
+                            className="text-xs font-bold border-0 shadow-md"
+                            style={{
+                              background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                              color: 'black',
+                            }}
+                          >
+                            +{place.points} pts
+                          </Badge>
+                        </div>
+                        {/* Restaurant button - top left */}
+                        <div className="absolute top-2 left-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              const lat = place.coordinates[1];
+                              const lng = place.coordinates[0];
+                              navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city || '')}&lat=${lat}&lng=${lng}`);
+                            }}
+                            className="opacity-90 group-hover:opacity-100 transition-opacity"
+                            title="Voir les restaurants à proximité (50km)"
+                          >
+                            <Utensils className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {/* Add to trip button - top right */}
+                        <div className="absolute top-2 right-2">
+                          <Button
+                            size="sm"
+                            variant={inTrip ? 'default' : 'secondary'}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              if (inTrip) {
+                                removeFromTrip(place.id);
+                                toast.success('Retiré du voyage');
+                              } else {
+                                addToTrip(place.id);
+                                toast.success('Ajouté au voyage');
+                              }
+                            }}
+                            className="opacity-90 group-hover:opacity-100 transition-opacity"
+                          >
+                            {inTrip ? <CheckCircle2 className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
+                          </Button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="h-48 cursor-pointer relative" onClick={() => setSelectedPlace(place)}>
+                        <PlaceSymbol type={place.type} name={place.name} placeId={place.id} />
+                      </div>
+                    )}
+                    <CardHeader className="cursor-pointer" onClick={() => setSelectedPlace(place)}>
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <CardTitle className="flex-1">{place.name}</CardTitle>
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
+                        </div>
+                      </div>
+                      <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
+                        {place.placeCategory === 'museum' ? (
+                          <Building2 className="w-3 h-3 text-blue-500" />
+                        ) : (
+                          <Church className="w-3 h-3 text-amber-500" />
+                        )}
+                        <span>{place.type}</span>
+                        {place.placeCategory === 'museum' && (
+                          <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/20">
+                            Musée
+                          </Badge>
+                        )}
+                        {place.tags?.includes('wikidata') && (
+                          <Badge
+                            variant="secondary"
+                            className="text-[10px] bg-amber-300/10 text-amber-200/85 border-amber-300/25 font-medium"
+                            title="Donnée enrichie depuis Wikidata (CC0)"
+                          >
+                            Wikidata
+                          </Badge>
+                        )}
+                      </div>
+                    </CardHeader>
+                    <CardContent className="cursor-pointer" onClick={() => setSelectedPlace(place)}>
+                      <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
+                    </CardContent>
+                    <CardFooter className="flex flex-col gap-2">
+                      {/* Primary CTA — direct check-in to earn points */}
+                      <Button
+                        onClick={() => {
+                          if (visited) {
+                            toast.info('Vous avez déjà visité ce lieu');
+                            return;
+                          }
+                          setSelectedPlace(place);
+                          setIsCheckinModalOpen(true);
+                        }}
+                        disabled={visited}
+                        className="w-full gap-2"
+                        style={
+                          visited
+                            ? undefined
+                            : {
+                                background: 'linear-gradient(135deg, hsl(45 100% 51%) 0%, hsl(48 100% 70%) 100%)',
+                                color: 'black',
+                              }
+                        }
+                      >
+                        {visited ? (
+                          <>
+                            <CheckCircle2 className="w-4 h-4" />
+                            Visité (+{place.points} pts)
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle2 className="w-4 h-4" />
+                            Marquer ma visite
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        onClick={() => setSelectedPlace(place)}
+                        variant="outline"
+                        className="w-full"
+                      >
+                        <Info className="w-4 h-4 mr-2" />
+                        Voir les détails
+                      </Button>
+                    </CardFooter>
+                  </Card>
+                );
+              };
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {cityPlaces.map((place) => {
-                      const visited = isPlaceVisited(place.id);
-                      const inTrip = isInTrip(place.id);
-                      return (
-                          <Card key={place.id} className={`overflow-hidden transition-all hover:shadow-lg ${visited ? 'opacity-75' : ''}`}>
-                            {place.imageUrl ? (
-                              <div
-                                className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
-                                onClick={() => setSelectedPlace(place)}
-                              >
-                                <PlacePhoto
-                                  src={resolveImageUrl(place.imageUrl) || place.imageUrl}
-                                  alt={place.name}
-                                  type={place.type}
-                                  name={place.name}
-                                  placeId={place.id}
-                                  className="w-full h-full"
-                                />
-                                {/* Restaurant button - top left */}
-                                <div className="absolute top-2 left-2">
-                                  <Button
-                                    size="sm"
-                                    variant="secondary"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      // Navigate to restaurants tab with place coordinates for proximity filtering
-                                      const lat = place.coordinates[1];
-                                      const lng = place.coordinates[0];
-                                      navigate(`/country/${country}?tab=restaurants&city=${encodeURIComponent(place.city || '')}&lat=${lat}&lng=${lng}`);
-                                    }}
-                                    className="opacity-90 group-hover:opacity-100 transition-opacity"
-                                    title="Voir les restaurants à proximité (50km)"
-                                  >
-                                    <Utensils className="w-4 h-4" />
-                                  </Button>
-                                </div>
-                                {/* Add to trip button - top right */}
-                                <div className="absolute top-2 right-2">
-                                  <Button
-                                    size="sm"
-                                    variant={inTrip ? "default" : "secondary"}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (inTrip) {
-                                        removeFromTrip(place.id);
-                                        toast.success('Retiré du voyage');
-                                      } else {
-                                        addToTrip(place.id);
-                                        toast.success('Ajouté au voyage');
-                                      }
-                                    }}
-                                    className="opacity-90 group-hover:opacity-100 transition-opacity"
-                                  >
-                                    {inTrip ? (
-                                      <CheckCircle2 className="w-4 h-4" />
-                                    ) : (
-                                      <Plus className="w-4 h-4" />
-                                    )}
-                                  </Button>
-                                </div>
-                              </div>
-                            ) : (
-                              <div className="h-48 cursor-pointer relative" onClick={() => setSelectedPlace(place)}>
-                                <PlaceSymbol type={place.type} name={place.name} placeId={place.id} />
-                              </div>
-                            )}
-                            <CardHeader className="cursor-pointer" onClick={() => setSelectedPlace(place)}>
-                              <div className="flex items-start justify-between gap-2 mb-2">
-                                <CardTitle className="flex-1">{place.name}</CardTitle>
-                                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                                  {visited && <CheckCircle2 className="w-5 h-5 text-primary flex-shrink-0" />}
-                                </div>
-                              </div>
-                              {/* Use a div instead of CardDescription (<p>) so the
-                                  child Badges (<div>) don't violate DOM nesting. */}
-                              <div className="text-sm text-muted-foreground flex items-center gap-2 flex-wrap">
-                                {place.placeCategory === 'museum' ? (
-                                  <Building2 className="w-3 h-3 text-blue-500" />
-                                ) : (
-                                  <Church className="w-3 h-3 text-amber-500" />
-                                )}
-                                <span>{place.type}</span>
-                                {place.placeCategory === 'museum' && (
-                                  <Badge variant="secondary" className="text-xs bg-blue-500/10 text-blue-600 border-blue-500/20">
-                                    Musée
-                                  </Badge>
-                                )}
-                                {place.tags?.includes('wikidata') && (
-                                  <Badge
-                                    variant="secondary"
-                                    className="text-[10px] bg-amber-300/10 text-amber-200/85 border-amber-300/25 font-medium"
-                                    title="Donnée enrichie depuis Wikidata (CC0)"
-                                  >
-                                    Wikidata
-                                  </Badge>
-                                )}
-                              </div>
-                            </CardHeader>
-                            <CardContent className="cursor-pointer" onClick={() => setSelectedPlace(place)}>
-                              <p className="text-sm text-muted-foreground line-clamp-3">{place.description}</p>
-                            </CardContent>
-                            <CardFooter>
-                              <Button
-                                onClick={() => setSelectedPlace(place)}
-                                className="w-full"
-                                variant={visited ? 'secondary' : 'default'}
-                              >
-                                {visited ? (
-                                  <>
-                                    <CheckCircle2 className="w-4 h-4 mr-2" />
-                                    {t('country.visited')}
-                                  </>
-                                ) : (
-                                  'Voir les détails'
-                                )}
-                              </Button>
-                            </CardFooter>
-                        </Card>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+              const renderSection = (
+                title: string,
+                subtitle: string,
+                icon: React.ReactNode,
+                accentClass: string,
+                groups: [string, Place[]][],
+              ) => {
+                if (groups.length === 0) return null;
+                return (
+                  <section className="mb-12">
+                    <div className={`flex items-center gap-3 mb-6 pb-3 border-b-2 ${accentClass}`}>
+                      {icon}
+                      <div>
+                        <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+                        <p className="text-xs text-muted-foreground">{subtitle}</p>
+                      </div>
+                    </div>
+                    {groups.map(([city, cityPlaces]) => (
+                      <div
+                        key={`${title}-${city}`}
+                        className="mb-10 scroll-mt-24"
+                        ref={(el) => { cityRefs.current[city] = el; }}
+                      >
+                        <div className="flex items-center gap-2 mb-4">
+                          <MapPin className="w-4 h-4 text-primary" />
+                          <h3 className="text-lg font-semibold text-foreground">{city}</h3>
+                          <span className="text-xs text-muted-foreground">
+                            ({cityPlaces.length} {cityPlaces.length === 1 ? 'lieu' : 'lieux'})
+                          </span>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {cityPlaces.map(renderPlaceCard)}
+                        </div>
+                      </div>
+                    ))}
+                  </section>
+                );
+              };
+
+              return (
+                <>
+                  {renderSection(
+                    'Lieux sacrés',
+                    'Temples, églises, sanctuaires et lieux de pèlerinage',
+                    <Church className="w-7 h-7 text-amber-500" />,
+                    'border-amber-500/30',
+                    religiousByCity,
+                  )}
+                  {renderSection(
+                    'Musées & lieux culturels',
+                    'Musées, centres culturels et patrimoine symbolique',
+                    <Building2 className="w-7 h-7 text-blue-500" />,
+                    'border-blue-500/30',
+                    culturalByCity,
+                  )}
+                  {!placesLoading && religiousByCity.length === 0 && culturalByCity.length === 0 && (
+                    <p className="text-center text-muted-foreground py-12">
+                      Aucun lieu disponible pour ce pays pour le moment.
+                    </p>
+                  )}
+                </>
+              );
+            })()}
           </div>
         </TabsContent>
 

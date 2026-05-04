@@ -1,26 +1,59 @@
-I can see the issue now: your screenshot shows the Lovable embedded preview is still rendering a white rounded phone frame, while the app itself renders correctly in my direct preview test. Instead of leaving this as a workaround, I’ll make the app much more resistant to embedded-preview blank states.
+## Goal
 
-Plan:
+On the Country page (`/country/:countryName`), display religious/sacred places and museums/cultural landmarks in two distinct sections, and add a direct "Marquer ma visite" button on each card to earn points without opening the detail dialog.
 
-1. Add a real pre-React fallback inside `index.html`
-   - Put a small SacredWorld splash/loading shell directly inside `<div id="root">`.
-   - This means the preview will immediately show a dark SacredWorld screen instead of a white empty box, even before React finishes loading.
-   - React will replace it once the app mounts.
+This aligns with the project rule: religious sites and museums must always be clearly separated and never mixed by default.
 
-2. Harden the base page sizing and background
-   - Add explicit `html`, `body`, and `#root` sizing (`min-height: 100%`, `width: 100%`) in `src/index.css`.
-   - Set the base background color at the raw CSS level, not only through Tailwind classes, so the embedded iframe cannot default to white.
-   - Add safe overflow behavior so the 390px mobile preview remains usable.
+## Current state
 
-3. Add a mount watchdog in `src/main.tsx`
-   - Add a tiny `data-app-mounted="true"` marker on `#root` once React renders.
-   - If mounting fails or stalls, keep the static SacredWorld fallback visible rather than leaving a blank white frame.
+- `src/pages/Country.tsx` already lists places per country, grouped only by city, mixing religious sites and museums.
+- Each card shows a small icon (Church / Building2) and a "Voir les détails" button. To validate a visit the user must: open the detail dialog → click "Vérifier ma visite" → choose GPS or photo.
+- The check-in modal (GPS within 500m or photo) and the reward modal already exist and call `visitPlace(id, points)` from `AppContext`, which awards points and badges.
+- `places` already carries `placeCategory: 'religious_site' | 'museum' | 'other'` and a `categoryCounts` memo is already computed.
 
-4. Keep the existing app logic intact
-   - I will not refactor routing, authentication, onboarding, or backend logic.
-   - This is a small defensive rendering fix only, aimed specifically at the blank embedded preview.
+## Changes
 
-5. Verify visually after implementation
-   - Open the app at `/` in a 390px-wide preview.
-   - Confirm the embedded/phone-sized view shows either the SacredWorld splash or the app, never a white blank screen.
-   - Check browser console for runtime errors after the change.
+### 1. Two distinct sections on the "Lieux" tab (`src/pages/Country.tsx`)
+
+Replace the single city-grouped list inside `TabsContent value="places"` with a category-first layout:
+
+```text
+Country header (name, counts)
+├── Section "Lieux sacrés" (Church icon, amber accent)
+│     └── Cities (existing city grouping) → cards (religious_site + other)
+└── Section "Musées & lieux culturels" (Building2 icon, blue accent)
+      └── Cities (existing city grouping) → cards (museum)
+```
+
+Implementation notes:
+- Build two arrays from `places`: `religiousPlaces` (`placeCategory !== 'museum'`) and `culturalPlaces` (`placeCategory === 'museum'`).
+- Reuse the existing `citiesByLetter` logic in a small helper `groupByCity(list)` so each section keeps its alphabetical city grouping and the alphabet navigator still works (computed from the union).
+- Each section gets a header band (icon + title + count) and is hidden when its list is empty, with a small empty-state hint when both are empty.
+- Keep visual identity: deep background, golden accents for sacred, turquoise/blue for cultural — already available in the existing badges.
+
+### 2. Direct "Marquer ma visite" CTA on each card
+
+In the place card footer (around lines 540–555), replace the single "Voir les détails / Visité" button with two stacked buttons:
+
+- Primary CTA: **"Marquer ma visite"** (golden gradient already used in the modal). Disabled and replaced by "✓ Visité (+N pts)" once `visited` is true.
+- Secondary: **"Voir les détails"** (current behavior — opens the dialog).
+
+Click on the primary CTA sets `selectedPlace` and opens `setIsCheckinModalOpen(true)` directly (same flow as `handleCheckIn`). The existing GPS/photo modal handles the rest, calls `visitPlace`, then opens the reward modal — no other plumbing needed.
+
+### 3. Small UX polish
+
+- Show the points value (`+{place.points} pts`) as a small badge on the card so the reward is visible before clicking.
+- Keep the tap-on-image / tap-on-title behavior to open the detail dialog (unchanged).
+- The detail dialog's "Vérifier ma visite" button stays as a fallback inside the dialog (no removal, no regression).
+
+## Out of scope
+
+- No backend / DB / RLS / edge function changes. `visitPlace` and the existing GPS+photo flow already award points, badges and persist progress through `AppContext` → `user_progress`.
+- No change to the assistant, quests, restaurants, or other tabs.
+- Cultural-specific quests/badges (mentioned in project knowledge) are a separate, larger initiative — not included here.
+
+## Files touched
+
+- `src/pages/Country.tsx` — split list into two sections, add direct check-in CTA on cards, small points badge.
+
+No new dependencies, no new files.
