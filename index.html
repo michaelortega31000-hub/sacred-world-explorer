@@ -16,14 +16,72 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:site" content="@lovable_dev" />
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-    
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800&family=Cinzel:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+    <style>
+      /* Pre-React baseline so the embedded preview can never show a white page,
+         even if the iframe handshake hangs or React is still loading. */
+      html, body, #root {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        min-height: 100dvh;
+        width: 100%;
+        background-color: #070710;
+        color: #EDE8E0;
+        font-family: 'Inter', system-ui, sans-serif;
+      }
+      #sw-bootstrap {
+        position: fixed;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        gap: 14px;
+        background:
+          radial-gradient(ellipse at 50% 30%, rgba(244,197,66,0.18) 0%, transparent 60%),
+          #070710;
+        z-index: 0;
+      }
+      #sw-bootstrap .sw-title {
+        font-family: 'Cinzel', 'Playfair Display', serif;
+        font-size: 22px;
+        letter-spacing: 0.18em;
+        color: #F4C542;
+        text-shadow: 0 0 24px rgba(244,197,66,0.45);
+      }
+      #sw-bootstrap .sw-sub {
+        font-size: 12px;
+        color: rgba(237,232,224,0.7);
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      #sw-bootstrap .sw-spin {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 2px solid rgba(244,197,66,0.25);
+        border-top-color: #F4C542;
+        animation: sw-spin 1s linear infinite;
+      }
+      @keyframes sw-spin { to { transform: rotate(360deg); } }
+      /* Hide the bootstrap shell once React has mounted. */
+      #root[data-app-mounted="true"] #sw-bootstrap { display: none; }
+    </style>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="sw-bootstrap" aria-hidden="true">
+        <div class="sw-spin"></div>
+        <div class="sw-title">SACREDWORLD</div>
+        <div class="sw-sub">Chargement…</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

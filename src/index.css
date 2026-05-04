@@ -237,6 +237,15 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html,
+  body,
+  #root {
+    min-height: 100vh;
+    min-height: 100dvh;
+    width: 100%;
+    background-color: hsl(var(--background));
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
