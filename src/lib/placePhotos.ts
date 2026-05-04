@@ -355,7 +355,6 @@ export async function fetchUserReactions(photoIds: string[]): Promise<Map<string
 // ADMIN MODERATION
 // ════════════════════════════════════════════════════════════════════════════
 
-import { logger } from '@/lib/logger';
 
 export type SubmissionStatus = 'pending' | 'approved' | 'rejected' | 'flagged';
 export type ModerationAction = 'approve' | 'reject' | 'flag';
